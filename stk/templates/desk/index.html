@@ -70,7 +70,7 @@
         <template #item.between="{ item }">
           <span v-for="(p, i) in item.people" :key="p"><a :href="'/people/' + p" @click.stop><bdi v-if="fnd.names[p]" dir="auto">${ fnd.names[p] }</bdi><span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> ${ unnamed[p] }</span></a>${ i < item.people.length - 1 ? ', ' : '' }</span>
           <span v-if="!item.people.length" class="desk-muted">${ plural(item.members, 'claim') }</span>
-          <span v-if="item.places.length" class="desk-muted"> at </span><a v-for="(pl, i) in item.places" :key="item.place_ids[i]" :href="'/places/' + item.place_ids[i]" @click.stop><bdi dir="auto">${ pl || 'an unnamed place' }</bdi></a>
+          <span v-if="item.places.length" class="desk-muted"> at </span><span v-for="(pl, i) in item.places" :key="item.place_ids[i]"><a :href="'/places/' + item.place_ids[i]" @click.stop><bdi dir="auto">${ pl || 'an unnamed place' }</bdi></a>${ i < item.places.length - 1 ? ', ' : '' }</span>
           <span v-if="item.month" class="desk-muted"> in ${ item.month }</span>
         </template>
         <template #item.why="{ item }"><span class="desk-muted">${ why(item) }</span></template>
