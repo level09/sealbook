@@ -140,18 +140,24 @@ downloaded model on the witness clip and checks word error below 0.35.
 
 ## Web research and capture
 
-Built and tested against synthetic recorded responses only; it stays off until keys
-are set. With no key the Research drawer names the missing settings and sends
-nothing. Set the keys in the server environment (never in fixtures or git), then
-restart the app and every worker:
+Built and tested against synthetic recorded responses only; it stays off until the
+key is set. With no key the Research drawer names the missing settings and sends
+nothing. Set the key in the server environment (never in fixtures or git), install
+the browser once per machine that runs workers, then restart the app and every
+worker:
+
+```bash
+uv run playwright install chromium   # capture is off until this exists
+```
+
+On Linux add `uv run playwright install-deps chromium` for the system libraries.
+Capture is configured when Chromium is installed; the drawer lists `Chromium` as
+missing otherwise. The check is cached per process, so restart after installing.
 
 | Setting | Meaning |
 | --- | --- |
 | `BRAVE_API_KEY` | Brave Search API subscription token; turns on search (web, images, videos) |
 | `BRAVE_BASE_URL` | Default `https://api.search.brave.com/res/v1` |
-| `CLOUDFLARE_ACCOUNT_ID` | Account whose Browser Rendering renders picked pages |
-| `CLOUDFLARE_API_TOKEN` | API token with the Browser Rendering edit permission on that account; turns on Add as evidence |
-| `CLOUDFLARE_BASE_URL` | Default `https://api.cloudflare.com/client/v4` |
 | `RESEARCH_QUERIES_PER_HOUR` | Brave requests per person per hour, default 60 (one query in three kinds is three requests) |
 | `RESEARCH_CAPTURES_PER_HOUR` | Captures per person per hour, default 30 |
 | `RESEARCH_SEARCH_INTERVAL` | Seconds between Brave requests in one send, default 1.1 (plans are limited per second) |
@@ -165,14 +171,28 @@ An admin can mark a case sensitive or switch research off for it with
 both refuse search and capture for that case, and values from its sources are never
 proposed for any other case.
 
-Costs: each Brave request (one query in one kind) counts against the Brave plan;
-each capture is one Cloudflare `snapshot` call, billed by browser time, which the
-run records (`X-Browser-Ms-Used`, in the capture manifest). Media and yt-dlp
-downloads come from this server, not Cloudflare. Current prices and plan limits
-were not checked in this build; read them off the Brave Search API and Cloudflare
-Browser Rendering pricing pages before turning the keys on, and set the hourly
-limits above to fit the plan. A 429 from either provider is shown to the analyst as
-a quota or rate refusal, never retried automatically.
+Costs: each Brave request (one query in one kind) counts against the Brave plan.
+A capture costs this machine a few seconds of one Chromium process (a fresh browser
+per capture, closed afterwards) and nothing else; pages, media and yt-dlp downloads
+all come from this server's own address, so a site sees the server, not a service.
+The Brave prices and plan limits were not checked in this build; read them off the
+Brave Search API pricing page before turning the key on, and set the hourly limits
+above to fit the plan. A 429 from Brave is shown to the analyst as a quota refusal,
+never retried automatically.
+
+What a capture does: a fresh headless Chromium with no cookies, no service workers,
+no saved state, downloads and new windows blocked, and the browser's own media
+streaming blocked (media files are fetched afterwards through the pinned client with
+the size cap). It waits for the load event, then up to 8 seconds for the network to
+settle, and gives up after 90 seconds in all. Every request, including each redirect
+hop, is paused and refused if its host is not public; the address Chromium connected
+to is checked again afterwards and a private one fails the capture. The visit records
+the final URL, the HTTP status, the rendered HTML, a full-page PNG (cut at 16,000 px)
+and a JSON network log of the document and image requests; each is hashed and enters
+intake as its own acquisition by the analyst. A status of 400 or above, a Cloudflare
+bot-check page, a password field or a download fails the capture with a plain
+message and Retry; Sealbook never solves a challenge or logs in. The browser sends
+its normal headless identity and is not disguised.
 
 `yt-dlp` is pinned in `pyproject.toml` (2026.10.21). Video sites change often;
 upgrade it with `uv add yt-dlp==<version>` and restart workers when downloads start

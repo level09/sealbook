@@ -103,7 +103,7 @@ export const ResearchDrawer = {
       <v-skeleton-loader v-if="!status && !error" type="list-item-two-line@3"></v-skeleton-loader>
       <template v-else-if="status && missingSearch.length">
         <v-empty-state icon="ti ti-world-off" title="Web research is not set up" class="px-0">
-          <template #text><p>Searching needs a Brave Search API key, and adding pages as evidence needs a Cloudflare account with Browser Rendering. An administrator sets these in the server settings and restarts the app and worker:</p>
+          <template #text><p>Searching needs a Brave Search API key, and adding pages as evidence needs Chromium on the server. An administrator sets the key in the server settings, or installs Chromium, and restarts the app and worker:</p>
             <ul class="rs-keys"><li v-for="k in missingCapture" :key="k"><code>{{ k }}</code></li></ul>
             <p class="muted">Until then nothing is sent anywhere. Operations docs explain the costs and limits.</p></template>
         </v-empty-state>
@@ -155,7 +155,7 @@ export const ResearchDrawer = {
               <v-btn color="primary" variant="flat" prepend-icon="ti ti-download" :disabled="!picked.length || !!status.refusal" :loading="busy" @click="add">Add {{ picked.length || '' }} as evidence</v-btn>
             </template>
           </div>
-          <p class="rs-note">Cloudflare renders each picked page once; its HTML, a full-page screenshot and the media on it are stored and hashed, then read like any other intake. Pages behind a login are refused.</p>
+          <p class="rs-note">A browser on this server visits each picked page once; its HTML, a full-page screenshot and the media on it are stored and hashed, then read like any other intake. Pages behind a login are refused.</p>
         </template>
         <div v-if="progress" class="mt-3">
           <h3 class="text-body-2 font-weight-bold mb-1">Capture <span class="muted">{{ done ? 'finished' : 'running' }}</span></h3>

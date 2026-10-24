@@ -530,3 +530,60 @@ covers in the text it was read from (`span_blob`).
   ("Photo, checkpoint_forward"), storage words on the monitor feed ("geotag run",
   "statements_written"), "overlapping 1 days", repeated activity rows on a place
   page and "family . 2 sentences" on Packages.
+
+## Capturing pages with a local browser (2026-10-24)
+
+- Playwright's page routing does not see redirect hops: a route that calls
+  `continue_` let a 302 to a private host connect. The guard is the DevTools `Fetch`
+  domain through `new_cdp_session`, which pauses every hop. A test redirects to a
+  private name and asserts the server saw only the first request.
+- Popups are blocked with the Chromium flag `--block-new-web-contents`. Closing the
+  new page on the `page` event was too late: the popup had already requested its URL.
+- `server_addr()` on each response gives the IP Chromium really connected to, so a
+  rebinding host is caught after the fact even though the browser resolves its own DNS.
+- Live check from this machine, run once with the capture code (no logins, no
+  challenge solving). Worked: BBC article (3.1 s, 11 images listed), Al Jazeera Arabic
+  article (4.9 s), Telegram `t.me/s/telegram` (3.2 s, images and videos listed), a
+  YouTube watch page (4.7 s, thumbnails only; the video goes to yt-dlp), React docs as
+  the script-heavy page (2.4 s). Refused: Reuters answered 401 and an X post answered
+  403 to the headless browser, so nothing was captured; a Cloudflare challenge demo
+  page (scrapingcourse.com/cloudflare-challenge) was recognised and refused after 10 s.
+  A public Facebook page rendered (3.1 s) behind a cookie dialog, and its login form
+  makes capture refuse it. Telegram and Facebook list media the page loads lazily, so
+  a full-page screenshot shows only what had loaded. Nothing here is a reliability
+  figure; sites change.
+
+## Making the screen sense check pass (2026-10-24)
+
+- Sources were still named by their match key. The demo seed and importers write
+  `context.file` as a handle ("checkpoint_forward", "list") that search and the
+  excerpt link match on; uploads and captures write the real name to
+  `context.filename`. The Desk, the evidence header and its notices showed `file`
+  beside the title, and the whole monitor showed `file` instead of the title. Show
+  `title`, and beside it only `filename`, the name a reader can check.
+- The monitor feed printed storage tokens because each run tool needed an entry in
+  `TOOL_WORDS` and the fallback was "<tool> run": `index`, `geotag`, `thumbnail`
+  and five other worker tools had none. Stages and drop reasons
+  (`statements_written`, `ocr_empty`) went out raw, and an index run's input is the
+  derived text, which has no acquisition, so it showed a hash. `monitor.data.work`
+  and `event_words` say them in words, a test holds every worker tool to a word,
+  and the feed names a derived input by `mfilter.source`.
+- A list is only as distinct as its rows. Timeline marks, pending finding bands and
+  a place's signed history each wrote one sentence per statement without the thing
+  that set them apart, so "Birth date, unconfirmed" or "Accepted a claim placed here"
+  stood ten times in a row. Name the subject in a mark's title, give a band the
+  finding's reason, and collapse a sitting (one person, one minute, or one gesture)
+  into counted lines with the claims behind them.
+- The People list counted identity links and superseded statements as facts, so it
+  said 19 where the person page listed 18, and search counted across every case
+  while the list was filtered to one. A count shown on two screens needs one
+  definition: the roster now counts what the person page lists, search reads the
+  roster for the searched case, and `check_sense` compares the three.
+- Name hints were computed for every same-name group, so a row whose date already
+  differed got "dated 2015-03-15" above the same date, and a case-filtered list said
+  "in case-demo-02" on every hint. Group by what the row shows (name and dates) and
+  name only cases other than the filtered one.
+- The Desk findings table kept four columns at 390 px and the panel clipped the
+  strength. Every Desk table folds secondary columns into the main cell on phones
+  (`hide-m`/`show-m`); a new table has to do the same.
+

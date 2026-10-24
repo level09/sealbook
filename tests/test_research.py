@@ -1,11 +1,15 @@
 """Web research and capture against recorded synthetic responses: no network at all.
-Brave Search and Cloudflare Browser Rendering answers come from
-tests/fixtures/research (hand-made, shaped after the published schemas, never
-captured traffic); every outbound request goes to one MockTransport that records it,
-and yt-dlp is replaced by a function that copies a local clip."""
+Brave Search answers come from tests/fixtures/research (hand-made, shaped after the
+published schemas, never captured traffic); every outbound request goes to one
+MockTransport that records it, and yt-dlp is replaced by a function that copies a
+local clip. The capture tests that need a database replace the browser with a fake
+that returns the recorded page; BrowserTest runs the real local Chromium against
+static pages served from this process, with no internet."""
 
+import http.server
 import io
 import shutil
+import threading
 import unittest
 import uuid
 from datetime import UTC, datetime
@@ -32,7 +36,7 @@ from stk.ledger.write import (
 )
 from stk.people.data import erase
 from stk.places.models import Place, point
-from stk.research import brave, cloudflare, service, store, video
+from stk.research import brave, browser, service, store, video
 from stk.research import queries as rq
 from stk.research import views as research_views
 from stk.runs.worker import work_once
@@ -45,6 +49,7 @@ FIX = Path(__file__).resolve().parent / "fixtures" / "research"
 ROOT = Path(__file__).resolve().parent.parent / "acceptance"
 PHOTO = ROOT / "data" / "photo_damaged_building.jpg"
 CLIP = ROOT / "public" / "jdeideh_2015.webm"
+ip_public = browser.public
 PUBLIC_IP = ["93.184.215.14"]
 NAME = "Lina Najjar"
 SECRET = "محمد"
@@ -68,7 +73,6 @@ class Web:
 
     def __init__(self):
         self.requests: list[httpx.Request] = []
-        self.login_pages: set[str] = set()
         other = io.BytesIO()
         Image.linear_gradient("L").convert("RGB").save(other, "JPEG")
         self.files = {
@@ -93,12 +97,6 @@ class Web:
         if host == "api.search.brave.com":
             kind = path.split("/")[-2]
             return httpx.Response(200, json=fixture(f"brave_{kind}.json"))
-        if host == "api.cloudflare.com":
-            page = orjson.loads(request.content)["url"]
-            name = "cf_login.json" if page in self.login_pages else "cf_snapshot.json"
-            return httpx.Response(
-                200, json=fixture(name), headers={"X-Browser-Ms-Used": "1834"}
-            )
         if (host, path) in self.files:
             data, mime = self.files[(host, path)]
             return httpx.Response(200, content=data, headers={"content-type": mime})
@@ -110,8 +108,8 @@ class Web:
 
 class PureTest(unittest.TestCase):
     def test_page_media_and_login_form(self):
-        html = fixture("cf_snapshot.json")["result"]["content"]
-        media, password = cloudflare.read(html, "https://news.example.org/2013/07/a")
+        html = (FIX / "page.html").read_text()
+        media, password = browser.read(html, "https://news.example.org/2013/07/a")
         self.assertFalse(password)
         self.assertEqual(
             [(m["url"], m["kind"]) for m in media],
@@ -120,8 +118,8 @@ class PureTest(unittest.TestCase):
                 ("https://news.example.org/media/clip.webm", "video"),
             ],
         )
-        login = fixture("cf_login.json")["result"]["content"]
-        self.assertTrue(cloudflare.read(login, "https://x.example.org/")[1])
+        login = (FIX / "login.html").read_text()
+        self.assertTrue(browser.read(login, "https://x.example.org/")[1])
 
     def test_clean_keeps_exactly_what_was_confirmed(self):
         q = service.clean([{"text": '  "Lina   Najjar"  ', "kinds": ["web", "web"]}])
@@ -172,26 +170,156 @@ class BraveTest(unittest.IsolatedAsyncioTestCase):
                 await brave.search("web", "x", 5, self.transport)
         self.assertEqual(len(self.web.requests), 0)
 
-    async def test_renderer_refusal_names_the_reason(self):
-        failing = httpx.MockTransport(
-            lambda r: httpx.Response(200, json=fixture("cf_error.json"))
-        )
-        with (
-            mock.patch.object(Config, "CLOUDFLARE_ACCOUNT_ID", "acct"),
-            mock.patch.object(Config, "CLOUDFLARE_API_TOKEN", "test-token"),
-        ):
-            with self.assertRaisesRegex(cloudflare.RenderError, "Rate limit exceeded"):
-                await cloudflare.snapshot("https://news.example.org/", failing)
-            snap = await cloudflare.snapshot(
-                "https://news.example.org/", self.transport
+
+PAGES = {
+    "/article": (
+        200,
+        {},
+        (FIX / "page.html")
+        .read_text()
+        .replace(
+            "</article>",
+            '<p id="late"></p><script>document.getElementById("late").textContent='
+            '"added by script";window.open("/popup");</script>'
+            '<a id="dl" href="/file.bin">file</a></article>',
+        ),
+    ),
+    "/login": (200, {}, (FIX / "login.html").read_text()),
+    "/bot": (
+        403,
+        {"cf-mitigated": "challenge"},
+        "<html><head><title>Just a moment...</title></head><body>wait</body></html>",
+    ),
+    "/gone": (404, {}, "<html><body>nothing here</body></html>"),
+    "/hop": (302, {"Location": "/article"}, ""),
+    "/to-private": (302, {"Location": "http://internal.test:81/secret"}, ""),
+    "/file.bin": (
+        200,
+        {
+            "Content-Type": "application/octet-stream",
+            "Content-Disposition": "attachment",
+        },
+        "bytes",
+    ),
+    "/popup": (200, {}, "<html><body>popup</body></html>"),
+}
+
+
+class Static(http.server.ThreadingHTTPServer):
+    """Serves PAGES and a cookie counter on 127.0.0.1; `hits` is every path asked."""
+
+    def __init__(self):
+        self.hits: list[str] = []
+        super().__init__(("127.0.0.1", 0), self.Handler)
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+
+        def do_GET(self):
+            self.server.hits.append(self.path)
+            if self.path == "/cookie":
+                seen = self.headers.get("Cookie") or "none"
+                self.send_response(200)
+                self.send_header("Set-Cookie", "visit=1")
+                self.send_header("Content-Type", "text/html")
+                self.end_headers()
+                self.wfile.write(f"<html><body>cookie {seen}</body></html>".encode())
+                return
+            status, headers, body = PAGES.get(self.path, (404, {}, ""))
+            self.send_response(status)
+            headers = {"Content-Type": "text/html; charset=utf-8"} | headers
+            for k, v in headers.items():
+                self.send_header(k, v)
+            self.end_headers()
+            self.wfile.write(body.encode())
+
+
+@unittest.skipUnless(browser.installed(), "run `uv run playwright install chromium`")
+class BrowserTest(unittest.IsolatedAsyncioTestCase):
+    """The real local Chromium against static pages. pub.test is mapped to the local
+    server and resolves to a public address as far as the guard can tell;
+    internal.test resolves to a private one."""
+
+    def setUp(self):
+        self.server = Static()
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.addCleanup(self.server.server_close)
+        self.addCleanup(self.server.shutdown)
+        self.port = self.server.server_address[1]
+
+        async def resolve(host, port):
+            return ["10.0.0.5"] if host == "internal.test" else PUBLIC_IP
+
+        self.enterContext(mock.patch.object(netguard, "resolve", resolve))
+        self.enterContext(
+            mock.patch.object(
+                browser,
+                "EXTRA_ARGS",
+                [
+                    "--host-resolver-rules=MAP pub.test 127.0.0.1, MAP internal.test 127.0.0.1"
+                ],
             )
-        self.assertEqual(snap.screenshot[:8], b"\x89PNG\r\n\x1a\n")
-        self.assertEqual(snap.browser_ms, "1834")
-        sent = self.web.sent("api.cloudflare.com")[0]
-        self.assertEqual(sent.headers["Authorization"], "Bearer test-token")
-        self.assertTrue(
-            sent.url.path.endswith("/accounts/acct/browser-rendering/snapshot")
         )
+        # The server really is on loopback; only test_connected_address_is_checked
+        # runs the true check.
+        self.enterContext(mock.patch.object(browser, "public", lambda ip: True))
+
+    def url(self, path):
+        return f"http://pub.test:{self.port}{path}"
+
+    async def test_snapshot_returns_rendered_page_and_log(self):
+        snap = await browser.snapshot(self.url("/hop"))
+        self.assertEqual(snap.final_url, self.url("/article"))
+        self.assertEqual(snap.status, 200)
+        self.assertIn("added by script", snap.html)  # rendered, not source
+        self.assertEqual(snap.screenshot[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertTrue(snap.browser.startswith("chromium "))
+        log = orjson.loads(snap.netlog)
+        docs = [r for r in log["requests"] if r["type"] == "document"]
+        self.assertEqual(
+            [(r["url"], r["status"]) for r in docs],
+            [(self.url("/hop"), 302), (self.url("/article"), 200)],
+        )
+        self.assertEqual(docs[1]["redirected_from"], self.url("/hop"))
+        media, password = browser.read(snap.html, snap.final_url)
+        self.assertFalse(password)
+        self.assertIn("/media/photo.jpg", media[0]["url"])
+
+    async def test_popups_and_downloads_are_blocked(self):
+        await browser.snapshot(self.url("/article"))
+        self.assertNotIn("/popup", self.server.hits)
+        with self.assertRaisesRegex(browser.RenderError, "starts a download"):
+            await browser.snapshot(self.url("/file.bin"))
+
+    async def test_no_cookies_between_captures(self):
+        first = await browser.snapshot(self.url("/cookie"))
+        second = await browser.snapshot(self.url("/cookie"))
+        self.assertIn("cookie none", first.html)
+        self.assertIn("cookie none", second.html)
+
+    async def test_redirect_to_a_private_host_is_refused_before_it_connects(self):
+        with self.assertRaises(netguard.Blocked):
+            await browser.snapshot(self.url("/to-private"))
+        self.assertEqual(self.server.hits, ["/to-private"])
+        with self.assertRaises(netguard.Blocked):
+            await browser.snapshot(f"http://internal.test:{self.port}/article")
+        self.assertEqual(self.server.hits, ["/to-private"])
+
+    async def test_connected_address_is_checked(self):
+        with mock.patch.object(browser, "public", ip_public):
+            with self.assertRaisesRegex(netguard.Blocked, "non-public"):
+                await browser.snapshot(self.url("/article"))
+
+    async def test_bot_check_and_error_pages_are_refused_plainly(self):
+        with self.assertRaisesRegex(browser.RenderError, "bot check"):
+            await browser.snapshot(self.url("/bot"))
+        with self.assertRaisesRegex(browser.RenderError, "status 404"):
+            await browser.snapshot(self.url("/gone"))
+
+    async def test_login_form_is_seen_in_the_captured_page(self):
+        snap = await browser.snapshot(self.url("/login"))
+        self.assertTrue(browser.read(snap.html, snap.final_url)[1])
 
 
 @unittest.skipUnless(test_review.POSTGRES, "research needs Postgres")
@@ -203,8 +331,6 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         self.setUp_review()
         for key, value in {
             "BRAVE_API_KEY": "test-key",
-            "CLOUDFLARE_ACCOUNT_ID": "acct",
-            "CLOUDFLARE_API_TOKEN": "test-token",
             "RESEARCH_SEARCH_INTERVAL": 0,
             "RUN_MODELS": {},
             "SPEECH_MODEL": "",
@@ -213,6 +339,23 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         self.enterContext(
             mock.patch.object(netguard, "resolve", return_value=PUBLIC_IP)
         )
+        self.enterContext(mock.patch.object(browser, "installed", return_value=True))
+        self.login_pages: set[str] = set()
+        self.rendered: list[str] = []
+
+        async def render(page):
+            self.rendered.append(page)
+            name = "login.html" if page in self.login_pages else "page.html"
+            return browser.Snapshot(
+                final_url=page,
+                status=200,
+                html=(FIX / name).read_text(),
+                screenshot=(FIX / "page.png").read_bytes(),
+                netlog=orjson.dumps({"final_url": page, "requests": []}),
+                browser="chromium 0.0-test",
+            )
+
+        self.enterContext(mock.patch.object(browser, "snapshot", render))
         # Any request that misses the MockTransport would reach the network: refuse it.
         self.enterContext(
             mock.patch.object(
@@ -553,13 +696,20 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
             )
             self.assertEqual(await verify_db(s), [])
         self.assertEqual(run.output_hash, run.raw_output_ref)
-        self.assertEqual(run.provider_served, "cloudflare")
+        self.assertEqual(run.provider_served, "local")
         self.assertEqual(manifest["method"]["provider"]["name"], "brave")
-        self.assertEqual(manifest["method"]["renderer"]["browser_ms"], "1834")
+        self.assertEqual(
+            manifest["method"]["renderer"],
+            {
+                "name": "playwright-chromium",
+                "browser": "chromium 0.0-test",
+                "status": 200,
+            },
+        )
         self.assertIsNone(manifest["method"]["yt_dlp"])
         self.assertEqual(access.prop, Prop.ACCESS)
         roles = sorted(a.context["capture"]["role"] for a in acqs)
-        self.assertEqual(roles, ["media", "media", "page", "screenshot"])
+        self.assertEqual(roles, ["media", "media", "network_log", "page", "screenshot"])
         for a in acqs:
             self.assertEqual(a.collector_id, (await self._analyst()).id)
             self.assertEqual(a.context["capture"]["run"], str(run.id))
@@ -576,7 +726,7 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             sorted(a.origin for a in acqs),
             sorted(
-                [f"url:{pick['url']}"] * 2
+                [f"url:{pick['url']}"] * 3
                 + [
                     "url:https://news.example.org/media/clip.webm",
                     "url:https://news.example.org/media/photo.jpg",
@@ -641,7 +791,7 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(clip.context["capture"]["video"]["id"], "abc123")
 
     async def test_login_wall_and_late_switch_fail_the_capture_plainly(self):
-        self.web.login_pages.add("https://news.example.org/2013/07/families-ask")
+        self.login_pages.add("https://news.example.org/2013/07/families-ask")
         _, queued, progress = await self.capture(await self.client(), "web")
         self.assertEqual(progress["captures"][0]["status"], "failed")
         self.assertIn("login", progress["captures"][0]["error"])
@@ -665,7 +815,7 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         ).get_json()
         self.assertEqual(progress["captures"][0]["status"], "failed")
         self.assertIn("switched off", progress["captures"][0]["error"])
-        self.assertEqual(self.web.sent("api.cloudflare.com"), [])
+        self.assertEqual(self.rendered, [])
 
     async def test_erasing_the_person_removes_the_queries(self):
         client = await self.client()

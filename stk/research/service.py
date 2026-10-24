@@ -28,7 +28,7 @@ from stk.ledger import write
 from stk.ledger.contracts import Prop, Sensitivity, StatementIn
 from stk.ledger.models import Acquisition, Run
 from stk.monitor import filter as mfilter
-from stk.research import brave, store
+from stk.research import brave, browser, store
 from stk.research.models import CaseSetting
 from stk.research.queries import KINDS
 from stk.settings import Config
@@ -49,11 +49,7 @@ class Refusal(Exception):
 def missing() -> dict[str, list[str]]:
     """Settings each half still needs: search, and capture (search plus rendering)."""
     search = [] if Config.BRAVE_API_KEY else ["BRAVE_API_KEY"]
-    render = [
-        k
-        for k in ("CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN")
-        if not getattr(Config, k)
-    ]
+    render = [] if browser.installed() else ["Chromium"]
     return {"search": search, "capture": search + render}
 
 

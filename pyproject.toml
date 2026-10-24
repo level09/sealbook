@@ -47,6 +47,7 @@ dependencies = [
     "faster-whisper==1.2.1",
     "openpyxl==3.1.5",
     "yt-dlp==2026.10.21",
+    "playwright>=1.60.0",
 ]
 
 
@@ -66,7 +67,6 @@ full = [
 dev = [
     "ruff",
     "pre-commit",
-    "playwright",
     "ptpython>=3.0.30",
 ]
 asgi = [
@@ -116,6 +116,5 @@ indent-style = "space"
 
 [dependency-groups]
 dev = [
-    "playwright>=1.60.0",
     "pypdf>=6.21.1",
 ]

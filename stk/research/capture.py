@@ -1,5 +1,6 @@
-"""The `capture` worker tool: one picked search result into the case. Cloudflare
-renders the page once (HTML and full-page screenshot), the result's own image or the
+"""The `capture` worker tool: one picked search result into the case. A local
+headless Chromium visits the page once (HTML, full-page screenshot and a network
+log), the result's own image or the
 page's media are fetched, a video page goes to yt-dlp, and each file enters normal
 intake (hash, C2PA, reading, fingerprints, embeddings, geotag, thumbnails) as its own
 acquisition by the analyst. The sealed run's output is a manifest naming every file
@@ -21,7 +22,7 @@ from stk import blobs, netguard
 from stk.blobs import chunked
 from stk.ingest import service as ingest
 from stk.ledger.contracts import Refused
-from stk.research import cloudflare, service, video
+from stk.research import browser, service, video
 from stk.settings import Config
 
 MEDIA = ("image/", "video/", "audio/")
@@ -61,7 +62,7 @@ async def capture(c) -> str:
     captured_at = datetime.now(UTC).isoformat()
     method = {
         "provider": i["provider"],
-        "renderer": {"name": "cloudflare-browser-rendering", "endpoint": "snapshot"},
+        "renderer": {"name": "playwright-chromium"},
         "yt_dlp": video.VERSION if i["kind"] == "videos" else None,
     }
     common = {
@@ -118,10 +119,18 @@ async def capture(c) -> str:
             | extra
         )
 
-    snap = await cloudflare.snapshot(page, c.transport)
-    method["renderer"] |= {"browser_ms": snap.browser_ms}
+    try:
+        snap = await browser.snapshot(page)
+    except netguard.Blocked as exc:
+        raise Refused(
+            "This page, or a redirect from it, leads to a private network address. "
+            "Sealbook does not capture those."
+        ) from exc
+    page_url = snap.final_url
+    method["renderer"] |= {"browser": snap.browser, "status": snap.status}
+    common["final_url"] = page_url
     await c.emit("rendered", html_chars=len(snap.html), screenshot=len(snap.screenshot))
-    found, password = cloudflare.read(snap.html, page)
+    found, password = browser.read(snap.html, page_url)
     if password:
         raise Refused(
             "This page asks for a login. Sealbook does not capture pages behind a "
@@ -139,6 +148,13 @@ async def capture(c) -> str:
     )
     await take(
         snap.screenshot, "image/png", f"url:{page}", "screenshot", f"{domain} page.png"
+    )
+    await take(
+        snap.netlog,
+        "application/json",
+        f"url:{page}",
+        "network_log",
+        f"{domain} network log.json",
     )
 
     skipped = []
@@ -217,6 +233,6 @@ async def capture(c) -> str:
         Config.BLOB_DIR,
     )
     c.run.raw_output_ref = manifest.sha256
-    c.run.endpoint = snap.endpoint
-    c.run.provider_served = "cloudflare"
+    c.run.endpoint = page_url
+    c.run.provider_served = "local"
     return manifest.sha256

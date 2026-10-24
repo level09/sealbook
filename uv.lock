@@ -2149,6 +2149,7 @@ dependencies = [
     { name = "pdqhash" },
     { name = "pgvector" },
     { name = "pillow" },
+    { name = "playwright" },
     { name = "psycopg2-binary" },
     { name = "pypdf" },
     { name = "pypdfium2" },
@@ -2170,7 +2171,6 @@ asgi = [
     { name = "hypercorn" },
 ]
 dev = [
-    { name = "playwright" },
     { name = "pre-commit" },
     { name = "ptpython" },
     { name = "ruff" },
@@ -2182,7 +2182,6 @@ full = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "playwright" },
     { name = "pypdf" },
 ]
 
@@ -2213,7 +2212,7 @@ requires-dist = [
     { name = "pdqhash", specifier = ">=0.2,<1" },
     { name = "pgvector", specifier = ">=0.4,<1" },
     { name = "pillow", specifier = ">=12.3.0" },
-    { name = "playwright", marker = "extra == 'dev'" },
+    { name = "playwright", specifier = ">=1.60.0" },
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "ptpython", marker = "extra == 'dev'", specifier = ">=3.0.30" },
@@ -2236,10 +2235,7 @@ requires-dist = [
 provides-extras = ["full", "dev", "asgi"]
 
 [package.metadata.requires-dev]
-dev = [
-    { name = "playwright", specifier = ">=1.60.0" },
-    { name = "pypdf", specifier = ">=6.21.1" },
-]
+dev = [{ name = "pypdf", specifier = ">=6.21.1" }]
 
 [[package]]
 name = "shellingham"

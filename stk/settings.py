@@ -78,11 +78,6 @@ class Config:
     BRAVE_BASE_URL = os.environ.get(
         "BRAVE_BASE_URL", "https://api.search.brave.com/res/v1"
     )
-    CLOUDFLARE_ACCOUNT_ID = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
-    CLOUDFLARE_API_TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN")
-    CLOUDFLARE_BASE_URL = os.environ.get(
-        "CLOUDFLARE_BASE_URL", "https://api.cloudflare.com/client/v4"
-    )
     RESEARCH_QUERIES_PER_HOUR = int(os.environ.get("RESEARCH_QUERIES_PER_HOUR", "60"))
     RESEARCH_CAPTURES_PER_HOUR = int(os.environ.get("RESEARCH_CAPTURES_PER_HOUR", "30"))
     # Brave's plans limit requests per second; queries in one send are spaced by this.

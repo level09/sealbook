@@ -20,7 +20,7 @@ a frontend build. The supported evidence deployment is one process.
 | `stk/places` | PostGIS gazetteer: geometry with precision and provenance, kind ladder, dated names, COD-AB boundary sets, point-in-polygon governorate and district, claim-to-place resolution |
 | `stk/entities` | Place and incident pages on one layout: story, relations, paged evidence, threads and signed history, read through the story view's rules; the places index and unresolved names |
 | `stk/maps` | Claim vector tiles, per-reader map models, offline basemap serving and `stk basemap`, the `geotag` intake tool for embedded photo and video locations |
-| `stk/research` | Web research: query proposals from shareable values, Brave Search client, Cloudflare Browser Rendering client, yt-dlp, per-user result store, per-case switches and the `capture` run tool that feeds normal intake |
+| `stk/research` | Web research: query proposals from shareable values, Brave Search client, local Chromium capture (Playwright), yt-dlp, per-user result store, per-case switches and the `capture` run tool that feeds normal intake |
 | `stk/mcp` | Per-user delegated agent reads and proposals; no acceptance tool |
 | `stk/user`, `stk/websocket.py` | Session/MFA security and bounded recipient-specific connections |
 
