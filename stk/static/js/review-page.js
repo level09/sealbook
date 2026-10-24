@@ -34,7 +34,8 @@ const ago = iso => {
   const d = (Date.now() - new Date(iso)) / 864e5;
   return d < 1 / 24 ? 'just now' : d < 1 ? `${Math.round(d * 24)} h ago` : d < 30 ? `${Math.round(d)} d ago` : fmtDate(iso.slice(0, 10));
 };
-const today = () => new Date().toISOString().slice(0, 10);
+// The viewer's own calendar day: due dates are days, not instants (en-CA prints YYYY-MM-DD).
+const today = () => new Date().toLocaleDateString('en-CA');
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many || one + 's'}`;
 const label = p => PROP[p] || (p || '').replaceAll('_', ' ');
 const sec = ms => {const s = Math.round((ms || 0) / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;};

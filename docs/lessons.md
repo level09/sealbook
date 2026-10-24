@@ -427,3 +427,8 @@ covers in the text it was read from (`span_blob`).
   so "Aleppo" and "حلب" stacked on one point. Each page had its own label loop. Key
   any per-place drawing on `place_id`, and grep every map for the same loop when one
   is fixed.
+- The server fix for "today" left two client labels on the UTC date: Inbox `dueOf`
+  and Review `today()` took `toISOString().slice(0, 10)`, so west of UTC in the
+  evening a task due today read "due in 1 d", and east of UTC after midnight one
+  read overdue a day early. A due date is a calendar day; compare it with the
+  viewer's local day (`toLocaleDateString('en-CA')`), never an ISO instant cut short.

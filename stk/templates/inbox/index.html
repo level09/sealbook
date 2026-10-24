@@ -224,7 +224,7 @@ window.app = Vue.createApp({
     dueOf(status) {
       const m = /^due (\d{4}-\d{2}-\d{2})$/.exec(status || '');
       if (!m) return null;
-      const days = Math.round((new Date(m[1]) - new Date(new Date().toISOString().slice(0, 10))) / 864e5);
+      const days = Math.round((new Date(m[1]) - new Date(new Date().toLocaleDateString('en-CA'))) / 864e5); // the viewer's local day
       return {late: days < 0, text: days < 0 ? `${-days} d overdue` : days === 0 ? 'due today' : `due in ${days} d`};
     },
     workRow(a) {
