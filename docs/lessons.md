@@ -440,3 +440,9 @@ covers in the text it was read from (`span_blob`).
   before trusting where a console error was attributed. The place and incident
   evidence tables and the media connections on `/evidence` still pass no lock and
   answer 403 for an unrevealed sensitive source.
+- People search and the Watching picker printed an 8 character id after every name,
+  because the list APIs carried nothing else that could tell two "Unnamed person"
+  rows or two equal names apart. An id tells a reader nothing they can check. The
+  lists now carry a hint built from facts the reader already sees (case, dates,
+  first source), computed only for names that clash, and fall back to the id when
+  those are equal too.

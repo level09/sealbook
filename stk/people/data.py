@@ -4,6 +4,7 @@ what the ledger says about one, name search, and erasure."""
 from __future__ import annotations
 
 import uuid
+from collections import Counter
 from datetime import UTC, datetime
 
 from sqlalchemy import (
@@ -24,10 +25,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from stk.ledger.contracts import Prop, StatementIn, Tier
 from stk.ledger.models import Payload, Statement, StatementTier
 from stk.ledger.write import append, current_clause, lock_chain
+from stk.monitor import filter as mfilter
 from stk.monitor.data import (
     LOCATED,
     META,
     POSITION,
+    Context,
     display,
     map_layer,
     statement_rows,
@@ -167,6 +170,75 @@ async def search(
         for p, h in sorted(hits.items())
         if not investigation or p in summary
     ]
+
+
+async def hints(session: AsyncSession, items: list[dict]) -> dict[str, str]:
+    """For people listed under one shown name, the first fact that sets each apart
+    from the others: their case, their dated range, their first source. The id is
+    the last resort. `items` are roster rows with "person", "name", "from" and "to"."""
+    same: dict = {}
+    for i in items:
+        same.setdefault(i["name"], []).append(i)
+    clash = [g for g in same.values() if len(g) > 1]
+    if not clash:
+        return {}
+    groups, _ = await identity(session)
+    owner = {
+        f"person:{m}": i["person"]
+        for g in clash
+        for i in g
+        for m in groups.get(i["person"], {i["person"]})
+    }
+    src = mfilter.source(mfilter.statement_blob())
+    rows = await session.execute(
+        select(Statement.subject, src, func.min(Statement.recorded_at))
+        .join(StatementTier, StatementTier.statement_id == Statement.id)
+        .where(
+            Statement.subject.in_(owner),
+            Statement.prop.not_in(META),
+            StatementTier.tier != Tier.REJECTED,
+        )
+        .group_by(Statement.subject, src)
+    )
+    seen: dict[str, list] = {}
+    for subject, sha, at in rows:
+        if sha:
+            seen.setdefault(owner[subject], []).append((at, sha))
+    ctx = await Context.load(
+        session, blobs={sha for v in seen.values() for _, sha in v}
+    )
+
+    def case(i):
+        found = {
+            a.context.get("investigation")
+            for _, sha in seen.get(i["person"], ())
+            for a in ctx.acqs.get(sha, ())
+        } - {None}
+        return f"in {', '.join(sorted(found))}" if found else None
+
+    def dated(i):
+        if not i.get("from"):
+            return None
+        return f"dated {i['from']}" + (
+            f" to {i['to']}" if i.get("to") and i["to"] != i["from"] else ""
+        )
+
+    def first(i):
+        found = sorted(seen.get(i["person"], ()))
+        return f"first in {ctx.doc(found[0][1])['file']}" if found else None
+
+    out = {}
+    for g in clash:
+        for tell in (case, dated, first):
+            told = {i["person"]: tell(i) for i in g if i["person"] not in out}
+            count = Counter(told.values())
+            out |= {p: t for p, t in told.items() if t and count[t] == 1}
+        out |= {
+            i["person"]: f"record {i['person'][:8]}"
+            for i in g
+            if i["person"] not in out
+        }
+    return out
 
 
 async def roster(

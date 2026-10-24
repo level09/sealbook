@@ -39,14 +39,8 @@ async def index():
 async def everyone():
     found = await data.roster(g.db_session, request.args.get("investigation") or None)
     names = await data.names(g.db_session, list(found))
-    return _json(
-        {
-            "items": [
-                {"person": p, "name": names.get(p)} | v
-                for p, v in sorted(found.items())
-            ]
-        }
-    )
+    items = [{"person": p, "name": names.get(p)} | v for p, v in sorted(found.items())]
+    return _json({"items": await _told_apart(items)})
 
 
 @bp_people.get("/api/people/search")
@@ -58,7 +52,13 @@ async def search():
         g.db_session, query, request.args.get("investigation") or None
     )
     names = await data.names(g.db_session, [i["person"] for i in items])
-    return _json({"items": [i | {"name": names.get(i["person"])} for i in items]})
+    items = [i | {"name": names.get(i["person"])} for i in items]
+    return _json({"items": await _told_apart(items)})
+
+
+async def _told_apart(items: list[dict]) -> list[dict]:
+    hint = await data.hints(g.db_session, items)
+    return [i | {"hint": hint.get(i["person"])} for i in items]
 
 
 @bp_people.get("/people/<uuid:person_id>")

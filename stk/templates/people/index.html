@@ -24,7 +24,7 @@
                     <v-list-item-title>
                         <bdi v-if="h.name" dir="auto">${ h.name }</bdi>
                         <span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> Unnamed person</span>
-                        <span class="font-monospace text-medium-emphasis ms-2">${ h.person.slice(0, 8) }</span>
+                        <span v-if="h.hint" class="text-medium-emphasis ms-2">${ h.hint }</span>
                         <span v-if="h.statements" class="text-medium-emphasis">, ${ h.statements.length } matching name${ h.statements.length === 1 ? '' : 's' }</span>
                     </v-list-item-title>
                     <v-list-item-subtitle>

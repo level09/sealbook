@@ -243,6 +243,28 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(set(here), set(everyone))
         self.assertEqual((other, found), ({}, []))
 
+    async def test_same_named_people_are_told_apart_by_a_fact_before_the_id(self):
+        root, twin, ghost = self.root, self.case["P2"], str(uuid.uuid4())
+        rows = [
+            {"person": root, "name": "X", "from": "2013-01-01", "to": None},
+            {"person": twin, "name": "X", "from": "2013-01-01", "to": None},
+            {"person": ghost, "name": "X", "from": "2014-05-01", "to": "2014-06-01"},
+            {"person": str(uuid.uuid4()), "name": "Only one", "from": None, "to": None},
+        ]
+        async with ext.async_session_factory() as s:
+            told = await data.hints(s, rows)
+        # The third has its own dates. The twins share a case, a date and their
+        # first source, so only the id is left. A name nobody shares needs no hint.
+        self.assertEqual(told[ghost], "dated 2014-05-01 to 2014-06-01")
+        self.assertEqual(
+            (told[root], told[twin]), (f"record {root[:8]}", f"record {twin[:8]}")
+        )
+        self.assertEqual(len(told), 3)
+        rows[1]["from"] = "2013-02-01"
+        async with ext.async_session_factory() as s:
+            told = await data.hints(s, rows)
+        self.assertEqual(told[twin], "dated 2013-02-01")
+
     async def test_a_label_is_the_best_name_the_reader_may_see(self):
         async with ext.async_session_factory() as s:
             ids = [self.root, self.case["P2"]]
