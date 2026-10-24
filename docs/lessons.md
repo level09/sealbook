@@ -485,6 +485,8 @@ covers in the text it was read from (`span_blob`).
   `findings.near` uses for shared presence) and never for a last-seen and arrest
   pair. A last-seen and arrest pair far apart is still not flagged; that is a
   deliberate limit.
+- Discover listed a finding's claims as its members, so four people showed five
+  rows. Group by identity cluster and list each person's claims under them.
 - A bulk-assign notification has no subject, so the Inbox showed it as its own row
   beside the assignment it announced. It folds into the assignment rows written
   within a second of it.

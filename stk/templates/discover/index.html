@@ -63,7 +63,7 @@
           <v-list-item v-for="f in grp.items" :key="f.id" class="dv-row" :class="{ sel: cur && cur.id === f.id }" tabindex="-1" :data-key="f.id" @click="pick(f.id)">
             <template #prepend><v-checkbox-btn class="me-1" density="compact" :model-value="picked.includes(f.id)" :aria-label="'Select ' + f.reason" @click.stop @update:model-value="togglePick(f.id)"></v-checkbox-btn></template>
             <v-list-item-title class="text-body-2 font-weight-medium"><bdi dir="auto">${ f.reason }</bdi></v-list-item-title>
-            <v-list-item-subtitle><v-icon icon="ti ti-robot" size="13" color="agent"></v-icon> ${ f.label }, ${ plural(f.members.length, 'member') } <span class="dv-band ms-1" :class="f.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ f.band }</v-list-item-subtitle>
+            <v-list-item-subtitle><v-icon icon="ti ti-robot" size="13" color="agent"></v-icon> ${ f.label }, ${ plural(f.people.length, 'person', 'people') } from ${ plural(f.members.length, 'claim') }<span v-if="f.also.length">, also a ${ f.also[0].label.toLowerCase() }</span> <span class="dv-band ms-1" :class="f.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ f.band }</v-list-item-subtitle>
           </v-list-item>
         </template>
       </v-list>
@@ -74,6 +74,7 @@
 
     <section class="dv-panel" v-if="cur" aria-labelledby="h-f">
       <header><v-chip color="agent" variant="tonal" prepend-icon="ti ti-robot" size="small">${ cur.label }</v-chip>
+        <v-chip v-for="a in cur.also" :key="a.id" variant="outlined" size="small" prepend-icon="ti ti-link" :title="'The same people, place and month are also proposed as a ' + a.label.toLowerCase()" @click="pick(a.id)">also a ${ a.label.toLowerCase() }</v-chip>
         <v-chip v-if="cur.new" variant="outlined" color="new" size="small" prepend-icon="ti ti-point-filled">new since you last looked</v-chip>
         <v-chip v-if="detail && detail.request" variant="outlined" size="small" prepend-icon="ti ti-message-question" :href="'/review?request=' + detail.request">review requested</v-chip>
         <span class="act d-flex ga-2 align-center"><span class="dv-band" :class="cur.band" aria-hidden="true"><i></i><i></i><i></i></span><span>${ cur.band } evidence</span></span></header>
@@ -81,13 +82,15 @@
         <p class="dv-muted mt-1 mb-0">${ cur.why }. <template v-for="(p, i) in cur.places" :key="p.id">${ i ? '; ' : '' }<a :href="'/places/' + p.id"><bdi dir="auto">${ [p.en, p.ar].filter(Boolean).join(', ') }</bdi></a></template>. Interval ${ span(cur.window) }. Strength is a band from source count and overlap, not a probability.</p></div>
 
       <div class="dv-mem" v-if="detail">
-        <v-card v-for="m in detail.members" :key="m.statement" border>
-          <div class="d-flex ga-2 align-baseline"><strong v-if="m.name"><bdi dir="auto">${ m.name }</bdi></strong><a v-else :href="'/people/' + m.person" class="font-weight-bold" title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> ${ memberName(m) }</a>
-            <span class="ms-auto dv-sw" :class="[m.tier, m.agent ? '' : 'human']" :title="m.tier + (m.agent ? ', by an agent' : ', by a person')"></span></div>
-          <div class="text-caption"><strong>${ human(m.prop) }</strong> <bdi dir="auto">${ m.display }</bdi><span v-if="m.place.en && m.place.en !== m.display">, <a :href="'/places/' + m.place.id"><bdi dir="auto">${ m.place.en }</bdi></a></span><span v-if="m.when">, ${ m.when }</span><span v-if="m.inherited" class="dv-muted"> (date from the document)</span></div>
+        <v-card v-for="g in persons" :key="g.cluster" border>
+          <div class="d-flex ga-2 align-baseline"><a :href="'/people/' + g.cluster.slice(7)" class="font-weight-bold"><bdi v-if="g.first.name" dir="auto">${ g.first.name }</bdi><span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> ${ memberName(g.first) }</span></a>
+            <span class="ms-auto dv-muted text-caption">${ plural(g.claims.length, 'supporting claim') }</span></div>
+          <div v-for="m in g.claims" :key="m.statement" class="mt-2">
+          <div class="text-caption"><span class="dv-sw me-1" :class="[m.tier, m.agent ? '' : 'human']" :title="m.tier + (m.agent ? ', by an agent' : ', by a person')"></span><strong>${ human(m.prop) }</strong> <bdi dir="auto">${ m.display }</bdi><span v-if="m.place.en && m.place.en !== m.display">, <a :href="'/places/' + m.place.id"><bdi dir="auto">${ m.place.en }</bdi></a></span><span v-if="m.when">, ${ m.when }</span><span v-if="m.inherited" class="dv-muted"> (date from the document)</span></div>
           <div v-if="m.excerpt" class="dv-ex" dir="auto">${ m.excerpt.before }<mark>${ m.excerpt.span }</mark>${ m.excerpt.after }</div>
           <div v-else-if="m.sensitive" class="dv-lock"><i class="ti ti-eye-off"></i> Sensitive source. Open it to see the span and the name; opening is logged.</div>
           <div class="text-caption dv-muted d-flex ga-2 align-center"><v-icon icon="ti ti-file" size="14"></v-icon><span class="flex-grow-1"><bdi dir="auto">${ m.file }</bdi>, ${ where(m.span) }</span><a class="text-no-wrap" :href="'/evidence/' + m.source">Open at span</a></div>
+          </div>
         </v-card>
       </div>
       <v-progress-linear v-else indeterminate color="agent"></v-progress-linear>
@@ -96,18 +99,19 @@
         <div class="px-3"><h3 class="text-body-1 font-weight-bold">${ cur.kind === 'candidate_incident' ? 'Accept as an incident' : 'Accept: attach these people to an incident' }</h3>
           <p class="dv-muted text-caption mb-1">Drop any member you do not accept. Roles start as unspecified and can be corrected later. One passkey gesture writes each kept statement; undo works per statement or for the whole gesture.</p></div>
         <div class="v-table v-table--density-compact dv-chk"><div class="v-table__wrapper"><table>
-          <thead><tr><th style="width:40px"><v-checkbox-btn :model-value="keep.length === detail.members.length" :indeterminate="keep.length > 0 && keep.length < detail.members.length" aria-label="Keep all" @update:model-value="v => keep = v ? detail.members.map(m => m.statement) : []"></v-checkbox-btn></th><th>Member</th><th class="dv-hide-m">Statement</th><th style="width:190px">Role</th></tr></thead>
-          <tbody><tr v-for="(m, i) in detail.members" :key="m.statement">
-            <td><v-checkbox-btn v-model="keep" :value="m.statement" :id="i === 0 ? 'dv-first' : null" :aria-label="'Keep ' + memberName(m)"></v-checkbox-btn></td>
-            <td><bdi dir="auto">${ memberName(m) }</bdi></td><td class="text-caption dv-hide-m">involved, supported by <bdi dir="auto">${ m.file }</bdi></td>
-            <td class="role"><v-select v-model="roles[personOf(m)]" :items="ROLES" item-title="t" item-value="v" density="compact" hide-details variant="plain" :disabled="!keep.includes(m.statement)" :aria-label="'Role of ' + memberName(m)"></v-select></td></tr></tbody>
+          <thead><tr><th style="width:40px"><v-checkbox-btn :model-value="keep.length === detail.members.length" :indeterminate="keep.length > 0 && keep.length < detail.members.length" aria-label="Keep all" @update:model-value="v => keep = v ? detail.members.map(m => m.statement) : []"></v-checkbox-btn></th><th>Person</th><th class="dv-hide-m">Supported by</th><th style="width:190px">Role</th></tr></thead>
+          <tbody><tr v-for="(g, i) in persons" :key="g.cluster">
+            <td><v-checkbox-btn :model-value="kept(g)" :indeterminate="!kept(g) && g.claims.some(m => keep.includes(m.statement))" :id="i === 0 ? 'dv-first' : null" :aria-label="'Keep ' + memberName(g.first)" @update:model-value="v => keepPerson(g, v)"></v-checkbox-btn></td>
+            <td><bdi dir="auto">${ memberName(g.first) }</bdi></td><td class="text-caption dv-hide-m"><template v-for="(m, j) in g.claims" :key="m.statement">${ j ? '; ' : '' }<bdi dir="auto">${ m.file }</bdi> (${ human(m.prop) })</template></td>
+            <td class="role"><v-select v-model="roles[g.cluster]" :items="ROLES" item-title="t" item-value="v" density="compact" hide-details variant="plain" :disabled="!g.claims.some(m => keep.includes(m.statement))" :aria-label="'Role of ' + memberName(g.first)"></v-select></td></tr></tbody>
         </table></div></div>
         <div class="px-3 pt-3 d-flex ga-2 flex-wrap">
           <v-select v-model="incident" :items="incidentOptions" item-title="t" item-value="v" density="compact" hide-details label="Incident" style="flex: 1 1 220px; max-width: 300px"></v-select>
           <v-text-field v-if="!incident" v-model="title" density="compact" hide-details label="Incident title" style="flex: 2 1 260px; max-width: 420px" dir="auto"></v-text-field>
         </div>
+        <p v-if="keep.length" class="px-3 pt-3 mb-0 text-caption dv-muted">One passkey gesture records ${ signs }, ${ plural(planned, 'signed statement') } in all.</p>
         <div class="pa-3 d-flex ga-2 flex-wrap align-center">
-          <v-btn id="dv-sign" color="primary" prepend-icon="ti ti-signature" :disabled="!canSign" :loading="busy" @click="accept">Sign once: ${ plural(planned, 'statement') }</v-btn>
+          <v-btn id="dv-sign" color="primary" prepend-icon="ti ti-signature" :disabled="!canSign" :loading="busy" @click="accept">Accept and sign</v-btn>
           <v-btn variant="outlined" prepend-icon="ti ti-x" @click="rejecting = true">Reject</v-btn>
           <v-btn variant="text" prepend-icon="ti ti-message-question" :disabled="!!detail.request" @click="asking = true">Ask a colleague</v-btn>
         </div>
@@ -173,6 +177,16 @@ window.app = Vue.createApp({
       const fresh = this.incident ? 0 : 1 + this.cur.places.length;
       return fresh + this.keptPeople.length + this.keep.length + 1;
     },
+    // One card and one checklist row per person, listing every claim behind them.
+    persons() {
+      const by = {};
+      for (const m of this.detail?.members || []) (by[m.cluster] ||= {cluster: m.cluster, first: m, claims: []}).claims.push(m);
+      return Object.values(by);
+    },
+    signs() {
+      const parts = this.incident ? ['an addition to the chosen incident'] : ['the new incident', plural(this.cur.places.length, 'place and time', 'places and times')];
+      return [...parts, plural(this.keptPeople.length, 'person', 'people') + ' involved', plural(this.keep.length, 'supporting claim'), 'your decision'].join(', ').replace(/, ([^,]*)$/, ' and $1');
+    },
     canSign() { return this.keep.length > 0 && (this.incident || this.title.trim()); },
     incidentOptions() { return [{t: 'New incident', v: null}, ...this.incidents.map(i => ({t: i.title, v: i.id}))]; },
   },
@@ -189,6 +203,8 @@ window.app = Vue.createApp({
       const unnamed = [...new Set((this.detail?.members || []).filter(x => !x.name).map(x => x.person))];
       return `Unnamed person ${unnamed.indexOf(m.person) + 1}`;
     },
+    kept(g) { return g.claims.every(m => this.keep.includes(m.statement)); },
+    keepPerson(g, on) { const ids = g.claims.map(m => m.statement); this.keep = on ? [...new Set([...this.keep, ...ids])] : this.keep.filter(i => !ids.includes(i)); },
     stLabel(s) { return LABELS[s.prop] || human(s.prop); },
     say(text) { this.snack = {show: true, text}; },
     fail(err) { this.error = err.response?.data?.error || err.response?.data?.description || err.message; },

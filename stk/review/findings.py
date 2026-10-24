@@ -217,6 +217,22 @@ async def queue(db, user, investigation: str | None, key: str | None = None):
                 "at": st.recorded_at.isoformat(),
             }
         )
+
+    # Shared presence and a candidate incident over the same people, places and
+    # month are two readings of one set; each names the other.
+    def same(f):
+        return (
+            tuple(sorted(f["people"])),
+            tuple(sorted(p["id"] for p in f["places"])),
+            f["month"],
+        )
+
+    for f in out:
+        f["also"] = [
+            {"id": g["id"], "label": g["label"]}
+            for g in out
+            if g["id"] != f["id"] and g["kind"] != f["kind"] and same(g) == same(f)
+        ]
     return out
 
 
@@ -283,7 +299,7 @@ async def detail(db, user, key: str) -> dict | None:
     sts = await _members(db, {m["statement"] for m in f["members"]})
     ctx = await data.Context.load(
         db,
-        blobs=[m["span_blob"] for m in f["members"]],
+        blobs=[m[k] for m in f["members"] for k in ("span_blob", "source")],
         principals=[sts[m["statement"]][0].author_id for m in f["members"]],
         runs=[sts[m["statement"]][0].run_id for m in f["members"]],
     )
@@ -299,7 +315,8 @@ async def detail(db, user, key: str) -> dict | None:
         name = names.get((m["subject"], m["span_blob"]))
         m |= {
             "display": row["display"],
-            "file": row["doc"]["file"] if row["doc"] else None,
+            # A transcript or page text is named by the recording or file it reads.
+            "file": ctx.doc(sha)["title"] if sha else None,
             "sensitive": bool(row["doc"] and row["doc"]["sensitive"]),
             "inherited": row["inherited"],
             "agent": row["actor"]["agent"],
