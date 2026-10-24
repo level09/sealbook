@@ -68,6 +68,7 @@
       <v-data-table-server class="desk-table" :headers="hFnd" :items="fnd.items" :items-length="fnd.total" :loading="fnd.loading" density="compact" :items-per-page="fnd.perPage" :items-per-page-options="[10, 25, 50]" :row-props="rowProps(r => DISCOVER + '?f=' + r.key)" :hide-default-footer="fnd.total <= fnd.perPage" @update:options="o => load('fnd', o)" @click:row="clickRow">
         <template #item.kind="{ item }"><v-chip size="small" color="agent" variant="tonal" prepend-icon="ti ti-robot">${ kindLabel(item.kind) }</v-chip></template>
         <template #item.between="{ item }">
+          <div class="desk-status show-m mb-1"><v-chip size="x-small" color="agent" variant="tonal" prepend-icon="ti ti-robot">${ kindLabel(item.kind) }</v-chip><span class="text-no-wrap desk-muted text-caption"><span class="desk-band" :class="item.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ item.band }</span></div>
           <span v-for="(p, i) in item.people" :key="p"><a :href="'/people/' + p" @click.stop><bdi v-if="fnd.names[p]" dir="auto">${ fnd.names[p] }</bdi><span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> ${ unnamed[p] }</span></a>${ i < item.people.length - 1 ? ', ' : '' }</span>
           <span v-if="!item.people.length" class="desk-muted">${ plural(item.members, 'claim') }</span>
           <span v-if="item.places.length" class="desk-muted"> at </span><span v-for="(pl, i) in item.places" :key="item.place_ids[i]"><a :href="'/places/' + item.place_ids[i]" @click.stop><bdi dir="auto">${ pl || 'an unnamed place' }</bdi></a>${ i < item.places.length - 1 ? ', ' : '' }</span>
@@ -142,7 +143,7 @@ window.app = Vue.createApp({
       shellHints: [['/', 'search'], ['meta+k', 'go to'], ['j', 'next row'], ['k', 'previous row'], ['enter', 'open']],
       hChg: [{title: 'Who', key: 'who', width: 140, sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}, {title: 'What', key: 'what', sortable: false}, {title: 'When', key: 'at', align: 'end', width: 90, sortable: false}],
       hNeed: [{title: 'On', key: 'on', sortable: false}, {title: 'Status', key: 'status', align: 'end', width: 150, sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}],
-      hFnd: [{title: 'Kind', key: 'kind', width: 190, sortable: false}, {title: 'Between', key: 'between', sortable: false}, {title: 'Why', key: 'why', sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}, {title: 'Strength', key: 'band', align: 'end', width: 130, sortable: false}],
+      hFnd: [{title: 'Kind', key: 'kind', width: 190, sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}, {title: 'Between', key: 'between', sortable: false}, {title: 'Why', key: 'why', sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}, {title: 'Strength', key: 'band', align: 'end', width: 130, sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}],
     };
   },
   computed: {
