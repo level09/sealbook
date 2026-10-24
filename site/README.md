@@ -58,6 +58,10 @@ For local testing put `INVITE_SALT=...` in `site/.dev.vars`, apply `invites.sql`
 
 ## Invite requests
 
+Each stored request also emails the address pinned in the `send_email` binding in
+`wrangler.jsonc`, sent from invites@sealbook.org with Reply-To set to the requester.
+Sending needs sealbook.org onboarded once: `npx wrangler@4 email sending enable sealbook.org`.
+
 ```sh
 cd site && npx wrangler@4 d1 execute sealbook-invites --remote \
   --command "SELECT created_at, name, email, organisation, use_case FROM invite ORDER BY id DESC"

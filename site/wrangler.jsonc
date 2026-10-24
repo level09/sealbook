@@ -8,6 +8,7 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "sealbook-invites", "database_id": "d1a26ec7-da6c-41c3-97fe-5f964179c307" }
   ],
+  "send_email": [{ "name": "EMAIL", "destination_address": "nidal@level09.com" }],
   "routes": [
     { "pattern": "sealbook.org", "custom_domain": true },
     { "pattern": "www.sealbook.org", "custom_domain": true }

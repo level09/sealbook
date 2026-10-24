@@ -10,7 +10,7 @@ async function sha256(text) {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function invite(request, env) {
+async function invite(request, env, ctx) {
   let form;
   try { form = await request.json(); } catch { return reply(400, { error: "Send the form as JSON." }); }
   if (form.website) return reply(200, { ok: true }); // honeypot: bots fill every field
@@ -32,14 +32,22 @@ async function invite(request, env) {
   await env.DB.prepare(
     "INSERT INTO invite (name, email, organisation, use_case, ip_hash) VALUES (?, ?, ?, ?, ?)",
   ).bind(row.name, row.email, row.organisation, row.use_case, ipHash).run();
+  // The row is stored first, so a failed alert loses nothing; the binding refuses any other recipient.
+  ctx.waitUntil(env.EMAIL.send({
+    to: "nidal@level09.com",
+    from: { email: "invites@sealbook.org", name: "Sealbook site" },
+    replyTo: { email: row.email, name: row.name },
+    subject: `Invite request: ${row.name}, ${row.organisation}`,
+    text: `${row.name} <${row.email}>\n${row.organisation}\n\n${row.use_case || "(no note)"}\n\nReply to this email to answer them.`,
+  }).catch((err) => console.error("invite alert failed", err.code, err.message)));
   return reply(200, { ok: true });
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
     if (pathname === "/api/invite") {
-      return request.method === "POST" ? invite(request, env) : reply(405, { error: "Use POST." });
+      return request.method === "POST" ? invite(request, env, ctx) : reply(405, { error: "Use POST." });
     }
     return env.ASSETS.fetch(request);
   },
