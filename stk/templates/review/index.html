@@ -230,6 +230,22 @@
                 </div>
               </div>
             </template>
+            <!-- a proposed link between two people, two documents or a person and an incident: what it joins, then the statements it rests on -->
+            <template v-else-if="claim.basis && claim.basis.length">
+              <div class="rv-at" v-if="claim.document"><media-thumb :locked="claim.source.sensitive && !claim.source.revealed" :sha="claim.source.sha256" :mime="claim.source.mime" :file="claim.source.file" :width="80" :height="48" :caption="false"></media-thumb><span class="f"><bdi>${ claim.source.file }</bdi></span><i class="ti ti-arrows-left-right" aria-hidden="true"></i><media-thumb :locked="claim.document.sensitive && !claim.document.revealed" :sha="claim.document.sha256" :mime="claim.document.mime" :file="claim.document.file" :width="80" :height="48" :caption="false"></media-thumb><span class="f"><bdi>${ claim.document.file }</bdi></span></div>
+              <div class="rv-at" v-else-if="claim.incident"><v-icon icon="ti ti-alert-triangle" size="16"></v-icon><span class="f"><bdi>${ personName(claim.other) }</bdi></span><span class="rv-muted">in</span><a :href="'/incidents/' + claim.incident.id"><bdi>${ claim.incident.title || 'the incident' }</bdi></a></div>
+              <div class="rv-at" v-else><v-icon icon="ti ti-users" size="16"></v-icon><span class="f"><bdi>${ personName(claim.person) }</bdi></span><span class="rv-muted">and</span><span class="f"><bdi>${ personName(claim.other) }</bdi></span></div>
+              <div class="rv-sec pb-0"><h3 class="ma-0">What it rests on</h3></div>
+              <div class="rv-basis">
+                <div v-for="r in claim.basis" :key="r.id" class="rv-card">
+                  <media-thumb v-if="r.source" :key="r.id + r.source.revealed" :locked="r.source.sensitive && !r.source.revealed" :sha="r.source.sha256" :mime="r.source.mime" :file="r.source.file" :width="56" :height="40" :caption="false" :href="'/evidence/' + r.source.sha256"></media-thumb>
+                  <div style="min-width: 0"><div><b>${ label(r.prop) }</b> <span v-if="r.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else dir="auto">${ fmtDate(r.value.text) }</bdi><span class="rv-muted" v-if="r.from && r.prop !== 'birth_date'"> · ${ span(r.from, r.to) }</span></div>
+                    <div class="rv-muted"><bdi>${ personName(r.person) }</bdi></div></div>
+                  <div class="w" v-if="r.source"><span style="overflow-wrap: anywhere"><bdi>${ r.source.file }</bdi>, ${ r.where.label }</span><v-spacer></v-spacer>
+                    <a :href="'/evidence/' + r.source.sha256">Open</a></div>
+                </div>
+              </div>
+            </template>
             <!-- media match: both recordings at their offsets -->
             <template v-else-if="claim.prop === 'media_match' && claim.media && claim.media.other">
               <div class="rv-at"><media-thumb :locked="claim.source.sensitive && !claim.source.revealed" :sha="claim.source.sha256" :mime="claim.source.mime" :file="claim.source.file" :width="80" :height="48" :caption="false"></media-thumb><span class="f"><bdi>${ claim.source.file }</bdi></span><i class="ti ti-arrows-left-right" aria-hidden="true"></i><media-thumb :sha="claim.media.other.sha256" :mime="claim.media.other.mime" :file="claim.media.other.file" :width="80" :height="48" :caption="false"></media-thumb><span class="f"><bdi>${ claim.media.other.file }</bdi></span></div>
@@ -299,6 +315,7 @@
                 <template v-if="claim.corrects"><dt>Corrects</dt><dd dir="auto"><span v-if="claim.corrects.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ claim.corrects.value.text }</bdi>, by <actor-chip :actor="claim.corrects.proposer" size="sm"></actor-chip></dd></template>
               </dl>
               <p v-if="claim.reasoning" class="rv-quote" dir="auto">${ claim.reasoning }</p>
+              <p v-else-if="claim.reasoning_hidden" class="text-caption rv-muted mt-2 mb-0"><i class="ti ti-lock" aria-hidden="true"></i> The run's reason shows once the sensitive sources above are shown.</p>
               <p v-else-if="claim.agent" class="text-caption rv-muted mt-2 mb-0">The run recorded no reasoning; it gives evidence kinds, never a confidence score.</p>
             </div>
 

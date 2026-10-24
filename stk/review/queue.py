@@ -33,10 +33,12 @@ BOXES = ("mine", "sent", "open")
 PENDING = (Tier.UNCONFIRMED, Tier.CORROBORATED)
 HIDDEN = data.META | PRIVATE_PROPS
 IDENTITY = (Prop.SAME_AS, Prop.NOT_SAME)
+# Proposals between two things, shown with the statements they rest on.
+LINKS = (*IDENTITY, Prop.RELATION, Prop.INVOLVED)
 LIMIT = 200
 RELATED = 20
 # Value keys that are bookkeeping, never shown as a field of an unknown prop.
-QUIET = {"at", "gesture", "basis", "lang", "fingerprint"}
+QUIET = {"at", "gesture", "basis", "lang", "fingerprint", "why"}
 
 
 def _ms(v: int) -> str:
@@ -231,8 +233,8 @@ async def rows(db, user, wanted: list[uuid.UUID]) -> list[dict]:
     for st, _, _, value, _ in found.values():
         if st.subject.startswith("person:"):
             persons.add(st.subject)
-        if st.prop in IDENTITY and value:
-            persons.add(f"person:{value['person']}")
+        if st.prop in LINKS and value and "person" in value:
+            persons.add(f"person:{value['person'].removeprefix('person:')}")
     names: dict[str, tuple] = {}
     if persons:
         for subject, value, tier, source in await db.execute(
@@ -257,7 +259,7 @@ async def rows(db, user, wanted: list[uuid.UUID]) -> list[dict]:
     media = {
         st.id: value["blob"]
         for st, _, _, value, _ in found.values()
-        if st.prop == Prop.MEDIA_MATCH and value
+        if st.prop in (Prop.MEDIA_MATCH, Prop.RELATION) and value and "blob" in value
     }
     shas |= set(media.values())
     ctx = await data.Context.load(
@@ -368,6 +370,24 @@ async def rows(db, user, wanted: list[uuid.UUID]) -> list[dict]:
         else {}
     )
     admin = user.has_role("admin")
+    involved = {found[i][0].subject for i in order if found[i][0].prop == Prop.INVOLVED}
+    incidents = (
+        {
+            subject: data.display(value.get("title"))
+            for subject, value in await db.execute(
+                select(Statement.subject, Payload.value)
+                .join(Payload, Payload.commitment == Statement.commitment)
+                .join(StatementTier, StatementTier.statement_id == Statement.id)
+                .where(
+                    Statement.subject.in_(involved),
+                    Statement.prop == Prop.INCIDENT,
+                    StatementTier.tier == Tier.ACCEPTED,
+                )
+            )
+        }
+        if involved
+        else {}
+    )
 
     def shown(prop, value, source) -> dict:
         doc = ctx.doc(source) if source else None
@@ -445,9 +465,19 @@ async def rows(db, user, wanted: list[uuid.UUID]) -> list[dict]:
             "assignment": None,
             "due": None,
         }
-        if st.prop in IDENTITY and value:
-            item["identity"] = person(f"person:{value['person']}")
-        if st.id in media:
+        if st.prop in LINKS and value and "person" in value:
+            other = person(f"person:{value['person'].removeprefix('person:')}")
+            item["identity" if st.prop in IDENTITY else "other"] = other
+        if st.prop == Prop.INVOLVED and value:
+            item["incident"] = {
+                "id": st.subject.removeprefix("incident:"),
+                "title": incidents.get(st.subject),
+            }
+        if st.prop == Prop.RELATION and value:
+            item["relation"] = value.get("kind")
+        if st.id in media and st.prop == Prop.RELATION:
+            item["document"] = source_of(media[st.id])
+        elif st.id in media:
             item["media"] = {
                 "other": source_of(media[st.id]),
                 "sound": value.get("sound"),
@@ -612,6 +642,8 @@ async def claim(db, user, sid: uuid.UUID) -> dict | None:
             [r for r in basis if r["subject"] == st.subject],
             [r for r in basis if r["subject"] == other],
         )
+    elif isinstance(value, dict) and value.get("basis"):
+        item["basis"] = await rows(db, user, await _basis_ids(db, st, value))
     thread = None
     request = item["request"]
     if request and request["visible"]:
@@ -635,6 +667,9 @@ async def claim(db, user, sid: uuid.UUID) -> dict | None:
         ]
     item["thread"] = thread
     item["hidden_sources"] = hidden(item)
+    # An agent's reason may name what its basis says, so it waits for the same reveal.
+    if item["reasoning"] and item["hidden_sources"]:
+        item["reasoning"], item["reasoning_hidden"] = None, True
     me = await db.scalar(select(Principal.id).where(Principal.user_id == user.id))
     item["my_review"] = (
         str(
@@ -668,6 +703,7 @@ def hidden(item: dict) -> list[dict]:
         item["source"],
         *(r["source"] for r in item.get("basis") or []),
         (item.get("media") or {}).get("other"),
+        item.get("document"),
         (item.get("corrects") or {}).get("source"),
     ]
     out: dict[str, dict] = {}

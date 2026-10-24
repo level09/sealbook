@@ -12,7 +12,9 @@ import {TIMEOUT, failure} from '/static/js/components/EvidenceViewer.js';
 
 const api = axios.create({timeout: TIMEOUT});
 
-const PROP = {name: 'name', father_name: "father's name", mother_name: "mother's name", birth_date: 'born', place_of_birth: 'born in', arrested_at: 'arrested at', last_seen: 'last seen', detention_branch: 'held by branch', transferred_to: 'transferred to', seen_at: 'seen at', detained_at: 'detained at', sex: 'sex', age: 'age', occupation: 'occupation', event: 'event', document_date: 'document date', document_type: 'document type', same_as: 'same person', not_same: 'different people', media_match: 'same recording', located_at: 'place confirmed', photographed_at: 'photographed at', filmed_at: 'filmed at', finding: 'finding'};
+const PROP = {name: 'name', father_name: "father's name", mother_name: "mother's name", birth_date: 'born', place_of_birth: 'born in', arrested_at: 'arrested at', last_seen: 'last seen', detention_branch: 'held by branch', transferred_to: 'transferred to', seen_at: 'seen at', detained_at: 'detained at', sex: 'sex', age: 'age', occupation: 'occupation', event: 'event', document_date: 'document date', document_type: 'document type', same_as: 'same person', not_same: 'different people', media_match: 'same recording', located_at: 'place confirmed', photographed_at: 'photographed at', filmed_at: 'filmed at', finding: 'finding', relation: 'relation', involved: 'involved in'};
+// A proposed relation reads as the question the reviewer answers.
+const RELATION_ASK = {family: 'Family?', cellmate: 'Cellmates?', command: 'Command relation?', contains: 'Contains the other document?', contained_in: 'Excerpt of the other document?', related: 'Related documents?'};
 const TIER = {unconfirmed: 'Unconfirmed', corroborated: 'Corroborated', accepted: 'Accepted', rejected: 'Rejected'};
 const BOXES = [{v: 'mine', t: 'Asked of me'}, {v: 'sent', t: 'Sent by me'}, {v: 'open', t: 'All open'}, {v: 'findings', t: 'Findings'}];
 const RELATIONSHIPS = [{title: 'Same recording', value: 'same_recording'}, {title: 'Contains the other recording', value: 'contains'}, {title: 'Excerpt of the other recording', value: 'contained_in'}, {title: 'Related event, different recording', value: 'related'}];
@@ -151,6 +153,9 @@ export function mount(boot) {
         const who = s => s ? (s.masked ? {masked: true, t: 'Name from a sensitive source'} : {t: s.name || 'Unnamed person', strong: true}) : null;
         if (c.prop === 'same_as' || c.prop === 'not_same') return [{t: c.prop === 'same_as' ? 'Same person?' : 'Different people?'}, who(c.person), {t: 'and', quiet: true}, who(c.identity)];
         if (c.prop === 'media_match') return [{t: 'Same recording?'}, {t: c.source?.file, strong: true}, {t: 'and', quiet: true}, {t: c.media?.other?.file, strong: true}];
+        if (c.prop === 'relation' && c.document) return [{t: RELATION_ASK[c.relation] || 'Related?'}, {t: c.source?.file, strong: true}, {t: 'and', quiet: true}, {t: c.document.file, strong: true}];
+        if (c.prop === 'relation') return [{t: RELATION_ASK[c.relation] || 'Related?'}, who(c.person), {t: 'and', quiet: true}, who(c.other)];
+        if (c.prop === 'involved') return [{t: 'In this incident?'}, who(c.other), {t: 'in', quiet: true}, {t: c.incident?.title || 'an incident', strong: true}];
         const subject = c.person ? who(c.person) : {t: c.source?.file || 'This source', strong: true};
         const v = this.valueText(c);
         const value = c.value.erased ? {t: 'value erased', quiet: true} : c.value.masked && v == null ? {masked: true, t: "value from a sensitive source"} : c.fields.length && !v ? {t: c.fields.map(f => `${f[0]} ${f[1]}`).join(', ')} : {t: /^\d{4}(-\d\d){0,2}$/.test(v || '') ? fmtDate(v) : v, value: true};
