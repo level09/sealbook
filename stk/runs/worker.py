@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from stk import blobs, speech
 from stk.agents import tasks
 from stk.agents.brief import brief
+from stk.agents.contradictions import contradictions
 from stk.agents.linker import link
 from stk.agents.standing import standing
 from stk.collaboration import intake
@@ -398,6 +399,7 @@ TOOLS: dict[str, Callable[[Ctx], Awaitable[str | None]]] = {
     "brief": brief,
     "link": link,
     "standing": standing,
+    "contradictions": contradictions,
 }
 
 

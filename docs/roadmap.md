@@ -40,8 +40,10 @@ case alongside the analyst, each one a signed run that can only propose.
    The Desk supports Check now, Stop and Resume, with past checks retained.
 4. **Gap finder.** Turns "no evidence for 60 days" into where to look: which sources, which
    web queries, which colleague has related work.
-5. **Contradiction hunter.** Finds claims that disagree, explains why, and drafts the
-   question for a colleague.
+5. **Contradiction hunter** (built, manual trigger). Finds claims that disagree,
+   explains why, and drafts the question for a colleague. The person page's Sources
+   disagree panel checks the selected case, with cited sides and sensitive-source
+   masking. Repeat claim sets are suppressed. Scheduled runs remain pending.
 6. **Next step suggester.** Orders each analyst's queue by value and suggests flows, such
    as reviewing a register before the testimony that cites it.
 7. **Shadow reviewer.** Predicts each human decision without acting and measures agreement

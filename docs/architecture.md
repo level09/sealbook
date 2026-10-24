@@ -22,7 +22,7 @@ a frontend build. The supported evidence deployment is one process.
 | `stk/entities` | Place and incident pages on one layout: story, relations, paged evidence, threads and signed history, read through the story view's rules; the places index and unresolved names |
 | `stk/maps` | Claim vector tiles, per-reader map models, offline basemap serving and `stk basemap`, the `geotag` intake tool for embedded photo and video locations |
 | `stk/research` | Web research: query proposals from shareable values, Brave Search client, local Chromium capture (Playwright), yt-dlp, per-user result store, per-case switches and the `capture` run tool that feeds normal intake |
-| `stk/agents` | The intake brief, linker and standing questions read a case for a named person on the local route. Tasks coalesce evidence wakes and scheduled checks into runs, back off after empty checks, and pause after access loss or three failures. Reports use cited, masked output; only humans decide facts |
+| `stk/agents` | Proactive agents on the local route for a named person. The intake brief, contradiction hunter and standing questions store cited reports shown through masking and write only their access record to the ledger; the linker proposes through the normal review path. Tasks coalesce evidence wakes and scheduled checks into runs, back off after empty checks, and pause after access loss or three failures. Only humans decide facts |
 | `stk/mcp` | Per-user delegated agent reads and proposals; no acceptance tool |
 | `stk/user`, `stk/websocket.py` | Session/MFA security and bounded recipient-specific connections |
 

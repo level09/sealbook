@@ -12,7 +12,7 @@ from quart import Blueprint, Response, abort, g, request
 from quart_security import auth_required, current_user
 from sqlalchemy import select
 
-from stk.agents import brief, linker, standing, tasks
+from stk.agents import brief, contradictions, linker, standing, tasks
 from stk.agents.models import AgentTask
 from stk.agents.read import read_output
 from stk.collaboration.models import Notification
@@ -69,6 +69,57 @@ def _batch(raw) -> str:
         return str(uuid.UUID(str(raw)))
     except ValueError:
         abort(400, description="batch must be an intake batch id")
+
+
+@bp_agents.post("/contradictions")
+async def find_contradictions():
+    from stk.cases.service import Unknown, require
+
+    db = g.db_session
+    investigation = (await _item()).get("investigation")
+    if not isinstance(investigation, str) or not investigation.strip():
+        abort(400, description="Choose a case to check.")
+    try:
+        case = await require(db, investigation)
+    except Unknown:
+        abort(404)
+    if gap := missing():
+        return _json({"reason": "off", "missing": gap}, 409)
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    try:
+        run = await contradictions.queue(
+            db, case.slug, current_user.id, Config.AGENT_MODEL
+        )
+    except ValueError as exc:
+        return _json({"reason": "busy", "message": str(exc)}, 409)
+    await db.commit()
+    return _json({"run": str(run.id)}, 202)
+
+
+@bp_agents.get("/contradictions")
+async def read_contradictions():
+    from stk.cases.service import Unknown, require
+
+    db = g.db_session
+    try:
+        case = await require(db, request.args.get("investigation"))
+    except Unknown:
+        abort(404)
+    return _json(await contradictions.show(db, current_user, case.slug))
+
+
+@bp_agents.get("/contradictions/runs/<uuid:rid>")
+async def contradiction_status(rid):
+    run = await g.db_session.get(Run, rid)
+    if run is None or run.tool != contradictions.TOOL:
+        abort(404)
+    if run.inputs.get("for_user") != current_user.id and not current_user.has_role(
+        "admin"
+    ):
+        abort(404)
+    return _json({"status": run.status})
 
 
 @bp_agents.get("/brief")
