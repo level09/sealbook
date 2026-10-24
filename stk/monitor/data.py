@@ -365,6 +365,14 @@ class Context:
             "subject_label": subject_label(st.subject, self.files),
             "prop": st.prop,
             "display": None if masked else display(value, st.prop),
+            # The other person of a relation, an id the person page turns into a name.
+            **(
+                {"other": value["person"]}
+                if st.prop == Prop.RELATION
+                and isinstance(value, dict)
+                and "person" in value
+                else {}
+            ),
             "masked": masked,
             "erased": value is None,
             "tier": tier,

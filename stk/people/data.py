@@ -542,8 +542,14 @@ async def person(session: AsyncSession, ref, projection: str = "draft") -> dict 
         order=Statement.recorded_at,
     )
     linked = await links(session, rows)
+    others = await names(
+        session, {pid(r["other"]) for r in rows if "other" in r}, groups
+    )
     facts: dict[str, list] = {}
     for r in rows:
+        other = r.pop("other", None)
+        if other and r["display"] and pid(other) in others:
+            r["display"] = r["display"].replace("another person", others[pid(other)])
         # The source a fact came from, opened at the claim; the actor is detail.
         lk = linked.get(r["id"])
         r["source"] = {"title": lk["file"], "href": lk["href"]} if lk else None

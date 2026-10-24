@@ -22,6 +22,7 @@ from stk.ledger.contracts import Prop, Tier
 from stk.ledger.models import Blob, Principal, Run, Statement
 from stk.ledger.write import principal_for_user, record_acquisition, verify_db
 from stk.monitor.seed import Seeder
+from stk.people import data as people_data
 from stk.runs.worker import process
 from stk.settings import Config
 from stk.user.models import Role, User
@@ -422,6 +423,20 @@ class AgentRunTest(unittest.IsolatedAsyncioTestCase):
                 ).all()
             )
             self.assertEqual(sum(props.values()), len(out["written"]))
+            # The person page names the cellmate instead of "another person".
+            cell = await s.get(
+                Statement,
+                uuid.UUID(
+                    next(w for w in out["written"] if w["kind"] == "cellmate")[
+                        "statement"
+                    ]
+                ),
+            )
+            shown = await people_data.person(s, cell.subject)
+            rel = next(
+                r for r in shown["facts"][Prop.RELATION] if r["id"] == str(cell.id)
+            )
+            self.assertNotIn("another person", rel["display"])
         _, again = await self.agent("link", focus=f"batch:{self.batch}")
         self.assertEqual(again["written"], [])
         self.assertEqual(again["already_known"], len(out["written"]))
