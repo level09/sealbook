@@ -678,3 +678,17 @@ covers in the text it was read from (`span_blob`).
   the same text cleanly in 5 s. Pending: read list-like text per entry, as sheets read
   one row per local call, and stop a run that repeats itself early instead of after
   15 minutes.
+
+## Merge round (2026-10-24)
+
+- PDF pages became readable for claims, and the acceptance fake model raised
+  KeyError on the transfer order's page text it had no script for; one failed run
+  cascaded into 15 erroring steps. A scripted fake should answer an unknown text the
+  way a model that finds nothing would: an empty list.
+- The candidate-duplicate cleanup dropped every same-name person whose other fields
+  all differ. That also hid the twins the scenario keeps apart on purpose. Show them
+  last as "likely two people" instead of dropping them; drop nothing a reviewer
+  needs to decide.
+- The Sources date filter compared timestamps with a bare date, which PostgreSQL
+  reads in the session zone (Europe/Berlin here), while `acquired_at` is reported in
+  UTC. Rows near midnight fell on the wrong day. Build the bounds as UTC datetimes.

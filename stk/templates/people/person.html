@@ -106,7 +106,8 @@
                 <div v-for="d in p.duplicates" :key="d.person" class="mb-3">
                     <a :href="'/people/' + d.person" dir="auto">${ who(d.person) }</a>
                     <span v-if="d.not_same" class="ppl-tag">marked not the same</span>
-                    <div>Agree: ${ words(d.agree) || 'name only' }<span v-if="d.differ.length">. Differ: ${ words(d.differ) }</span></div>
+                    <div v-if="d.distinct">Same name, but ${ words(d.differ) } differ: likely two people.</div>
+                    <div v-else>Agree: ${ words(d.agree) || 'name only' }<span v-if="d.differ.length">. Differ: ${ words(d.differ) }</span></div>
                     <div>Names match:
                         <template v-for="(n, i) in d.names" :key="n.statement"><span v-if="i">, </span><a href="#" @click.prevent="open(n.statement)"><bdi v-if="n.name" dir="auto">${ n.name }</bdi><span v-else><i class="ti ti-lock" aria-hidden="true"></i> ${ n.count } name${ n.count === 1 ? '' : 's' } from a sensitive source</span></a></template>
                     </div>

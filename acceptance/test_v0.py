@@ -198,7 +198,8 @@ class Model:
             register = base64.b64encode((DATA / DOCS["register"]["file"]).read_bytes())
             text = REGISTER_TEXT if image == register.decode() else ""
             return httpx.Response(200, json=completion(text))
-        items = self.extractions[messages[1]["content"]]
+        # PDF pages are read for claims too; a text the scenario did not script yields none.
+        items = self.extractions.get(messages[1]["content"], [])
         return httpx.Response(
             200, json=completion(orjson.dumps({"statements": items}).decode())
         )

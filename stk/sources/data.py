@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 import uuid
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 
 from sqlalchemy import and_, case, cast, func, or_, select, text, true
 from sqlalchemy.dialects.postgresql import UUID
@@ -227,10 +227,14 @@ def base(f: dict):
         q = q.where(sensitive if f["sensitive"] else ~sensitive)
     if f["by"]:
         q = q.where(a.c.collector_id == f["by"])
+    # Days are UTC days, as acquired_at is reported; a bare date would take the
+    # database session's zone and shift the boundary.
     if f["from"]:
-        q = q.where(a.c.at >= f["from"])
+        q = q.where(a.c.at >= datetime.combine(f["from"], time.min, UTC))
     if f["to"]:
-        q = q.where(a.c.at < f["to"] + timedelta(days=1))
+        q = q.where(
+            a.c.at < datetime.combine(f["to"] + timedelta(days=1), time.min, UTC)
+        )
     if f["q"]:
         q = q.where(
             or_(

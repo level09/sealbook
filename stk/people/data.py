@@ -442,10 +442,6 @@ async def _duplicates(
                 agree.append(str(prop))
             elif ours and theirs:
                 differ.append(str(prop))
-        # A name match that every other compared field contradicts is evidence of
-        # two people, not a lead. A recorded not-same decision stays visible.
-        if differ and not agree and not c["not_same"]:
-            continue
         out.append(
             {
                 "person": person,
@@ -453,11 +449,20 @@ async def _duplicates(
                 "agree": agree,
                 "differ": differ,
                 "not_same": c["not_same"],
+                # A name match every other compared field contradicts reads as two
+                # people; it stays visible so twins are kept apart knowingly.
+                "distinct": bool(differ) and not agree,
             }
         )
-    # Most agreement first, then fewest differences; decided pairs last.
+    # Most agreement first, then fewest differences; likely-distinct and decided last.
     return sorted(
-        out, key=lambda d: (d["not_same"], -len(d["agree"]), len(d["differ"]))
+        out,
+        key=lambda d: (
+            d["not_same"],
+            d["distinct"],
+            -len(d["agree"]),
+            len(d["differ"]),
+        ),
     )
 
 
