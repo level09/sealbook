@@ -263,6 +263,53 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         async with self.Session() as s:
             self.assertTrue(any("modified" in p for p in await verify_db(s)))
 
+    async def test_placeholder_dates_keep_the_quoted_claims(self):
+        # Recorded from openai/gpt-4o-mini on OpenRouter, 2026-10-24: both claims
+        # quote real spans, but `valid` echoed the string "null" and the old code
+        # dropped them, so a real model wrote no claims at all.
+        recorded = (
+            '{"statements":[{"mention":"Samir Haddad","prop":"birth_date","value":'
+            '{"text":"1990-03-14","lang":"en"},"occurrence":1,"valid":"null",'
+            '"evidence":["registry_stamp"]},{"mention":"Samir Haddad","prop":'
+            '"place_of_birth","value":{"text":"Aleppo","lang":"en"},"occurrence":1,'
+            '"valid":"YYYY-MM-DD","evidence":["registry_stamp"]}]}'
+        )
+        run_id = await self.queue()
+        await work_once(
+            self.Session,
+            transport=self.transport(completion(recorded, model="openai/gpt-4o-mini")),
+        )
+        self.assertEqual((await self.get_run(run_id)).status, "done")
+        [counts] = [
+            e.counts
+            for e in await self.events(run_id)
+            if e.stage == "statements_written"
+        ]
+        self.assertEqual(
+            {k: counts[k] for k in ("proposed", "written", "dropped", "undated")},
+            {"proposed": 2, "written": 2, "dropped": 0, "undated": 2},
+        )
+        async with self.Session() as s:
+            rows = (
+                await s.execute(
+                    select(Statement.span, Statement.valid_from, StatementTier.tier)
+                    .join(StatementTier, StatementTier.statement_id == Statement.id)
+                    .where(Statement.run_id == run_id)
+                )
+            ).all()
+        self.assertEqual(
+            sorted(rows, key=lambda r: r[0]["start"]),
+            [
+                ({"start": 35, "end": 45}, None, Tier.UNCONFIRMED),
+                ({"start": 49, "end": 55}, None, Tier.UNCONFIRMED),
+            ],
+        )
+        sent = orjson.loads(self.requests[0].content)
+        valid = sent["response_format"]["json_schema"]["schema"]["properties"][
+            "statements"
+        ]["items"]["properties"]["valid"]
+        self.assertEqual(valid["anyOf"][1], {"type": "null"})
+
     async def test_empty_input_is_a_drop_event(self):
         run_id = await self.queue(data=b"  \n")
         await work_once(self.Session, transport=self.transport(completion("{}")))
@@ -577,4 +624,12 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         self.assertGreater(counts["proposed"], 0)
         self.assertLess(counts["dropped"], counts["proposed"], counts)
         async with self.Session() as s:
+            located = (
+                await s.execute(
+                    select(Statement.prop).where(
+                        Statement.run_id == run_id, Statement.span.is_not(None)
+                    )
+                )
+            ).scalars()
+            self.assertIn(Prop.NAME, set(located))
             self.assertEqual(await verify_db(s), [])

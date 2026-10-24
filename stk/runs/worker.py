@@ -101,16 +101,27 @@ class Ctx:
 
 # --- extract ---------------------------------------------------------------------
 
+# Real models echoed a format placeholder ("YYYY-MM-DD") or the string "null" into
+# `valid` and never proposed a name, since the mention already carried it.
 EXTRACT_SYSTEM = (
     "You extract facts about people and documents from the text the user gives you. "
-    "Return only facts the text states. For each fact give the person mention it is "
-    "about (the same mention string for the same person), the property, the value "
-    "copied exactly as written in the text with its language code, which occurrence "
-    "of that exact string in the text it comes from (1 for the first), and the kinds "
-    "of evidence it rests on, and when the fact held as YYYY, YYYY-MM or YYYY-MM-DD "
-    "if the text dates it (null otherwise). "
-    "Use the mention 'document' for facts about the document itself."
+    "Return only facts the text states. Each fact has: "
+    "mention, the person it is about as the text names them, the same string for "
+    "every fact about that person, or 'document' for a fact about the document "
+    "itself; "
+    "prop, what the fact is, and every person gets a 'name' fact; "
+    "value.text, the value alone (the name, date, place or number, not the words "
+    "around it) copied character for character from the text, and value.lang, its "
+    "language code; "
+    "occurrence, which occurrence of that exact string in the text it is, 1 for the "
+    "first; "
+    "evidence, the kinds of text it rests on (printed_text for ordinary typed or "
+    "printed text); "
+    "valid, the date the fact held written in digits like 2013, 2013-09 or "
+    "2013-09-17 when the text dates the fact, otherwise JSON null. A birth date or "
+    "document date is the value itself, so its valid is null."
 )
+VALID = r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
 
 EXTRACT_SCHEMA = {
     "name": "statements",
@@ -146,7 +157,12 @@ EXTRACT_SCHEMA = {
                             },
                         },
                         "occurrence": {"type": "integer"},
-                        "valid": {"type": ["string", "null"]},
+                        "valid": {
+                            "anyOf": [
+                                {"type": "string", "pattern": VALID},
+                                {"type": "null"},
+                            ]
+                        },
                         "evidence": {
                             "type": "array",
                             "items": {
@@ -206,12 +222,15 @@ async def extract(c: Ctx) -> str | None:
                 {"role": "user", "content": text},
             ],
             "response_format": {"type": "json_schema", "json_schema": EXTRACT_SCHEMA},
+            "temperature": 0,
+            # Local thinking models (gemma4, qwen3.5) otherwise reason at length first.
+            **({"reasoning_effort": "none"} if c.run.route == "local" else {}),
         }
     )
     items = orjson.loads(routes.content(served))["statements"]
     subjects: dict[str, str] = {}
     names = []
-    written = dropped = 0
+    written = dropped = undated = 0
     for item in items:
         prop = Prop(item["prop"])
         if prop not in EXTRACTED_PROPS:
@@ -224,9 +243,10 @@ async def extract(c: Ctx) -> str | None:
         try:
             valid_from, valid_to = valid_range(item.get("valid"))
         except ValueError:
-            dropped += 1
-            await c.emit("dropped", drop_reason="bad_valid_date")
-            continue
+            # A quoted value is still worth a review; only its date is unusable.
+            valid_from = valid_to = None
+            undated += 1
+            await c.emit("undated", drop_reason="bad_valid_date")
         st = StatementIn(
             subject=subject,
             prop=prop,
@@ -257,6 +277,7 @@ async def extract(c: Ctx) -> str | None:
         proposed=len(items),
         written=written,
         dropped=dropped,
+        undated=undated,
         subjects=len(subjects),
     )
     for subject in set(subjects.values()):
