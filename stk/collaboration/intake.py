@@ -1,5 +1,6 @@
-"""Tell the collector once when every run of an acquisition batch has finished.
-A batch is the acquisitions sharing context["batch"] (set at upload)."""
+"""Tell the collector once when every run of an acquisition batch has finished, and
+queue the linker and the intake brief for them. A batch is the acquisitions sharing
+context["batch"] (set at upload)."""
 
 import logging
 import uuid
@@ -74,3 +75,18 @@ async def _finished(Session, run_id):  # noqa: N803
             f"/sources?batch={quote(batch)}",
             subject,
         )
+        await agents(s, batch, acq.context.get("investigation"), owner)
+
+
+async def agents(s, batch, investigation, owner):
+    """The linker first, so the brief can name the links it proposed. Off until the
+    local route and an agent model are set; a batch then simply has no brief."""
+    from stk.agents import brief, linker
+    from stk.agents.views import missing
+    from stk.settings import Config
+
+    if missing() or not investigation or await brief.runs(s, batch):
+        return
+    await linker.queue(s, investigation, owner, Config.AGENT_MODEL, f"batch:{batch}")
+    await brief.queue(s, batch, owner, Config.AGENT_MODEL)
+    await s.commit()

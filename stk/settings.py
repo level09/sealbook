@@ -217,6 +217,11 @@ class Config:
         if os.environ.get(f"MODEL_{r.upper().replace('-', '_')}")
     }
 
+    # Proactive agents (intake brief, linker) read across a case, sensitive sources
+    # included, so they run on the local route only (ROUTE_LOCAL_BASE_URL, an
+    # OpenAI-compatible server such as Ollama). Empty turns them off.
+    AGENT_MODEL = os.environ.get("AGENT_MODEL", "qwen3.5:9b")
+
     # Package export signs its cover with c2patool (ES256 cert chain and key, PEM).
     C2PA_SIGN_CERT = os.environ.get("C2PA_SIGN_CERT")
     C2PA_SIGN_KEY = os.environ.get("C2PA_SIGN_KEY")

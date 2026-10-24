@@ -178,6 +178,8 @@ TOOL_WORDS = {
     "thumbnail": "thumbnails",
     "geotag": "camera location reading",
     "capture": "web capture",
+    "brief": "intake brief",
+    "link": "linker",
     "import": "import",
 }
 # Run event stages and drop reasons are storage tokens; read them as words.

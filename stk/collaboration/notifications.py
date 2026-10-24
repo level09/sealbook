@@ -38,7 +38,13 @@ PROP = {
     "document_type": "Document type",
 }
 # These read as a question or a thing, not as "<field> claim".
-WHOLE = {"same_as": "Same person", "media_match": "Media match", "finding": "Finding"}
+WHOLE = {
+    "same_as": "Same person",
+    "media_match": "Media match",
+    "finding": "Finding",
+    "relation": "Relation",
+    "involved": "Person in an incident",
+}
 
 
 async def describe(db, subjects) -> dict[str, str]:
