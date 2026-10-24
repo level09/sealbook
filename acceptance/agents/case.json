@@ -1,0 +1,1292 @@
+{
+  "about": "Planted truth for acceptance/eval_agents.py, by acceptance/make_agent_case.py. All content is synthetic.",
+  "investigation": "case-agent-eval",
+  "today": "2016-01-01",
+  "places": {
+    "harasta": {
+      "name_en": "Harasta",
+      "name_ar": "حرستا",
+      "lon": 36.365,
+      "lat": 33.558,
+      "precision_m": 2000
+    },
+    "douma": {
+      "name_en": "Douma",
+      "name_ar": "دوما",
+      "lon": 36.402,
+      "lat": 33.571,
+      "precision_m": 3000
+    },
+    "qaboun": {
+      "name_en": "Qaboun",
+      "name_ar": "القابون",
+      "lon": 36.33,
+      "lat": 33.54,
+      "precision_m": 1500
+    },
+    "jdeideh": {
+      "name_en": "Jdeideh",
+      "name_ar": "حي الجديدة",
+      "lon": 36.3,
+      "lat": 33.52,
+      "precision_m": 1000
+    },
+    "homs": {
+      "name_en": "Homs",
+      "name_ar": "حمص",
+      "lon": 36.72,
+      "lat": 34.73,
+      "precision_m": 5000
+    },
+    "branch999": {
+      "name_en": "Branch 999",
+      "name_ar": "الفرع 999",
+      "lon": 36.27,
+      "lat": 33.51,
+      "precision_m": 200
+    },
+    "prisonk": {
+      "name_en": "Central Prison K",
+      "name_ar": "سجن ك المركزي",
+      "lon": 36.2,
+      "lat": 33.45,
+      "precision_m": 300
+    }
+  },
+  "sources": {
+    "reg14": {
+      "title": "Branch 999 register, page 14",
+      "doc_type": "detention_register",
+      "sensitivity": "sensitive",
+      "date": "2013-05-03"
+    },
+    "post": {
+      "title": "Missing person post for Yousef",
+      "doc_type": "social_media_post",
+      "sensitivity": "ordinary",
+      "date": "2013-05-10"
+    },
+    "family": {
+      "title": "Al-Ali family statement",
+      "doc_type": "testimony",
+      "sensitivity": "ordinary",
+      "date": "2014-01-20"
+    },
+    "list": {
+      "title": "Branch 999 detainee list, February 2014",
+      "doc_type": "detainee_list",
+      "sensitivity": "sensitive",
+      "date": "2014-03-01"
+    },
+    "note": {
+      "title": "Casework note on Branch 999",
+      "doc_type": "casework_note",
+      "sensitivity": "ordinary",
+      "date": "2014-03-05"
+    },
+    "intake": {
+      "title": "Branch 999 intake sheet, February 2014",
+      "doc_type": "intake_sheet",
+      "sensitivity": "sensitive",
+      "date": "2014-02-21"
+    },
+    "school": {
+      "title": "School record for Lina Al-Najjar",
+      "doc_type": "school_record",
+      "sensitivity": "ordinary",
+      "date": "2014-03-10"
+    },
+    "roster": {
+      "title": "Dormitory 4 roster, July 2013",
+      "doc_type": "roster",
+      "sensitivity": "sensitive",
+      "date": "2013-07-31"
+    },
+    "testimony": {
+      "title": "Testimony of a former detainee",
+      "doc_type": "testimony",
+      "sensitivity": "sensitive",
+      "date": "2014-05-01"
+    },
+    "transfer": {
+      "title": "Transfer order 4471",
+      "doc_type": "transfer_order",
+      "sensitivity": "sensitive",
+      "date": "2013-09-17"
+    },
+    "appeal": {
+      "title": "Family appeal for Omar Said",
+      "doc_type": "appeal",
+      "sensitivity": "ordinary",
+      "date": "2015-01-01"
+    },
+    "harasta_reg": {
+      "title": "Harasta police register",
+      "doc_type": "detention_register",
+      "sensitivity": "sensitive",
+      "date": "2014-01-11"
+    },
+    "witness": {
+      "title": "Witness statement on Central Prison K",
+      "doc_type": "testimony",
+      "sensitivity": "ordinary",
+      "date": "2013-09-01"
+    },
+    "release": {
+      "title": "Release certificates, 2013 to 2014",
+      "doc_type": "release_certificate",
+      "sensitivity": "ordinary",
+      "date": "2014-04-02"
+    },
+    "huda_post": {
+      "title": "Missing person post for Huda",
+      "doc_type": "social_media_post",
+      "sensitivity": "ordinary",
+      "date": "2014-01-12"
+    },
+    "reg31": {
+      "title": "Branch 999 register, page 31",
+      "doc_type": "detention_register",
+      "sensitivity": "sensitive",
+      "date": "2013-06-02"
+    },
+    "witness2": {
+      "title": "Witness statement on Branch 999",
+      "doc_type": "testimony",
+      "sensitivity": "ordinary",
+      "date": "2014-04-01"
+    },
+    "homslog": {
+      "title": "Homs checkpoint log",
+      "doc_type": "checkpoint_log",
+      "sensitivity": "sensitive",
+      "date": "2014-01-02"
+    },
+    "visitors": {
+      "title": "Visitor log, Central Prison K",
+      "doc_type": "visitor_log",
+      "sensitivity": "ordinary",
+      "date": "2014-02-02"
+    },
+    "maya_appeal": {
+      "title": "Family appeal for Maya Hamdan",
+      "doc_type": "appeal",
+      "sensitivity": "ordinary",
+      "date": "2015-02-05"
+    },
+    "witness3": {
+      "title": "Witness statement, June 2015",
+      "doc_type": "testimony",
+      "sensitivity": "ordinary",
+      "date": "2015-06-20"
+    }
+  },
+  "records": {
+    "yousef_reg": {
+      "source": "reg14",
+      "person": "P1"
+    },
+    "twin_reg": {
+      "source": "reg14",
+      "person": "P2"
+    },
+    "yousef_post": {
+      "source": "post",
+      "person": "P1"
+    },
+    "yousef_family": {
+      "source": "family",
+      "person": "P1"
+    },
+    "lina_list": {
+      "source": "list",
+      "person": "lina"
+    },
+    "lina_note": {
+      "source": "note",
+      "person": "lina"
+    },
+    "lina_school": {
+      "source": "school",
+      "person": "lina_twin"
+    },
+    "khatib_list": {
+      "source": "list",
+      "person": "khatib"
+    },
+    "khatib_note": {
+      "source": "note",
+      "person": "khatib"
+    },
+    "khatib_intake": {
+      "source": "intake",
+      "person": "khatib_twin"
+    },
+    "bassel_roster": {
+      "source": "roster",
+      "person": "bassel"
+    },
+    "bassel_testimony": {
+      "source": "testimony",
+      "person": "bassel"
+    },
+    "omar_transfer": {
+      "source": "transfer",
+      "person": "omar"
+    },
+    "omar_appeal": {
+      "source": "appeal",
+      "person": "omar"
+    },
+    "rami_reg": {
+      "source": "harasta_reg",
+      "person": "rami"
+    },
+    "rami_witness": {
+      "source": "witness",
+      "person": "rami"
+    },
+    "rami_release": {
+      "source": "release",
+      "person": "rami"
+    },
+    "huda_post": {
+      "source": "huda_post",
+      "person": "huda"
+    },
+    "huda_reg": {
+      "source": "harasta_reg",
+      "person": "huda"
+    },
+    "huda_note": {
+      "source": "note",
+      "person": "huda"
+    },
+    "nour_reg": {
+      "source": "reg31",
+      "person": "nour"
+    },
+    "nour_witness": {
+      "source": "witness2",
+      "person": "nour"
+    },
+    "nour_log": {
+      "source": "homslog",
+      "person": "nour"
+    },
+    "nour_release": {
+      "source": "release",
+      "person": "nour"
+    },
+    "sami_visitors": {
+      "source": "visitors",
+      "person": "sami"
+    },
+    "maya_appeal": {
+      "source": "maya_appeal",
+      "person": "maya"
+    },
+    "maya_witness": {
+      "source": "witness3",
+      "person": "maya"
+    }
+  },
+  "clusters": [
+    [
+      "rami_reg",
+      "rami_witness",
+      "rami_release"
+    ],
+    [
+      "huda_post",
+      "huda_reg",
+      "huda_note"
+    ],
+    [
+      "nour_reg",
+      "nour_witness",
+      "nour_log",
+      "nour_release"
+    ],
+    [
+      "maya_appeal",
+      "maya_witness"
+    ]
+  ],
+  "claims": [
+    {
+      "key": "yousef_reg.name",
+      "record": "yousef_reg",
+      "prop": "name",
+      "value": "يوسف خالد العلي",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_reg.father",
+      "record": "yousef_reg",
+      "prop": "father_name",
+      "value": "خالد",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_reg.mother",
+      "record": "yousef_reg",
+      "prop": "mother_name",
+      "value": "فاطمة",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_reg.born",
+      "record": "yousef_reg",
+      "prop": "birth_date",
+      "value": "1991",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_reg.arrested",
+      "record": "yousef_reg",
+      "prop": "arrested_at",
+      "value": "حرستا",
+      "from": "2013-05-02",
+      "to": "2013-05-02",
+      "place": "harasta",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_reg.branch",
+      "record": "yousef_reg",
+      "prop": "detention_branch",
+      "value": "الفرع 999",
+      "from": null,
+      "to": null,
+      "place": "branch999",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "twin_reg.name",
+      "record": "twin_reg",
+      "prop": "name",
+      "value": "يوسف خالد العلي",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "twin_reg.father",
+      "record": "twin_reg",
+      "prop": "father_name",
+      "value": "خالد",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "twin_reg.mother",
+      "record": "twin_reg",
+      "prop": "mother_name",
+      "value": "سعاد",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "twin_reg.born",
+      "record": "twin_reg",
+      "prop": "birth_date",
+      "value": "1985",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "twin_reg.arrested",
+      "record": "twin_reg",
+      "prop": "arrested_at",
+      "value": "القابون",
+      "from": "2013-05-02",
+      "to": "2013-05-02",
+      "place": "qaboun",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_post.name",
+      "record": "yousef_post",
+      "prop": "name",
+      "value": "Yousef Khaled Al-Ali",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_post.last_seen",
+      "record": "yousef_post",
+      "prop": "last_seen",
+      "value": "دوما",
+      "from": "2013-05-02",
+      "to": "2013-05-02",
+      "place": "douma",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_family.name",
+      "record": "yousef_family",
+      "prop": "name",
+      "value": "Yusuf Khalid al Ali",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_family.born",
+      "record": "yousef_family",
+      "prop": "birth_date",
+      "value": "1991-03-14",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_family.father",
+      "record": "yousef_family",
+      "prop": "father_name",
+      "value": "Khaled",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_family.mother",
+      "record": "yousef_family",
+      "prop": "mother_name",
+      "value": "Fatima",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yousef_family.last_seen",
+      "record": "yousef_family",
+      "prop": "last_seen",
+      "value": "Douma",
+      "from": "2013-05-02",
+      "to": "2013-05-02",
+      "place": "douma",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "lina_list.name",
+      "record": "lina_list",
+      "prop": "name",
+      "value": "لينا عمر النجار",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "lina_list.born",
+      "record": "lina_list",
+      "prop": "birth_date",
+      "value": "1994",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "lina_list.held",
+      "record": "lina_list",
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "from": "2014-02-11",
+      "to": "2014-02-11",
+      "place": "branch999",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "lina_note.name",
+      "record": "lina_note",
+      "prop": "name",
+      "value": "Lina Al-Najjar",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "lina_note.born",
+      "record": "lina_note",
+      "prop": "birth_date",
+      "value": "1994",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "lina_note.last_seen",
+      "record": "lina_note",
+      "prop": "last_seen",
+      "value": "Jdeideh",
+      "from": "2014-02-11",
+      "to": "2014-02-11",
+      "place": "jdeideh",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "lina_school.name",
+      "record": "lina_school",
+      "prop": "name",
+      "value": "Lina Al-Najjar",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "lina_school.born",
+      "record": "lina_school",
+      "prop": "birth_date",
+      "value": "2001-09-05",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "lina_school.mother",
+      "record": "lina_school",
+      "prop": "mother_name",
+      "value": "Huda",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "lina_school.last_seen",
+      "record": "lina_school",
+      "prop": "last_seen",
+      "value": "Jdeideh",
+      "from": "2014-02-11",
+      "to": "2014-02-11",
+      "place": "jdeideh",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "khatib_list.name",
+      "record": "khatib_list",
+      "prop": "name",
+      "value": "محمد احمد الخطيب",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "khatib_list.born_in",
+      "record": "khatib_list",
+      "prop": "place_of_birth",
+      "value": "دوما",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "khatib_list.held",
+      "record": "khatib_list",
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "from": "2014-02-01",
+      "to": "2014-02-28",
+      "place": "branch999",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "khatib_note.name",
+      "record": "khatib_note",
+      "prop": "name",
+      "value": "Mohamad al Khatib",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "khatib_note.held",
+      "record": "khatib_note",
+      "prop": "detained_at",
+      "value": "Branch 999",
+      "from": "2014-02-15",
+      "to": "2014-02-15",
+      "place": "branch999",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "khatib_intake.name",
+      "record": "khatib_intake",
+      "prop": "name",
+      "value": "Mohammed Ahmed Al-Khatib",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "khatib_intake.born_in",
+      "record": "khatib_intake",
+      "prop": "place_of_birth",
+      "value": "Aleppo",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "khatib_intake.held",
+      "record": "khatib_intake",
+      "prop": "detained_at",
+      "value": "Branch 999",
+      "from": "2014-02-20",
+      "to": "2014-02-20",
+      "place": "branch999",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "bassel_roster.name",
+      "record": "bassel_roster",
+      "prop": "name",
+      "value": "Bassel Nader",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "bassel_roster.held",
+      "record": "bassel_roster",
+      "prop": "detained_at",
+      "value": "Branch 999",
+      "from": "2013-07-01",
+      "to": "2013-07-31",
+      "place": "branch999",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "bassel_testimony.name",
+      "record": "bassel_testimony",
+      "prop": "name",
+      "value": "باسل نادر",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "bassel_testimony.held",
+      "record": "bassel_testimony",
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "from": "2013-07-01",
+      "to": "2013-07-31",
+      "place": "branch999",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "omar_transfer.name",
+      "record": "omar_transfer",
+      "prop": "name",
+      "value": "عمر سعيد",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "omar_transfer.born",
+      "record": "omar_transfer",
+      "prop": "birth_date",
+      "value": "1980",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "omar_transfer.moved",
+      "record": "omar_transfer",
+      "prop": "transferred_to",
+      "value": "سجن ك المركزي",
+      "from": "2013-09-17",
+      "to": "2013-09-17",
+      "place": "prisonk",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "omar_appeal.name",
+      "record": "omar_appeal",
+      "prop": "name",
+      "value": "Omar Said",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "omar_appeal.born",
+      "record": "omar_appeal",
+      "prop": "birth_date",
+      "value": "1980-06-01",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "rami_reg.name",
+      "record": "rami_reg",
+      "prop": "name",
+      "value": "رامي حداد",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "accepted"
+    },
+    {
+      "key": "rami_reg.born",
+      "record": "rami_reg",
+      "prop": "birth_date",
+      "value": "1979",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "accepted"
+    },
+    {
+      "key": "rami_reg.mother",
+      "record": "rami_reg",
+      "prop": "mother_name",
+      "value": "فاطمة",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "accepted"
+    },
+    {
+      "key": "rami_reg.arrested",
+      "record": "rami_reg",
+      "prop": "arrested_at",
+      "value": "حرستا",
+      "from": "2013-03-01",
+      "to": "2013-03-01",
+      "place": "harasta",
+      "tier": "accepted"
+    },
+    {
+      "key": "rami_witness.name",
+      "record": "rami_witness",
+      "prop": "name",
+      "value": "Rami Haddad",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "rami_witness.born",
+      "record": "rami_witness",
+      "prop": "birth_date",
+      "value": "1983",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "rami_witness.mother",
+      "record": "rami_witness",
+      "prop": "mother_name",
+      "value": "Fatima",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "rami_witness.arrested",
+      "record": "rami_witness",
+      "prop": "arrested_at",
+      "value": "Harasta",
+      "from": "2013-03-01",
+      "to": "2013-03-01",
+      "place": "harasta",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "rami_witness.seen",
+      "record": "rami_witness",
+      "prop": "seen_at",
+      "value": "Central Prison K",
+      "from": "2013-08-15",
+      "to": "2013-08-15",
+      "place": "prisonk",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "rami_release.released",
+      "record": "rami_release",
+      "prop": "event",
+      "value": "Released",
+      "from": "2013-09-01",
+      "to": "2013-09-01",
+      "place": null,
+      "tier": "unconfirmed",
+      "event": "released"
+    },
+    {
+      "key": "huda_post.name",
+      "record": "huda_post",
+      "prop": "name",
+      "value": "Huda Saleh",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "huda_post.mother",
+      "record": "huda_post",
+      "prop": "mother_name",
+      "value": "Amal",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "huda_post.last_seen",
+      "record": "huda_post",
+      "prop": "last_seen",
+      "value": "Douma",
+      "from": "2014-01-10",
+      "to": "2014-01-10",
+      "place": "douma",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "huda_reg.name",
+      "record": "huda_reg",
+      "prop": "name",
+      "value": "هدى صالح",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "huda_reg.arrested",
+      "record": "huda_reg",
+      "prop": "arrested_at",
+      "value": "حرستا",
+      "from": "2014-01-10",
+      "to": "2014-01-10",
+      "place": "harasta",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "huda_note.name",
+      "record": "huda_note",
+      "prop": "name",
+      "value": "Huda Saleh",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "huda_note.mother",
+      "record": "huda_note",
+      "prop": "mother_name",
+      "value": "Samira",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nour_reg.name",
+      "record": "nour_reg",
+      "prop": "name",
+      "value": "نور قاسم",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "accepted"
+    },
+    {
+      "key": "nour_reg.born",
+      "record": "nour_reg",
+      "prop": "birth_date",
+      "value": "1990",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "accepted"
+    },
+    {
+      "key": "nour_reg.held",
+      "record": "nour_reg",
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "from": "2013-06-01",
+      "to": "2013-06-01",
+      "place": "branch999",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nour_witness.name",
+      "record": "nour_witness",
+      "prop": "name",
+      "value": "Nour Kassem",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nour_witness.born",
+      "record": "nour_witness",
+      "prop": "birth_date",
+      "value": "1990-04-02",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nour_witness.seen",
+      "record": "nour_witness",
+      "prop": "seen_at",
+      "value": "Branch 999",
+      "from": "2013-07-30",
+      "to": "2013-07-30",
+      "place": "branch999",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nour_witness.arrested",
+      "record": "nour_witness",
+      "prop": "arrested_at",
+      "value": "Harasta",
+      "from": "2014-01-01",
+      "to": "2014-01-01",
+      "place": "harasta",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nour_witness.seen_k",
+      "record": "nour_witness",
+      "prop": "seen_at",
+      "value": "Central Prison K",
+      "from": "2014-03-15",
+      "to": "2014-03-15",
+      "place": "prisonk",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nour_log.name",
+      "record": "nour_log",
+      "prop": "name",
+      "value": "Nour Kassem",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nour_log.arrested",
+      "record": "nour_log",
+      "prop": "arrested_at",
+      "value": "Homs",
+      "from": "2014-01-01",
+      "to": "2014-01-01",
+      "place": "homs",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nour_release.released",
+      "record": "nour_release",
+      "prop": "event",
+      "value": "Released",
+      "from": "2014-04-01",
+      "to": "2014-04-01",
+      "place": null,
+      "tier": "unconfirmed",
+      "event": "released"
+    },
+    {
+      "key": "sami_visitors.name",
+      "record": "sami_visitors",
+      "prop": "name",
+      "value": "Sami Yassin",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "sami_visitors.held",
+      "record": "sami_visitors",
+      "prop": "detained_at",
+      "value": "Branch 999",
+      "from": "2013-01-01",
+      "to": "2013-12-31",
+      "place": "branch999",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "sami_visitors.seen",
+      "record": "sami_visitors",
+      "prop": "seen_at",
+      "value": "Central Prison K",
+      "from": "2014-02-01",
+      "to": "2014-02-01",
+      "place": "prisonk",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "maya_appeal.name",
+      "record": "maya_appeal",
+      "prop": "name",
+      "value": "Maya Hamdan",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "maya_appeal.missing",
+      "record": "maya_appeal",
+      "prop": "event",
+      "value": "Missing",
+      "from": "2015-02-01",
+      "to": "2015-02-01",
+      "place": null,
+      "tier": "unconfirmed",
+      "event": "missing"
+    },
+    {
+      "key": "maya_witness.name",
+      "record": "maya_witness",
+      "prop": "name",
+      "value": "Maya Hamdan",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "maya_witness.seen",
+      "record": "maya_witness",
+      "prop": "seen_at",
+      "value": "Central Prison K",
+      "from": "2015-06-10",
+      "to": "2015-06-10",
+      "place": "prisonk",
+      "tier": "unconfirmed"
+    }
+  ],
+  "batch": [
+    "witness",
+    "witness2"
+  ],
+  "truth": {
+    "same_person": [
+      [
+        "yousef_post",
+        "yousef_reg"
+      ],
+      [
+        "yousef_family",
+        "yousef_reg"
+      ],
+      [
+        "yousef_family",
+        "yousef_post"
+      ],
+      [
+        "lina_list",
+        "lina_note"
+      ],
+      [
+        "khatib_list",
+        "khatib_note"
+      ],
+      [
+        "bassel_roster",
+        "bassel_testimony"
+      ],
+      [
+        "omar_appeal",
+        "omar_transfer"
+      ]
+    ],
+    "twins": [
+      [
+        "twin_reg",
+        "yousef_reg"
+      ],
+      [
+        "twin_reg",
+        "yousef_post"
+      ],
+      [
+        "twin_reg",
+        "yousef_family"
+      ],
+      [
+        "lina_list",
+        "lina_school"
+      ],
+      [
+        "lina_note",
+        "lina_school"
+      ],
+      [
+        "khatib_intake",
+        "khatib_list"
+      ],
+      [
+        "khatib_intake",
+        "khatib_note"
+      ]
+    ],
+    "gaps": [
+      {
+        "record": "rami_reg",
+        "from": "2013-03-01",
+        "to": "2013-08-15",
+        "why": "arrested, next seen at Central Prison K"
+      },
+      {
+        "record": "huda_reg",
+        "from": "2014-01-10",
+        "to": null,
+        "why": "arrested the day she was last seen, nothing since"
+      },
+      {
+        "record": "nour_reg",
+        "from": "2014-01-01",
+        "to": "2014-03-15",
+        "why": "re-arrested, next seen 73 days later"
+      },
+      {
+        "record": "maya_appeal",
+        "from": "2015-02-01",
+        "to": "2015-06-10",
+        "why": "reported missing, seen 129 days later"
+      }
+    ],
+    "not_gaps": [
+      {
+        "record": "nour_reg",
+        "from": "2013-06-01",
+        "to": "2013-07-30",
+        "why": "59 days, under the 60-day threshold"
+      },
+      {
+        "record": "sami_visitors",
+        "from": "2013-12-31",
+        "to": "2014-02-01",
+        "why": "a year-only detention ends at its latest date"
+      },
+      {
+        "record": "rami_reg",
+        "from": "2013-09-01",
+        "to": null,
+        "why": "a release closes the record"
+      },
+      {
+        "record": "nour_reg",
+        "from": "2014-04-01",
+        "to": null,
+        "why": "a release closes the record"
+      }
+    ],
+    "contradictions": [
+      {
+        "claims": [
+          "rami_reg.born",
+          "rami_witness.born"
+        ],
+        "why": "birth year 1979 against 1983"
+      },
+      {
+        "claims": [
+          "huda_post.mother",
+          "huda_note.mother"
+        ],
+        "why": "mother Amal against Samira"
+      },
+      {
+        "claims": [
+          "nour_witness.arrested",
+          "nour_log.arrested"
+        ],
+        "why": "arrested in Harasta and in Homs on one day"
+      }
+    ],
+    "not_contradictions": [
+      {
+        "claims": [
+          "rami_reg.arrested",
+          "rami_witness.arrested"
+        ],
+        "why": "one place in two scripts"
+      },
+      {
+        "claims": [
+          "huda_post.last_seen",
+          "huda_reg.arrested"
+        ],
+        "why": "last seen and arrested on the same day"
+      },
+      {
+        "claims": [
+          "nour_reg.born",
+          "nour_witness.born"
+        ],
+        "why": "a year against a full date in that year"
+      },
+      {
+        "claims": [
+          "rami_reg.mother",
+          "rami_witness.mother"
+        ],
+        "why": "one name in two scripts"
+      }
+    ]
+  }
+}
