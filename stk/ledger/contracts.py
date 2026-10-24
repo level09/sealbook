@@ -130,6 +130,12 @@ class Prop(enum.StrEnum):
     # "exif" also covers a video container's ISO 6709 location tag.
     PHOTOGRAPHED_AT = "photographed_at"
     FILMED_AT = "filmed_at"
+    # Two people or two documents related. Subject "person:<uuid>" with value
+    # {"person": "<uuid>", "kind": family|cellmate|command}, or "blob:<sha256>" with
+    # {"blob": "<sha256>", "kind": contains|contained_in|related}; both carry
+    # "basis" (statement refs) and optionally "why". Proposed by an agent, decided
+    # by a person; never collapses source origins.
+    RELATION = "relation"
 
 
 # Props whose value is read out of document bytes: an agent-authored one without a
@@ -159,6 +165,8 @@ EXTRACTED_PROPS = frozenset(
 )
 
 EVENT_KINDS = ("killed", "missing", "displaced", "released", "wounded", "defected")
+PERSON_RELATIONS = ("family", "cellmate", "command")
+DOCUMENT_RELATIONS = ("contains", "contained_in", "related")
 
 # Fields hashed into each chained row. Order is irrelevant (canonical JSON sorts
 # keys); membership is the contract.
