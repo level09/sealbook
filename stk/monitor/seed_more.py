@@ -18,6 +18,7 @@ from urllib.parse import quote
 import click
 from sqlalchemy import select
 
+from stk.cases.service import ensure as ensure_case
 from stk.discovery import service as discovery
 from stk.discovery.models import FindingKey
 from stk.ingest.service import system_agent
@@ -921,6 +922,7 @@ async def decide(s, reviewer, senior, plan: dict) -> None:
 
 async def seed_case(s, session, case_id, case, ctx) -> dict:
     s.case = case_id
+    await ensure_case(session, case_id)
     owner, analysts, senior, reviewer, extractor, importer = ctx
     mine = [owner, *analysts]
     principals = [

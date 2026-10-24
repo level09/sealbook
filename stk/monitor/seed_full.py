@@ -22,6 +22,7 @@ from quart_security import hash_password
 from sqlalchemy import select
 
 from stk import blobs
+from stk.cases.service import ensure as ensure_case
 from stk.collaboration import assignments
 from stk.collaboration import service as collaboration
 from stk.discovery import service as discovery
@@ -471,6 +472,8 @@ async def seed_full(session, app) -> dict:
         raise click.ClickException(f"{CASE} is already seeded")
     s = Seeder(session)
     s.case = CASE
+    for slug in (CASE, EVAL):
+        await ensure_case(session, slug)
     owner, colleague, third = await users(session, app)
     senior = await s.analyst("senior-analyst", CASE)
     extractor = await system_agent(session, "extractor")

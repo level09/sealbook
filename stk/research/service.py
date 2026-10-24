@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import stk.extensions as ext
 from stk import netguard
+from stk.cases.models import Case
 from stk.discovery.models import MediaFrame
 from stk.discovery.service import available
 from stk.ingest.service import normalise_url, system_agent
@@ -68,11 +69,7 @@ async def blocked(db: AsyncSession) -> set[str]:
 async def refusal(db: AsyncSession, investigation: str | None) -> str | None:
     if not investigation:
         return "Choose the case this research is for."
-    known = await db.scalar(
-        select(Acquisition.id)
-        .where(Acquisition.context["investigation"].astext == investigation)
-        .limit(1)
-    )
+    known = await db.scalar(select(Case.id).where(Case.slug == investigation))
     if known is None:
         return f"There is no case named {investigation}."
     row = await db.get(CaseSetting, investigation)
@@ -364,7 +361,10 @@ async def queue_capture(
     ids: list[str],
     sensitivity: str,
     doc_type: str,
+    batch: str | None = None,
 ) -> dict:
+    """Queue one capture run per picked result, into `batch` when the caller has an
+    intake batch open (Add evidence), else a new one."""
     if missing()["capture"]:
         raise Refusal("Capture is not configured: " + ", ".join(missing()["capture"]))
     sensitivity = str(Sensitivity(sensitivity))
@@ -379,7 +379,7 @@ async def queue_capture(
     for inv in {c["investigation"] for c in candidates}:
         if reason := await refusal(db, inv):
             raise Refusal(reason)
-    batch = str(uuid.uuid4())
+    batch = str(uuid.UUID(batch)) if batch else str(uuid.uuid4())
     agent = await system_agent(db, "capture")
     runs = []
     for c in candidates:

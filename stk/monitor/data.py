@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
 from stk import blobs
+from stk.cases.models import Case
 from stk.ledger.blobmeta import span_check
 from stk.ledger.contracts import EXTRACTED_PROPS, PRIVATE_PROPS, Prop, Tier
 from stk.ledger.models import (
@@ -488,9 +489,8 @@ async def document_rows(db: AsyncSession, f: dict, limit=500) -> list[dict]:
 
 
 async def investigations(db: AsyncSession) -> list[str]:
-    inv = Acquisition.context["investigation"].astext
-    q = select(inv).where(inv.is_not(None)).distinct().order_by(inv)
-    return list((await db.execute(q)).scalars())
+    """Case keys from the case table, the one list every switcher uses."""
+    return list((await db.execute(select(Case.slug).order_by(Case.slug))).scalars())
 
 
 # --- tracks -------------------------------------------------------------------

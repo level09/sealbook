@@ -22,6 +22,7 @@ from alembic import command
 from stk import blobs
 from stk.agent_login import create_agent_login_token
 from stk.app import create_app
+from stk.cases.service import ensure as ensure_case
 from stk.ledger.contracts import Event, Prop, StatementIn
 from stk.ledger.models import Principal, Run
 from stk.ledger.write import append, emit, record_acquisition
@@ -291,6 +292,7 @@ class MonitorTest(unittest.IsolatedAsyncioTestCase):
             self.key = Ed25519PrivateKey.generate()
             self.blobs, self.runs = {}, {}
             for case in ("case-a", "case-b"):
+                await ensure_case(s, case)
                 color = "white" if case == "case-a" else "black"
                 sha = (
                     await blobs.put(s, png(color), "image/png", Config.BLOB_DIR)

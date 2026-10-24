@@ -240,13 +240,14 @@ async def hints(
 
 
 async def roster(
-    session: AsyncSession, investigation: str | None = None
+    session: AsyncSession, investigation: str | None = None, groups=None
 ) -> dict[str, dict]:
     """Every person with facts on record, by canonical id: how much is known, from
     how many documents, over which dates. No values, so nothing needs masking.
     With an investigation, only facts whose source belongs to it count. A fact is
     what the person page lists: current, not rejected, no identity links."""
-    groups, _ = await identity(session)
+    if groups is None:
+        groups, _ = await identity(session)
     rows = await session.execute(
         select(
             Statement.subject,
