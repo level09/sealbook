@@ -8,6 +8,7 @@
 .sr-muted { color: var(--ink-3, #62656a); }
 .sr-hit { display: grid; grid-template-columns: 26px 1fr auto; gap: 2px 10px; padding: 9px 14px; border-top: 1px solid var(--line, #e4e4e0); text-decoration: none; color: inherit; outline: none; }
 .sr-hit:first-child { border-top: 0; }
+.sr-hit > span { min-width: 0; overflow-wrap: anywhere; }
 .sr-hit:hover, .sr-hit.active { background: var(--raise, #fafaf8); }
 .sr-hit.active { box-shadow: inset 3px 0 0 var(--ink, #18191b); }
 [dir="rtl"] .sr-hit.active { box-shadow: inset -3px 0 0 var(--ink, #18191b); }
@@ -70,9 +71,9 @@
             <div v-else-if="h.masked && h.type !== 'person'" class="sr-why"><i class="ti ti-eye-off"></i> Hidden until you reveal this source (logged)</div>
             <div class="sr-why" dir="auto">${ why(h) }${ where(h) }</div>
           </span>
-          <span class="sr-lead-label" :title="'Cosine similarity in the embedding space. Not a probability.'"><i class="ti ti-robot"></i> lead<span v-if="score(h) !== null">&nbsp;${ score(h).toFixed(2) }</span></span>
+          <span class="sr-lead-label" :title="score(h) !== null ? 'Similarity ' + score(h).toFixed(2) + ' in the embedding space. Not a probability.' : 'Near by meaning. Not a probability.'"><i class="ti ti-robot"></i> ${ h.why.band ? h.why.band + ' lead' : 'lead' }</span>
         </a>
-        <v-empty-state v-if="!leads.length" icon="ti ti-robot-off" title="No leads" :text="result.semantic.status === 'ok' ? 'Nothing near this query in the embedded evidence.' : 'Semantic search is off.'"></v-empty-state>
+        <v-empty-state v-if="!leads.length" icon="ti ti-robot-off" title="No leads" :text="result.semantic.status !== 'ok' ? 'Semantic search is off.' : exact.length ? 'Nothing else comes close by meaning to what the exact hits above already show.' : 'Nothing near this query in the embedded evidence.'"></v-empty-state>
       </div>
     </section>
     <p class="text-caption sr-muted"><kbd>j</kbd>/<kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>/</kbd> search</p>
@@ -97,6 +98,7 @@ const WHY = {
   spelling: h => 'similar spelling in another script: ' + h.why.matched,
   semantic: () => 'near the query by meaning', near_match: () => 'near an exact hit by meaning',
 };
+const MEANING = ['semantic', 'near_match'];
 const app = createApp({
   mixins: [layoutMixin], delimiters: config.delimiters,
   data() {
@@ -129,7 +131,12 @@ const app = createApp({
     },
     kindLabel(h) { return h.type === 'media' || h.type === 'passage' ? (h.kind || h.type).replace('_', ' ') : h.type === 'claim' ? h.prop.replace(/_/g, ' ') : h.type; },
     score(h) { return h.why.score ?? h.why.near?.score ?? null; },
-    why(h) { return (h.why.signals || []).filter(s => WHY[s]).map(s => WHY[s](h)).filter((v, i, a) => a.indexOf(v) === i).join(' · '); },
+    // An exact reason says why it matched; "near by meaning" then adds nothing.
+    why(h) {
+      const all = (h.why.signals || []).filter(s => WHY[s]);
+      const exact = all.filter(s => !MEANING.includes(s));
+      return (exact.length ? exact : all).map(s => WHY[s](h)).filter((v, i, a) => a.indexOf(v) === i).join(' · ');
+    },
     where(h) {
       const l = h.location || {}, out = [];
       if (l.page) out.push('page ' + l.page);

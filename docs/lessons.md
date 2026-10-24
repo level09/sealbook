@@ -487,6 +487,10 @@ covers in the text it was read from (`span_blob`).
   deliberate limit.
 - Discover listed a finding's claims as its members, so four people showed five
   rows. Group by identity cluster and list each person's claims under them.
+- Search added "near the query by meaning" to every exact hit that also had a
+  vector, and returned every lead the model gave, so a name query listed a test tone
+  and five photos at a flat 0.63. Drop the meaning reason when an exact one exists;
+  drop leads more than 0.05 below the best score in the answer; show a band word.
 - A bulk-assign notification has no subject, so the Inbox showed it as its own row
   beside the assignment it announced. It folds into the assignment rows written
   within a second of it.

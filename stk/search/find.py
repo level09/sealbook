@@ -88,8 +88,8 @@ def _segment_item(row, doc, masked, texts, revealed):
         "type": "passage" if kind in TEXT_KINDS else "media",
         "id": row["segment"],
         "sha256": row["sha256"],
-        "title": doc["file"],
-        "subtitle": ", ".join(x for x in (doc["doc_type"], doc["date"]) if x),
+        "title": doc["title"],
+        "subtitle": ", ".join(x for x in (_kind(doc), doc["date"]) if x),
         "kind": kind,
         "location": row["location"],
         "span": row.get("span"),
@@ -155,14 +155,16 @@ async def _people(db, query, f, embedding, named, ctx_for):
             {
                 "type": "person",
                 "id": row["subject"],
-                "title": shown[0] if shown else f"Person {person[:8]}",
-                "alt": list(dict.fromkeys(shown[1:]))[:4],
+                "title": shown[0] if shown else "Hidden person (sensitive source)",
+                "alt": [n for n in dict.fromkeys(shown) if n != shown[0]][:4],
                 "masked": not shown,
-                "subtitle": f"{info['facts']} facts from {info['documents']} documents"
+                "subtitle": f"{_count(info['facts'], 'fact')} from "
+                f"{_count(info['documents'], 'document')}"
                 if info.get("facts")
                 else None,
                 "exact": "keyword" in row["signals"],
-                "why": {"signals": row["signals"]},
+                "why": {"signals": row["signals"]}
+                | ({"score": row["score"]} if "score" in row else {}),
                 "link": f"/people/{person}",
             }
         )
@@ -248,10 +250,22 @@ async def _claims(db, needles, f, ctx_for):
             if key and key in haystack:
                 matched.append((st, value, tier, name))
                 break
-    ctx = await ctx_for([st.span_blob for st, *_ in matched])
+    # A transcript or page text names the recording or file it was read from.
+    spans = {st.span_blob for st, *_ in matched if st.span_blob}
+    origin = dict(
+        (
+            await db.execute(
+                select(Blob.sha256, mfilter.source(Blob.sha256)).where(
+                    Blob.sha256.in_(spans)
+                )
+            )
+        ).all()
+    )
+    ctx = await ctx_for(origin.values())
     items = []
     for st, value, tier, name in matched:
-        doc = ctx.doc(st.span_blob) if st.span_blob else None
+        sha = origin.get(st.span_blob)
+        doc = ctx.doc(sha) if sha else None
         # The monitor's rule: personal values from a sensitive source stay masked.
         masked = st.prop in data.PERSONAL and (doc is None or doc["sensitive"])
         incident = st.prop == Prop.INCIDENT
@@ -261,7 +275,7 @@ async def _claims(db, needles, f, ctx_for):
                 "id": str(st.id),
                 "title": None if masked else data.display(value),
                 "prop": st.prop,
-                "subtitle": doc["file"] if doc else None,
+                "subtitle": doc["title"] if doc else None,
                 "masked": masked,
                 "tier": tier,
                 "exact": True,
@@ -270,8 +284,8 @@ async def _claims(db, needles, f, ctx_for):
                 "link": f"/incidents/{st.subject.removeprefix('incident:')}"
                 if incident
                 else f"/review?statement={st.id}"
-                if not st.span_blob
-                else _link(st.span_blob),
+                if not sha
+                else _link(sha),
             }
         )
     return items
@@ -309,7 +323,7 @@ async def _findings(db, f, people, places):
             {
                 "type": "finding",
                 "id": str(st.id),
-                "title": value.get("kind", "finding").replace("_", " "),
+                "title": value.get("kind", "finding").replace("_", " ").capitalize(),
                 "subtitle": value.get("month"),
                 "exact": True,
                 "why": {"signals": ["involves"], "matched": sorted(involved)},
@@ -317,6 +331,43 @@ async def _findings(db, f, people, places):
             }
         )
     return items
+
+
+def _kind(doc):
+    t = doc["doc_type"]
+    return None if t in (None, "unknown") else t.replace("_", " ")
+
+
+def _count(n, one):
+    return f"{n} {one}" if n == 1 else f"{n} {one}s"
+
+
+# Leads by meaning far below the best score in the same answer are noise (a name
+# query pulls every photo in at a flat similarity), so they are left out. The bands
+# follow the retrieval gold set: positives score about 0.80, negatives top 0.67.
+LEAD_MARGIN = 0.05
+BANDS = ((0.75, "close"), (0.68, "related"))
+
+
+def _score(item):
+    why = item["why"]
+    return why.get("score") or (why.get("near") or {}).get("score")
+
+
+def _leads(groups: list[list[dict]]) -> list[list[dict]]:
+    scores = [s for items in groups for i in items if (s := _score(i)) is not None]
+    floor = max(scores) - LEAD_MARGIN if scores else None
+    out = []
+    for items in groups:
+        kept = []
+        for i in items:
+            s = _score(i)
+            if s is not None:
+                i["why"]["band"] = next((b for lo, b in BANDS if s >= lo), "loose")
+            if i["exact"] or s is None or s >= floor:
+                kept.append(i)
+        out.append(kept)
+    return out
 
 
 def _group(items, limit):
@@ -366,9 +417,9 @@ async def find(db, query, f, *, types=TYPES, limit=8, embedding=None, revealed=(
                     "type": "source",
                     "id": row["sha256"],
                     "sha256": row["sha256"],
-                    "title": doc["file"],
+                    "title": doc["title"],
                     "subtitle": ", ".join(
-                        x for x in (doc["doc_type"], doc["date"], *doc["origins"]) if x
+                        x for x in (_kind(doc), doc["date"], *doc["origins"]) if x
                     ),
                     "exact": True,
                     "why": {"signals": row["signals"], "matched": row.get("matched")},
@@ -379,6 +430,7 @@ async def find(db, query, f, *, types=TYPES, limit=8, embedding=None, revealed=(
             continue
         item = _segment_item(row, doc, masked, texts, revealed)
         (passages if item["type"] == "passage" else media).append(item)
+    people, passages, media = _leads([people, passages, media])
     for name, items in (
         ("people", people),
         ("places", places),

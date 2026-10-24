@@ -327,19 +327,19 @@ async def actor_search(db, query, f, query_embedding=None, named=None):
     semantic, details = [], {}
     if query_embedding:
         values, space = query_embedding
-        q = select(EntityEmbedding).where(EntityEmbedding.space_id == space)
+        distance = EntityEmbedding.vector.cosine_distance(values)
+        q = select(EntityEmbedding, distance).where(EntityEmbedding.space_id == space)
         if f["investigation"]:
             q = q.where(EntityEmbedding.investigation == f["investigation"])
-        rows = (
-            await db.execute(
-                q.order_by(EntityEmbedding.vector.cosine_distance(values)).limit(10)
-            )
-        ).scalars()
-        for row in rows:
+        rows = await db.execute(q.order_by(distance).limit(10))
+        for row, d in rows:
             _, digest, facts = await actor_profile(db, row.subject, row.investigation)
             if digest == row.content_hash and facts:
                 semantic.append(row.subject)
-                details[row.subject] = {"statements": len(facts)}
+                details[row.subject] = {
+                    "statements": len(facts),
+                    "score": round(1 - float(d), 3),
+                }
     result = []
     # Name matches first; profiles near by meaning are leads after them.
     for subject in dict.fromkeys(keyword + semantic):
