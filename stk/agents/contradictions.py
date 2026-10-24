@@ -18,7 +18,7 @@ from stk.people import data as people
 
 TOOL = "contradictions"
 AGENT = "Contradiction hunter"
-PROMPT_VERSION = "contradictions-1"
+PROMPT_VERSION = "contradictions-2"
 CAP = 24
 PER_CALL = 4
 BUDGET_SECONDS = LEASE.total_seconds() - 90
@@ -35,7 +35,10 @@ SYSTEM = (
     "these candidates. Explain in one or two sentences why the sources might "
     "disagree, without deciding which is true, and draft a short question for a "
     "colleague to settle it. Every item must cite claims from at least two sides "
-    "of one candidate. Use handles only in claims, never in why or question. "
+    "of one candidate. A candidate with proposed_link compares two person "
+    "records that a proposal, not yet reviewed, calls one person; there the "
+    "values may show they are two people. "
+    "Use handles only in claims, never in why or question. "
     "Do not add facts or names absent from the cited claims."
 )
 SCHEMA = {
@@ -61,55 +64,67 @@ SCHEMA = {
 }
 
 
+def forks(claims, places, timeless) -> list[dict]:
+    """The person projection's disagreements over these claims, as cited sides."""
+    rows = [
+        {
+            "id": str(c.id),
+            "prop": c.prop,
+            "display": c.text,
+            "from": c.lo.isoformat() if c.lo else None,
+            "to": c.hi.isoformat() if c.hi else None,
+            "inherited": False,
+            "masked": False,
+            "tier": c.tier,
+            "subject": "track",
+            "subject_label": "track",
+            "when": read.when(c.lo, c.hi),
+            "actor": {"agent": True},
+        }
+        for c in claims
+        if c.prop in timeless | LOCATED
+    ]
+    facts = {}
+    for row in rows:
+        facts.setdefault(row["prop"], []).append(row)
+    layer = map_layer(rows, places)
+    points = {p["id"]: p for p in layer["points"]}
+    steps = next(iter(layer["tracks"].values()), {}).get("steps", [])
+    by_id = {str(c.id): c for c in claims}
+    out = []
+    for fork in people.disagreements(
+        facts, steps, places, {}, timeless=timeless, same_value=read.same_value
+    ):
+        cand = {"sides": [[by_id[s["id"]]] for s in fork["sides"]]}
+        if fork["kind"] == "position":
+            cand["_pairs"] = [
+                {a.id, b.id}
+                for a, b in combinations([s[0] for s in cand["sides"]], 2)
+                if _apart(points[str(a.id)], points[str(b.id)])
+            ]
+        out.append(cand)
+    return out
+
+
 def candidates(case) -> list[dict]:
+    """Disagreements within one person across sources, and between two records an
+    open same-person proposal joins (possibly two people, even in one source)."""
     out = []
     timeless = set(brief.SINGLE) | set(linker.CONTRADICTS)
-    for claims in case.by_person().values():
-        rows = [
-            {
-                "id": str(c.id),
-                "prop": c.prop,
-                "display": c.text,
-                "from": c.lo.isoformat() if c.lo else None,
-                "to": c.hi.isoformat() if c.hi else None,
-                "inherited": False,
-                "masked": False,
-                "tier": c.tier,
-                "subject": c.person,
-                "subject_label": "track",
-                "when": read.when(c.lo, c.hi),
-                "actor": {"agent": True},
-            }
-            for c in claims
-            if c.prop in timeless | LOCATED
+    persons = case.by_person()
+    for claims in persons.values():
+        out += [
+            cand
+            for cand in forks(claims, case.places, timeless)
+            if len({c.source for side in cand["sides"] for c in side}) >= 2
         ]
-        facts = {}
-        for row in rows:
-            facts.setdefault(row["prop"], []).append(row)
-        layer = map_layer(rows, case.places)
-        points = {p["id"]: p for p in layer["points"]}
-        steps = next(iter(layer["tracks"].values()), {}).get("steps", [])
-        forks = people.disagreements(
-            facts,
-            steps,
-            case.places,
-            {},
-            timeless=timeless,
-            same_value=read.same_value,
-        )
-        by_id = {str(c.id): c for c in claims}
-        for fork in forks:
-            sides = [[by_id[s["id"]]] for s in fork["sides"]]
-            if len({c.source for side in sides for c in side}) < 2:
-                continue
-            cand = {"sides": sides}
-            if fork["kind"] == "position":
-                cand["_pairs"] = [
-                    {a.id, b.id}
-                    for a, b in combinations([s[0] for s in sides], 2)
-                    if _apart(points[str(a.id)], points[str(b.id)])
-                ]
-            out.append(cand)
+    for a, b in case.links:
+        if a in persons and b in persons:
+            out += [
+                cand | {"link": True}
+                for cand in forks(persons[a] + persons[b], case.places, timeless)
+                if len({c.person for side in cand["sides"] for c in side}) == 2
+            ]
     out.sort(
         key=lambda x: (
             -sum(c.tier == Tier.ACCEPTED for s in x["sides"] for c in s),
@@ -133,6 +148,7 @@ def payload(cands, h, docs) -> dict:
                     for side in cand["sides"]
                 ]
             }
+            | ({"proposed_link": True} if cand.get("link") else {})
             for cand in cands
         ]
     }
@@ -142,6 +158,13 @@ def fixed_answer(p: dict) -> dict:
     return {
         "items": [
             {
+                "claims": [s[0]["h"] for s in cand["sides"]],
+                "kind": "possibly two people",
+                "why": "Two records proposed as one person give different values here. They may be two people.",
+                "question": "Could you check these passages and say whether they describe the same person?",
+            }
+            if cand.get("proposed_link")
+            else {
                 "claims": [s[0]["h"] for s in cand["sides"]],
                 "kind": "sources conflict",
                 "why": "The sources give different accounts. A colleague should check the original passages.",
@@ -172,7 +195,8 @@ def validate(answer, cands, h, claims) -> tuple[list, dict]:
             dropped["unknown"] += 1
             continue
         ids = {h.ref[r] for r in refs}
-        if len({by_id[i].source for i in ids}) < 2 or not any(
+        two = {by_id[i].source for i in ids}, {by_id[i].person for i in ids}
+        if max(len(x) for x in two) < 2 or not any(
             ids <= set().union(*sides)
             and sum(bool(ids & s) for s in sides) >= 2
             and (pairs is None or any(pair <= ids for pair in pairs))
@@ -330,7 +354,7 @@ async def queue(db, investigation: str, user_id: int, model: str) -> Run:
 async def show(db, user, investigation: str) -> dict:
     found = await runs(db, investigation)
     pending = next((r for r in found if r.status in ("queued", "running")), None)
-    run = next((r for r in found if r.status == "done" and r.output_hash), None)
+    run, out = await read.report(db, found)
     result = {
         "items": [],
         "outcome": None,
@@ -341,7 +365,6 @@ async def show(db, user, investigation: str) -> dict:
     }
     if run is None:
         return result
-    out = read.read_output(await db.get(Blob, run.output_hash))
     case = await read.case(db, investigation)
     by_id = {str(c.id): c for c in case.claims}
     shown = set()
@@ -367,17 +390,33 @@ async def show(db, user, investigation: str) -> dict:
             )
             continue
         shown.update(item["claims"])
+        # Two records under a proposed link: say which record each side is from.
+        records = (
+            {c.person for c in claims} if len({c.person for c in claims}) > 1 else set()
+        )
+        named = await people.names(db, [people.pid(p) for p in records], case.groups)
+
+        def dated(sha):
+            words = read.date_words(case.docs[sha].get("date"))
+            return None if words and case.docs[sha]["title"].endswith(words) else words
+
         result["items"].append(
             item
             | {
                 "locked": [],
                 "claims": [
                     {
-                        "field": c.prop.replace("_", " "),
+                        "person": c.person.removeprefix("person:")
+                        if c.person in records
+                        else None,
+                        "name": named.get(people.pid(c.person))
+                        if c.person in records
+                        else None,
+                        "field": read.label(c.prop),
                         "value": c.text,
                         "when": read.when(c.lo, c.hi),
                         "source": case.docs[c.source]["title"],
-                        "source_date": case.docs[c.source].get("date"),
+                        "source_date": dated(c.source),
                         "decided": c.tier == Tier.ACCEPTED,
                         "href": f"/evidence/{c.source}",
                     }

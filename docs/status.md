@@ -45,7 +45,11 @@ Implemented a manual case report (`contradictions`, `stk/agents/contradictions.p
 with a panel under Sources disagree on the person page. It reuses the person
 projection's disagreement builder, the brief's single-valued fields and the
 linker's conflicting fields, and their shared value comparison. Different birth
-date precision alone is not a disagreement. Accepted claims rank first, then
+date precision alone is not a disagreement. It also compares two person records
+that an open (unreviewed) same-person proposal joins, even within one source, and
+reports such a pair as possibly two people; each side names its record. Without
+this the demo case had no candidate, as its cross-record disagreements sit only
+behind open proposals. Accepted claims rank first, then
 source count. Up to 24 candidates are read, four per call, within the worker's
 time budget; the report counts deferred work. Each explanation and draft question
 cites at least two sides from one candidate. Invalid citations, handles in prose
@@ -96,7 +100,13 @@ values are dropped and counted. Runs store suggestions and an explicit outcome,
 and write only their access record to the ledger. Earlier reported windows for
 the same requester are suppressed until their bounds change. Reads remove items
 with unavailable claims and lock the whole suggestion on unrevealed sensitive
-sources. Search in research fills the existing drawer; only its Send button
+sources. The panel states each window with both ends and its length ("No record
+after" for an open end), lists other people's lead claims apart from the person's
+own, uses the app's field labels, folds consecutive locked suggestions into one
+line per sensitive source, and keeps two records an open same-person proposal
+joins next to each other with a note. A later check that finds only what was
+already reported keeps the earlier report on screen (also for contradictions).
+Search in research fills the existing drawer; only its Send button
 performs a search. There is no standalone research page or query URL parameter.
 
 All 18 offline checks pass in `tests/test_gaps.py`: gap rules, citation and search

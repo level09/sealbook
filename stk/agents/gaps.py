@@ -204,11 +204,21 @@ def payload(cands) -> dict:
 
 
 def window_words(window) -> str:
-    lo, hi = window
-    start = when(date.fromisoformat(lo), None)
-    return (
-        f"{start} to {when(date.fromisoformat(hi), None)}" if hi else f"After {start}"
+    """ "2 May 2013 to 9 February 2014, about 9 months with no record", or for an
+    open end "No record after 2 May 2013"."""
+    lo, hi = (date.fromisoformat(d) if d else None for d in window)
+    if hi is None:
+        return f"No record after {when(lo, None)}"
+    days = (hi - lo).days
+    months = round(days / 30.44)
+    length = (
+        f"{days} days"
+        if months < 2
+        else f"about {months} months"
+        if months < 24
+        else f"about {round(days / 365.25)} years"
     )
+    return f"{when(lo, None)} to {when(hi, None)}, {length} with no record"
 
 
 def fixed_answer(p) -> dict:
@@ -224,6 +234,7 @@ def fixed_answer(p) -> dict:
             ),
             "",
         )
+        year = re.search(r"\d{4}", g["window"]).group()
         items.append(
             {
                 "gap": g["h"],
@@ -231,7 +242,7 @@ def fixed_answer(p) -> dict:
                 "where": f"Review {', '.join(dict.fromkeys(c['source'] for c in leads))} for evidence in this gap."
                 if leads
                 else "Check the cited sources for records after the last dated account.",
-                "searches": [" ".join(filter(None, [name, place, g["window"]]))[:200]],
+                "searches": [" ".join(filter(None, [name, place, year]))[:200]],
             }
         )
     return {"items": items}
@@ -428,10 +439,44 @@ async def queue(db, investigation, user_id, model=None) -> Run:
     return run
 
 
+def pair_records(items, links) -> list:
+    """Two records an open same-person proposal joins each get their own gaps, as
+    the proposal is undecided. Keep them together and say so, by the name the
+    other item already shows."""
+    named = {}
+    for i in items:
+        if not i["locked"]:
+            named.setdefault(i["person"], i)
+    out, placed = [], set()
+    for item in items:
+        if id(item) in placed:
+            continue
+        out.append(item)
+        placed.add(id(item))
+        if item["locked"]:
+            continue
+        for a, b in links:
+            other = named.get(b if item["person"] == a else a)
+            if item["person"] in (a, b) and other and id(other) not in placed:
+                item["maybe"] = {
+                    "person": other["person"],
+                    "name": other["name"],
+                    "where": "below",
+                }
+                other["maybe"] = {
+                    "person": item["person"],
+                    "name": item["name"],
+                    "where": "above",
+                }
+                out.append(other)
+                placed.add(id(other))
+    return out
+
+
 async def show(db, user, investigation) -> dict:
     found = await runs(db, investigation, user.id)
     pending = next((r for r in found if r.status in ("queued", "running")), None)
-    run = next((r for r in found if r.status == "done" and r.output_hash), None)
+    run, out = await read.report(db, found)
     base = {
         "items": [],
         "pending": bool(pending),
@@ -443,7 +488,6 @@ async def show(db, user, investigation) -> dict:
     }
     if run is None:
         return base
-    out = read.read_output(await db.get(Blob, run.output_hash))
     case = await read.case(db, investigation)
     visible = {str(c.id): c for c in case.claims}
     ctx = await Context.load(db, blobs={c.source for c in case.claims})
@@ -470,27 +514,38 @@ async def show(db, user, investigation) -> dict:
             (visible[i] for i in item["claims"]),
             key=lambda c: (c.lo or date.min, str(c.id)),
         )
+        name = case.name(person, cs)
+
+        def line(c):
+            return {
+                "text": f"{read.label(c.prop)}: {c.text}",
+                "when": when(c.lo, c.hi),
+                "source": {
+                    "title": ctx.doc(c.source)["title"],
+                    "href": f"/evidence/{c.source}",
+                },
+            }
+
         items.append(
             item
             | {
                 "person": person,
-                "name": case.name(person, cs),
+                "name": name,
                 "window_text": window_words(item["window"]),
+                # The header already names the person.
                 "claims": [
-                    {
-                        "text": f"{c.prop.replace('_', ' ')}: {c.text}",
-                        "when": when(c.lo, c.hi),
-                        "source": {
-                            "title": ctx.doc(c.source)["title"],
-                            "href": f"/evidence/{c.source}",
-                        },
-                    }
+                    line(c)
                     for c in cs
+                    if c.person == person
+                    and not (c.prop == Prop.NAME and c.text == name)
                 ],
+                # Other people placed at the same place inside the window.
+                "leads": [line(c) for c in cs if c.person != person],
                 "locked": [],
             }
         )
         shown.update(item["claims"])
+    items = pair_records(items, case.links)
     if shown:
         await brief.log_view(db, user, run, sorted(shown))
     outcome = (

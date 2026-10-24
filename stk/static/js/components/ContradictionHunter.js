@@ -75,6 +75,7 @@ export const ContradictionHunter = {
       <template v-else>
         <div v-for="(claim, n) in item.claims" :key="n" class="mb-1">
           <span dir="auto">{{ claim.field }}: {{ claim.value }}</span>
+          <span v-if="claim.person">, for <a :href="'/people/' + claim.person" dir="auto">{{ claim.name || 'an unnamed person' }}</a></span>
           <span v-if="claim.when" class="muted">, {{ claim.when }}</span>
           <a :href="claim.href" class="ms-2" dir="auto">{{ claim.source }}</a>
           <span v-if="claim.source_date" class="muted">, {{ claim.source_date }}</span>
