@@ -87,6 +87,7 @@ NOUN = {
 }
 SETUP = {
     "ROUTE_LOCAL_BASE_URL": "ROUTE_LOCAL_BASE_URL to the local model server",
+    "OPENROUTER_API_KEY": "OPENROUTER_API_KEY for the cloud route",
     "AGENT_MODEL": "AGENT_MODEL to the model it serves",
 }
 

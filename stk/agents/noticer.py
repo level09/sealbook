@@ -666,7 +666,7 @@ async def notice(c) -> str:
     investigation, user_id = c.run.inputs["investigation"], c.run.inputs["for_user"]
     agent = await read.agent_for(c.s, AGENT, user_id)
     if c.run.route != Config.AGENT_ROUTE or c.run.principal_id != agent.id:
-        raise ValueError("The noticer must run locally for the named person")
+        raise ValueError("The noticer must run on the agent route for the named person")
     if not await tasks.can_read(c.s, user_id, investigation):
         raise tasks.AccessLost(
             "The owner of this check no longer has access to this case."
