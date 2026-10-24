@@ -16,7 +16,7 @@ services:
 
   postgres:
     container_name: postgres
-    image: 'postgres:15-alpine'
+    build: ./postgres
     volumes:
       - 'postgres-data:/var/lib/postgresql/data'
       - './postgres/init-db.sh:/docker-entrypoint-initdb.d/10-stk.sh:ro'

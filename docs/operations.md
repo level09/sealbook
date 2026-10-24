@@ -15,9 +15,12 @@ PostGIS was checked locally with 3.6.4 (`brew install postgis`). The migration
 `20261026_postgis` runs `CREATE EXTENSION IF NOT EXISTS postgis`, which needs a
 superuser or a role allowed to create extensions; on a managed or hardened server,
 have the database owner run that statement first, then migrate. Debian and Ubuntu
-package it as `postgresql-<major>-postgis-3`. The `postgres:15-alpine` image in the
-framework's `docker-compose.yml` has neither PostGIS nor pgvector, so it does not run
-the evidence migrations; a deployment needs an image with both.
+package it as `postgresql-<major>-postgis-3`. `docker-compose.yml` builds
+`postgres/Dockerfile` (PostGIS 17 plus pgvector), and `postgres/init-db.sh` creates
+postgis, vector and pg_trgm as the superuser at first start, so the restricted `stk`
+role can run every migration. CI uses the same PostGIS image and installs pgvector
+into the service container. The PostGIS image is published for amd64 only, so on an
+ARM Mac it runs under emulation.
 
 ```sh
 uv sync --extra dev
