@@ -207,7 +207,7 @@ export function mount(boot) {
       readWords(r) {
         const parts = r.runs > 1 ? `${r.runs} parts, ` : '';
         if (r.status === 'failed') return `${parts}did not finish. ${r.failure || ''}`;
-        if (r.status === 'done') return `${parts}done${r.model ? ' with ' + r.model : ''}`;
+        if (r.status === 'done') return `${parts}done${r.route === 'local' ? ' on this server' : r.route ? ' by a cloud model' : ''}`;
         return `${parts}${r.status === 'running' ? 'running now' : 'queued'} on the ${r.route} route`;
       },
       // While this source is read, live run events nudge a reload, so claims appear
