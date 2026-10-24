@@ -6,6 +6,7 @@ only by `content_read`, which the caller gates behind the logged reveal."""
 
 import asyncio
 import hmac
+import re
 import time
 import uuid
 from collections import Counter
@@ -496,6 +497,9 @@ async def nearest(db, sha: str, fam: list[str], investigation) -> list[dict]:
             seg.kind.label("kind"),
             seg.location.label("location"),
             distance.label("distance"),
+            seg.text_sha256.label("text"),
+            seg.start.label("start"),
+            seg.end.label("end"),
         )
         .join(vec, vec.segment_id == seg.id)
         .where(
@@ -524,6 +528,12 @@ async def nearest(db, sha: str, fam: list[str], investigation) -> list[dict]:
             probe.c.kind,
             probe.c.location,
             probe.c.distance,
+            mine_seg.text_sha256,
+            mine_seg.start,
+            mine_seg.end,
+            probe.c.text,
+            probe.c.start,
+            probe.c.end,
         )
         .select_from(mine_seg)
         .join(mine_vec, mine_vec.segment_id == mine_seg.id)
@@ -534,18 +544,60 @@ async def nearest(db, sha: str, fam: list[str], investigation) -> list[dict]:
     for row in rows:
         if row[2] not in best or row[5] < best[row[2]][5]:
             best[row[2]] = row
-    return [lead(*row) for row in sorted(best.values(), key=lambda r: r[5])[:6]]
+    top = sorted(best.values(), key=lambda r: r[5])[:6]
+    # Each side quoted, so the reader sees what is alike, from sources they may read.
+    readable = {
+        x: granted(x) or not await is_sensitive(db, x)
+        for x in {sha, *(r[2] for r in top)}
+    }
+    texts = {
+        b.sha256: blobs.read(b, Config.BLOB_DIR).decode()
+        for b in (
+            await db.execute(
+                select(Blob).where(
+                    Blob.sha256.in_({t for r in top for t in (r[6], r[9]) if t})
+                )
+            )
+        ).scalars()
+        if blobs.stored(b, Config.BLOB_DIR)
+    }
+
+    def quote(blob, start, end, source):
+        if not (blob in texts and readable.get(source)):
+            return None
+        words = " ".join(MARKUP.sub(" ", texts[blob][start:end]).split())
+        return words if len(words) <= EXCERPT else words[: EXCERPT - 1] + "…"
+
+    return [
+        lead(*r[:6], quote(r[6], r[7], r[8], sha), quote(r[9], r[10], r[11], r[2]))
+        for r in top
+    ]
 
 
-def lead(kind, location, source, their_kind, theirs, d) -> dict:
+MARKUP = re.compile(r"<(style|script)\b[\s\S]*?</\1>|<[^>]+>", re.IGNORECASE)
+EXCERPT = 140
+
+
+def lead(kind, location, source, their_kind, theirs, d, mine=None, other=None):
     """A nearest-by-meaning row. The distance stays out of the sentence: a band
-    word reads plainly, and the number is for the tooltip."""
+    word reads plainly, and the number is for the tooltip. Passages are quoted
+    when their source may be read."""
+    if mine or other:
+        here = f"\u201c{mine}\u201d" if mine else where(kind, location)
+        there = f"\u201c{other}\u201d" if other else where(their_kind, theirs)
+        why = f"Here: {here}. There: {there}."
+    else:
+        why = (
+            f"{where(kind, location)} here is close to "
+            f"{where(their_kind, theirs)} there. A lead, not a match."
+        )
     return {
         "id": f"near:{source}",
         "kind": "Nearest by meaning",
         "other": source,
-        "why": f"{where(kind, location)} here is close to "
-        f"{where(their_kind, theirs)} there. A lead, not a match.",
+        "why": why,
+        "here_text": mine,
+        "there_text": other,
         "strength": band(d),
         "distance": round(d, 4),
         "here": location.get("ms"),
@@ -737,6 +789,17 @@ async def item(db, sha: str, user) -> dict | None:
         "synthetic": blob.storage_ref == blobs.SYNTHETIC,
         "pages": pages,
         "claims": claims,
+        # The one label rule for each person the claims are about.
+        "people": await people_data.names(
+            db,
+            sorted(
+                {
+                    people_data.pid(c["subject"])
+                    for c in claims
+                    if c["subject"].startswith("person:")
+                }
+            ),
+        ),
         "copies": found_copies,
         "relations": relations,
         "docs": docs,

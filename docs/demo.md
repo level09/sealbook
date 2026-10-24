@@ -17,8 +17,10 @@ uv run stk demo-seed --full
 uv run stk worker
 ```
 
-`demo-seed --full` writes `case-demo-01` (five text stand-ins) and `case-demo-02`
-(the acceptance files, two messy intake sheets and the documents below). Leave the
+`demo-seed --full` writes `case-demo-01` (five text stand-ins), `case-demo-02`
+(the acceptance files, two messy intake sheets and the documents below, each under
+a title an analyst would use) and `case-search-eval` (the retrieval gold set's
+unrelated news passages and its test tone, kept out of the demo case). Leave the
 worker running until the Sources page shows no "processing" rows; on a laptop that
 takes a few minutes, mostly thumbnails, transcription of the other recordings and
 embeddings. Pick `case-demo-02` in the case switcher. The colleagues
@@ -35,11 +37,13 @@ passkey held by `senior-analyst`, the same signature path a browser passkey uses
 ## Start at the Desk
 
 Open `/desk`. Since you left lists the colleagues' and agents' work grouped by who
-and what. Needs you shows two review requests from analyst-2 (the Jdeideh arrest
+and what, in plain words ("AI proposed 17 ages from Family intake sheet, version 1",
+"senior-analyst accepted 26 claims"). Needs you shows two review requests from analyst-2 (the Jdeideh arrest
 place and the corrected name حسن), a mention on that correction thread, and two
 assignments: the transfer order due in two days and the witness clip three days
-overdue. Findings waiting lists what discovery proposed; Recent evidence shows the
-newest sources with thumbnails. Notice that nothing here is a fact yet: each row
+overdue. Mentions and replies name the claim and source they are about, as the
+bell does. Findings waiting lists what discovery proposed; Recent evidence shows the
+newest sources with their titles, kind and file name. Notice that nothing here is a fact yet: each row
 names its source and what it waits on.
 
 The bell holds stored notifications: assigned work, replies, the mention, and
@@ -114,7 +118,9 @@ Open `/search` and try:
 - Paste the first characters of a SHA-256 from any evidence page: the exact
   source comes first.
 
-Exact hits rank above meaning leads; leads are labelled and never accepted.
+Exact hits rank above meaning leads; leads are labelled close, related or loose and
+never accepted. A name query shows no photo leads: leads far below the best match
+are left out.
 
 ## Discover connections
 
@@ -124,7 +130,9 @@ at confirmed places:
 - "4 people held at Branch 999 in July 2013", once as a shared presence and once
   as a candidate incident: Yousef from the voice clip and the cell roster, Bassel
   Nader and Fadi Karam from the roster, Salim Haddad from his published statement.
-  Three independent sources, so the band is strong.
+  Three independent sources, so the band is strong. Each lists four people, with
+  Yousef's two supporting claims on his one row, and each says it is also proposed
+  as the other kind.
 - "Both held at Branch 999 in September 2013": Yousef on the transfer order and
   Bassel Nader from row 16 of the second sheet. One shared day in a month, so the
   band is weak. Notice the two Bassels are separate records until someone links
@@ -147,7 +155,9 @@ Open `/review`. Asked of me lists the claims a colleague asked you about, due fi
 each as a sentence with its source and the place in it. Select one: the source opens
 at the span (the box on the register scan, the line on the transfer order PDF, the
 second in the witness clip, the cell in the sheet), with the checks in plain words,
-the run that proposed it and the other claims about the same person. Reveal a
+who proposed it (AI extraction, with the model as detail) and the other claims
+about the same person. The corrected name reads "Name: correct عمر حسين الزين to
+عمر حسن الزين". Reveal a
 sensitive source to read masked names; the reveal is logged. Accept (a) or reject
 (r) with your passkey after reading the rows it signs; Undo is offered at once.
 Correct (e) sends a corrected value to a colleague; Ask (s) starts a thread, which
@@ -160,7 +170,8 @@ open proposal at once, and any finding can be assigned with bulk assign.
 Open `/stories` and pick:
 
 - Person, Yousef Khaled Al-Ali (register R1): arrested in Harasta and last seen in
-  Douma on 2 May 2013, marked as sources that disagree, left for a person; a gap of
+  Douma on 2 May 2013, read as one day (last seen, then arrested a few km away),
+  not as sources that disagree; a gap of
   about two months; Branch 999 in July from the clip and the roster; held there
   and transferred to Central Prison K on 17 September 2013, with a gap before it.
   The map numbers the places in order; the lines are sequence, not routes. Pending

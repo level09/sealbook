@@ -506,3 +506,13 @@ covers in the text it was read from (`span_blob`).
   reports the claim's own date, the header the inherited one. Say the date comes
   from the document. A correction read "old name · name · new name" because the
   subject label is the old name; it reads "Name: correct X to Y".
+- A captured web page showed its markup as text. Tags are dropped from the shown
+  string only, piece by piece, so span offsets still index the stored bytes.
+- `subject_label` is a pure id slice ("person a464e7"), and the evidence page and the
+  monitor printed it as a group header and in review rows. Views name person rows
+  through `people.names` before they leave the server, numbering the rest "Unnamed
+  person N".
+- The place and incident evidence tables passed no lock to `<media-thumb>`, so an
+  unrevealed sensitive source answered 403. Every table of tiles carries `revealed`.
+- Map place labels sat 10 px right of the point, under the 28 px cluster badge. They
+  start 20 px out now.

@@ -8,9 +8,9 @@
     <div class="ev"><v-skeleton-loader type="image, paragraph"></v-skeleton-loader><v-skeleton-loader type="list-item-three-line@4"></v-skeleton-loader><v-skeleton-loader type="list-item-two-line@4"></v-skeleton-loader></div>
   </template>
   <template v-if="it">
-    <nav class="ev-crumbs" aria-label="Breadcrumb"><span>${ it.investigation }</span> / <a href="/evidence">Evidence</a> / <span>${ it.file }</span></nav>
+    <nav class="ev-crumbs" aria-label="Breadcrumb"><span>${ it.investigation }</span> / <a href="/evidence">Evidence</a> / <span>${ it.title }</span></nav>
     <div class="ev-head">
-      <h1><v-icon :icon="ICON[it.kind]" size="20" class="me-1"></v-icon>${ DOC[it.doc_type] || it.doc_type || 'Source' } <span class="muted font-weight-medium">${ it.file }</span></h1>
+      <h1><v-icon :icon="ICON[it.kind]" size="20" class="me-1"></v-icon>${ it.title } <span class="muted font-weight-medium">${ [DOC[it.doc_type] !== it.title ? DOC[it.doc_type] : null, it.file !== it.title ? it.file : null].filter(Boolean).join(', ') }</span></h1>
       <p class="mono muted" :title="it.sha256">${ short(it.sha256) }</p>
       <v-chip v-if="it.sensitive" color="sensitive" variant="outlined" size="small" prepend-icon="ti ti-eye-off">sensitive</v-chip>
       <div class="ms-auto d-flex ga-2 flex-wrap">
@@ -27,7 +27,7 @@
             <v-slide-group-item v-for="c in connections" :key="c.key">
               <v-card class="ev-thumb" border :href="c.href">
                 <media-thumb :locked="!c.o.revealed" :sha="c.o.sha256" :kind="c.o.kind" :file="c.o.file" :link="false" :caption="false" :width="114"></media-thumb>
-                <div class="k"><i class="ti ti-robot" aria-hidden="true"></i> ${ c.kind }</div><div class="n">${ c.o.file }</div>
+                <div class="k"><i class="ti ti-robot" aria-hidden="true"></i> ${ c.kind }</div><div class="n">${ c.o.title }</div>
               </v-card>
             </v-slide-group-item>
           </v-slide-group>
@@ -35,7 +35,7 @@
       </section>
 
       <section v-if="other" class="ev-panel" aria-label="Side by side">
-        <header><strong>${ DOC[other.doc_type] || other.kind }</strong><span class="muted">${ other.file }</span><v-spacer></v-spacer>
+        <header><strong>${ DOC[other.doc_type] || other.kind }</strong><span class="muted">${ other.title }</span><v-spacer></v-spacer>
           <v-btn size="small" variant="text" :href="'/evidence/' + other.sha256" prepend-icon="ti ti-external-link">Open</v-btn>
           <v-btn size="small" variant="text" :href="'/evidence/' + it.sha256" prepend-icon="ti ti-x">Close</v-btn></header>
         <evidence-viewer :item="other" :claims="otherClaims" :marks="otherMarks" :focus="otherAt" :read="otherRead" :read-error="otherReadError" @revealed="revealed" @retry-read="loadOtherRead"></evidence-viewer>
@@ -46,12 +46,12 @@
           <span class="ev-legend"><span class="tier-accepted by-person"><span class="ev-sw"></span> accepted</span><span class="tier-corroborated by-person"><span class="ev-sw"></span> corroborated</span><span class="tier-unconfirmed by-agent"><span class="ev-sw"></span> unconfirmed</span></span></header>
         <div v-if="claims.length" role="listbox" aria-label="Claims, j and k to move">
           <template v-for="g in groups" :key="g.subject">
-            <div class="ev-grp"><bdi dir="auto">${ g.name }</bdi><span class="muted mono ms-auto">${ g.subject.startsWith('person:') ? short(g.subject.slice(7)) : '' }</span></div>
+            <div class="ev-grp"><a v-if="g.subject.startsWith('person:')" :href="'/people/' + g.subject.slice(7)" @click.stop><bdi dir="auto">${ g.name }</bdi></a><bdi v-else dir="auto">${ g.name }</bdi></div>
             <div v-for="c in g.claims" :key="c.id" class="ev-row ev-claim" role="option" :aria-selected="sel === c.id" :class="['tier-' + c.tier, c.actor.agent ? 'by-agent' : 'by-person', {sel: sel === c.id}]" tabindex="-1" :data-row="'claims:' + ordered.indexOf(c)" @click="pick(c.id)" @dblclick="openSpan(c)">
               <span class="ev-sw" aria-hidden="true"></span><span class="lbl">${ prop(c.prop) }</span>
               <span class="val"><bdi v-if="c.value" dir="auto">${ c.value }</bdi><span v-else-if="c.erased" class="muted">erased</span><span v-else class="muted"><i class="ti ti-eye-off" aria-hidden="true"></i> masked, show the sensitive item to read</span></span>
               <span><v-chip v-if="threadFor(c)" size="x-small" prepend-icon="ti ti-message" @click.stop="openThread(threadFor(c))">${ threadFor(c).comments + 1 }</v-chip></span>
-              <span class="meta">${ c.tier }, <span :class="{agent: c.actor.agent}"><i v-if="c.actor.agent" class="ti ti-robot" aria-hidden="true"></i> ${ c.actor.label }</span><template v-if="c.span">, ${ spanLabel(c.span) }</template><template v-if="c.evidence?.length">, ${ c.evidence.join(', ').replace(/_/g, ' ') }</template></span>
+              <span class="meta">${ c.tier }, <span :class="{agent: c.actor.agent}"><i v-if="c.actor.agent && c.actor.kind !== 'import'" class="ti ti-robot" aria-hidden="true"></i> ${ byLabel(c) }</span><template v-if="c.span">, ${ spanLabel(c.span) }</template><template v-if="c.evidence?.length">, ${ c.evidence.join(', ').replace(/_/g, ' ') }</template></span>
               <span v-if="sel === c.id" class="acts d-flex ga-1 flex-wrap mt-1">
                 <v-btn v-if="c.span" size="x-small" variant="outlined" prepend-icon="ti ti-focus-2" @click.stop="openSpan(c)">Show in source <v-kbd class="ms-1">Enter</v-kbd></v-btn>
                 <template v-if="canDecide(c)"><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-check" :loading="busy" @click.stop="decide(c, 'accept')">Accept <v-kbd class="ms-1">a</v-kbd></v-btn><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-x" :loading="busy" @click.stop="decide(c, 'reject')">Reject <v-kbd class="ms-1">r</v-kbd></v-btn></template>
@@ -91,7 +91,7 @@
           </div></v-tabs-window-item>
           <v-tabs-window-item value="dups">
             <div v-for="(d, i) in it.copies" :key="d.id" class="ev-row ev-rel" :class="{sel: cursor.list === 'copies' && cursor.i === i}" tabindex="-1" :data-row="'copies:' + i" @click="focusRow('copies', i)">
-              <div class="d-flex ga-2 align-center"><media-thumb :locked="!doc(d.other).revealed" :sha="d.other" :kind="doc(d.other).kind" :file="doc(d.other).file" :caption="false" :width="72" :height="44"></media-thumb><div><strong>${ d.kind }</strong> <a :href="'/evidence/' + d.other">${ doc(d.other).file }</a> <v-chip size="x-small" color="agent" variant="tonal">${ d.tier }</v-chip>
+              <div class="d-flex ga-2 align-center"><media-thumb :locked="!doc(d.other).revealed" :sha="d.other" :kind="doc(d.other).kind" :file="doc(d.other).file" :caption="false" :width="72" :height="44"></media-thumb><div><strong>${ d.kind }</strong> <a :href="'/evidence/' + d.other">${ doc(d.other).title }</a> <v-chip size="x-small" color="agent" variant="tonal">${ d.tier }</v-chip>
                 <div class="why">${ d.why }. Here ${ ms(d.here[0]) }, there ${ ms(d.there[0]) }${ d.there[1] > d.there[0] ? ' to ' + ms(d.there[1]) : '' }.</div></div>
                 <span class="ms-auto text-no-wrap" :class="d.strength === 'strong' ? 'font-weight-bold' : 'muted'">${ d.strength }</span></div>
               <div class="d-flex ga-1 mt-1 flex-wrap">
@@ -106,7 +106,7 @@
             <div v-if="r.fold" class="ev-row ev-rel ev-fold" :class="{sel: cursor.list === 'rel' && cursor.i === i}" tabindex="-1" :data-row="'rel:' + i" role="button" :aria-expanded="!!unfolded[r.place]" @click="focusRow('rel', i); fold(r)">
               <i class="ti" :class="unfolded[r.place] ? 'ti-chevron-down' : 'ti-chevron-right'" aria-hidden="true"></i> <strong>Same place</strong> <span class="why">${ plural(r.sources, 'other source') } in this case name <bdi>${ r.at_place }</bdi></span></div>
             <div v-else class="ev-row ev-rel" :class="{sel: cursor.list === 'rel' && cursor.i === i, 'ev-folded': r.nested}" tabindex="-1" :data-row="'rel:' + i" @click="focusRow('rel', i)">
-              <div class="d-flex ga-2"><media-thumb v-if="r.other" :locked="!doc(r.other).revealed" :sha="r.other" :kind="doc(r.other).kind" :file="doc(r.other).file" :caption="false" :width="72" :height="44"></media-thumb><div><strong>${ r.kind }</strong> <a v-if="r.other" :href="'/evidence/' + r.other">${ doc(r.other).file }</a><v-chip v-if="r.tier" size="x-small" color="agent" variant="tonal" class="ms-1">${ r.tier }</v-chip>
+              <div class="d-flex ga-2"><media-thumb v-if="r.other" :locked="!doc(r.other).revealed" :sha="r.other" :kind="doc(r.other).kind" :file="doc(r.other).file" :caption="false" :width="72" :height="44"></media-thumb><div><strong>${ r.kind }</strong> <a v-if="r.other" :href="'/evidence/' + r.other">${ doc(r.other).title }</a><v-chip v-if="r.tier" size="x-small" color="agent" variant="tonal" class="ms-1">${ r.tier }</v-chip>
                 <div class="why">${ relWhy(r) }</div></div>
                 <span class="ms-auto text-no-wrap" :class="['strong', 'close'].includes(r.strength) ? 'font-weight-bold' : 'muted'" :title="r.distance != null ? 'Cosine distance ' + r.distance.toFixed(3) : null">${ r.strength }</span></div>
               <div v-if="r.other || r.statement" class="d-flex ga-1 mt-1 flex-wrap">

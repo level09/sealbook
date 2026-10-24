@@ -61,7 +61,7 @@
           <header><h2 id="en-h-ev">Evidence</h2><span class="en-muted text-caption">${ plural(ev.total, 'source') } behind it; open one at the claim</span></header>
           <v-data-table-server class="en-table" :headers="evShown" :items="ev.items" :items-length="ev.total" :loading="ev.loading" item-value="sha256" density="compact"
             :items-per-page="ev.opts.itemsPerPage" :sort-by="ev.opts.sortBy" :items-per-page-options="[10, 25, 50, 100]" :hide-default-footer="ev.total <= 10" must-sort @update:options="loadEvidence" @click:row="openRow">
-            <template #item.thumb="{ item }"><media-thumb :sha="item.sha256" :mime="item.mime" :file="item.file" :width="64" :height="40" :caption="false" :link="false"></media-thumb></template>
+            <template #item.thumb="{ item }"><media-thumb :locked="!item.revealed" :sha="item.sha256" :mime="item.mime" :file="item.file" :width="64" :height="40" :caption="false" :link="false"></media-thumb></template>
             <template #item.title="{ item }"><a :href="item.href" @click.stop><bdi dir="auto">${ item.file }</bdi></a><div class="en-muted text-caption">${ human(item.doc_type) || 'source' }<span v-if="item.sensitive"> · <i class="ti ti-eye-off r-ink state-sensitive" aria-hidden="true"></i> sensitive</span></div></template>
             <template #item.where="{ item }"><span>${ PROP[item.prop] || human(item.prop) }</span><span class="en-muted">, ${ spanLabel(item.span) }</span></template>
             <template #item.tier="{ item }"><span class="r-chip" :class="'tier-' + item.tier">${ item.tier }</span></template>

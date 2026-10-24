@@ -21,6 +21,26 @@ const MEDIA_TROUBLE = {
   broken: {title: 'The media could not be played', text: 'The file is stored but this browser could not decode it.', retry: true},
 };
 
+// A captured web page reads as its text: tags, scripts and comments are dropped
+// from the shown string only, so claim spans keep their offsets into the source.
+const BLOCK = /^(p|div|h[1-6]|li|br|tr|section|article|header|footer|ul|ol|table|blockquote|figure|figcaption)$/i;
+const ENTITY = {amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'"};
+export function markup(text) {
+  const re = /<(script|style)\b[\s\S]*?<\/\1\s*>|<!--[\s\S]*?-->|<\/?([a-zA-Z][\w-]*)[^>]*>/g;
+  return [...text.matchAll(re)].map(m => ({start: m.index, end: m.index + m[0].length, put: BLOCK.test(m[2] || '') ? '\n' : ''}));
+}
+export function readable(text, start, end, tags) {
+  let out = '', i = start;
+  for (const t of tags) {
+    if (t.end <= start || t.start >= end) continue;
+    if (t.start > i) out += text.slice(i, t.start);
+    out += t.put;
+    i = Math.max(i, t.end);
+  }
+  if (i < end) out += text.slice(i, end);
+  return out.replace(/&(#39|[a-z]+);/g, (m, k) => ENTITY[k] ?? m);
+}
+
 export const EvidenceViewer = {
   name: 'EvidenceViewer',
   props: {
@@ -37,7 +57,7 @@ export const EvidenceViewer = {
     highlight: {type: String, default: ''},     // passage to find in a PDF
   },
   emits: ['select', 'revealed', 'retry-read'],
-  data() {return {url: this.item.revealed ? `/api/evidence/${this.item.sha256}/content` : null, busy: false, error: '', mediaError: null, nonce: 0, strip: null, table: null, tableError: '', where: ''};},
+  data() {return {raw: false, url: this.item.revealed ? `/api/evidence/${this.item.sha256}/content` : null, busy: false, error: '', mediaError: null, nonce: 0, strip: null, table: null, tableError: '', where: ''};},
   computed: {
     kind() {return this.item.kind;},
     trouble() {return MEDIA_TROUBLE[this.mediaError] || MEDIA_TROUBLE.network;},
@@ -59,7 +79,14 @@ export const EvidenceViewer = {
       const out = []; let i = 0;
       for (const s of spans) {if (s.start < i) continue; if (s.start > i) out.push({text: text.slice(i, s.start)}); out.push({text: text.slice(s.start, s.end), claim: s.claim, hit: s.hit}); i = s.end;}
       if (i < text.length) out.push({text: text.slice(i)});
-      return out;
+      if (this.kind !== 'web' || this.raw) return out;
+      const tags = markup(text);
+      let at = 0;
+      return out.map(p => {
+        const start = at; at += p.text.length;
+        const shown = readable(text, start, at, tags);
+        return {...p, text: p.claim || p.hit ? shown : shown.replace(/[ \t]*\n[\s]*\n\s*/g, '\n\n')};
+      }).filter((p, i) => p.text || p.claim || p.hit || i === 0);
     },
     origin() {return (this.item.origins || []).find(o => /^(url:)?https?:/.test(o))?.replace(/^url:/, '');},
   },
@@ -139,7 +166,7 @@ export const EvidenceViewer = {
       <v-skeleton-loader v-else type="table"></v-skeleton-loader>
     </template>
     <template v-else>
-      <div v-if="kind === 'web' && origin" class="mv-tools"><v-btn size="small" variant="text" prepend-icon="ti ti-external-link" :href="origin" target="_blank" rel="noopener noreferrer">Original link</v-btn><span class="muted">captured snapshot below; the link leaves Sealbook</span></div>
+      <div v-if="kind === 'web'" class="mv-tools"><v-btn v-if="origin" size="small" variant="text" prepend-icon="ti ti-external-link" :href="origin" target="_blank" rel="noopener noreferrer">Original link</v-btn><span class="muted">{{ origin ? 'captured snapshot below; the link leaves Sealbook' : 'captured snapshot below' }}</span><v-btn size="small" variant="text" :prepend-icon="raw ? 'ti ti-file-text' : 'ti ti-code'" class="ms-auto" @click="raw = !raw">{{ raw ? 'Show the text' : 'Show the HTML' }}</v-btn></div>
       <div v-if="readError" class="ev-gate"><v-empty-state icon="ti ti-alert-triangle" title="The text did not load" :text="readError"><template #actions><v-btn variant="outlined" prepend-icon="ti ti-refresh" @click="$emit('retry-read')">Retry</v-btn></template></v-empty-state></div>
       <div v-if="read && where" class="mv-tools ev-where" role="status"><i class="ti ti-focus-2" aria-hidden="true"></i><span>{{ where }}</span></div>
       <div v-if="!readError && read" class="ev-txt" dir="auto"><template v-for="(p, i) in pieces" :key="i"><mark v-if="p.claim" class="span ev-span" :data-claim="p.claim.id" :class="['tier-' + p.claim.tier, {on: sel === p.claim.id}]" :title="(p.claim.label || p.claim.prop) + ', ' + p.claim.tier" @click="$emit('select', p.claim.id)">{{ p.text }}</mark><mark v-else-if="p.hit" class="hit">{{ p.text }}</mark><template v-else>{{ p.text }}</template></template></div>

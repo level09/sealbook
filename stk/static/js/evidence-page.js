@@ -79,10 +79,20 @@ export function mount(boot) {
     methods: {
       ms, prop, short, spanLabel, plural,
       say(text) {this.snack = {show: true, text};},
+      // Where a claim came from in plain words; the model or importer is the tooltip.
+      byLabel(c) {
+        if (c.actor.kind === 'import') return `from the imported ${(this.it.doc_type && this.it.doc_type !== 'unknown' ? this.it.doc_type : 'source').replaceAll('_', ' ')}`;
+        return c.actor.label;
+      },
+      // The name this source gives, else the best one the reader may see elsewhere,
+      // else a number on this page: never an id.
       nameOf(subject) {
         if (!subject.startsWith('person:')) return 'This document';
         const n = this.claims.find(c => c.subject === subject && c.prop === 'name' && c.value);
-        return n ? n.value : `Person ${short(subject.slice(7))}`;
+        if (n) return n.value;
+        if (this.it?.people?.[subject.slice(7)]) return this.it.people[subject.slice(7)];
+        const unnamed = [...new Set(this.claims.map(c => c.subject).filter(s => s.startsWith('person:') && !this.claims.some(c => c.subject === s && c.prop === 'name' && c.value) && !this.it?.people?.[s.slice(7)]))];
+        return `Unnamed person ${unnamed.indexOf(subject) + 1}`;
       },
       // One sentence per relation, with the same prop words as the claims list.
       relWhy(r) {
@@ -92,17 +102,18 @@ export function mount(boot) {
           const here = this.claims.find(c => c.subject === r.here && c.prop === 'name' && c.value)?.value || r.here_name;
           return `${here ? iso(here) : 'An unnamed person'} here and ${r.their_name ? iso(r.their_name) : 'an unnamed person'} there, ${r.why}`;
         }
+        if (r.here_text || r.there_text) return r.why.replace(r.here_text || '\0', iso(r.here_text)).replace(r.there_text || '\0', iso(r.there_text));
         return r.why;
       },
       fold(r) {this.unfolded = {...this.unfolded, [r.place]: !this.unfolded[r.place]};},
       side(r) {return r.other ? `/evidence/${this.it.sha256}?with=${r.other}${r.there?.[0] != null ? '&at=' + r.there[0] : ''}` : null;},
-      doc(sha) {return this.it.docs[sha] || {file: short(sha)};},
+      doc(sha) {return this.it.docs[sha] || {file: short(sha), title: short(sha)};},
       tierOf(r) {return r.tier;},
       async load() {
         this.error = '';
         try {
           this.it = (await api.get(`/api/evidence/${boot.sha}/item`)).data;
-          document.title = `${this.it.file}, ${DOC[this.it.doc_type] || 'Evidence'}`;
+          document.title = `${this.it.title}, ${DOC[this.it.doc_type] || 'Evidence'}`;
           if (boot.with) this.other = (await api.get(`/api/evidence/${boot.with}/item`)).data;
           if (!boot.segment && !this.it.claims.length) this.tab = this.it.copies.length ? 'dups' : this.relations.length ? 'rel' : 'read';
         } catch (err) {this.error = message(err); return;}

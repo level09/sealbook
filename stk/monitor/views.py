@@ -91,6 +91,7 @@ async def panels():
         if f["time"]
         else everything
     )
+    await _named(db, rows)
     located = [uuid.UUID(r["id"]) for r in rows if r["prop"] in data.LOCATED]
     places = await resolve.resolved(db, located, f["investigation"])
     return _json(
@@ -99,7 +100,7 @@ async def panels():
             "last_event_id": last_event_id,
             "feed": await data.feed_rows(db, f),
             "documents": await data.document_rows(db, f),
-            "queue": await data.queue_cards(db, f),
+            "queue": await _named(db, await data.queue_cards(db, f)),
             "map": data.map_layer(rows, places),
             "timeline": [
                 {k: r[k] for k in ("id", "from", "to", "tier", "prop")}
@@ -111,35 +112,63 @@ async def panels():
     )
 
 
-def _found(page):
+async def _named(db, rows: list[dict]) -> list[dict]:
+    """Person subjects labelled by the one label rule (`people.names`), numbered
+    "Unnamed person N" when every name is masked: never an id slice."""
+    from stk.people import data as people  # people builds on monitor.data
+
+    ids = sorted(
+        {r["subject"][7:] for r in rows if r.get("subject", "").startswith("person:")}
+    )
+    names = await people.names(db, ids) if ids else {}
+    unnamed: dict[str, str] = {}
+    for r in rows:
+        if r.get("subject", "").startswith("person:"):
+            p = r["subject"][7:]
+            r["subject_label"] = names.get(p) or unnamed.setdefault(
+                p, f"Unnamed person {len(unnamed) + 1}"
+            )
+    return rows
+
+
+async def _page(page):
+    """A side panel page with every statement row in it named."""
     if page is None:
         abort(404)
+    rows = [page] + [
+        r
+        for v in page.values()
+        if isinstance(v, list)
+        for r in v
+        if isinstance(r, dict) and "subject_label" in r
+    ]
+    await _named(g.db_session, rows)
     return _json(page)
 
 
 @monitor.get("/api/monitor/document/<sha>")
 async def document(sha):
-    return _found(await data.document_page(g.db_session, sha))
+    return await _page(await data.document_page(g.db_session, sha))
 
 
 @monitor.get("/api/monitor/blob/<sha>")
 async def blob(sha):
-    return _found(await data.blob_page(g.db_session, sha))
+    return await _page(await data.blob_page(g.db_session, sha))
 
 
 @monitor.get("/api/monitor/statement/<uuid:sid>")
 async def statement(sid):
-    return _found(await data.statement_page(g.db_session, sid))
+    return await _page(await data.statement_page(g.db_session, sid))
 
 
 @monitor.get("/api/monitor/run/<uuid:rid>")
 async def run(rid):
-    return _found(await data.run_page(g.db_session, rid))
+    return await _page(await data.run_page(g.db_session, rid))
 
 
 @monitor.get("/api/monitor/principal/<uuid:pid>")
 async def principal(pid):
-    return _found(await data.principal_page(g.db_session, pid))
+    return await _page(await data.principal_page(g.db_session, pid))
 
 
 @monitor.get("/api/monitor/statements")
@@ -149,7 +178,7 @@ async def statements():
     except ValueError as exc:
         abort(400, description=str(exc))
     rows = await data.statement_rows(g.db_session, *where, order=Statement.recorded_at)
-    return _json({"items": rows})
+    return _json({"items": await _named(g.db_session, rows)})
 
 
 @monitor.post("/api/monitor/reveal")

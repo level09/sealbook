@@ -12,7 +12,7 @@ from datetime import date
 import orjson
 from sqlalchemy import Text, and_, case, cast, func, or_, select
 
-from stk.discovery.evidence import REVIEW_PROPS, threads
+from stk.discovery.evidence import REVIEW_PROPS, granted, threads
 from stk.discovery.models import FindingKey
 from stk.discovery.service import available
 from stk.ledger.contracts import Prop, Tier
@@ -109,6 +109,7 @@ async def evidence(
         select(
             func.min(
                 func.coalesce(
+                    Acquisition.context["title"].astext,
                     Acquisition.context["file"].astext,
                     Acquisition.context["filename"].astext,
                 )
@@ -145,10 +146,12 @@ async def evidence(
         items.append(
             {
                 "sha256": r.src,
-                "file": doc["file"],
+                "file": doc["title"],
                 "doc_type": doc["doc_type"],
                 "mime": mimes.get(r.src),
                 "sensitive": doc["sensitive"],
+                # As on Sources: without a held reveal the tile stays locked.
+                "revealed": granted(r.src) or not doc["sensitive"],
                 "claims": r.claims,
                 "tier": TIERS[r.rank],
                 "span": claim["span"] if claim else None,

@@ -276,7 +276,8 @@ export async function updateMap(state, layer, {showRejected, subject, query}) {
     el.className = 'map-label';
     el.dir = 'auto';
     el.textContent = [...names].join(' / ');
-    return new maplibregl.Marker({element: el, anchor: 'left', offset: [10, 0]}).setLngLat(layer.places[[...names][0]]).addTo(map);
+    // Clear of a cluster badge (28 px wide plus its 3 px halo) drawn on the same point.
+    return new maplibregl.Marker({element: el, anchor: 'left', offset: [20, 0]}).setLngLat(layer.places[[...names][0]]).addTo(map);
   });
   if (!state.fitted && points.length) {
     const bounds = new maplibregl.LngLatBounds();

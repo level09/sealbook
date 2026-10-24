@@ -310,3 +310,10 @@ class RelationRowsTest(unittest.TestCase):
         )
         self.assertNotIn("0.2", row["why"])
         self.assertEqual((row["strength"], row["distance"]), ("close", 0.2164))
+        # Readable passages are quoted instead, so the reader sees what is alike.
+        quoted = evidence.lead(
+            "text", {}, "b" * 64, "text", {}, 0.2, "held at Branch 999", "الفرع 999"
+        )
+        self.assertIn("held at Branch 999", quoted["why"])
+        self.assertIn("الفرع 999", quoted["why"])
+        self.assertNotIn("a passage here", quoted["why"])
