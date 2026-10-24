@@ -54,7 +54,7 @@
       prop.classList.toggle("tier-accepted", false);
       state.textContent = link
         ? "Linked by you. In the app this is a signed decision that names you, and it can be reversed."
-        : "Kept separate by you. In the app this is signed too, so the pair is not proposed again without new evidence.";
+        : "Kept separate by you. In the app this is signed too, so the pair is not proposed again without further evidence.";
       [...btns.children].forEach((b, i) => b.setAttribute("aria-pressed", String(i === 0 ? link : !link)));
     };
     for (const [t, link] of [["Link", true], ["Keep separate", false]]) {
@@ -69,5 +69,22 @@
       prop,
       h("p", { class: "pp-rule" }, "Similar names are never merged automatically. A match on name proposes a candidate; linking two records is a signed human decision."),
       h("p", { class: "pp-note", text: "Demonstration: your choice changes this page only." }));
+
+    const d = data.disagree;
+    if (!d) return;
+    const f = d.fork;
+    root.append(h("div", { class: "pp-more" },
+      h("section", { class: "pp-fork" },
+        h("h3", { text: "Sources disagree" }),
+        h("p", { class: "pp-sub" }, `${(LABEL[f.prop] || f.prop).replace(/^./, (c) => c.toUpperCase())} of `, h("bdi", { dir: "auto", text: f.person }), ", ", h("span", { class: "mono", text: f.from })),
+        h("ul", { class: "pp-sides" }, ...f.sides.map((s) => h("li", {},
+          h("span", { class: "chip tier-unconfirmed" }, val(s.value)), h("span", { class: "pp-src mono", text: s.file })))),
+        h("p", { class: "pp-note", text: `Two readings of one line differ by a letter. Both stay listed with their source, and neither wins until a reviewer decides. Across the ${d.people} people in the demo case, ${d.forks} disagreements are open.` })),
+      h("section", { class: "pp-count" },
+        h("h3", { text: "One count on every screen" }),
+        h("p", { class: "pp-sub" }, h("bdi", { dir: "auto", text: d.counted.person })),
+        h("table", { class: "pp-cmp" }, h("tbody", {}, ...d.counted.screens.map(([screen, facts, docs]) =>
+          h("tr", {}, h("th", { scope: "row", text: screen }), h("td", { text: `${facts} facts from ${docs} documents` }))))),
+        h("p", { class: "pp-note", text: "Read from the People list, the person page and a search for the name on the demo case." }))));
   });
 })();

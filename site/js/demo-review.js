@@ -98,7 +98,7 @@
         value.textContent = before;
         chip.className = "chip tier-unconfirmed rv-chip";
         status.textContent = `Undone. ${before} is current again and unconfirmed. The accept is still in the history.`;
-        note(COLLEAGUE, `undid the accept; ${before} restored. A new statement, nothing erased.`);
+        note(COLLEAGUE, `undid the accept; ${before} restored. A further statement, nothing erased.`);
         await sealbook.chain.append(added.el, {
           title: "Accept undone", signer: COLLEAGUE,
           text: `${COLLEAGUE} undid the accept of birth date ${after} for P1 and restored ${before} as extracted. The accept stays in the history.`,

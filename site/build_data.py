@@ -1067,6 +1067,215 @@ def build_story(live: dict) -> dict:
     }
 
 
+ASK = {
+    "same_person": "Same person?",
+    "involved": "Involved in the incident?",
+    "related": "Related documents?",
+    "contains": "Contains the other document?",
+    "contained_in": "Excerpt of the other document?",
+    "cellmate": "Cellmates?",
+    "family": "Family?",
+    "command": "Command relation?",
+}
+
+
+def build_agents(live: dict) -> dict:
+    """The intake brief for both demo batches and every linker proposal, read back
+    through the endpoints Desk, Inbox and Review use."""
+
+    def line(row: dict, cites: list) -> dict:
+        return {
+            "text": row["text"],
+            "tag": row["tag"],
+            "locked": [x["title"] for x in row["locked"]],
+            "cites": [c for c in cites if c],
+        }
+
+    briefs = []
+    for b in live["briefs"]:
+        assert b["version"]["fixed"] and b["version"]["valid"], b["version"]
+        briefs.append(
+            {
+                name: [
+                    line(row, cites)
+                    for row, cites in zip(
+                        b["brief"][name], b["cited"][name], strict=True
+                    )
+                ]
+                for name in (
+                    "arrived",
+                    "who",
+                    "where",
+                    "when",
+                    "connects",
+                    "disagrees",
+                    "next",
+                )
+            }
+        )
+
+    def card(r: dict) -> dict:
+        return {
+            "prop": r["prop"],
+            "value": None if r["value"]["masked"] else r["value"]["text"],
+            "person": (r.get("person") or {}).get("name"),
+            "source": (r.get("source") or {}).get("file"),
+            "sensitive": bool((r.get("source") or {}).get("sensitive")),
+            "where": r["where"]["label"],
+            "tier": r["tier"],
+        }
+
+    proposals = []
+    for c in live["linked"]:
+        kind = c.get("relation") or c["kind"]
+        other = c.get("other") if isinstance(c.get("other"), dict) else {}
+        joins = (
+            [c["source"]["file"], c["document"]["file"]]
+            if c.get("document")
+            else [other.get("name"), (c.get("incident") or {}).get("title")]
+            if c.get("incident")
+            else [
+                (c.get("person") or {}).get("name"),
+                (c.get("identity") or other).get("name"),
+            ]
+        )
+        proposals.append(
+            {
+                "kind": kind,
+                "ask": ASK[kind],
+                "joins": joins,
+                "reason": c["reasoning"],
+                "proposer": c["proposer"]["name"],
+                "tier": c["tier"],
+                "basis": [card(r) for r in c["basis"]],
+            }
+        )
+    runs = live["link_runs"]
+    assert all(r["model"] == "sealbook-demo-fixed-output" for r in runs), runs
+    status = (ROOT / "docs/status.md").read_text()
+    measured = re.search(r"(Measured once on case-demo-02.+?declined)", status)
+    return {
+        "briefs": briefs,
+        "proposals": proposals,
+        "candidates": sum(r["candidates"] for r in runs),
+        "already_known": sum(r["already_known"] for r in runs),
+        "measured": measured.group(1).replace("`", "").removeprefix("Measured once ")
+        + ".",
+    }
+
+
+def build_disagree(live: dict) -> dict:
+    """One disagreement kept open, and one person counted on three screens."""
+    fork = next(
+        p for p in live["people"] if any(f["prop"] == "name" for f in p["forks"])
+    )
+    f = next(f for f in fork["forks"] if f["prop"] == "name")
+    counted = next(
+        p for p in live["people"] if p["row"]["person"] == live["research"]["person"]
+    )
+    m = re.match(r"(\d+) facts? from (\d+) documents?", counted["search"] or "")
+    assert m, counted
+    screens = [
+        ("People list", counted["row"]["facts"], counted["row"]["documents"]),
+        ("Person page", counted["page_facts"], counted["page_documents"]),
+        ("Search", int(m[1]), int(m[2])),
+    ]
+    return {
+        "fork": {
+            "person": fork["row"]["name"],
+            "prop": f["prop"],
+            "from": f["from"],
+            "sides": [{"value": x["value"], "file": x["file"]} for x in f["sides"]],
+        },
+        "counted": {"person": counted["row"]["name"], "screens": screens},
+        "forks": sum(len(p["forks"]) for p in live["people"]),
+        "people": len(live["people"]),
+    }
+
+
+def build_places_pages(live: dict) -> dict:
+    pp, ip = live["place_page"], live["incident_page"]
+    rel = pp["relations"]
+    return {
+        "place": {
+            "en": pp["name_en"],
+            "ar": pp["name_ar"],
+            "kind": pp["kind_label"],
+            "precision_m": pp["precision_m"],
+            "geo_source": pp["geo_source"],
+            "spellings": pp["spellings"],
+            "claims": pp["claims"],
+            "sources": pp["sources"],
+            "people": [
+                {k: x[k] for k in ("label", "named", "from", "to", "tier", "points")}
+                for x in rel["people"]
+            ],
+            "incidents": [
+                {k: x[k] for k in ("title", "window", "people", "tier")}
+                for x in rel["incidents"]
+            ],
+            "findings": [
+                {k: x[k] for k in ("label", "reason", "why", "band")}
+                for x in rel["findings"]
+            ],
+            "attribution": pp["attribution"],
+        },
+        "incident": {
+            "title": ip["title"],
+            "window": ip["window"],
+            "places": [x["en"] for x in ip["places"]],
+            "people": [
+                {k: x[k] for k in ("label", "named", "roles", "tier")}
+                for x in ip["relations"]["people"]
+            ],
+            "findings": [
+                {k: x[k] for k in ("label", "state", "reason", "why", "band")}
+                for x in ip["relations"]["findings"]
+            ],
+            "signed_by": ip["signed"]["by"],
+            "sources": ip["sources"],
+        },
+    }
+
+
+def build_research(live: dict) -> dict:
+    r = live["research"]
+    usable = ("accepted", "corroborated")
+    left = []
+    for prop, facts in r["page"]["facts"].items():
+        for x in facts:
+            sensitive = bool((x.get("doc") or {}).get("sensitive"))
+            if x["tier"] in usable and not sensitive:
+                continue
+            left.append(
+                {
+                    "prop": prop,
+                    "why": "from a sensitive source"
+                    if sensitive
+                    else f"{x['tier']}, not yet accepted",
+                }
+            )
+    return {
+        "person": next(
+            p["row"]["name"]
+            for p in live["people"]
+            if p["row"]["person"] == r["person"]
+        ),
+        "queries": [
+            {
+                "text": q["text"],
+                "kinds": q["kinds"],
+                "why": [{"label": w["label"], "value": w["value"]} for w in q["why"]],
+            }
+            for q in r["queries"]["queries"]
+        ],
+        "left_out": left,
+        "facts": sum(len(v) for v in r["page"]["facts"].values()),
+        "refused": r["refused"],
+        "refused_queries": len(r["refused_queries"]["queries"]),
+    }
+
+
 def polygons(geom: dict) -> list:
     return [geom["coordinates"]] if geom["type"] == "Polygon" else geom["coordinates"]
 
@@ -1330,13 +1539,6 @@ def build_status() -> dict:
     planned = [c.strip().rstrip(".") for c in re.sub(r"\s+", " ", chunks).split(";")]
     planned = [p[0].upper() + p[1:] + "." for p in planned]
     planned_tail = []
-    spec = (
-        ROOT / "docs/superpowers/specs/2026-10-24-web-research-capture-design.md"
-    ).read_text()
-    intent = re.sub(r"\s+", " ", spec.split("## Intent")[1].strip().split("\n\n")[0])
-    planned_tail.append(
-        "Web research and capture (design, not built): " + intent.split(". ")[0] + "."
-    )
     gaps = roadmap.split("## Gaps to close")[1]
     for title in (
         "Descriptions and titles",
@@ -1379,6 +1581,10 @@ def main():
         "story": build_story(live),
         "sheet": build_sheet(live),
         "grouped_search": build_grouped(live),
+        "agents": build_agents(live),
+        "disagree": build_disagree(live),
+        "entities": build_places_pages(live),
+        "research": build_research(live),
         "speech": build_speech(),
         "status": build_status(),
     }

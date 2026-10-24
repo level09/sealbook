@@ -22,7 +22,7 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
 
 ## Structure
 
-- `index.html`: fourteen chapters, each a `section.link` in the demonstration chain.
+- `index.html`: seventeen sections, each a `section.link` in the demonstration chain.
 - `js/site.js`: theme, data loading, the chain, and the `window.sealbook` API
   documented at the top of the file. Demo scripts call `sealbook.onReady(data => ...)`
   and mount into their `[data-demo]` element.

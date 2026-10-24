@@ -1,0 +1,15 @@
+.rs-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.rs-grid h3 { margin: 0 0 10px; }
+.rs-grid h3 + .rs-refused, .rs-left + h3 { margin-top: 20px; }
+.rs-drawer { background: var(--paper-2); border-radius: 12px; padding: 16px 18px; }
+.rs-queries { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.rs-q { background: var(--paper); border-radius: 8px; padding: 10px 12px; transition: opacity .2s; }
+.rs-q.off { opacity: .5; }
+.rs-q .note { margin: 4px 0 0 28px; }
+.rs-row { display: flex; gap: 10px; align-items: baseline; cursor: pointer; }
+.rs-row input { width: 16px; height: 16px; flex: none; accent-color: var(--ink); }
+.rs-text { font-size: 15px; color: var(--ink); overflow-wrap: anywhere; }
+.rs-left { margin: 0; padding-left: 1.1em; font-size: 14.5px; display: grid; gap: 4px; color: var(--ink-2); }
+.rs-left b { font-weight: 500; color: var(--ink); }
+.rs-refused { margin: 0; padding: 10px 12px; border: 1.5px solid var(--ink); border-radius: 8px; font-size: 14.5px; }
+@media (max-width: 1000px) { .rs-grid { grid-template-columns: minmax(0, 1fr); } }

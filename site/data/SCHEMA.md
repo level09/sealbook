@@ -4,7 +4,8 @@
 `site/media/`. Every value comes from a real file or a real run; nothing is
 typed by hand. Pages read this file with `fetch("data/case.json")`.
 
-`connections`, `story`, `sheet` and `grouped_search.queries` come from
+`connections`, `story`, `sheet`, `agents`, `disagree`, `entities`, `research` and
+`grouped_search.queries` come from
 `site/build_live.py`: `stk demo-seed --full` on a throwaway Postgres database
 (created and dropped by `stk.migrations.throwaway_database_url`), read back
 through the app's own endpoints by a signed-in test client, with model calls off.
@@ -117,6 +118,36 @@ docs/status.md, docs/search-eval.md and docs/models.md.
                 "valid": [from, to], "tier": "unconfirmed"}],
     "fixed_output": true,                // the demo's sheet extraction is fixed output, not a model run
     "measured": "sentence from docs/status.md"
+  },
+  "agents": {                           // GET /api/agents/brief per batch, GET /api/review/claim/<id> per linker statement
+    "briefs": [{"arrived|who|where|when|connects|disagrees|next": [{"text": "..." | null, "tag": "known|new|open" | null,
+                "locked": ["sensitive source titles"], "cites": [{"prop": "...", "source": "title"}]}]}],
+    "proposals": [{"kind": "same_person|involved|related|cellmate|...", "ask": "Cellmates?", "joins": ["...", "..."],
+                   "reason": "..." | null, "proposer": "Linker", "tier": "unconfirmed",
+                   "basis": [{"prop": "...", "value": "..." | null, "person": "...", "source": "...", "sensitive": true,
+                              "where": "characters 71 to 83", "tier": "..."}]}],
+    "candidates": 10, "already_known": 1,   // the demo's fixed-output runs (sealbook-demo-fixed-output)
+    "measured": "the real-model sentence from docs/status.md"
+  },
+  "disagree": {                          // GET /api/people, /api/people/<id> and POST /api/search (people)
+    "fork": {"person": "...", "prop": "name", "from": "YYYY-MM-DD", "sides": [{"value": "...", "file": "..."}]},
+    "counted": {"person": "...", "screens": [["People list", 10, 3], ["Person page", 10, 3], ["Search", 10, 3]]},
+    "forks": 2, "people": 34
+  },
+  "entities": {                          // GET /api/places/<id> (Branch 999) and /api/incidents/<id>
+    "place": {"en": "...", "ar": "...", "kind": "Facility", "precision_m": 250, "geo_source": "analyst",
+              "spellings": [{"name": "...", "claims": 13, "gazetteer": true}], "claims": 18, "sources": 9,
+              "people": [{"label": "...", "named": true, "from": "...", "to": "...", "tier": "...", "points": 1}],
+              "incidents": [{"title": "...", "window": ["from", "to"], "people": 2, "tier": "accepted"}],
+              "findings": [{"label": "...", "reason": "...", "why": "...", "band": "..."}], "attribution": "..."},
+    "incident": {"title": "...", "window": ["from", "to"], "places": ["..."], "signed_by": "...", "sources": 1,
+                 "people": [{"label": "...", "named": true, "roles": ["victim"], "tier": "..."}],
+                 "findings": [{"label": "...", "state": "accepted", "reason": "...", "why": "...", "band": "..."}]}
+  },
+  "research": {                          // POST /api/research/queries, then the case marked sensitive; nothing sent
+    "person": "...", "queries": [{"text": "...", "kinds": ["web", "images", "videos"], "why": [{"label": "Name", "value": "..."}]}],
+    "left_out": [{"prop": "...", "why": "from a sensitive source|unconfirmed, not yet accepted"}], "facts": 10,
+    "refused": "the refusal sentence", "refused_queries": 0
   },
   "status": {"areas": [{"area": "...", "does": "...", "limits": "..."}], "measured": ["..."], "planned": ["..."], "updated": "YYYY-MM-DD"}
 }

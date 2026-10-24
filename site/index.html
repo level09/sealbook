@@ -30,6 +30,9 @@
 <link rel="stylesheet" href="css/demo-story.css">
 <link rel="stylesheet" href="css/demo-sheet.css">
 <link rel="stylesheet" href="css/demo-review.css">
+<link rel="stylesheet" href="css/demo-brief.css">
+<link rel="stylesheet" href="css/demo-places.css">
+<link rel="stylesheet" href="css/demo-research.css">
 </head>
 <body>
 <a class="skip" href="#chain">Skip to the chain</a>
@@ -47,8 +50,14 @@
   <div class="opening">
     <div class="copy">
       <h1>Sealbook helps investigators turn raw evidence into findings they can defend.</h1>
-      <p class="lede">It is built for human rights teams who gather photos, videos, documents and testimony from many sources. <span class="ai">AI reads every file first</span> and proposes what it finds, each claim pinned to the exact words, page or second it came from. <span class="tamper-word">People</span> make every factual decision. Every source is kept, and findings leave as a signed package anyone can verify offline.</p>
-      <p>It starts from the everyday mess of an archive: the same picture from several sources, one name spelled four ways, a file nobody can place. The demo panel shows one of each from the fictional case.</p>
+      <p class="lede">Evidence intelligence for human rights teams who document detention, disappearance and attacks from photos, videos, documents, spreadsheets and testimony. <span class="ai">AI reads every file and the case around it</span> and proposes what it finds, each claim pinned to the exact words, page, cell or second it came from. <span class="tamper-word">People</span> make every factual decision.</p>
+      <dl class="promises">
+        <div><dt>Investigate with AI</dt><dd>Extraction, search, transcription and two agents that read whole batches, all proposing, never deciding.</dd></div>
+        <div><dt>Verify with people</dt><dd>Every fact is accepted, rejected or corrected by a named reviewer with a passkey, and every decision can be undone.</dd></div>
+        <div><dt>Keep every source</dt><dd>Files are fingerprinted on arrival, never overwritten, and disagreements between them stay open.</dd></div>
+        <div><dt>Prove it offline</dt><dd>Findings leave as a signed package that anyone can verify offline with the bundled verifier.</dd></div>
+      </dl>
+      <p>It starts from the everyday mess of an archive: the same picture from several sources, one name spelled four ways, a file nobody can place. The panel shows one of each from the fictional case.</p>
     </div>
     <aside class="archive" id="archive" aria-label="One person and one image across the case files">
       <h2>One person, as the sources wrote him</h2>
@@ -78,15 +87,33 @@
   <div class="copy">
     <h2>A file arrives</h2>
     <p>Pick one of the synthetic case files. Sealbook records its fingerprints and how it was acquired, checks its content credentials and reads its text. Then the AI proposes claims, each one pinned to a span, a region of a page or a stretch of audio. Nothing it proposes counts as fact until a person accepts it.</p>
-    <p>Accept a claim below. It turns solid, a seal is stamped, and this page gains a new link right after this one.</p>
+    <p>Accept a claim below. It turns solid, a seal is stamped, and this page gains a link right after this one.</p>
   </div>
   <div class="demo bench" data-demo="arrive"></div>
+</section>
+
+<section class="link" id="sheet" data-signer="intake desk">
+  <div class="copy">
+    <h2>A messy sheet</h2>
+    <p>Intake lists arrive as spreadsheets with mixed scripts, dates in several forms and several facts in one cell. Sealbook stores the sheet as evidence and reads nothing until a person names a field for every column. Then each row is read, and every fact comes back as a proposal pinned to its cell, down to the characters.</p>
+    <p>A later version of the same list is compared with the last one first, row by row, and only added and changed rows are read again.</p>
+  </div>
+  <div class="demo" data-demo="sheet"></div>
+</section>
+
+<section class="link" id="brief" data-signer="agents">
+  <div class="copy">
+    <h2>A batch, read as a whole</h2>
+    <p>When a batch finishes, two agents read it against the rest of the case. The intake brief says what arrived, who and where it names, when, what it connects to and what disagrees with accepted facts, then suggests up to five next steps, each opening the screen where that work is done. The linker proposes links the claims support: one person in two sources, a person at an incident's place and time, two documents naming the same people, people held together. Each link reaches Review as a question, with the claims it rests on.</p>
+    <p>Agents only propose. A sentence the model writes without a citation, or citing something it was not given, is dropped. A line resting on a sensitive source stays locked until someone makes a logged reveal. Both run on a local model, so sensitive material never leaves the machine.</p>
+  </div>
+  <div class="demo" data-demo="brief"></div>
 </section>
 
 <section class="link" id="search" data-signer="search index">
   <div class="copy">
     <h2>One search, grouped</h2>
-    <p>One query returns people, places, sources, passages, media and claims, each in its own group. Exact matches come first: a name in any recorded spelling, a place in either script, an order number, a file hash. Matches by meaning follow, labelled as leads, not answers. Every result opens at the character, page or second it came from.</p>
+    <p>One query returns people, places, sources, passages, media and claims, each in its own group. Exact matches come first: a name in any recorded spelling, a place in either script, an order number, a file hash. Matches by meaning follow as leads, labelled close, related or loose, and leads far below the best match are left out. Every result opens at the character, page or second it came from.</p>
     <p>One local model places text, pictures, scanned pages and audio in the same space, so a written question can find an image or a recording. It has been measured on synthetic data only, where scanned pages rank weakest.</p>
   </div>
   <div class="demo" data-demo="grouped"></div>
@@ -97,7 +124,7 @@
   <div class="copy">
     <h2>Speech, located to the second</h2>
     <p>Recordings are transcribed on the machine that holds them, so sensitive audio never leaves it. Each transcript line keeps its start and end time and is indexed like page text, so a claim drawn from it opens the recording at that second.</p>
-    <p>This is a real run of the app's transcription code over the synthetic witness clip, scored against the script the clip was spoken from. Most errors are dialect spelling pulled toward Modern Standard Arabic, not mishearing. One short clip in a synthetic voice says nothing yet about field recordings.</p>
+    <p>This is a real run of the app's transcription code over the synthetic witness clip, scored against the script the clip was spoken from. Most errors are dialect spelling pulled toward Modern Standard Arabic, not mishearing. One short clip in a synthetic voice says nothing about field recordings.</p>
   </div>
   <div class="demo" data-demo="speech"></div>
 </section>
@@ -124,6 +151,7 @@
   <div class="copy">
     <h2>One name, two people</h2>
     <p>The case holds two men with the same name, the same father's name and different mothers and birth years. Sealbook proposes identity candidates across Arabic and Latin spellings, and shows what supports each one. Similar names are never merged on their own.</p>
+    <p>Where sources disagree about a person, every side stays listed with its source until a reviewer decides. Two spellings of one place are not a disagreement, and neither is a last sighting and an arrest on the same day. A person's facts and documents are counted the same way on the People list, the person page and in search.</p>
   </div>
   <div class="demo" data-demo="people"></div>
 </section>
@@ -131,34 +159,43 @@
 <section class="link" id="connections" data-signer="discovery">
   <div class="copy">
     <h2>Connections, with their reasons</h2>
-    <p>Discovery reads claims that are accepted or corroborated, dated and placed, and proposes two kinds of finding: people held or seen at one place in the same month, and a candidate incident when several people from independent sources fall in one short window. Each finding says why in one sentence, carries a strength band instead of a probability, and lists every member claim with its span.</p>
+    <p>Discovery reads claims that are accepted or corroborated, dated and placed, and proposes two kinds of finding: people held or seen at one place in the same month, and a candidate incident when several people from independent sources fall in one short window. Two nearby places join only within the larger of their stated precisions, and the reason names the distance. Each finding says why in one sentence, carries a strength band instead of a probability, and lists every member claim with its span.</p>
     <p>The list is bounded per kind and investigation. Once a set has been accepted or rejected it is never proposed again, because its key covers the kind, investigation, people, places and month. Accepting is a checklist signed with one passkey gesture over every statement it writes, and that signature can be checked offline.</p>
   </div>
   <div class="demo" data-demo="connections"></div>
 </section>
 
+<section class="link" id="places" data-signer="places">
+  <div class="copy">
+    <h2>A page for every place and incident</h2>
+    <p>Each place has a page built from the evidence: its names in each script, its kind, how precisely it is known and where its position came from, every spelling the sources used, the people placed there and when, the incidents and open findings that touch it, and every source behind it. Names the gazetteer cannot match wait in a list for an analyst to confirm.</p>
+    <p>An accepted incident has a page too: its window and places, the people in it by role, the findings whose acceptance built it, and its signed history with undo. Below are Branch 999 and the incident accepted there.</p>
+  </div>
+  <div class="demo" data-demo="places"></div>
+</section>
+
 <section class="link" id="story" data-signer="story view">
   <div class="copy">
     <h2>A person over time</h2>
-    <p>Pick a person, a group, an incident or a place, and the accepted claims are laid out in time order and on a map. Where two sources put one person in two places on one day, the fork is shown, not resolved. A stretch of more than a month with no evidence is labelled as a gap. Findings still waiting for review appear as hatched bands.</p>
+    <p>Pick a person, a group, an incident or a place, and the accepted claims are laid out in time order and on a map. When sources put one person in two places on one day, farther apart than the places' stated precision, the fork is shown, not resolved. A stretch of more than a month with no evidence is labelled as a gap. Findings still waiting for review appear as hatched bands.</p>
     <p>Every place carries a precision and says where its position came from: the gazetteer, official boundaries, or an analyst. The map numbers places in time order and joins them with lines that show sequence, not routes.</p>
   </div>
   <div class="demo" data-demo="story"></div>
 </section>
 
-<section class="link" id="sheet" data-signer="intake desk">
+<section class="link" id="research" data-signer="research">
   <div class="copy">
-    <h2>A messy sheet</h2>
-    <p>Intake lists arrive as spreadsheets with mixed scripts, dates in several forms and several facts in one cell. Sealbook stores the sheet as evidence and reads nothing until a person names a field for every column. Then each row is read, and every fact comes back as a proposal pinned to its cell, down to the characters.</p>
-    <p>A new version of the same list is compared with the last one first, row by row, and only new and changed rows are read again.</p>
+    <h2>Web research that keeps custody</h2>
+    <p>From a person or a source, an analyst can search the open web through Brave. Queries are proposed only from accepted or corroborated values in ordinary sources, gazetteer names and years. The analyst edits them and sees exactly what will be sent. Each query is written to the ledger as an access record before it leaves, and a case marked sensitive sends nothing.</p>
+    <p>Results come back as web, image and video lists with domain, date and the reason each was suggested, flagged when the same link or a matching picture is already in the case. Adding one as evidence sends a local headless browser to the page once. It stores the final address, the status, the rendered page, a full-page screenshot and a log of what loaded, each hashed, and the files enter normal intake as the analyst's acquisition, so no third party sits in the chain of custody. A login form, a bot check or an error page fails the capture in plain words.</p>
   </div>
-  <div class="demo" data-demo="sheet"></div>
+  <div class="demo" data-demo="research"></div>
 </section>
 
 <section class="link" id="review" data-signer="reviewer">
   <div class="copy">
     <h2>Review together</h2>
-    <p>Ask a colleague to check a claim, or assign a whole selection of sources at once. Requests, replies, mentions, assigned work and finished intake arrive as stored notifications in one inbox, and the desk shows what changed since you left. The discussion stays with the people in it and does not appear in general views, history or exports. The decision is signed, and it can be undone with a signed undo that restores what came before.</p>
+    <p>Ask a colleague to check a claim, or assign a whole selection of sources at once. Requests, replies, mentions, assigned work and finished intake arrive as stored notifications in one inbox, and the desk shows what changed since you left. The discussion stays with the people in it and does not appear in general views, history or exports. Each decision shows the rows the passkey will sign before it asks, and a signed undo restores what came before.</p>
     <p>Sensitive sources stay covered until someone chooses to reveal them, and that reveal is logged. Opening any other source is logged as a view.</p>
   </div>
   <div class="demo" data-demo="review"></div>
@@ -167,8 +204,8 @@
 <section class="link" id="proof" data-signer="integrity">
   <div class="copy">
     <h2>Proof</h2>
-    <p>Statements are grouped into Merkle batches. One root stands for the whole batch, and any change to any statement changes the root. The app can request timestamp receipts for a root and copy it to partner archives, and an exported package can be verified offline with the bundled verifier.</p>
-    <p>Those receipt and partner paths are implemented, but this is not a configured or certified deployment. Erasure removes a person's values from views and search while the chain still verifies. It excludes access; it does not yet physically delete stored bytes.</p>
+    <p>Statements are grouped into Merkle batches. One root stands for the whole batch, and any change to any statement changes the root. The app can request timestamp receipts for a root and copy it to partner archives, and an exported package of cited findings can be verified offline with the bundled verifier.</p>
+    <p>Those receipt and partner paths are implemented, but this is not a configured or certified deployment. Erasure removes a person's values from views and search while the chain still verifies. It excludes access; it does not physically delete stored bytes.</p>
   </div>
   <div class="demo proof" data-demo="proof"></div>
 </section>
@@ -179,6 +216,9 @@
     <ol class="lessons" data-clamp="3">
       <li><b>One source is not two.</b> Several uploads of one recording are one origin. Corroboration counts only after a person confirms they are the same recording, and undoing that link changes the tiers back.</li>
       <li><b>Similar names are not one person.</b> Embeddings and fuzzy matches propose. They never merge identities.</li>
+      <li><b>Two spellings are not a disagreement.</b> Places compare by the place they resolve to and names by normalised text, never by how they are displayed, or "Aleppo" and "حلب" look like a contradiction.</li>
+      <li><b>A count on two screens needs one definition.</b> The People list once counted identity links as facts and disagreed with the person page. Both read one rule, and a screen check compares the two.</li>
+      <li><b>An agent's citations go in the citation field.</b> A model asked to cite will write claim handles into its prose. Any sentence that still carries one is dropped.</li>
       <li><b>Erasure must reach every copy.</b> Search entries, prepared media and anything that shares bytes with the erased source all have to be blocked, or the value leaks back through a side door.</li>
       <li><b>A model's HTTP 200 does not prove it read the image.</b> One endpoint accepted media and silently ignored it. Distinct test images catch that; a success code does not.</li>
       <li><b>Search must cite the original text.</b> Arabic is normalized to find matches, but the citation points back to the exact characters in the stored evidence.</li>
@@ -191,7 +231,7 @@
 <section class="link" id="run" data-signer="editor">
   <div class="copy">
     <h2>Where it stands</h2>
-    <p>Everything on this page runs on a synthetic case built for testing. The numbers come from real runs over those files, not from estimates. What works today, what was measured, and what comes next are listed below.</p>
+    <p>Everything on this page runs on a synthetic case built for testing. The numbers come from real runs over those files, not from estimates. What is implemented, what was measured, and what is planned are listed below.</p>
     <p>All people and organisations in the case are fictional. Place names are public geography.</p>
   </div>
   <div class="status" id="status">
@@ -221,6 +261,9 @@
 <script src="js/demo-story.js"></script>
 <script src="js/demo-sheet.js"></script>
 <script src="js/demo-review.js"></script>
+<script src="js/demo-brief.js"></script>
+<script src="js/demo-places.js"></script>
+<script src="js/demo-research.js"></script>
 <script src="js/demo-proof.js"></script>
 </body>
 </html>
