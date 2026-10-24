@@ -83,6 +83,7 @@ async def search():
     scope = _scope(item)
     try:
         sent = service.clean(item.get("queries"))
+        window = service.clean_window(item.get("from"), item.get("to"))
     except ValueError as exc:
         abort(400, description=str(exc))
     db = g.db_session
@@ -94,6 +95,7 @@ async def search():
             scope,
             item.get("investigation"),
             sent,
+            window=window,
         )
     except service.Refusal as exc:
         return _refuse(str(exc))

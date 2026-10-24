@@ -219,6 +219,9 @@ missing otherwise. The check is cached per process, so restart after installing.
 | `RESEARCH_MEDIA_PER_PAGE` | Media files taken from one captured page, default 8 |
 | `RESEARCH_MEDIA_MAX_BYTES` | Size cap per media file and per yt-dlp download, default 500 MB |
 | `RESEARCH_CANDIDATE_SECONDS` | How long results stay pickable in server memory, default 1800 |
+| `RESEARCH_YOUTUBE_SUBTITLES` | YouTube results per send whose subtitles are read, default 5 |
+| `RESEARCH_YOUTUBE_SUBTITLE_SECONDS` | Time for all those subtitle reads together, default 30; a video still running reads as not checked |
+| `RESEARCH_YOUTUBE_SECONDS` | A YouTube capture's download stops after this many seconds, default 900 |
 
 An admin can mark a case sensitive or switch research off for it with
 `POST /api/research/case` (`{"item": {"investigation", "sensitive"?, "research"?}}`);
@@ -247,6 +250,16 @@ intake as its own acquisition by the analyst. A status of 400 or above, a Cloudf
 bot-check page, a password field or a download fails the capture with a plain
 message and Retry; Sealbook never solves a challenge or logs in. The browser sends
 its normal headless identity and is not disguised.
+
+YouTube needs no key and no browser: search, subtitles and capture all go through
+yt-dlp from this server, with no cookies and no config file. With no Brave key the
+drawer offers YouTube alone. Each search kind counts against the same hourly limit;
+each send also asks YouTube for the subtitles of up to 5 videos. YouTube answers a
+bot check to addresses it distrusts (this development machine got one on every
+watch page while search still worked); Sealbook reports it and stops. yt-dlp wants a
+JavaScript runtime (deno by default) and the `yt-dlp-ejs` scripts for full format
+access on YouTube; neither is installed here, so check a download from the worker
+machine before relying on capture. A capture needs `ffmpeg` to merge video and audio.
 
 `yt-dlp` is pinned in `pyproject.toml` (2026.10.21). Video sites change often;
 upgrade it with `uv add yt-dlp==<version>` and restart workers when downloads start

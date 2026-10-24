@@ -38,6 +38,12 @@ def endpoint(kind: str) -> str:
     return f"{Config.BRAVE_BASE_URL.rstrip('/')}/{KINDS[kind]}"
 
 
+def freshness(window: tuple[str, str]) -> str:
+    """Brave's custom date range: YYYY-MM-DDtoYYYY-MM-DD (web search documentation,
+    api-dashboard.search.brave.com, checked 2026-10-24)."""
+    return f"{window[0]}to{window[1]}"
+
+
 def _text(value) -> str:
     return html.unescape(_TAGS.sub("", value or "")).strip()
 
@@ -66,18 +72,24 @@ async def search(
     query: str,
     count: int,
     transport: httpx.AsyncBaseTransport | None = None,
+    window: tuple[str, str] | None = None,
 ) -> list[Result]:
     if not Config.BRAVE_API_KEY:
         raise SearchError("BRAVE_API_KEY is not set")
     # Videos cap count at 50, web at 20; images allow more.
     count = min(count, {"web": 20, "videos": 50}.get(kind, 100))
+    params = {"q": query, "count": count, "safesearch": "off"}
+    # Only web search honours a date range: the images documentation lists no
+    # freshness parameter, and videos accepted it but returned results outside it.
+    if window and kind == "web":
+        params["freshness"] = freshness(window)
     try:
         async with httpx.AsyncClient(
             transport=transport, timeout=TIMEOUT, trust_env=False
         ) as client:
             resp = await client.get(
                 endpoint(kind),
-                params={"q": query, "count": count, "safesearch": "off"},
+                params=params,
                 headers={
                     "Accept": "application/json",
                     "X-Subscription-Token": Config.BRAVE_API_KEY,

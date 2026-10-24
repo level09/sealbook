@@ -553,6 +553,26 @@ covers in the text it was read from (`span_blob`).
   a full-page screenshot shows only what had loaded. Nothing here is a reliability
   figure; sites change.
 
+## YouTube through yt-dlp (2026-10-24)
+
+- Live check from this machine, once, through the Sealbook code path (no cookies, no
+  login): five searches ("حلب قصف 2016", "Douma 2018 footage", "Big Buck Bunny",
+  "sourdough bread recipe", and "Big Buck Bunny" again from the drawer) each returned
+  20 results in about 1 s (4.9 s for the drawer's whole send). Every subtitle read
+  (5 per search) and both downloads ("Me at the zoo", 19 s; a 46 s Aleppo clip) were
+  refused with "Sign in to confirm you're not a bot" within 1 to 2 s. Search pages
+  and watch pages are judged separately: a working search says nothing about capture.
+  Sealbook now shows one bot-check notice instead of one per card.
+- Flat search entries carry no upload date. yt-dlp's `youtubetab:approximate_date`
+  turns "8 years ago" into a timestamp on today's month and day, so "2016-10-25" was
+  shown for clips titled 2016/7/23. Show only the year as "about", and replace it
+  with the upload date when the video is read.
+- "Douma 2018 footage" returned unrelated music videos after the first result; typed
+  queries are not grounded, so they are shown unjudged, as for pages.
+- The person page scrolls sideways at 390 px because its map section is 420 px wide,
+  not because of the drawer; the drawer itself was 560 px wide and cut off at the
+  left on a phone, and now takes the screen width.
+
 ## Making the screen sense check pass (2026-10-24)
 
 - Sources were still named by their match key. The demo seed and importers write

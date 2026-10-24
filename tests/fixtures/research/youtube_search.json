@@ -1,0 +1,97 @@
+{
+ "_type": "playlist",
+ "id": "\"Lina Najjar\"",
+ "title": "\"Lina Najjar\"",
+ "extractor": "youtube:search",
+ "entries": [
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "lnNjjr2016a",
+   "url": "https://www.youtube.com/watch?v=lnNjjr2016a",
+   "title": "Lina Najjar speaks about the checkpoint",
+   "description": "Interview with Lina Najjar's family",
+   "duration": 125.0,
+   "channel_id": "UCwitness000000000000000",
+   "channel": "Witness Channel",
+   "channel_url": "https://www.youtube.com/channel/UCwitness000000000000000",
+   "uploader": "Witness Channel",
+   "uploader_id": "@witness",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/lnNjjr2016a/hqdefault.jpg?sqp=x",
+     "height": 270,
+     "width": 480
+    }
+   ],
+   "timestamp": 1456790400,
+   "release_timestamp": null,
+   "availability": null,
+   "view_count": 1520,
+   "live_status": null,
+   "channel_is_verified": null
+  },
+  {
+   "_type": "url",
+   "ie_key": "YoutubeTab",
+   "id": "UCwitness000000000000000",
+   "url": "https://www.youtube.com/channel/UCwitness000000000000000",
+   "title": "Witness Channel",
+   "channel": "Witness Channel"
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "rcpVideo001",
+   "url": "https://www.youtube.com/watch?v=rcpVideo001",
+   "title": "Easy lentil soup",
+   "description": "Cook along",
+   "duration": 610.0,
+   "channel_id": "UCkitchen000000000000000",
+   "channel": "Kitchen",
+   "channel_url": "https://www.youtube.com/channel/UCkitchen000000000000000",
+   "uploader": "Kitchen",
+   "uploader_id": "@witness",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/rcpVideo001/hqdefault.jpg?sqp=x",
+     "height": 270,
+     "width": 480
+    }
+   ],
+   "timestamp": 1388534400,
+   "release_timestamp": null,
+   "availability": null,
+   "view_count": 98000,
+   "live_status": null,
+   "channel_is_verified": null
+  },
+  {
+   "_type": "url",
+   "ie_key": "Youtube",
+   "id": "earlyCopy01",
+   "url": "https://www.youtube.com/watch?v=earlyCopy01",
+   "title": "Checkpoint footage, July",
+   "description": "Filmed at the checkpoint",
+   "duration": 48.4,
+   "channel_id": "UClocal00000000000000000",
+   "channel": "Local Coordination",
+   "channel_url": "https://www.youtube.com/channel/UClocal00000000000000000",
+   "uploader": "Local Coordination",
+   "uploader_id": "@witness",
+   "thumbnails": [
+    {
+     "url": "https://i.ytimg.com/vi/earlyCopy01/hqdefault.jpg?sqp=x",
+     "height": 270,
+     "width": 480
+    }
+   ],
+   "timestamp": 1372636800,
+   "release_timestamp": null,
+   "availability": null,
+   "view_count": 310,
+   "live_status": null,
+   "channel_is_verified": null
+  }
+ ]
+}

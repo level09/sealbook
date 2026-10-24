@@ -1,7 +1,8 @@
 """The `capture` worker tool: one picked search result into the case. A local
 headless Chromium visits the page once (HTML, full-page screenshot and a network
 log), the result's own image or the
-page's media are fetched, a video page goes to yt-dlp, and each file enters normal
+page's media are fetched, a video page goes to yt-dlp (a YouTube result goes to yt-dlp
+alone, with no browser visit), and each file enters normal
 intake (hash, C2PA, reading, fingerprints, embeddings, geotag, thumbnails) as its own
 acquisition by the analyst. The sealed run's output is a manifest naming every file
 and how it was obtained. Nothing on another page is visited."""
@@ -22,7 +23,7 @@ from stk import blobs, netguard
 from stk.blobs import chunked
 from stk.ingest import service as ingest
 from stk.ledger.contracts import Refused
-from stk.research import browser, service, video
+from stk.research import browser, service, video, youtube
 from stk.settings import Config
 
 MEDIA = ("image/", "video/", "audio/")
@@ -60,10 +61,11 @@ async def capture(c) -> str:
     await netguard.pin(page)  # refuse a page that resolves to a private address
     collector = uuid.UUID(i["analyst"])
     captured_at = datetime.now(UTC).isoformat()
+    tube = i["kind"] == "youtube"
     method = {
         "provider": i["provider"],
-        "renderer": {"name": "playwright-chromium"},
-        "yt_dlp": video.VERSION if i["kind"] == "videos" else None,
+        "renderer": None if tube else {"name": "playwright-chromium"},
+        "yt_dlp": video.VERSION if i["kind"] in ("videos", "youtube") else None,
     }
     common = {
         "investigation": i["investigation"],
@@ -118,7 +120,102 @@ async def capture(c) -> str:
             }
             | extra
         )
+        return out["sha256"]
 
+    files: list[dict] = []
+    skipped = []
+    if tube:
+        page_url = page
+        await _youtube(c, i, take, skipped)
+    else:
+        page_url, found = await _page(c, i, page, take, method, common, skipped)
+    await c.emit("captured", files=len(files), skipped=len(skipped))
+    manifest = await blobs.put(
+        c.s,
+        orjson.dumps(
+            {
+                "tool": "capture",
+                "page": page,
+                "captured_at": captured_at,
+                "method": method,
+                "query_access": i["query_access"],
+                "files": files,
+                "media_on_page": [] if tube else found,
+                "skipped": skipped,
+            }
+        ),
+        "application/json",
+        Config.BLOB_DIR,
+    )
+    c.run.raw_output_ref = manifest.sha256
+    c.run.endpoint = page_url
+    c.run.provider_served = "local"
+    return manifest.sha256
+
+
+async def _youtube(c, i, take, skipped) -> None:
+    """The video, then its info, subtitles and thumbnail, each naming the video's
+    hash, so the companions stay linked to the media they describe."""
+    page = i["page"]
+    with tempfile.TemporaryDirectory(prefix="sealbook-youtube-") as tmp:
+        try:
+            got = await youtube.download(
+                i["video_id"],
+                tmp,
+                Config.RESEARCH_MEDIA_MAX_BYTES,
+                Config.RESEARCH_YOUTUBE_SECONDS,
+            )
+        except (youtube.BotCheck, youtube.LoginRequired) as exc:
+            raise Refused(str(exc)) from exc
+        path = got["media"]
+        sha = await take(
+            _read(path),
+            mimetypes.guess_type(path.name)[0] or "video/mp4",
+            f"url:{page}",
+            "video",
+            path.name,
+            video=got["context"],
+        )
+        link = {"of_video": sha, "video_id": i["video_id"]}
+        await take(
+            orjson.dumps(got["info"], option=orjson.OPT_INDENT_2),
+            "application/json",
+            f"url:{page}",
+            "info",
+            f"{i['video_id']} info.json",
+            **link,
+        )
+        for sub in got["subtitles"]:
+            await take(
+                sub["path"].read_bytes(),
+                "text/vtt",
+                f"url:{page}",
+                "subtitles",
+                sub["path"].name,
+                lang=sub["lang"],
+                automatic=sub["auto"],
+                **link,
+            )
+        if thumb := got["thumbnail"]:
+            await take(
+                thumb.read_bytes(),
+                mimetypes.guess_type(thumb.name)[0] or "image/jpeg",
+                f"url:{page}",
+                "thumbnail",
+                thumb.name,
+                **link,
+            )
+        skipped += got["skipped"]
+    await c.emit("video_downloaded", files=1, subtitles=len(got["subtitles"]))
+
+
+async def _read(path):
+    with path.open("rb") as f:
+        while chunk := await asyncio.to_thread(f.read, blobs.CHUNK):
+            yield chunk
+
+
+async def _page(c, i, page, take, method, common, skipped):
     try:
         snap = await browser.snapshot(page)
     except netguard.Blocked as exc:
@@ -137,7 +234,6 @@ async def capture(c) -> str:
             "login; open it yourself and add what you may lawfully keep through Add "
             "evidence."
         )
-    files: list[dict] = []
     domain = i.get("domain") or urlsplit(page).hostname
     await take(
         snap.html.encode(),
@@ -157,7 +253,6 @@ async def capture(c) -> str:
         f"{domain} network log.json",
     )
 
-    skipped = []
     if i["kind"] == "videos":
         with tempfile.TemporaryDirectory(prefix="sealbook-capture-") as tmp:
             try:
@@ -170,13 +265,7 @@ async def capture(c) -> str:
                     "to capture it."
                 ) from exc
             mime = mimetypes.guess_type(path.name)[0] or "video/mp4"
-
-            async def read_file():
-                with path.open("rb") as f:
-                    while chunk := await asyncio.to_thread(f.read, blobs.CHUNK):
-                        yield chunk
-
-            await take(read_file(), mime, f"url:{page}", "video", path.name, video=info)
+            await take(_read(path), mime, f"url:{page}", "video", path.name, video=info)
         await c.emit("video_downloaded", files=1)
 
     wanted = (
@@ -214,25 +303,4 @@ async def capture(c) -> str:
                 raise
             skipped.append({"url": m["url"], "reason": f"{type(exc).__name__}: {exc}"})
             await c.emit("media_skipped", drop_reason=str(exc)[:200])
-    await c.emit("captured", files=len(files), skipped=len(skipped))
-    manifest = await blobs.put(
-        c.s,
-        orjson.dumps(
-            {
-                "tool": "capture",
-                "page": page,
-                "captured_at": captured_at,
-                "method": method,
-                "query_access": i["query_access"],
-                "files": files,
-                "media_on_page": found,
-                "skipped": skipped,
-            }
-        ),
-        "application/json",
-        Config.BLOB_DIR,
-    )
-    c.run.raw_output_ref = manifest.sha256
-    c.run.endpoint = page_url
-    c.run.provider_served = "local"
-    return manifest.sha256
+    return page_url, found

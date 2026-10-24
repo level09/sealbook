@@ -1,0 +1,27 @@
+{
+  "type": "search",
+  "query": {
+    "original": "\"Lina Najjar\""
+  },
+  "web": {
+    "type": "search",
+    "results": [
+      {
+        "title": "Aleppo soap and olive oil recipes",
+        "url": "https://other.example.org/recipes",
+        "description": "A market guide with no names in it.",
+        "meta_url": {
+          "hostname": "other.example.org"
+        }
+      },
+      {
+        "title": "Travel notes",
+        "url": "https://other.example.org/travel",
+        "description": "Nothing about a person.",
+        "meta_url": {
+          "hostname": "other.example.org"
+        }
+      }
+    ]
+  }
+}

@@ -24,7 +24,7 @@ from stk.people import data as people
 from stk.places.models import Place
 from stk.stories import data as stories
 
-KINDS = ["web", "images", "videos"]
+KINDS = ["web", "images", "videos", "youtube"]
 MAX = 8
 ARABIC = re.compile(r"[؀-ۿ]")
 MONTHS = (
