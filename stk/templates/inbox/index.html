@@ -124,6 +124,7 @@
           <div class="t"><div class="text-caption ibx-muted">${ cur.label }, ${ ago(cur.at) }</div><div><strong dir="auto">${ cur.n.title }</strong></div><div class="ibx-muted" dir="auto">${ cur.n.subtitle }</div>
             <v-btn class="mt-2" size="small" color="primary" variant="flat" prepend-icon="ti ti-arrow-right" :href="cur.n.to">${ cur.n.kind === 'intake_done' ? 'Open the batch' : 'Open it' }</v-btn></div>
         </div>
+        <div v-if="cur.n.kind === 'intake_done' && batchOf(cur.n)" class="pa-3"><intake-brief :batch="batchOf(cur.n)"></intake-brief></div>
       </template>
       <v-empty-state v-else icon="ti ti-message" title="Select an item" text="Its conversation, the claim or source it is about and a reply box show here."></v-empty-state>
     </section>
@@ -133,6 +134,7 @@
 {% block js %}
 <script type="module">
 import {registerMediaViewers} from '/static/js/components/media.js';
+import {IntakeBrief} from '/static/js/components/IntakeBrief.js';
 
 const ME = {{ current_user.id | tojson }}, MY_NAME = {{ (current_user.name or current_user.email) | tojson }};
 // ponytail: local stand-in for the shared ActorChip (stk/static/js/components/ActorChip.js); swap when it lands.
@@ -306,6 +308,7 @@ window.app = Vue.createApp({
       try { r.req = (await axios.get('/api/collaboration/requests/' + r.id)).data; r.failed = null; }
       catch (err) { r.failed = err.response?.status === 403 ? 'This thread is private to its sender, reviewer and admins.' : (err.response?.data?.error || err.message); }
     },
+    batchOf(n) { return (/[?&]batch=([0-9a-f-]{36})/.exec(n.to || '') || [])[1] || null; },
     back() { this.pane = false; history.replaceState(null, '', '/inbox'); },
     setFilter(key) { this.filter = key; },
     move(d) {
@@ -367,6 +370,7 @@ window.app = Vue.createApp({
   beforeUnmount() { document.removeEventListener('keydown', this.onKey); },
 });
 app.component('actor-chip', ActorChip);
+app.component('intake-brief', IntakeBrief);
 registerStkComponents(app);
 registerMediaViewers(app);
 app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');

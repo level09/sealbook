@@ -66,7 +66,7 @@
       </section>
 
       <section class="ev-panel ev-intel" aria-labelledby="ev-h-intel">
-        <header><h2 id="ev-h-intel">Intelligence</h2><span class="muted">What agents read and propose, in violet. Nothing here is fact until a person signs.</span><v-btn size="small" variant="text" prepend-icon="ti ti-world-search" class="ms-auto" @click="research = true">Research the web</v-btn></header>
+        <header><h2 id="ev-h-intel">Intelligence</h2><span class="muted">What agents read and propose, in violet. Nothing here is fact until a person signs.</span><v-btn size="small" variant="text" prepend-icon="ti ti-world-search" class="ms-auto" @click="research = true">Research the web</v-btn><find-links :scope="'blob:' + it.sha256"></find-links></header>
         <v-tabs v-model="tab" density="compact" grow color="primary">
           <v-tab value="read">Read <span class="ms-1 muted">${ pins.length }</span></v-tab>
           <v-tab value="dups">Copies <span class="ms-1 muted">${ it.copies.length }</span></v-tab>

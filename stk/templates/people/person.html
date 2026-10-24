@@ -35,6 +35,7 @@
         <span class="bar-spacer"></span>
         <a :href="storyHref" class="ppl-tag"><i class="ti ti-timeline"></i> Open story</a>
         <button class="ppl-tag" @click="research = true"><i class="ti ti-world-search"></i> Research the web</button>
+        <find-links :scope="'person:' + boot.person" btn-class="ppl-tag"></find-links>
         <button v-if="hasMasked" class="ppl-tag" @click="revealAll"><i class="ti ti-eye"></i> Reveal personal data (logged)</button>
         <label class="bar-toggle"><input type="radio" value="draft" v-model="projection" @change="load"> Draft (every non-rejected statement)</label>
         <label class="bar-toggle"><input type="radio" value="factual" v-model="projection" @change="load"> Factual (accepted, corroborated)</label>
@@ -155,6 +156,7 @@
 import {createMap, updateMap, retheme} from '/static/js/monitor/mapview.js';
 import {PROP, StoryTimeline, timelineRows} from '/static/js/stories.js';
 import {ResearchDrawer} from '/static/js/components/ResearchDrawer.js';
+import {FindLinks} from '/static/js/components/FindLinks.js';
 
 const {createApp} = Vue;
 const {createVuetify} = Vuetify;
@@ -231,6 +233,8 @@ const app = createApp({
     },
   },
   mounted() {
+    // The intake brief's "search the web" step opens the drawer here.
+    if (new URLSearchParams(location.search).has('research')) this.$nextTick(() => { this.research = true; });
     this._map = createMap(this.$refs.map, this.$refs.mon, {
       onPoint: id => this.open(id),
       onCluster: ids => this.open(ids[0]),
@@ -243,6 +247,7 @@ const app = createApp({
 
 app.component('story-timeline', StoryTimeline);
 app.component('research-drawer', ResearchDrawer);
+app.component('find-links', FindLinks);
 app.config.globalProperties.PROP = PROP;
 registerStkComponents(app);
 app.use(vuetify).mount('#app');
