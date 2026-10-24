@@ -9,7 +9,7 @@ from datetime import date
 
 from sqlalchemy import select
 
-from stk.agents import brief, read
+from stk.agents import brief, read, tasks
 from stk.agents.read import Handles, claim_view, when
 from stk.discovery.evidence import granted
 from stk.ledger.contracts import Prop
@@ -346,6 +346,7 @@ async def reported(db, investigation, user_id, groups) -> set:
 
 
 async def gaps(c) -> str:
+    await tasks.check_access(c.s, c.run)
     investigation, user_id = c.run.inputs["investigation"], c.run.inputs["for_user"]
     agent = await read.agent_for(c.s, AGENT, user_id)
     if c.run.route != "local" or c.run.principal_id != agent.id:

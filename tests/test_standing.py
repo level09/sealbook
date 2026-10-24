@@ -16,7 +16,7 @@ from stk.cases.service import ensure
 from stk.collaboration.models import Notification
 from stk.ledger import write
 from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Acquisition, Blob, Run, Statement
+from stk.ledger.models import Acquisition, Blob, Principal, Run, Statement
 from stk.runs.worker import TOOLS, process
 from stk.settings import Config
 from stk.user.models import User
@@ -565,6 +565,46 @@ class StandingRunTest(unittest.IsolatedAsyncioTestCase):
                 shown = await standing.show(db, self.user, self.task.id)
             self.assertIn("Fatimah", str(shown["matches"]))
             self.assertEqual(shown["history"][0]["state"], "failed")
+
+    async def test_one_task_per_person_case_and_agent_runs_and_settles(self):
+        client = self.app.test_client()
+        headers = await self.login(client)
+        for kind, agent in (
+            ("contradictions", "Contradiction hunter"),
+            ("gaps", "Gap finder"),
+        ):
+            item = {"investigation": fixtures.CASE, "kind": kind}
+            first = await client.post(
+                "/api/agents/tasks", json={"item": item}, headers=headers
+            )
+            again = await client.post(
+                "/api/agents/tasks", json={"item": item}, headers=headers
+            )
+            self.assertEqual((first.status_code, again.status_code), (201, 200))
+            tid = (await first.get_json())["id"]
+            self.assertEqual((await again.get_json())["id"], tid)
+            listed = await client.get(
+                "/api/agents/tasks",
+                query_string={"investigation": fixtures.CASE, "kind": kind},
+                headers=headers,
+            )
+            self.assertEqual(
+                [t["id"] for t in (await listed.get_json())["items"]], [tid]
+            )
+            async with ext.async_session_factory() as db:
+                task = await db.get(AgentTask, uuid.UUID(tid))
+                run = await tasks.queue(db, task, [], read.FIXED)
+                await db.commit()
+                rid = run.id
+                principal = await db.get(Principal, run.principal_id)
+                self.assertEqual((run.tool, principal.name), (kind, agent))
+            await process(ext.async_session_factory, rid)
+            self.assertIn("outcome", await self.output(rid))
+            await tasks.settle(ext.async_session_factory, rid)
+            async with ext.async_session_factory() as db:
+                task = await db.get(AgentTask, uuid.UUID(tid))
+                self.assertIsNotNone(task.last_success_at)
+                self.assertEqual(task.failures, 0)
 
 
 async def write_run_failure(db, run):

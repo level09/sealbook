@@ -247,6 +247,10 @@ class GapToolTest(unittest.IsolatedAsyncioTestCase):
         self.enterContext(
             mock.patch.object(read, "case", mock.AsyncMock(return_value=case))
         )
+        # Task access is covered by tests/test_standing.py; this run has no session.
+        self.enterContext(
+            mock.patch.object(gaps.tasks, "check_access", mock.AsyncMock())
+        )
         self.enterContext(
             mock.patch.object(gaps, "event_kinds", mock.AsyncMock(return_value={}))
         )
@@ -322,7 +326,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const source = fs.readFileSync('stk/static/js/components/GapFinder.js', 'utf8')
-  .replace(/^import .*;\\n/, 'const ResearchDrawer = {};\\n');
+  .replace(/^import \\{(\\w+)\\} .*;$/gm, 'const $1 = {};');
 const {GapFinder} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 const context = {};
 vm.runInNewContext(fs.readFileSync('stk/static/js/vue.min.js', 'utf8'), context);

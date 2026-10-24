@@ -1,5 +1,8 @@
+import {KeepChecking} from '/static/js/components/KeepChecking.js';
+
 export const ContradictionHunter = {
   name: 'ContradictionHunter',
+  components: {KeepChecking},
   props: {investigation: {type: String, required: true}},
   data() { return {items: [], outcome: null, running: false, busy: false, note: '', timer: null, generation: 0}; },
   watch: {investigation: {immediate: true, handler() {
@@ -58,6 +61,7 @@ export const ContradictionHunter = {
   template: `<section aria-label="Contradiction hunter" class="mt-4">
     <h2>Contradiction hunter</h2>
     <p class="muted mb-2">Checks the selected case and drafts questions for a colleague. You decide what to do.</p>
+    <keep-checking kind="contradictions" :investigation="investigation"></keep-checking>
     <v-btn size="small" variant="tonal" :loading="running" :disabled="!investigation || busy" @click="start">Look for contradictions</v-btn>
     <p v-if="!investigation" class="muted mt-2">Choose a case to check.</p>
     <p v-if="running || note" class="muted mt-2" role="status">{{ running ? 'Reading the case for disagreements.' : note }}</p>

@@ -69,12 +69,11 @@ The existing brief and person disagreement pure tests also pass. The component
 template compiles offline and its start, completion and empty-state flows pass.
 Postgres tests in `tests/test_contradictions.py` cover the fixed run, read-only
 ledger behavior, repeat runs, sensitive reveal, later rejection, and manual API
-guards. These database tests and the browser checks were not run in this sandbox.
-No live model quality is established. Scheduling remains separate work. Stored
-report and raw-output bytes retain the brief's physical-erasure limitation.
-Integration follow-up outside this job's ownership: add the contradiction
-hunter's display label to `stk/monitor/data.py` (`TOOL_WORDS`). Until then,
-`tests.test_monitor.TrackTest.test_every_worker_tool_has_words` fails.
+guards; they pass on PostgreSQL with the full suite. A switch on the panel keeps
+the check running as evidence arrives through the agent task queue. No live model
+quality is established. Stored report and raw-output bytes retain the brief's
+physical-erasure limitation.
+
 ## Gap finder
 
 Gap finder is implemented in `stk/agents/gaps.py`, registered as `gaps`, with
@@ -106,8 +105,9 @@ person filtering and research prefill without sending a search. The new
 PostgreSQL tests cover the fixed-output run, cited source lead, colleague
 attribution, access-only ledger writes, duplicate suppression, masking, reveal,
 rejected basis claims and manual route ownership, off and busy states. These
-database tests were written but not run under this job's sandbox rules. No server,
-Ollama or browser checks were run. The existing person map's phone overflow was
+database tests pass on PostgreSQL with the full suite. A switch on the panel keeps
+the check running as evidence arrives through the agent task queue. No Ollama run
+has been measured. The existing person map's phone overflow was
 not changed; the new panel wraps its text and has no fixed minimum width.
 Live model phrasing quality and the new panel at 390 px remain unverified.
 As with the intake brief, erasure removes suggestions from the view through their

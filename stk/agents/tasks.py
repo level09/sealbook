@@ -21,7 +21,30 @@ from stk.settings import Config
 from stk.user.models import User
 
 log = logging.getLogger(__name__)
-KINDS = {"standing": ("standing", "Standing questions", True)}
+# kind: (tool, agent name, wakes on evidence, notice when it proposes, page)
+KINDS = {
+    "standing": (
+        "standing",
+        "Standing questions",
+        True,
+        "A standing question has new matches.",
+        "/desk",
+    ),
+    "contradictions": (
+        "contradictions",
+        "Contradiction hunter",
+        True,
+        "The contradiction hunter found sources that disagree.",
+        "/people",
+    ),
+    "gaps": (
+        "gaps",
+        "Gap finder",
+        True,
+        "The gap finder found silences worth a look.",
+        "/people",
+    ),
+}
 ACTIVE = ("queued", "running")
 
 
@@ -44,14 +67,14 @@ async def check_access(db, run):
         return
     task = await db.get(AgentTask, uuid.UUID(run.inputs["task"]))
     if task is None or not await can_read(db, task.user_id, task.investigation):
-        raise AccessLost("The question owner no longer has access to this case.")
+        raise AccessLost("The owner of this check no longer has access to this case.")
     principal = await read.agent_for(db, KINDS[task.kind][1], task.user_id)
     if (
         run.inputs.get("for_user") != task.user_id
         or run.inputs.get("investigation") != task.investigation
         or run.principal_id != principal.id
     ):
-        raise AccessLost("The question owner no longer has access to this case.")
+        raise AccessLost("The owner of this check no longer has access to this case.")
 
 
 def backoff(seconds, empty_streak):
@@ -61,7 +84,7 @@ def backoff(seconds, empty_streak):
 def failure_reason(error):
     kind = (error or "").partition(":")[0]
     if kind == "AccessLost":
-        return "The question owner no longer has access to this case."
+        return "The owner of this check no longer has access to this case."
     if "Timeout" in kind:
         return "The local model did not answer in time."
     if kind == "ConnectError":
@@ -102,6 +125,19 @@ async def queue(db, task, wakes, model=None):
     task.last_attempt_at = datetime.now(UTC)
     task.last_run_id = run.id
     return run
+
+
+async def runs(db, task):
+    return list(
+        await db.scalars(
+            select(Run)
+            .where(
+                Run.tool == KINDS[task.kind][0],
+                Run.inputs["task"].astext == str(task.id),
+            )
+            .order_by(Run.created_at.desc(), Run.id)
+        )
+    )
 
 
 async def tick(Session):  # noqa: N803
@@ -195,7 +231,7 @@ async def evidence(db, run):
                 .distinct()
             )
         )
-    kinds = [kind for kind, (_, _, listens) in KINDS.items() if listens]
+    kinds = [kind for kind, k in KINDS.items() if k[2]]
     for task in await db.scalars(
         select(AgentTask).where(
             AgentTask.enabled.is_(True),
@@ -243,7 +279,10 @@ async def _settle(Session, run_id):  # noqa: N803
                 else None
             )
             if proposed:
-                notice = ("standing_match", "A standing question has new matches.")
+                notice = (
+                    "standing_match" if task.kind == "standing" else "agent_found",
+                    KINDS[task.kind][3],
+                )
         else:
             task.failures += 1
             await db.execute(
@@ -252,7 +291,7 @@ async def _settle(Session, run_id):  # noqa: N803
             task.next_at = now + timedelta(minutes=5)
             if (run.error or "").startswith("AccessLost:"):
                 task.paused_reason = (
-                    "The question owner no longer has access to this case."
+                    "The owner of this check no longer has access to this case."
                 )
             elif task.failures >= 3:
                 # Errors can contain model output; never copy values into notices.
@@ -274,9 +313,9 @@ async def _settle(Session, run_id):  # noqa: N803
                 db,
                 task.user_id,
                 notice[0],
-                "Standing questions",
+                KINDS[task.kind][1],
                 notice[1],
-                f"/desk?investigation={quote(task.investigation)}",
+                f"{KINDS[task.kind][4]}?investigation={quote(task.investigation)}",
                 f"task:{task.id}",
             )
         else:

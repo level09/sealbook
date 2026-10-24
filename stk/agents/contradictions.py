@@ -8,7 +8,7 @@ from itertools import combinations
 
 from sqlalchemy import select, text
 
-from stk.agents import brief, linker, read
+from stk.agents import brief, linker, read, tasks
 from stk.discovery.evidence import granted
 from stk.ledger.contracts import Tier
 from stk.ledger.models import Blob, Run
@@ -224,6 +224,7 @@ async def reported(db, investigation: str) -> set:
 
 
 async def contradictions(c) -> str:
+    await tasks.check_access(c.s, c.run)
     investigation = c.run.inputs["investigation"]
     agent = await read.agent_for(c.s, AGENT, c.run.inputs["for_user"])
     if agent.id != c.run.principal_id or c.run.route != "local":

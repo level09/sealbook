@@ -1,8 +1,9 @@
 import {ResearchDrawer} from '/static/js/components/ResearchDrawer.js';
+import {KeepChecking} from '/static/js/components/KeepChecking.js';
 
 export const GapFinder = {
   name: 'GapFinder',
-  components: {ResearchDrawer},
+  components: {KeepChecking, ResearchDrawer},
   props: {investigation: {type: String, default: ''}, person: {type: String, default: ''}},
   data() { return {report: null, error: '', timer: null, starting: false, research: false, researchScope: ''}; },
   computed: {
@@ -49,6 +50,7 @@ export const GapFinder = {
     <div class="d-flex align-center flex-wrap ga-2 mb-2"><h2 style="font-size: 16px">Gaps</h2><v-spacer></v-spacer>
       <v-btn size="small" variant="text" :disabled="!caseReady" :loading="!!busy" @click="start">Find gaps</v-btn></div>
     <p class="text-medium-emphasis mb-2">Places to look next. These suggestions need your review.</p>
+    <keep-checking kind="gaps" :investigation="investigation"></keep-checking>
     <p v-if="!caseReady">Choose a case to find gaps.</p>
     <p v-if="error" role="alert">{{ error }}</p>
     <p v-if="busy" aria-live="polite">Reading the case for gaps.</p>

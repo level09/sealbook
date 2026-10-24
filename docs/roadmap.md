@@ -42,11 +42,13 @@ case alongside the analyst, each one a signed run that can only propose.
    longer than 60 days while held or missing, plus open ends after detention or last
    seen. Suggests existing sources at the resolved place and time, search text for
    human approval, and colleagues from public review and collection attribution.
-   Manual checks on People and person pages; scheduling remains separate.
+   Manual checks on People and person pages, and a switch to check again as evidence
+   arrives, through the same task queue as standing questions.
 5. **Contradiction hunter** (built, manual trigger). Finds claims that disagree,
    explains why, and drafts the question for a colleague. The person page's Sources
    disagree panel checks the selected case, with cited sides and sensitive-source
-   masking. Repeat claim sets are suppressed. Scheduled runs remain pending.
+   masking. Repeat claim sets are suppressed. A switch on the panel checks again as
+   evidence arrives, through the same task queue as standing questions.
 6. **Next step suggester.** Orders each analyst's queue by value and suggests flows, such
    as reviewing a register before the testimony that cites it.
 7. **Shadow reviewer.** Predicts each human decision without acting and measures agreement

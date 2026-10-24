@@ -28,6 +28,7 @@ NOTIFICATION_KINDS = (
     "intake_done",
     "standing_match",
     "agent_paused",
+    "agent_found",
 )
 PRIORITIES = ("low", "normal", "high")
 STATUSES = ("open", "done", "returned")
