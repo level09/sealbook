@@ -49,6 +49,8 @@
         <div v-else class="muted">No dated places.</div>
     </div>
 
+    <gap-finder :investigation="caseSel" :person="p ? p.person : boot.person"></gap-finder>
+
     <div class="ppl-grid">
         <div>
             <div class="ppl-card">
@@ -158,6 +160,7 @@ import {createMap, updateMap, retheme} from '/static/js/monitor/mapview.js';
 import {PROP, StoryTimeline, timelineRows} from '/static/js/stories.js';
 import {ResearchDrawer} from '/static/js/components/ResearchDrawer.js';
 import {FindLinks} from '/static/js/components/FindLinks.js';
+import {GapFinder} from '/static/js/components/GapFinder.js';
 
 const {createApp} = Vue;
 const {createVuetify} = Vuetify;
@@ -249,6 +252,7 @@ const app = createApp({
 app.component('story-timeline', StoryTimeline);
 app.component('research-drawer', ResearchDrawer);
 app.component('find-links', FindLinks);
+app.component('gap-finder', GapFinder);
 app.config.globalProperties.PROP = PROP;
 registerStkComponents(app);
 app.use(vuetify).mount('#app');

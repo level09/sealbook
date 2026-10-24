@@ -33,12 +33,14 @@
                 </v-list-item>
             </v-list>
         </v-card>
+        <gap-finder :investigation="caseSel"></gap-finder>
         <v-snackbar v-model="error.show" color="error">${ error.text }</v-snackbar>
     </v-container>
 {% endblock %}
 
 {% block js %}
-    <script>
+    <script type="module">
+        import {GapFinder} from '/static/js/components/GapFinder.js';
         const {createApp} = Vue;
         const {createVuetify} = Vuetify;
         const vuetify = createVuetify(config.vuetifyConfig);
@@ -90,6 +92,7 @@
             delimiters: config.delimiters
         });
 
+        app.component('gap-finder', GapFinder);
         registerStkComponents(app);
         app.use(vuetify).mount('#app');
     </script>

@@ -181,6 +181,7 @@ TOOL_WORDS = {
     "capture": "web capture",
     "brief": "intake brief",
     "link": "linker",
+    "gaps": "gap finder",
     "import": "import",
 }
 # Run event stages and drop reasons are storage tokens; read them as words.

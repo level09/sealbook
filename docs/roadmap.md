@@ -37,8 +37,11 @@ case alongside the analyst, each one a signed run that can only propose.
    and document relations with the passages that justify each, beyond today's rules.
 3. **Standing questions.** An analyst asks once, for example "tell me when anyone is placed
    at Branch 999 after 2014", and the agent watches new evidence and proposes matches.
-4. **Gap finder.** Turns "no evidence for 60 days" into where to look: which sources, which
-   web queries, which colleague has related work.
+4. **Gap finder** (implemented, database and browser checks pending). Finds silences
+   longer than 60 days while held or missing, plus open ends after detention or last
+   seen. Suggests existing sources at the resolved place and time, search text for
+   human approval, and colleagues from public review and collection attribution.
+   Manual checks on People and person pages; scheduling remains separate.
 5. **Contradiction hunter.** Finds claims that disagree, explains why, and drafts the
    question for a colleague.
 6. **Next step suggester.** Orders each analyst's queue by value and suggests flows, such
