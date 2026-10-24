@@ -2,7 +2,7 @@
 (() => {
   const { h } = sealbook;
   const prop = (p) => p.replace(/_/g, " ");
-  const DIFF = [["new", "new"], ["changed", "changed"], ["unchanged", "unchanged"], ["missing", "missing"], ["invalid", "invalid"]];
+  const DIFF = [["new", "added"], ["changed", "changed"], ["unchanged", "unchanged"], ["missing", "missing"], ["invalid", "invalid"]];
 
   function cellContent(text, claims) {
     const ranged = claims.filter((c) => c.chars).sort((a, b) => a.chars[0] - b.chars[0]);
@@ -67,7 +67,7 @@
       h("p", { class: "sh-head" }, h("span", { class: "mono", text: sh.file }), `, dataset "${sh.dataset}": ${sh.rows.length} rows, ${sh.claims.length} proposals.`),
       h("div", { class: "sh-grid" }, h("div", { class: "sh-scroll", tabindex: "0", role: "region", "aria-label": "The sheet" }, table), panel),
       versions,
-      h("p", { class: "note", text: "Version 2 is compared with version 1 before anything is read; only new and changed rows go to extraction. Missing rows retract nothing." }),
+      h("p", { class: "note", text: "Version 2 is compared with version 1 before anything is read; only added and changed rows go to extraction. Missing rows retract nothing." }),
       h("p", { class: "note", text: `The proposals on this page are the demo's fixed answers, written through the app's real sheet writer; no model ran. ${sh.measured}` }));
   });
 })();

@@ -286,6 +286,12 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 .lede { font: 400 1.3rem/1.58 var(--serif); color: var(--ink) !important; max-width: 42ch !important; }
 .link.broken .copy { padding: 8px 12px; margin-left: -12px; }
 
+.promises { margin: 4px 0 28px; max-width: 46rem; border-top: 1px solid var(--ink); }
+.promises div { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); gap: 4px 20px; padding: 11px 0; border-bottom: 1px solid var(--rule); }
+.promises dt { font: 500 1.08rem/1.35 var(--serif); color: var(--ink); }
+.promises dd { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+@media (max-width: 600px) { .promises div { grid-template-columns: minmax(0, 1fr); } }
+
 /* Opening panel: the night archive desk, following the active theme */
 .opening { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 56px; align-items: start; }
 .archive { background: var(--paper-2); border-radius: 14px; padding: 26px 26px 22px; }

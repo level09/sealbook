@@ -37,3 +37,10 @@
   .pp-cmp th, .pp-cmp td { padding: 6px; }
 }
 .pp-when { margin-inline-start: 8px; }
+.pp-more { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 36px; border-top: 1px solid var(--ink); padding-top: 18px; }
+.pp-more h3 { margin: 0 0 6px; }
+.pp-sides { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 8px; }
+.pp-sides li { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.pp-sides .chip { font-family: var(--arabic); font-size: 1rem; }
+.pp-count .pp-cmp td { font-family: var(--mono); font-size: 13.5px; }
+@media (max-width: 760px) { .pp-more { grid-template-columns: minmax(0, 1fr); } }
