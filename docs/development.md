@@ -45,6 +45,13 @@ uv run stk new <module>            # Scaffold + migrate, ends at a URL you can o
 uv run python -m unittest discover -s tests
 ```
 
+### Worktrees
+
+Parallel work happens in git worktrees under `../sealbook-wt/`. A worktree has no
+`.env` and no `instance/blobs`: link the main `.env` (ignored by git) and start the
+server with `BLOB_DIR` set to the main checkout's `instance/blobs`, or search and
+the sense check fail on missing source bytes.
+
 ### Reading the screens (`acceptance/check_sense.py`)
 
 `stk smoke` and `acceptance.check_workflow` prove pages render and flows work. They

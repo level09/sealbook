@@ -726,3 +726,39 @@ covers in the text it was read from (`span_blob`).
 - A sensitive sheet uploaded on the page could not be confirmed (403
   `reveal_required`), though the person had just looked at its columns. The page now
   records the logged reveal first, as the evidence page does, then confirms.
+
+## Agents on a task queue, the Guide and parallel builders (2026-10-24)
+
+- Three headless builders ran in parallel worktrees and all stopped together at a
+  usage limit, each about 90% done with no report. The briefs were saved as files,
+  so other workers could read the brief, the diff and the failing tests and finish.
+  Keep every delegated brief on disk, and check `git status` in each worktree
+  before assuming a job produced nothing.
+- Worktrees have no `.env` and no `instance/blobs`. Tests need the env (link the
+  main `.env`, it is ignored); search and the sense check need the source bytes
+  (`BLOB_DIR` pointing at the main checkout's blobs).
+- New tests used `@example.invalid` users; `/_test/login` accepts only
+  `@example.com`, so login failed and the CSRF token lookup errored. Two builders
+  hit this independently.
+- A test appended to the end of a file landed inside a module-level helper, not
+  the test class, and never ran. Run a new test by its full name once and see it
+  reported before trusting a green suite.
+- Every new worker tool needs a `TOOL_WORDS` label and every new notification kind
+  a `NOTIFICATION_KINDS` entry and an Inbox label; `settle` logs and swallows a
+  notify error, so a missing kind only showed up as failing tests.
+- The contradiction hunter found nothing on the demo: it compared records only
+  inside accepted identity clusters, and the demo accepts none. Records joined by
+  an open same-person proposal are now compared as "possibly two people".
+- Fixed demo answers made the screens read as analysis ("The source gives 999").
+  Demo output says it is demo output, and screens group by person and fold
+  repeated sensitive-source lines, or the sense check's repeat rule fails.
+- A hosted model (Gemini Flash Lite on synthetic data) proposed standing matches
+  that broke the question's conditions (same year for "after", another prison,
+  transferred out) and wrote handles into contradiction questions. Saying the
+  rule and its consequence in the prompt fixed both; the validators had already
+  dropped the handle text. Results in `models.md`.
+- A long smooth scroll on the showcase site landed about 1,000 px short: demos it
+  passed rendered and pushed the target down. Section jumps are instant.
+- Dropping columns on the remote invite database was refused by the agent's
+  permission check even with the owner's go; the owner ran it. Plan remote schema
+  changes as a command for the owner.
