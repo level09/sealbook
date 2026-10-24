@@ -36,7 +36,7 @@ from stk.ledger.write import (
 )
 from stk.people.data import erase
 from stk.places.models import Place, point
-from stk.research import brave, browser, service, store, video
+from stk.research import brave, browser, service, store, video, youtube
 from stk.research import queries as rq
 from stk.research import views as research_views
 from stk.runs.worker import work_once
@@ -53,6 +53,11 @@ ip_public = browser.public
 PUBLIC_IP = ["93.184.215.14"]
 NAME = "Lina Najjar"
 SECRET = "محمد"
+INFOS = orjson.loads((FIX / "youtube_info.json").read_bytes())
+
+
+def fixture_text(name: str) -> str:
+    return (FIX / name).read_text()
 
 
 def fixture(name: str) -> dict:
@@ -80,6 +85,15 @@ class Web:
             ("imgs.search.brave.com", "/img-thumb-1"): (jpeg(PHOTO, 400), "image/jpeg"),
             ("imgs.search.brave.com", "/web-thumb-1"): (jpeg(PHOTO, 300), "image/jpeg"),
             ("imgs.search.brave.com", "/vid-thumb-1"): (other.getvalue(), "image/jpeg"),
+            # A re-encoded copy of the held photo as one video's thumbnail.
+            ("i.ytimg.com", "/vi/earlyCopy01/hqdefault.jpg"): (
+                jpeg(PHOTO, 480),
+                "image/jpeg",
+            ),
+            ("i.ytimg.com", "/vi/lnNjjr2016a/hqdefault.jpg"): (
+                other.getvalue(),
+                "image/jpeg",
+            ),
             # The page serves a re-encoded copy of the photo already in the case.
             ("news.example.org", "/media/photo.jpg"): (
                 jpeg(PHOTO, quality=70),
@@ -167,6 +181,104 @@ class PureTest(unittest.TestCase):
         ):
             with self.assertRaises(ValueError):
                 service.clean(bad)
+
+
+class YouTubePureTest(unittest.TestCase):
+    def test_flat_entries_become_videos_and_channels_are_dropped(self):
+        rows = orjson.loads((FIX / "youtube_search.json").read_bytes())["entries"]
+        found = [v for r in rows if (v := youtube._video(r))]
+        self.assertEqual(
+            [v.video_id for v in found], ["lnNjjr2016a", "rcpVideo001", "earlyCopy01"]
+        )
+        v = found[0]
+        self.assertEqual(v.url, "https://www.youtube.com/watch?v=lnNjjr2016a")
+        self.assertEqual((v.date, v.approximate), ("2016-03-01", True))
+        self.assertEqual(
+            (v.channel, v.duration, v.views), ("Witness Channel", 125, 1520)
+        )
+        self.assertEqual(
+            v.thumbnail, "https://i.ytimg.com/vi/lnNjjr2016a/hqdefault.jpg"
+        )
+        self.assertEqual(
+            youtube.upload_day({"upload_date": "20130722"}), ("2013-07-22", False)
+        )
+
+    def test_tracks_prefer_manual_arabic_english_and_never_a_translation(self):
+        en = youtube.tracks(INFOS["lnNjjr2016a"])
+        self.assertEqual([(t["lang"], t["auto"]) for t in en], [("en", False)])
+        self.assertTrue(en[0]["url"].endswith("fmt=vtt"))
+        ar = youtube.tracks(INFOS["earlyCopy01"])
+        self.assertEqual([(t["lang"], t["auto"]) for t in ar], [("ar", True)])
+        self.assertNotIn("tlang", ar[0]["url"])
+        self.assertEqual(youtube.tracks(INFOS["rcpVideo001"]), [])
+        both = {
+            "subtitles": {
+                "de": [{"ext": "vtt", "url": "d"}],
+                "en-GB": [{"ext": "vtt", "url": "e"}],
+                "ar": [{"ext": "vtt", "url": "a"}],
+            }
+        }
+        self.assertEqual([t["lang"] for t in youtube.tracks(both)], ["ar", "en-GB"])
+        other = {"subtitles": {"de": [{"ext": "vtt", "url": "d"}]}}
+        self.assertEqual([t["lang"] for t in youtube.tracks(other)], ["de"])
+
+    def test_rolling_captions_are_read_once_with_their_second(self):
+        cues = youtube.cues(fixture_text("youtube_earlyCopy01.ar.vtt"))
+        self.assertEqual(
+            cues,
+            [(1, "هنا الحاجز"), (3, "وأخذوا لينا النجّار"), (6, "في الصباح")],
+        )
+        en = youtube.cues(fixture_text("youtube_lnNjjr2016a.en.vtt"))
+        self.assertEqual(
+            en[1], (65, "Her name is Lina Najjar, and she never came home.")
+        )
+
+    def test_spellings_are_heard_across_scripts_and_cues(self):
+        named = [
+            {
+                "text": "x",
+                "why": [
+                    {"label": "Name", "value": "لينا النجار"},
+                    {"label": "Name", "value": NAME},
+                ],
+            }
+        ]
+        spellings = service.spoken(named)
+        cues = youtube.cues(fixture_text("youtube_earlyCopy01.ar.vtt"))
+        said = service.heard(cues, spellings, "earlyCopy01")
+        self.assertEqual(
+            [(x["at"], x["url"]) for x in said],
+            [(3, "https://www.youtube.com/watch?v=earlyCopy01&t=3s")],
+        )
+        split = [(10, "and then Lina"), (12, "Najjar was taken"), (20, "nothing")]
+        said = service.heard(split, spellings, "abcdefghijk")
+        self.assertEqual(
+            [(x["at"], x["text"]) for x in said],
+            [(10, "and then Lina Najjar was taken")],
+        )
+        self.assertEqual(
+            service.heard([(1, "Lina only")], spellings, "abcdefghijk"), []
+        )
+        # A typed query listens for its own words, numbers left out.
+        typed = service.spoken([{"text": '"Douma" 2018', "why": []}])
+        self.assertEqual(typed, [{"douma"}])
+
+    def test_bot_check_and_sign_in_read_plainly(self):
+        bot = youtube.plain(
+            Exception(
+                "ERROR: [youtube] abc: Sign in to confirm you\u2019re not a bot. Use --cookies"
+            )
+        )
+        self.assertIsInstance(bot, youtube.BotCheck)
+        self.assertIn("bot check", str(bot))
+        login = youtube.plain(
+            Exception(
+                "ERROR: [youtube] abc: Private video. Sign in if you've been granted access"
+            )
+        )
+        self.assertIsInstance(login, youtube.LoginRequired)
+        other = youtube.plain(Exception("ERROR: [youtube] abc: Video unavailable"))
+        self.assertEqual(str(other), "YouTube did not answer: Video unavailable")
 
 
 class BraveTest(unittest.IsolatedAsyncioTestCase):
@@ -407,6 +519,26 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
                 lambda *a, **k: real(*a, **k, transport=self.transport),
             )
         )
+        # YouTube: yt-dlp's network calls answer from the recorded fixtures.
+        self.tube = {"search": [], "info": [], "fetch": []}
+        self.tube_by_query = {f'"{NAME}"': "youtube_search.json"}
+
+        def search(query, count):
+            self.tube["search"].append((query, count))
+            name = self.tube_by_query.get(query, "youtube_search_ar.json")
+            return orjson.loads((FIX / name).read_bytes())
+
+        def info(video_id):
+            self.tube["info"].append(video_id)
+            return INFOS[video_id]
+
+        def fetch(url):
+            self.tube["fetch"].append(url)
+            vid, lang = url.split("v=")[1].split("&")[0], url.split("lang=")[1][:2]
+            return (FIX / f"youtube_{vid}.{lang}.vtt").read_bytes()
+
+        for name, fake in (("_search", search), ("_info", info), ("_fetch", fetch)):
+            self.enterContext(mock.patch.object(youtube, name, fake))
         store.clear()
 
     async def asyncSetUp(self):
@@ -956,3 +1088,251 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
                 )
             )
         self.assertIsNone(left)
+
+    def tubed(self, text, name=NAME):
+        return self.named(text, name) | {"kinds": ["youtube"]}
+
+    async def test_youtube_search_merges_reads_subtitles_and_marks_held_copies(self):
+        client = await self.client()
+        q = [self.tubed(f'"{NAME}"'), self.tubed('"لينا النجار"', "لينا النجار")]
+        with mock.patch.object(Config, "BRAVE_API_KEY", None):  # YouTube needs no key
+            status, body = await self.send(client, q)
+        self.assertEqual(status, 200, body)
+        self.assertEqual(
+            self.tube["search"], [(f'"{NAME}"', 20), ('"لينا النجار"', 20)]
+        )
+        self.assertEqual(self.web.sent("api.search.brave.com"), [])
+        rows = body["groups"]["youtube"]
+        # one row per video id; the channel entry is gone; relevance order, the
+        # unrelated video last
+        self.assertEqual(
+            [r["video_id"] for r in rows], ["lnNjjr2016a", "earlyCopy01", "rcpVideo001"]
+        )
+        top, early, soup = rows
+        self.assertEqual(top["queries"], [f'"{NAME}"', '"لينا النجار"'])
+        self.assertEqual(
+            (top["channel"], top["duration"], top["views"]),
+            ("Witness Channel", 125, 1520),
+        )
+        # subtitles: manual English for one, the spoken Arabic captions for the other
+        self.assertEqual(top["subtitles"]["status"], "said")
+        self.assertEqual(top["subtitles"]["lines"][0]["at"], 65)
+        self.assertEqual(
+            early["subtitles"]["lines"][0]["url"],
+            "https://www.youtube.com/watch?v=earlyCopy01&t=3s",
+        )
+        self.assertTrue(early["subtitles"]["lines"][0]["auto"])
+        # grounded by what is said, though the title does not name her
+        self.assertEqual([r["grounded"] for r in rows], [True, True, False])
+        self.assertEqual(soup["subtitles"]["status"], "absent")
+        # the upload date replaces the "years ago" estimate once read
+        self.assertEqual((early["date"], early["approximate"]), ("2013-07-22", False))
+        self.assertTrue(all("tlang" not in u for u in self.tube["fetch"]))
+        # the thumbnail is fetched by the server and matches the held photo: a lead
+        self.assertEqual([c["kind"] for c in early["in_case"]], ["same_picture"])
+        r = await client.get(f"/api/research/thumb/{early['id']}")
+        self.assertEqual(r.status_code, 200)
+        async with ext.async_session_factory() as s:
+            logs = (
+                (
+                    await s.execute(
+                        select(Payload.value).where(
+                            Payload.value["action"].astext == "research"
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        self.assertEqual(
+            sorted((v["provider"], v["kind"], v["query"]) for v in logs),
+            sorted([("youtube", "youtube", x["text"]) for x in q]),
+        )
+        with mock.patch.object(Config, "BRAVE_API_KEY", None):
+            status, body = await self.send(client, [self.named(f'"{NAME}"')])
+        self.assertEqual(status, 409)
+        self.assertIn("BRAVE_API_KEY", body["message"])
+
+    async def test_subtitle_search_is_bounded_in_videos_and_time(self):
+        client = await self.client()
+        with mock.patch.object(Config, "RESEARCH_YOUTUBE_SUBTITLES", 1):
+            _, body = await self.send(client, [self.tubed(f'"{NAME}"')])
+        self.assertEqual(self.tube["info"], ["lnNjjr2016a"])
+        self.assertEqual(
+            [r["subtitles"]["status"] for r in body["groups"]["youtube"]],
+            ["said", "not_checked", "not_checked"],
+        )
+        slow = threading.Event()
+
+        def stuck(video_id):
+            slow.wait(2)
+            return INFOS[video_id]
+
+        with (
+            mock.patch.object(youtube, "_info", stuck),
+            mock.patch.object(Config, "RESEARCH_YOUTUBE_SUBTITLE_SECONDS", 0.2),
+        ):
+            _, body = await self.send(client, [self.tubed(f'"{NAME}"')])
+        slow.set()
+        late = body["groups"]["youtube"][0]["subtitles"]
+        self.assertEqual(late["status"], "failed")
+        self.assertIn("ran out of time", late["message"])
+
+    async def test_youtube_bot_check_reads_plainly(self):
+        def refused(query, count):
+            raise youtube.DownloadError(
+                "ERROR: [youtube:search] x: Sign in to confirm you\u2019re not a bot"
+            )
+
+        client = await self.client()
+        with mock.patch.object(youtube, "_search", refused):
+            status, body = await self.send(client, [self.tubed(f'"{NAME}"')])
+        self.assertEqual(status, 200, body)
+        self.assertIn("bot check", body["sent"][0]["error"])
+        self.assertEqual(body["groups"]["youtube"], [])
+
+    def fake_download(self, video_id, directory, max_bytes, seconds):
+        folder = Path(directory)
+        media = folder / f"{video_id}.webm"
+        shutil.copy(CLIP, media)
+        thumb = folder / f"{video_id}.jpg"
+        thumb.write_bytes(jpeg(PHOTO, 480))
+        sub = folder / f"{video_id}.en.vtt"
+        sub.write_text(fixture_text("youtube_lnNjjr2016a.en.vtt"))
+        info = INFOS[video_id] | {
+            "duration": 125.4,
+            "webpage_url": youtube.WATCH.format(video_id),
+        }
+        return {
+            "media": media,
+            "thumbnail": thumb,
+            "subtitles": [{"path": sub, "lang": "en", "auto": False}],
+            "skipped": [],
+            "info": youtube._small(info, youtube.INFO_KEYS)
+            | {
+                "original_url": youtube.WATCH.format(video_id),
+                "yt_dlp": youtube.VERSION,
+            },
+            "context": youtube._small(info, youtube.CONTEXT_KEYS),
+        }
+
+    async def capture_tube(self, client):
+        _, body = await self.send(client, [self.tubed(f'"{NAME}"')])
+        pick = body["groups"]["youtube"][0]
+        status, queued = await self.post(
+            client,
+            "/api/research/capture",
+            {"ids": [pick["id"]], "sensitivity": "ordinary"},
+        )
+        self.assertEqual(status, 200, queued)
+        while await work_once(ext.async_session_factory, ["capture"], self.transport):
+            pass
+        progress = await (
+            await client.get(f"/api/research/batch/{queued['batch']}")
+        ).get_json()
+        return pick, queued, progress
+
+    async def test_youtube_capture_takes_media_info_subtitles_and_thumbnail(self):
+        client = await self.client()
+        with (
+            mock.patch.object(youtube, "_download", self.fake_download),
+            mock.patch.object(browser, "installed", return_value=False),  # not needed
+        ):
+            pick, queued, progress = await self.capture_tube(client)
+        self.assertEqual(progress["captures"][0]["status"], "done", progress)
+        self.assertEqual(self.rendered, [])  # no browser visit for a YouTube video
+        async with ext.async_session_factory() as s:
+            acqs = (
+                (
+                    await s.execute(
+                        select(Acquisition).where(
+                            Acquisition.context["batch"].astext == queued["batch"]
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            run = await s.get(Run, uuid.UUID(queued["runs"][0]))
+            info_acq = next(a for a in acqs if a.context["capture"]["role"] == "info")
+            info = orjson.loads(
+                blobs.read(await s.get(Blob, info_acq.blob_sha256), Config.BLOB_DIR)
+            )
+            self.assertEqual(await verify_db(s), [])
+        by_role = {a.context["capture"]["role"]: a for a in acqs}
+        self.assertEqual(sorted(by_role), ["info", "subtitles", "thumbnail", "video"])
+        clip = by_role["video"]
+        self.assertEqual(clip.origin, "url:https://www.youtube.com/watch?v=lnNjjr2016a")
+        self.assertEqual(
+            clip.context["capture"]["video"]["channel_id"], "UCwitness000000000000000"
+        )
+        self.assertEqual(clip.context["capture"]["video"]["duration"], 125)
+        for role in ("info", "subtitles", "thumbnail"):
+            self.assertEqual(
+                by_role[role].context["capture"]["of_video"], clip.blob_sha256
+            )
+            self.assertEqual(by_role[role].collector_id, clip.collector_id)
+        self.assertEqual(
+            (info["channel_id"], info["upload_date"], info["original_url"], info["id"]),
+            ("UCwitness000000000000000", "20160301", pick["url"], "lnNjjr2016a"),
+        )
+        method = clip.context["capture"]["method"]
+        self.assertEqual(
+            (method["renderer"], method["yt_dlp"]), (None, youtube.VERSION)
+        )
+        self.assertEqual(run.inputs["provider"]["name"], "youtube")
+        # captured: the same video now reads as already in this case
+        _, body = await self.send(client, [self.tubed(f'"{NAME}"')])
+        top = body["groups"]["youtube"][0]
+        self.assertEqual([c["kind"] for c in top["in_case"]], ["same_link"])
+
+    async def test_a_video_captured_from_another_link_is_marked_by_its_id(self):
+        async with ext.async_session_factory() as s, s.begin():
+            sha = (await blobs.put(s, b"clip", "video/mp4", Config.BLOB_DIR)).sha256
+            await record_acquisition(
+                s,
+                blob_sha256=sha,
+                origin="url:https://video.example.net/watch/soup",
+                collector_id=self.agent.id,
+                at=datetime.now(UTC),
+                context={
+                    "investigation": "case-r",
+                    "capture": {"role": "video", "video": {"id": "rcpVideo001"}},
+                },
+                sensitivity="ordinary",
+                doc_type="web_post",
+            )
+        _, body = await self.send(await self.client(), [self.tubed(f'"{NAME}"')])
+        soup = next(
+            r for r in body["groups"]["youtube"] if r["video_id"] == "rcpVideo001"
+        )
+        self.assertEqual(
+            [(c["kind"], c["sha256"]) for c in soup["in_case"]], [("same_video", sha)]
+        )
+
+    async def test_youtube_bot_check_fails_the_capture_with_retry(self):
+        def refused(*a):
+            raise youtube.DownloadError(
+                "ERROR: [youtube] lnNjjr2016a: Sign in to confirm you\u2019re not a bot"
+            )
+
+        client = await self.client()
+        with mock.patch.object(youtube, "_download", refused):
+            _, queued, progress = await self.capture_tube(client)
+        failed = progress["captures"][0]
+        self.assertEqual(failed["status"], "failed")
+        self.assertIn("bot check", failed["error"])
+        self.assertEqual(progress["intake"]["items"], [])
+        r = await client.post(
+            f"/ingest/run/{failed['run']}/retry", json={"item": {}}, headers=client.csrf
+        )
+        self.assertEqual(r.status_code, 200)
+        with mock.patch.object(youtube, "_download", self.fake_download):
+            while await work_once(
+                ext.async_session_factory, ["capture"], self.transport
+            ):
+                pass
+        progress = await (
+            await client.get(f"/api/research/batch/{queued['batch']}")
+        ).get_json()
+        self.assertEqual(progress["captures"][0]["status"], "done", progress)

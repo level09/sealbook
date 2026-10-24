@@ -90,6 +90,13 @@ class Config:
     RESEARCH_CANDIDATE_SECONDS = int(
         os.environ.get("RESEARCH_CANDIDATE_SECONDS", "1800")
     )
+    # YouTube: subtitles read for the leading results of one send, in one time budget;
+    # a capture's download stops at its own limit.
+    RESEARCH_YOUTUBE_SUBTITLES = int(os.environ.get("RESEARCH_YOUTUBE_SUBTITLES", "5"))
+    RESEARCH_YOUTUBE_SUBTITLE_SECONDS = float(
+        os.environ.get("RESEARCH_YOUTUBE_SUBTITLE_SECONDS", "30")
+    )
+    RESEARCH_YOUTUBE_SECONDS = int(os.environ.get("RESEARCH_YOUTUBE_SECONDS", "900"))
 
     STK_PUBLIC_URL = os.environ.get("STK_PUBLIC_URL")
 

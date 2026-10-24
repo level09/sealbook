@@ -1,0 +1,102 @@
+{
+ "lnNjjr2016a": {
+  "id": "lnNjjr2016a",
+  "title": "Lina Najjar speaks about the checkpoint",
+  "upload_date": "20160301",
+  "channel": "Witness Channel",
+  "channel_id": "UCwitness000000000000000",
+  "subtitles": {
+   "fr": [
+    {
+     "ext": "json3",
+     "url": "https://www.youtube.com/api/timedtext?v=lnNjjr2016a&lang=fr&fmt=json3"
+    },
+    {
+     "ext": "vtt",
+     "url": "https://www.youtube.com/api/timedtext?v=lnNjjr2016a&lang=fr&fmt=vtt",
+     "name": "fr"
+    }
+   ],
+   "en": [
+    {
+     "ext": "json3",
+     "url": "https://www.youtube.com/api/timedtext?v=lnNjjr2016a&lang=en&fmt=json3"
+    },
+    {
+     "ext": "vtt",
+     "url": "https://www.youtube.com/api/timedtext?v=lnNjjr2016a&lang=en&fmt=vtt",
+     "name": "en"
+    }
+   ],
+   "live_chat": [
+    {
+     "ext": "json",
+     "url": "https://www.youtube.com/live_chat_replay"
+    }
+   ]
+  },
+  "automatic_captions": {
+   "en-orig": [
+    {
+     "ext": "json3",
+     "url": "https://www.youtube.com/api/timedtext?v=lnNjjr2016a&lang=en&fmt=json3"
+    },
+    {
+     "ext": "vtt",
+     "url": "https://www.youtube.com/api/timedtext?v=lnNjjr2016a&lang=en&fmt=vtt",
+     "name": "en"
+    }
+   ]
+  }
+ },
+ "earlyCopy01": {
+  "id": "earlyCopy01",
+  "title": "Checkpoint footage, July",
+  "upload_date": "20130722",
+  "channel": "Local Coordination",
+  "channel_id": "UClocal00000000000000000",
+  "subtitles": {},
+  "automatic_captions": {
+   "en": [
+    {
+     "ext": "json3",
+     "url": "https://www.youtube.com/api/timedtext?v=earlyCopy01&lang=ar&fmt=json3&tlang=en"
+    },
+    {
+     "ext": "vtt",
+     "url": "https://www.youtube.com/api/timedtext?v=earlyCopy01&lang=ar&fmt=vtt&tlang=en",
+     "name": "ar"
+    }
+   ],
+   "ar-orig": [
+    {
+     "ext": "json3",
+     "url": "https://www.youtube.com/api/timedtext?v=earlyCopy01&lang=ar&fmt=json3"
+    },
+    {
+     "ext": "vtt",
+     "url": "https://www.youtube.com/api/timedtext?v=earlyCopy01&lang=ar&fmt=vtt",
+     "name": "ar"
+    }
+   ],
+   "ar": [
+    {
+     "ext": "json3",
+     "url": "https://www.youtube.com/api/timedtext?v=earlyCopy01&lang=ar&fmt=json3&tlang=ar"
+    },
+    {
+     "ext": "vtt",
+     "url": "https://www.youtube.com/api/timedtext?v=earlyCopy01&lang=ar&fmt=vtt&tlang=ar",
+     "name": "ar"
+    }
+   ]
+  }
+ },
+ "rcpVideo001": {
+  "id": "rcpVideo001",
+  "title": "Easy lentil soup",
+  "upload_date": "20140101",
+  "subtitles": {},
+  "automatic_captions": {}
+ }
+}

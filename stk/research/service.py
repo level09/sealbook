@@ -30,7 +30,7 @@ from stk.ledger import write
 from stk.ledger.contracts import Prop, Sensitivity, StatementIn
 from stk.ledger.models import Acquisition, Run
 from stk.monitor import filter as mfilter
-from stk.research import brave, browser, store
+from stk.research import brave, browser, store, youtube
 from stk.research.models import CaseSetting
 from stk.research.queries import KINDS
 from stk.search.arabic import normalize
@@ -44,6 +44,8 @@ TRACKING = re.compile(
     r"utm_.*|fbclid|gclid|dclid|msclkid|igshid|mc_cid|mc_eid|_ga", re.I
 )
 SUBJECT_LABELS = {"Name", "Gazetteer name", "Incident place"}
+PROVIDER = {"web": "brave", "images": "brave", "videos": "brave", "youtube": "youtube"}
+MATCHES_PER_VIDEO = 3
 
 
 class Refusal(Exception):
@@ -106,6 +108,7 @@ async def status(db: AsyncSession, investigation: str | None) -> dict:
             "queries_per_hour": Config.RESEARCH_QUERIES_PER_HOUR,
             "captures_per_hour": Config.RESEARCH_CAPTURES_PER_HOUR,
             "max_queries": MAX_QUERIES,
+            "youtube_subtitles": Config.RESEARCH_YOUTUBE_SUBTITLES,
         },
     }
 
@@ -198,6 +201,45 @@ def subject_names(q: dict) -> list[str]:
     return [w["value"] for w in q.get("why") or [] if w.get("label") in SUBJECT_LABELS]
 
 
+def spoken(qs: list[dict]) -> list[set[str]]:
+    """What to listen for in subtitles: each recorded spelling of the subject, or
+    for a typed query its own words; numbers are left out, since speech says them
+    in words."""
+    names = [n for q in qs for n in subject_names(q)] or [
+        q["text"].replace('"', " ") for q in qs
+    ]
+    out = []
+    for n in names:
+        words = {t for t in _tokens(n) if not t.isdigit() and t not in ("al", "el")}
+        if words and words not in out:
+            out.append(words)
+    return out
+
+
+def heard(lines: list[tuple[int, str]], spellings: list[set[str]], video_id: str):
+    """Subtitle lines that say a spelling, every word of it within one cue and the
+    next (a name is often split across two), each with a link to that second."""
+    out, last = [], -2
+    for i, (at, text) in enumerate(lines):
+        here = _tokens(text)
+        window = here | (_tokens(lines[i + 1][1]) if i + 1 < len(lines) else set())
+        if i == last + 1 or not any(s <= window and s & here for s in spellings):
+            continue
+        if not any(s <= here for s in spellings):
+            text = f"{text} {lines[i + 1][1]}"
+        out.append(
+            {
+                "at": at,
+                "text": text[:200],
+                "url": f"{youtube.WATCH.format(video_id)}&t={at}s",
+            }
+        )
+        last = i
+        if len(out) == MATCHES_PER_VIDEO:
+            break
+    return out
+
+
 async def log_query(
     db: AsyncSession,
     who,
@@ -217,7 +259,7 @@ async def log_query(
             prop=Prop.ACCESS,
             value={
                 "action": "research",
-                "provider": "brave",
+                "provider": PROVIDER[kind],
                 "kind": kind,
                 "query": q["text"],
                 "investigation": investigation,
@@ -301,6 +343,28 @@ async def _same_url(db: AsyncSession, urls: set[str], investigation: str) -> dic
     return out
 
 
+async def _same_video(db: AsyncSession, ids: set[str], investigation: str) -> dict:
+    """Video ids captured before in this case, from any page that led to them."""
+    vid = Acquisition.context["capture"]["video"]["id"].astext
+    rows = await db.execute(
+        select(vid, Acquisition.blob_sha256, Acquisition.at)
+        .where(
+            vid.in_(list(ids)),
+            Acquisition.context["capture"]["role"].astext == "video",
+            Acquisition.context["investigation"].astext == investigation,
+        )
+        .order_by(Acquisition.at)
+    )
+    out: dict[str, dict] = {}
+    for v, sha, at in rows:
+        out.setdefault(v, {"sha256": sha, "at": at.isoformat()})
+    return out
+
+
+def _grounded(heads: set[str], r) -> bool | None:
+    return bool(heads & _tokens(f"{r.title} {r.description}")) if heads else None
+
+
 async def search(
     db: AsyncSession,
     user_id: int,
@@ -311,7 +375,9 @@ async def search(
     transport: httpx.AsyncBaseTransport | None = None,
     window: tuple[str, str] | None = None,
 ) -> dict:
-    if missing()["search"]:
+    if missing()["search"] and any(
+        PROVIDER[k] == "brave" for q in queries for k in q["kinds"]
+    ):
         raise Refusal("Search is not configured: " + ", ".join(missing()["search"]))
     if reason := await refusal(db, investigation):
         raise Refusal(reason)
@@ -331,41 +397,65 @@ async def search(
             first = False
             access = await log_query(db, who, scope, investigation, q, kind, window)
             try:
-                found = await brave.search(
-                    kind, q["text"], Config.RESEARCH_RESULTS, transport, window
-                )
-            except brave.SearchError as exc:
+                if kind == "youtube":
+                    found = await youtube.search(q["text"], Config.RESEARCH_RESULTS)
+                else:
+                    found = await brave.search(
+                        kind, q["text"], Config.RESEARCH_RESULTS, transport, window
+                    )
+            except (brave.SearchError, youtube.YouTubeError) as exc:
                 sent.append(q | {"kind": kind, "error": str(exc), "count": 0})
                 continue
             sent.append(q | {"kind": kind, "count": len(found)})
-            results += [(r, q, access) for r in found]
+            results += [(r, q, access, rank) for rank, r in enumerate(found)]
 
-    # Copies of one page found by several queries become one result.
-    merged: dict[tuple, list] = {}
-    for r, q, access in results:
-        key = (r.kind, link_key(r.url), link_key(r.media_url))
-        if key in merged:
-            if q["text"] not in merged[key][3]:
-                merged[key][3].append(q["text"])
-                merged[key][4].append(access)
-        else:
-            merged[key] = [r, q, access, [q["text"]], [access]]
+    # Copies of one page (or one YouTube video) found by several queries become one
+    # result, ranked by its best place in any of them.
+    merged: dict[tuple, dict] = {}
+    for r, q, access, rank in results:
+        key = (
+            (r.kind, r.video_id)
+            if r.kind == "youtube"
+            else (r.kind, link_key(r.url), link_key(r.media_url))
+        )
+        m = merged.setdefault(
+            key, {"r": r, "q": q, "qs": [], "accesses": [], "rank": rank}
+        )
+        if q["text"] not in [x["text"] for x in m["qs"]]:
+            m["qs"].append(q)
+            m["accesses"].append(access)
+        m["rank"] = min(m["rank"], rank)
     results = list(merged.values())
     names = [n for q in queries for n in subject_names(q)]
     heads = {h for n in names if (h := _head(n))}
 
-    urls = {r.url for r, *_ in results} | {
-        r.media_url for r, *_ in results if r.media_url
+    # Subtitles of the leading YouTube results, read for the subject's spellings.
+    videos = sorted(
+        (m for m in results if m["r"].kind == "youtube"),
+        key=lambda m: (_grounded(heads, m["r"]) is False, m["rank"]),
+    )[: Config.RESEARCH_YOUTUBE_SUBTITLES]
+    subs = await youtube.subtitles(
+        [m["r"].video_id for m in videos], Config.RESEARCH_YOUTUBE_SUBTITLE_SECONDS
+    )
+
+    urls = {m["r"].url for m in results} | {
+        m["r"].media_url for m in results if m["r"].media_url
     }
     held = await _same_url(db, urls, investigation)
+    held_videos = await _same_video(
+        db,
+        {m["r"].video_id for m in results if m["r"].kind == "youtube"},
+        investigation,
+    )
     thumbs = await asyncio.gather(
         *(
-            _thumb(r.thumbnail, transport) if r.thumbnail else _none()
-            for r, *_ in results
+            _thumb(m["r"].thumbnail, transport) if m["r"].thumbnail else _none()
+            for m in results
         )
     )
     groups: dict[str, list] = {k: [] for k in KINDS}
-    for (r, q, access, texts, accesses), thumb in zip(results, thumbs, strict=True):
+    for m, thumb in zip(results, thumbs, strict=True):
+        r, q = m["r"], m["q"]
         in_case = []
         for u in (r.url, r.media_url):
             if u in held:
@@ -376,7 +466,16 @@ async def search(
                         "why": f"This link was captured on {held[u]['at'][:10]}",
                     }
                 )
-        if thumb and r.kind in ("images", "videos"):
+        if r.kind == "youtube" and r.video_id in held_videos and r.url not in held:
+            h = held_videos[r.video_id]
+            in_case.append(
+                {
+                    "kind": "same_video",
+                    "sha256": h["sha256"],
+                    "why": f"This video was captured on {h['at'][:10]}",
+                }
+            )
+        if thumb and r.kind in ("images", "videos", "youtube"):
             near = await _same_picture(db, thumb[0], investigation)
             if near:
                 in_case.append(
@@ -387,7 +486,7 @@ async def search(
                         f"(PDQ distance {near.d}); a lead, not a confirmed copy",
                     }
                 )
-        candidate = {
+        row = {
             "kind": r.kind,
             "url": r.url,
             "media_url": r.media_url,
@@ -395,9 +494,53 @@ async def search(
             "domain": r.domain,
             "date": r.date,
             "description": r.description,
+        }
+        grounded = _grounded(heads, r)
+        if r.kind == "youtube":
+            row |= {
+                "video_id": r.video_id,
+                "channel": r.channel,
+                "channel_id": r.channel_id,
+                "duration": r.duration,
+                "views": r.views,
+                "approximate": r.approximate,
+            }
+            found = subs.get(r.video_id)
+            if found is None:
+                row["subtitles"] = {"status": "not_checked"}
+            elif "error" in found:
+                row["subtitles"] = {
+                    "status": "failed",
+                    "message": found["error"],
+                    "bot": bool(found.get("bot")),
+                }
+            else:
+                if found["upload_date"]:
+                    row |= {"date": found["upload_date"], "approximate": False}
+                said = [
+                    line | {"lang": t["lang"], "auto": t["auto"]}
+                    for t in found["tracks"]
+                    for line in heard(
+                        youtube.cues(t["vtt"]), spoken(m["qs"]), r.video_id
+                    )
+                ][:MATCHES_PER_VIDEO]
+                row["subtitles"] = {
+                    "status": "said"
+                    if said
+                    else "none"
+                    if found["tracks"]
+                    else "absent",
+                    "tracks": [
+                        {"lang": t["lang"], "auto": t["auto"]} for t in found["tracks"]
+                    ],
+                    "lines": said,
+                }
+                if said and heads:
+                    grounded = True
+        candidate = row | {
             "query": q["text"],
-            "access": str(access),
-            "accesses": [str(a) for a in accesses],
+            "access": str(m["accesses"][0]),
+            "accesses": [str(a) for a in m["accesses"]],
             "investigation": investigation,
             "scope": scope,
             "thumb": thumb,
@@ -405,29 +548,24 @@ async def search(
         }
         cid = store.put(user_id, candidate)
         # Never dropped: an ungrounded result sorts below the grounded ones.
-        grounded = (
-            bool(heads & _tokens(f"{r.title} {r.description}")) if heads else None
-        )
         groups[r.kind].append(
-            {
+            row
+            | {
                 "id": cid,
-                "kind": r.kind,
-                "url": r.url,
-                "media_url": r.media_url,
-                "title": r.title,
-                "domain": r.domain,
-                "date": r.date,
-                "description": r.description,
                 "thumb": bool(thumb),
                 "in_case": in_case,
                 "why": {"query": q["text"], "from": q["why"]},
-                "queries": texts,
+                "queries": [x["text"] for x in m["qs"]],
+                "rank": m["rank"],
                 "grounded": grounded,
                 "subject": next(iter(subject_names(q)), None),
             }
         )
     for rows in groups.values():
-        rows.sort(key=lambda x: x["grounded"] is False)
+        # Pages keep the order they were found in; YouTube keeps its relevance.
+        rows.sort(
+            key=lambda x: (x["grounded"] is False, x["rank"] if "video_id" in x else 0)
+        )
     every = [x for k in KINDS for x in groups[k]]
     nothing = bool(heads and every and not any(x["grounded"] for x in every))
     return {
@@ -454,8 +592,6 @@ async def queue_capture(
     sensitivity: str,
     doc_type: str,
 ) -> dict:
-    if missing()["capture"]:
-        raise Refusal("Capture is not configured: " + ", ".join(missing()["capture"]))
     sensitivity = str(Sensitivity(sensitivity))
     if not 1 <= len(ids) <= 20:
         raise ValueError("pick 1 to 20 results")
@@ -465,6 +601,9 @@ async def queue_capture(
         if c is None:
             raise LookupError("A picked result has expired; search again.")
         candidates.append(c)
+    # A YouTube capture is yt-dlp alone; any other result needs the browser.
+    if missing()["capture"] and any(c["kind"] != "youtube" for c in candidates):
+        raise Refusal("Capture is not configured: " + ", ".join(missing()["capture"]))
     for inv in {c["investigation"] for c in candidates}:
         if reason := await refusal(db, inv):
             raise Refusal(reason)
@@ -495,7 +634,16 @@ async def queue_capture(
                 "found_at": c["found_at"],
                 "query_access": c["access"],
                 "query_accesses": c["accesses"],
-                "provider": {"name": "brave", "endpoint": brave.endpoint(c["kind"])},
+                "provider": (
+                    {
+                        "name": "youtube",
+                        "endpoint": "ytsearch",
+                        "yt_dlp": youtube.VERSION,
+                    }
+                    if c["kind"] == "youtube"
+                    else {"name": "brave", "endpoint": brave.endpoint(c["kind"])}
+                ),
+                **({"video_id": c["video_id"]} if c["kind"] == "youtube" else {}),
                 "investigation": c["investigation"],
                 "sensitivity": sensitivity,
                 "doc_type": doc_type,
