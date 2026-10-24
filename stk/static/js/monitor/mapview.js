@@ -268,12 +268,15 @@ export async function updateMap(state, layer, {showRejected, subject, query}) {
   for (const m of state.clusters.values()) m.remove();
   state.clusters.clear();
   for (const m of state.labels) m.remove();
-  state.labels = [...new Set(points.map(pt => pt.place))].map(place => {
+  // One label per resolved place, every spelling on it, so Aleppo and حلب never stack.
+  const spellings = new Map();
+  for (const pt of points) (spellings.get(pt.place_id) || spellings.set(pt.place_id, new Set()).get(pt.place_id)).add(pt.place);
+  state.labels = [...spellings.values()].map(names => {
     const el = document.createElement('span');
     el.className = 'map-label';
     el.dir = 'auto';
-    el.textContent = place;
-    return new maplibregl.Marker({element: el, anchor: 'left', offset: [10, 0]}).setLngLat(layer.places[place]).addTo(map);
+    el.textContent = [...names].join(' / ');
+    return new maplibregl.Marker({element: el, anchor: 'left', offset: [10, 0]}).setLngLat(layer.places[[...names][0]]).addTo(map);
   });
   if (!state.fitted && points.length) {
     const bounds = new maplibregl.LngLatBounds();

@@ -419,3 +419,11 @@ covers in the text it was read from (`span_blob`).
   that, name people through `people.names` and props through the page's own labels,
   and keep measurements in a tooltip. Put an Arabic name inside English copy in a
   Unicode isolate, or a trailing number jumps to the other side.
+
+## Leftovers from the display text sweep (2026-10-24)
+
+- The Stories fix for two spellings of one place did not reach `monitor/mapview.js`,
+  which the monitor and person maps share: it made one label per distinct spelling,
+  so "Aleppo" and "حلب" stacked on one point. Each page had its own label loop. Key
+  any per-place drawing on `place_id`, and grep every map for the same loop when one
+  is fixed.
