@@ -19,7 +19,7 @@ from sqlalchemy import (
     union,
     update,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, array_agg
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from stk.ledger.contracts import Prop, StatementIn, Tier
@@ -225,7 +225,7 @@ async def hints(session: AsyncSession, items: list[dict]) -> dict[str, str]:
 
     def first(i):
         found = sorted(seen.get(i["person"], ()))
-        return f"first in {ctx.doc(found[0][1])['file']}" if found else None
+        return f"first in {ctx.doc(found[0][1])['title']}" if found else None
 
     out = {}
     for g in clash:
@@ -252,7 +252,7 @@ async def roster(
         select(
             Statement.subject,
             func.count(),
-            func.count(func.distinct(Statement.span_blob)),
+            array_agg(func.distinct(Statement.span_blob)),
             func.min(Statement.valid_from),
             func.max(func.coalesce(Statement.valid_to, Statement.valid_from)),
         )
@@ -266,6 +266,7 @@ async def roster(
         .group_by(Statement.subject)
     )
     out: dict[str, dict] = {}
+    seen: dict[str, set] = {}
     for subject, facts, docs, first, last in rows:
         person = pid(subject)
         members = groups.get(person, frozenset({person}))
@@ -280,9 +281,10 @@ async def roster(
             },
         )
         p["facts"] += facts
-        # ponytail: sums per mention, so a document naming two linked mentions
-        # counts twice; count distinct blobs per cluster if that misleads.
-        p["documents"] += docs
+        # A document naming two linked records is still one document.
+        blobs = seen.setdefault(min(members), set())
+        blobs.update(d for d in docs if d)
+        p["documents"] = len(blobs)
         for key, value, pick in (("from", first, min), ("to", last, max)):
             if value:
                 day = value.isoformat()
@@ -392,7 +394,8 @@ async def _duplicates(
     session: AsyncSession, groups: dict, members: frozenset, blocked: set
 ) -> list[dict]:
     """Other persons whose names match this one's, with the fields that agree or
-    differ. Proposals for a human; nothing here merges anything."""
+    differ, most agreement first. Proposals for a human; nothing here merges
+    anything. A candidate that only differs is left out."""
     values = await _person_values(session, [Prop.NAME, *CORROBORATING])
     mine = [v for v in values if v[1] in members]
     names = [
@@ -439,6 +442,10 @@ async def _duplicates(
                 agree.append(str(prop))
             elif ours and theirs:
                 differ.append(str(prop))
+        # A name match that every other compared field contradicts is evidence of
+        # two people, not a lead. A recorded not-same decision stays visible.
+        if differ and not agree and not c["not_same"]:
+            continue
         out.append(
             {
                 "person": person,
@@ -448,7 +455,10 @@ async def _duplicates(
                 "not_same": c["not_same"],
             }
         )
-    return out
+    # Most agreement first, then fewest differences; decided pairs last.
+    return sorted(
+        out, key=lambda d: (d["not_same"], -len(d["agree"]), len(d["differ"]))
+    )
 
 
 def _by_name(sids, shown: dict) -> list[dict]:
@@ -501,8 +511,12 @@ async def person(session: AsyncSession, ref, projection: str = "draft") -> dict 
         limit=5000,
         order=Statement.recorded_at,
     )
+    linked = await links(session, rows)
     facts: dict[str, list] = {}
     for r in rows:
+        # The source a fact came from, opened at the claim; the actor is detail.
+        lk = linked.get(r["id"])
+        r["source"] = {"title": lk["file"], "href": lk["href"]} if lk else None
         facts.setdefault(r["prop"], []).append(r)
     places = await resolve.resolved(
         session, [uuid.UUID(r["id"]) for r in rows if r["prop"] in LOCATED], None
@@ -532,7 +546,7 @@ async def person(session: AsyncSession, ref, projection: str = "draft") -> dict 
         "track": track,
         "points": layer["points"],
         "places": layer["places"],
-        "forks": _forks(facts, steps, places, await links(session, rows)),
+        "forks": _forks(facts, steps, places, linked),
         "gaps": gaps,
         "gap_days": GAP_DAYS,
         "conflicts": mine,

@@ -31,7 +31,7 @@
         <a href="/people" class="muted"><i class="ti ti-arrow-left"></i> People</a>
         <h1 v-if="title" dir="auto">${ title }</h1>
         <h1 v-else>Unnamed person</h1>
-        <span v-if="p" class="muted">${ p.members.length } mention${ p.members.length === 1 ? '' : 's' } linked as one person by accepted decisions</span>
+        <span v-if="p && p.members.length > 1" class="muted">${ p.members.length } records joined as one person by accepted decisions</span>
         <span class="bar-spacer"></span>
         <a :href="storyHref" class="ppl-tag"><i class="ti ti-timeline"></i> Open story</a>
         <button class="ppl-tag" @click="research = true"><i class="ti ti-world-search"></i> Research the web</button>
@@ -64,7 +64,8 @@
                         <span class="when">${ r.when || 'undated' }</span>
                         <span dir="auto">${ label(r) }</span>
                         <span class="ppl-tag">${ r.tier }</span>
-                        <span class="muted">${ r.actor.label }</span>
+                        <a v-if="r.source" :href="r.source.href" class="muted" dir="auto" @click.stop :title="r.actor.label + (r.actor.detail ? ', ' + r.actor.detail : '')">${ r.source.title }</a>
+                        <span v-else class="muted">${ r.actor.label }</span>
                     </button>
                 </div>
             </div>
@@ -104,7 +105,7 @@
                 <div v-for="d in p.duplicates" :key="d.person" class="mb-3">
                     <a :href="'/people/' + d.person" dir="auto">${ who(d.person) }</a>
                     <span v-if="d.not_same" class="ppl-tag">marked not the same</span>
-                    <div>Agree: ${ words(d.agree) || 'nothing' } · Differ: ${ words(d.differ) || 'nothing' }</div>
+                    <div>Agree: ${ words(d.agree) || 'name only' }<span v-if="d.differ.length">. Differ: ${ words(d.differ) }</span></div>
                     <div>Names match:
                         <template v-for="(n, i) in d.names" :key="n.statement"><span v-if="i">, </span><a href="#" @click.prevent="open(n.statement)"><bdi v-if="n.name" dir="auto">${ n.name }</bdi><span v-else><i class="ti ti-lock" aria-hidden="true"></i> ${ n.count } name${ n.count === 1 ? '' : 's' } from a sensitive source</span></a></template>
                     </div>
@@ -135,8 +136,8 @@
             </dd>
             <dt>Tier</dt><dd>${ side.data.tier } (${ side.data.reason })</dd>
             <dt>When</dt><dd>${ side.data.when || 'undated' }</dd>
-            <dt>Actor</dt><dd>${ side.data.actor.label }</dd>
-            <dt>Document</dt><dd>${ side.data.doc ? side.data.doc.file : 'none' }</dd>
+            <dt>Actor</dt><dd>${ side.data.actor.label }<span v-if="side.data.actor.detail" class="muted">, ${ side.data.actor.detail }</span></dd>
+            <dt>Document</dt><dd>${ side.data.doc ? side.data.doc.title : 'none' }</dd>
             <dt>Span</dt><dd class="mono">${ side.data.span ? JSON.stringify(side.data.span) : 'none' }</dd>
             <dt>Evidence</dt><dd>${ side.data.evidence.join(', ') || 'none' }</dd>
             <dt>Signature</dt><dd>${ side.data.signature.by }${ side.data.signature.verifies === true ? ', verifies' : side.data.signature.verifies === false ? ', does not verify' : '' }</dd>

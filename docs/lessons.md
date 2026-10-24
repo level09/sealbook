@@ -471,6 +471,14 @@ covers in the text it was read from (`span_blob`).
 - The Desk read a notification's stored subtitle ("Request 1fbaac41"), which is kept
   bare on purpose; the bell names it at read time with `notifications.describe`.
   Every reader of a stored notification must call it.
+- "across 1 mention" counted records joined by same-person decisions, which is 1 for
+  nearly everyone, and documents were summed per record, so linked records counted
+  a document twice. Count distinct blobs per cluster and say "joined from N records"
+  only above one.
+- Candidate duplicates were proposed on a name match alone, even when every compared
+  field differed, and sorted by id, so an unnamed record that agreed on nothing came
+  before a record agreeing on four fields. Leave out candidates that only differ
+  (unless a not-same decision exists) and sort by agreement.
 - `track()` flagged two same-day positions at different place ids as a fork, so
   "arrested at Harasta" and "last seen at Douma" (3.8 km) read "sources disagree".
   Positions now disagree only past the larger of the two place precisions (the rule

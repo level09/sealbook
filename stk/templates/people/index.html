@@ -28,9 +28,7 @@
                         <span v-if="h.statements" class="text-medium-emphasis">, ${ h.statements.length } matching name${ h.statements.length === 1 ? '' : 's' }</span>
                     </v-list-item-title>
                     <v-list-item-subtitle>
-                        ${ h.facts || 0 } facts from ${ h.documents || 0 } document${ h.documents === 1 ? '' : 's' }
-                        across ${ h.members } mention${ h.members === 1 ? '' : 's' }
-                        <span v-if="h.from"> . ${ h.from }${ h.to && h.to !== h.from ? ' to ' + h.to : '' }</span>
+                        ${ count(h.facts, 'fact') } from ${ count(h.documents, 'document') }<span v-if="h.members > 1">, joined from ${ h.members } records</span><span v-if="h.from">, ${ h.from }${ h.to && h.to !== h.from ? ' to ' + h.to : '' }</span>
                     </v-list-item-subtitle>
                 </v-list-item>
             </v-list>
@@ -67,6 +65,7 @@
                 if (this.q) this.search();
             },
             methods: {
+                count: (n, one) => `${n || 0} ${n === 1 ? one : one + 's'}`,
                 // Shell contract: follow the top bar's investigation switcher.
                 useCase() { this.items = null; this.loadAll().then(() => this.q.trim() && this.search()); },
                 async loadAll() {
