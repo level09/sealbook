@@ -13,6 +13,7 @@ the handoff record for a new contributor or agent.
 | [Search evaluation](search-eval.md) | Rerunnable analyst search battery, results and known gaps |
 | [Operations](operations.md) | Configuration, local commands and verification |
 | [Lessons](lessons.md) | Failures found during the build and how to avoid them |
+| [stk upstream notes](stk-upstream.md) | Framework issues and reusable pieces found while building Sealbook |
 | [Roadmap](roadmap.md) | Accepted next work and deferred capabilities |
 | [Research](research.md) | Borrowed patterns and DigUp references |
 | [Model choice](models.md) | Current local multimodal recommendation, alternatives and validation gap |
