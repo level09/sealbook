@@ -9,7 +9,7 @@ not applied either new migration to the working database.
 | Custody | SHA-256/MD5 intake, acquisitions, signed statements, sealed runs and chain verification | Physical blob encryption and erasure remain incomplete |
 | Trust | Pure gate, rebuildable tiers, signed human acceptance/rejection/undo | Similarity never grants factual acceptance |
 | Integrity | Merkle batches, OTS/TSA receipt paths, partner root copies, offline package verifier | External service paths do not prove a configured or certified deployment |
-| Intake | /ingest page: batch case, origin, note and sensitivity set once; files and links; per-item stage progress read from run states (`GET /ingest/batch/<id>`); plain-words failures with Retry (`POST /ingest/run/<id>/retry`); batch summary. Files/URLs, C2PA verification, URL recheck, image OCR, text extraction, page-located PDF text indexing and local audio/video transcription; `read_progress` per item for long reads | No automatic scanned-PDF OCR |
+| Intake | /ingest page: batch case, origin, note and sensitivity set once; files and links; per-item stage progress read from run states (`GET /ingest/batch/<id>`); plain-words failures with Retry (`POST /ingest/run/<id>/retry`); batch summary. Files/URLs, C2PA verification, URL recheck, image OCR, text extraction, page-located PDF text indexing with claim extraction per page, and local audio/video transcription; `read_progress` per item for long reads. OCR and extraction run only when a route has a model (`MODEL_LOCAL` and friends, [operations.md](operations.md)); the evidence page's Queue processing names what it queued or the missing setting and shows each read's state until claims arrive | No automatic scanned-PDF OCR. Local extraction with gemma4 12B on a 16 GB laptop takes minutes per page and often repeats one claim until the context ends on list-like pages (see verification) |
 | People | Arabic/cross-script candidates, draft/factual tracks, "Sources disagree" listing each unresolved disagreement once with each side's value and source link (two same-day positions disagree only when they are farther apart than the larger place precision, the rule shared presence uses, and are not a last-seen and arrest pair), identity proposals, watchlists and source-backed actor embeddings; one label rule (`people.names`) for Desk, Discover, Stories, People, the palette and the sign dialog: the best name the reader may see from any linked record, else "Unnamed person N" with a lock; candidate duplicates show one line per candidate naming each matching name once (masked ones counted behind a lock), most agreeing fields first, and leave out a name match that only differs; each fact links to its source title at the claim, the model only in a tooltip; the list and header say "joined from N records" only when N is above one; the People list, global search and the Watching picker show each person's dates, and tell apart only rows that read the same (one name, one dated range) by the first fact that sets each apart (`people.hints`: another case than the filtered one, then first source), with the id only when none does; the list, the person page and search count the same facts and documents (current, not rejected, no identity links), checked by `check_sense` | Embeddings do not merge identities |
 | Located search | Original text offsets, Arabic passage normalization, exact identifier priority, PDF page preview and match labels | Candidate limits are bounded; no Arabic retrieval gold-set evaluation |
 | Semantic search | One 768-dimensional EmbeddingGemma 2 space for text passages, actor profiles, images, PDF pages, video frames and audio windows; source-linked artifacts and signed recipe/reference provenance | Runs on local Ollama; measured only on the synthetic retrieval set, where scans rank weakest. Search leaves out leads more than 0.05 below the best similarity in the same answer and labels the rest close, related or loose (number in the tooltip); the cutoff and bands are set from the gold set, not calibrated |
@@ -39,6 +39,17 @@ not applied either new migration to the working database.
 
 ## Completed verification
 
+- Real OCR and extraction (2026-10-24), on a copy of the demo database with
+  `MODEL_LOCAL=gemma4:12b-it-qat` and `MODEL_CLOUD=google/gemini-3.1-flash-lite`:
+  register scan (sensitive, local) OCR in 68 s, printed text right, four handwritten
+  values misread; its extraction looped until the context ended. Text list: cloud
+  extraction 19 of 19 claims located in 5 s, the two same-named men kept apart; local
+  extraction finished once in 318 s (23 facts) and looped twice. Transfer order PDF
+  page, local: 8 proposed, 7 written, 1 refused as a duplicate pending value, 140 s.
+  Checkpoint photo (ordinary, cloud OCR by a copy-only policy row): the poster line
+  in 4 s, no claims, correctly. The evidence page button queued OCR and showed it
+  queued, then done, in Chromium with no console errors.
+  `test_live_openrouter_extract` passes with gpt-4o-mini.
 - Proactive agents (2026-10-24): full unit suite 615 run, 613 passed, 2 skipped,
   with `tests/test_agents.py` (citation validation, masking for a reader without the
   reveal, rejected and duplicate links, fixed-output determinism) and the demo seed

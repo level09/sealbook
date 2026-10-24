@@ -106,11 +106,55 @@ generations remain outside current semantic queries; coverage stays incomplete
 until current vectors exist. A rebuild may repeat work and preserves prior signed
 runs and human rejections.
 
-Text extraction handles PDF text layers, not scanned-page OCR. Pages with no text
-remain visible gaps. Large text jobs still read the full source to compute their
+Text extraction handles PDF text layers, not scanned-page OCR. Each page with text
+gets its own claim extraction when a model is configured; pages with no text remain
+visible gaps. Large text jobs still read the full source to compute their
 chunk list; only batch writes and model work are progressive. Fingerprint decoding
 remains one bounded file operation. Coverage lists at most 100 sources and marks
 a larger filter incomplete. Search candidate limits do not establish absence.
+
+## OCR and claim extraction
+
+Images are read by OCR, then claims are read from the text; text files, transcripts
+and each PDF page with text go straight to extraction. Nothing runs until a route
+has a model. A run uses the most private route its policy row allows that has a
+model set, so with `MODEL_LOCAL` set every source stays local; to send ordinary
+sources to the cloud, an admin narrows the policy (for example `ocr`, `*`,
+`ordinary` to `{cloud}`). Sensitive sources never leave the local route.
+
+| Setting | Meaning |
+| --- | --- |
+| `ROUTE_LOCAL_BASE_URL` | Any OpenAI-compatible server; Ollama is `http://127.0.0.1:11434/v1` |
+| `ROUTE_LOCAL_API_KEY` | Optional; Ollama needs none |
+| `ROUTE_LOCAL_TIMEOUT` | Seconds one local call may take, default 120; the run lease is this plus a minute, at least 5 minutes |
+| `MODEL_LOCAL` | Local model for OCR and extraction; it must accept images |
+| `OPENROUTER_API_KEY` | Key for both cloud routes |
+| `MODEL_CLOUD_ZDR` | OpenRouter model, sent with `provider.zdr` so only zero-retention providers serve it |
+| `MODEL_CLOUD` | OpenRouter model for ordinary sources |
+
+Checked here on 2026-10-24 (Apple M2, 16 GB, Ollama 0.40.5): `gemma4:12b-it-qat`,
+`qwen3.5:9b` and `qwen3.5:2b` all report vision. On the demo register scan gemma4
+read the layout and printed text in 40 to 70 s and misread several handwritten
+place and mother names; qwen3.5:9b took 134 s with similar errors; qwen3.5:2b
+could not extract (it labelled every cell a name). Local extraction runs at about
+5 tokens a second on that laptop, so a register page takes minutes: set
+`ROUTE_LOCAL_TIMEOUT=900` there. `google/gemini-3.1-flash-lite` on OpenRouter read
+a photo's poster text in 4 s. Both local thinking models are called with
+`reasoning_effort: none`.
+
+```dotenv
+ROUTE_LOCAL_BASE_URL=http://127.0.0.1:11434/v1
+ROUTE_LOCAL_TIMEOUT=900
+MODEL_LOCAL=gemma4:12b-it-qat
+MODEL_CLOUD=google/gemini-3.1-flash-lite
+```
+
+Restart the app and every worker after changing these. On an evidence page with no
+claims, Queue processing queues OCR or extraction and indexing, says what it queued
+or why nothing can run, and lists each read with its state until the claims arrive.
+`uv run python -m unittest tests.test_runs.RunsTest.test_live_openrouter_extract`
+(with `OPENROUTER_API_KEY` set) makes one real OpenRouter call and checks that a
+located name is written.
 
 ## Speech to text
 
@@ -211,8 +255,9 @@ failing. The capture run records the version it used.
 ## Verification
 
 ```sh
-OPENROUTER_API_KEY='' uv run python -m unittest discover -s tests
-OPENROUTER_API_KEY='' uv run python -m unittest acceptance.test_v0
+export OPENROUTER_API_KEY='' ROUTE_LOCAL_BASE_URL='' MODEL_LOCAL='' MODEL_CLOUD='' ROUTE_LOCAL_TIMEOUT=120
+uv run python -m unittest discover -s tests
+uv run python -m unittest acceptance.test_v0
 uv run stk verify --json
 uv run stk smoke --json
 uv run python -m acceptance.check_workflow
@@ -224,7 +269,9 @@ applies the same order there.
 
 The unit suite uses disposable PostgreSQL databases when PostgreSQL is configured.
 The local role must have `CREATEDB`; fixture cleanup removes only its generated
-databases. Setting an empty OpenRouter key disables the external model test.
+databases. Setting an empty OpenRouter key disables the external model test. The empty route
+settings matter once `.env` configures OCR: the demo seed tests run intake brief and
+linker runs, which would otherwise wait on the real local model.
 An isolated `STK_TEST_REDIS_URL` enables the real Redis session test.
 
 `stk verify` runs ruff, `checks.py`, and migration drift. It does not run the full

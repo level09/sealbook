@@ -620,3 +620,41 @@ covers in the text it was read from (`span_blob`).
   The commit silently reverted 3cbf813's extraction prompt; it was restored in the
   next commit. Build a patched blob from HEAD in the same command that commits it,
   and diff the commit against its parent for lines you did not write.
+
+## Real OCR and extraction (2026-10-24)
+
+- No `MODEL_*` was set locally, so `Config.RUN_MODELS` was empty and no new image or
+  text was ever read; every `extract` run in the demo database was the seed's fixed
+  output and there were no `ocr` runs. Fixture claims hid it. A model path counts as
+  working only after a real model wrote located claims through the worker.
+- A real model's claims were dropped, not wrong: gpt-4o-mini copied the format
+  placeholder (`"YYYY-MM-DD"`) or the string `"null"` into `valid`, and an unusable
+  date dropped the whole claim, so a run with two correctly located quotes wrote
+  none. No model proposed a `name` either, since the mention already carried it.
+  `valid` is now `anyOf` a digits pattern or null, the prompt spells out each field
+  and asks for a name per person, and a bad date keeps the claim undated with an
+  `undated` event. `test_placeholder_dates_keep_the_quoted_claims` replays the
+  recorded response.
+- An OCR run queued its extraction on the OCR route. Extraction has its own policy
+  row (the demo keeps it local), so an ordinary photo read on the cloud queued an
+  extraction the worker would refuse. Extraction now resolves its own route when the
+  OCR is queued, as transcription already did.
+- PDF pages were indexed but never read for claims. The pdf run now queues one
+  extraction per page with text, once.
+- The evidence page's Queue processing button only queued indexing and said "Queued
+  no new runs", so an analyst could not tell why no claims appeared. It now queues
+  OCR or extraction too, names what it queued or why nothing can run, and lists each
+  read with its state, refreshed from the monitor stream until it finishes.
+- Local extraction on this laptop runs at about 5 tokens a second (gemma4 12B,
+  Ollama sharing the GPU with embedding calls from other workers), so a register page
+  passed the fixed 120 s route timeout. `ROUTE_LOCAL_TIMEOUT` sets it, and the run
+  lease grows with it so another worker never reclaims a run still waiting on the
+  model.
+- Local gemma4 12B repeated one claim (`detention_branch` "حلب", occurrence 2, 3, 4 ...)
+  until the context ended on the demo list, with and without temperature 0. The prompt
+  named props without saying what they meant, so the model had no home for "place of
+  arrest". A one-line glossary per place prop and "list each fact once" made one run
+  finish (23 facts in 318 s); later runs still looped, and gemini-3.1-flash-lite read
+  the same text cleanly in 5 s. Pending: read list-like text per entry, as sheets read
+  one row per local call, and stop a run that repeats itself early instead of after
+  15 minutes.
