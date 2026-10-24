@@ -375,7 +375,12 @@ async def sheet_version(s, path, origin, collector, person, batch, dataset=None)
             collector_id=collector.id,
             doc_type="intake_sheet",
             sensitivity="ordinary",
-            context={"investigation": s.case, "file": path.name, "batch": batch},
+            context={
+                "investigation": s.case,
+                "file": path.name,
+                "title": f"Family intake sheet, version {2 if dataset else 1}",
+                "batch": batch,
+            },
         )
     )["sha256"]
     s.blobs[path.stem] = sha

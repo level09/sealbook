@@ -218,15 +218,18 @@ async def seed(db, investigation: str, count: int, rng_seed: int = 7) -> dict:
 
 
 async def _assign(db, rng, investigation, shas, now, share=0.5) -> dict:
-    """Assign `share` of the sources to existing analysts, when the table exists."""
+    """Assign `share` of the sources to existing analysts, when the table exists.
+    Admins are left out: synthetic filler would bury the owner's real Inbox."""
     if not await db.scalar(text("select to_regclass('assignment') is not null")):
         return {}
     users = list(
         await db.scalars(
             text(
                 'select u.id from "user" u join roles_users ru on ru.user_id = u.id'
-                " join role r on r.id = ru.role_id where r.name in ('analyst','admin')"
-                " and u.active order by u.id"
+                " join role r on r.id = ru.role_id where r.name = 'analyst'"
+                " and u.active and not exists (select 1 from roles_users a"
+                " join role ar on ar.id = a.role_id"
+                " where a.user_id = u.id and ar.name = 'admin') order by u.id"
             )
         )
     )

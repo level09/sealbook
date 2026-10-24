@@ -297,6 +297,18 @@ class MoreCasesTest(unittest.IsolatedAsyncioTestCase):
             self.assertGreaterEqual(len(assignees), 4)
             # Fillers: chained, labelled, and nothing queued for them.
             filler = Acquisition.context["investigation"].astext == scale.DEMO
+            # Filler work goes to analysts, never into the owner's Inbox.
+            self.assertFalse(
+                await s.scalar(
+                    select(func.count()).where(
+                        Assignment.investigation == scale.DEMO,
+                        Assignment.assignee_id
+                        == select(User.id)
+                        .where(User.email == "owner@example.com")
+                        .scalar_subquery(),
+                    )
+                )
+            )
             self.assertEqual(
                 await s.scalar(
                     select(func.count()).select_from(Acquisition).where(filler)

@@ -47,7 +47,7 @@ Each query lists the sources an analyst would expect, by acquisition file name.
 | checkpoint, حاجز عسكري | 02 | checkpoint images, note, appeal | visual and text |
 | prison building with barred windows | 02 | photo | visual |
 | market stalls | 02 | market | visual |
-| رحلة عالساحل بالباص | 02 | speech, sy_bus | audio content in dialect |
+| رحلة عالساحل بالباص | all | speech (02), sy_bus (search-eval) | audio content in dialect |
 | handwritten register of detainees | 02 | register, scan, list | scan |
 | full SHA-256, 12-character prefix | all | transfer | hash lookup |
 | destroyed street | 02 | none | negative: the local seed has no such picture |

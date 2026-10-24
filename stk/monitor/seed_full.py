@@ -261,6 +261,10 @@ FILES = {
         },
     ),
 }
+# The retrieval gold set's news passages and its noise tone answer search
+# questions, not case questions, so they live in a case of their own.
+EVAL = "case-search-eval"
+FILES["tone"] = FILES["tone"][:5] + ({"investigation": EVAL},)
 FILES |= {
     p.stem: (
         f"retrieval/{p.name}",
@@ -268,9 +272,37 @@ FILES |= {
         "channel:open-source/local-news",
         "news_article",
         "ordinary",
-        {},
+        {"investigation": EVAL},
     )
     for p in sorted((ROOT / "retrieval").glob("*.txt"))
+}
+# What an analyst would call each source. The `file` key stays the bare name the
+# search battery and the seed itself refer to.
+TITLES = {
+    "register": "Branch 999 register, scanned page",
+    "transfer": "Transfer order 4471",
+    "witness": "Witness clip, recorder 04",
+    "photo": "Damaged building, Aleppo",
+    "post": "Missing person post, first capture",
+    "post_v2": "Missing person post, recapture",
+    "scan": "Handwritten letter, scanned",
+    "checkpoint": "Abandoned army checkpoint, December 2024",
+    "checkpoint_forward": "Checkpoint photo, forwarded copy",
+    "market": "Aleppo souk after the shelling",
+    "homs": "Bab Dreeb, Homs, April 2012",
+    "raqqa": "Destroyed neighbourhood, Raqqa, 2017",
+    "speech": "Voice note, coastal bus trip",
+    "speech_excerpt": "Voice note, forwarded excerpt",
+    "tone": "Test tone",
+    "jdeideh_2015": "Jdeideh quarter, Aleppo, April 2015",
+    "jdeideh_2017": "Jdeideh waqf complexes, September 2017",
+    "jdeideh_2017_excerpt": "Jdeideh clip, re-uploaded excerpt",
+    "list": "Branch 999 detainee list, 12 February 2014",
+    "note": "Documentation note 14/2014",
+    "appeal": "Appeal for Lina Omar Al-Najjar",
+    "testimony": "Testimony of Reem, Branch 999",
+    "roster": "Dormitory 4 roster, July 2013",
+    "release": "Statement of a released detainee, October 2013",
 }
 TEXTS = {
     "list": (
@@ -313,7 +345,8 @@ def en(text):
 
 
 async def intake(s: Seeder, key, data, mime, origin, collector, doc_type, sens, ctx):
-    context = {"investigation": s.case, "file": key} | ctx
+    named = {"title": TITLES[key]} if key in TITLES else {}
+    context = {"investigation": s.case, "file": key} | named | ctx
     if mime == "video/webm":
         # ponytail: c2patool refuses webm ("Unsupported file type"), which fails
         # ingest(); record the bytes and hash like ingest, without C2PA, until
