@@ -20,7 +20,16 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from stk.extensions import Base
 
-NOTIFICATION_KINDS = ("assigned", "mention", "reply", "decision", "intake_done")
+NOTIFICATION_KINDS = (
+    "assigned",
+    "mention",
+    "reply",
+    "decision",
+    "intake_done",
+    "standing_match",
+    "agent_paused",
+    "agent_found",
+)
 PRIORITIES = ("low", "normal", "high")
 STATUSES = ("open", "done", "returned")
 

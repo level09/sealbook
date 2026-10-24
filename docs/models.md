@@ -127,3 +127,18 @@ overlapping speakers, phone codecs). Place names in dialect spelling (بحرست
 not match an exact search for the standard form (حرستا). CTranslate2 has no Metal
 backend, so Apple silicon runs on CPU; CUDA hosts use float16. Confidence: medium
 on mechanics and on this clip; unmeasured on real recordings.
+
+## Proactive agents on a hosted model (2026-10-24)
+
+Measured once on a throwaway copy of the synthetic demo (case-demo-02), with the
+agents' local route pointed at OpenRouter (`ROUTE_LOCAL_BASE_URL`,
+`ROUTE_LOCAL_API_KEY`) and `AGENT_MODEL=google/gemini-3.1-flash-lite`. The product
+keeps agents on the local route; this was a quality check on synthetic data only.
+
+| Agent | Time | Tokens in / out | Result |
+| --- | --- | --- | --- |
+| Standing question "Was anyone held at Branch 999 after 2013?" | 55 s | 22.6k / 1.4k | 154 claims screened, 72 kept, 8 proposed, all meeting the question (standing-2 prompt); standing-1 proposed 14 with 3 wrong (same year, another prison, transferred out) |
+| Contradiction hunter | 1 s | 0.5k / 0.1k | 1 candidate, 1 proposed with a usable question (contradictions-3); contradictions-2 wrote handles into the question and was dropped |
+| Gap finder | 5 s | 2.4k to 3.4k / 1.3k to 1.7k | 7 to 8 proposed from 17 gaps, 2 to 4 dropped for citing handles it was not given, 1 for a sensitive value |
+
+One model, one synthetic case, judged by reading the output, not a scored set.

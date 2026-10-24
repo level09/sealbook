@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 
 import orjson
@@ -18,6 +18,7 @@ from jsonschema import Draft202012Validator
 from sqlalchemy import select
 
 from stk import blobs
+from stk.collaboration.notifications import PROP as FIELD
 from stk.discovery.service import available
 from stk.ledger import chain, write
 from stk.ledger.contracts import EXTRACTED_PROPS, Prop, StatementIn, Tier
@@ -55,6 +56,8 @@ class Case:
     docs: dict[str, dict]  # sha -> Context.doc plus mime
     places: dict[uuid.UUID, object]  # claim id -> Place or None
     groups: dict[str, frozenset]
+    # Clusters a same-person proposal joins that no one has decided yet.
+    links: list[tuple[str, str]] = field(default_factory=list)
 
     def by_person(self) -> dict[str, list[Claim]]:
         out: dict[str, list[Claim]] = {}
@@ -129,7 +132,33 @@ async def case(db, investigation: str) -> Case:
     ]
     located = [c.id for c in claims if c.prop in LOCATED]
     places = await resolve.resolved(db, located, investigation) if located else {}
-    return Case(investigation, claims, docs, places, groups)
+    return Case(investigation, claims, docs, places, groups, await links(db, groups))
+
+
+async def links(db, groups: dict) -> list[tuple[str, str]]:
+    """Pairs of person clusters an open same_as proposal joins. An accepted one has
+    already merged them; these stay two records until a reviewer decides."""
+    rows = await db.execute(
+        select(Statement.subject, Payload.value)
+        .join(Payload, Payload.commitment == Statement.commitment)
+        .join(StatementTier, StatementTier.statement_id == Statement.id)
+        .where(
+            Statement.prop == Prop.SAME_AS,
+            Statement.subject.startswith("person:"),
+            StatementTier.tier.not_in([Tier.ACCEPTED, Tier.REJECTED]),
+            write.current_clause(),
+        )
+    )
+    pairs = {
+        tuple(sorted((cluster_of(groups, a), cluster_of(groups, v["person"]))))
+        for a, v in rows
+    }
+    return sorted(p for p in pairs if p[0] != p[1])
+
+
+def label(prop: str) -> str:
+    """A field as the app names it elsewhere: "Held by branch", not "detention branch"."""
+    return FIELD.get(prop, prop.replace("_", " ").capitalize())
 
 
 def place_name(place) -> str:
@@ -177,6 +206,24 @@ def when(lo: date | None, hi: date | None) -> str | None:
     if lo.day == 1 and (lo.year, lo.month) == (hi.year, hi.month):
         return f"{MONTHS[lo.month - 1]} {lo.year}"
     return f"{when(lo, lo)} to {when(hi, hi)}"
+
+
+def date_words(text: str | None) -> str | None:
+    """A stored date ("2014-02-12", "2013-07", "a to b") in the same words as when()."""
+    if not text:
+        return text
+
+    def one(part):
+        y, m, d = (part.split("-") + [None, None])[:3]
+        return (
+            when(date(int(y), int(m), int(d)), None)
+            if d
+            else f"{MONTHS[int(m) - 1]} {y}"
+            if m
+            else y
+        )
+
+    return " to ".join(one(p) for p in text.split(" to "))
 
 
 class Handles:
@@ -302,6 +349,20 @@ async def store(c, output: dict) -> str:
 
 def read_output(blob: Blob) -> dict:
     return orjson.loads(blobs.read(blob, Config.BLOB_DIR))
+
+
+async def report(db, found: list) -> tuple:
+    """The newest finished report with items, else the newest finished one. A later
+    check that only finds what was already reported must not hide that report;
+    readers drop items whose claims are gone since."""
+    done = [r for r in found if r.status == "done" and r.output_hash]
+    for run in done:
+        out = read_output(await db.get(Blob, run.output_hash))
+        if out["items"]:
+            return run, out
+    if not done:
+        return None, None
+    return done[0], read_output(await db.get(Blob, done[0].output_hash))
 
 
 # --- who runs it ------------------------------------------------------------------

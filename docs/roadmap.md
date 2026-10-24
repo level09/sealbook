@@ -23,7 +23,7 @@ Product acceptance still needs a named first workflow, an Arabic gold set and a
 timed comparison using [the synthetic acceptance case](../acceptance/data/README.md).
 Local tests do not settle ownership, adoption, model quality or legal readiness.
 
-## Proactive agents (proposed 2026-10-24; intake brief and linker built)
+## Proactive agents (proposed 2026-10-24; intake brief, linker and standing questions built)
 
 Today agents are pipelines: extraction proposes claims, discovery proposes findings
 from rules and embeddings, speech and thumbnails process media, and outside assistants
@@ -35,12 +35,20 @@ case alongside the analyst, each one a signed run that can only propose.
    to, what contradicts, and the suggested next steps.
 2. **Linker** (built). Reads across sources and proposes same-person, same-place, related-incident
    and document relations with the passages that justify each, beyond today's rules.
-3. **Standing questions.** An analyst asks once, for example "tell me when anyone is placed
-   at Branch 999 after 2014", and the agent watches new evidence and proposes matches.
-4. **Gap finder.** Turns "no evidence for 60 days" into where to look: which sources, which
-   web queries, which colleague has related work.
-5. **Contradiction hunter.** Finds claims that disagree, explains why, and drafts the
-   question for a colleague.
+3. **Standing questions** (built, database and browser checks pending). An analyst asks
+   once and receives cited proposals from new evidence and scheduled case checks.
+   The Desk supports Check now, Stop and Resume, with past checks retained.
+4. **Gap finder** (implemented, database and browser checks pending). Finds silences
+   longer than 60 days while held or missing, plus open ends after detention or last
+   seen. Suggests existing sources at the resolved place and time, search text for
+   human approval, and colleagues from public review and collection attribution.
+   Manual checks on People and person pages, and a switch to check again as evidence
+   arrives, through the same task queue as standing questions.
+5. **Contradiction hunter** (built, manual trigger). Finds claims that disagree,
+   explains why, and drafts the question for a colleague. The person page's Sources
+   disagree panel checks the selected case, with cited sides and sensitive-source
+   masking. Repeat claim sets are suppressed. A switch on the panel checks again as
+   evidence arrives, through the same task queue as standing questions.
 6. **Next step suggester.** Orders each analyst's queue by value and suggests flows, such
    as reviewing a register before the testimony that cites it.
 7. **Shadow reviewer.** Predicts each human decision without acting and measures agreement

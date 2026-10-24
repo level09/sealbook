@@ -5,13 +5,15 @@ person who started them; nothing here accepts or writes a fact."""
 import os
 import re
 import uuid
+from datetime import UTC, datetime
 
 import orjson
 from quart import Blueprint, Response, abort, g, request
 from quart_security import auth_required, current_user
 from sqlalchemy import select
 
-from stk.agents import brief, linker
+from stk.agents import brief, contradictions, linker, standing, tasks
+from stk.agents.models import AgentTask
 from stk.agents.read import read_output
 from stk.collaboration.models import Notification
 from stk.ledger.models import Acquisition, Blob, Run, Statement
@@ -67,6 +69,57 @@ def _batch(raw) -> str:
         return str(uuid.UUID(str(raw)))
     except ValueError:
         abort(400, description="batch must be an intake batch id")
+
+
+@bp_agents.post("/contradictions")
+async def find_contradictions():
+    from stk.cases.service import Unknown, require
+
+    db = g.db_session
+    investigation = (await _item()).get("investigation")
+    if not isinstance(investigation, str) or not investigation.strip():
+        abort(400, description="Choose a case to check.")
+    try:
+        case = await require(db, investigation)
+    except Unknown:
+        abort(404)
+    if gap := missing():
+        return _json({"reason": "off", "missing": gap}, 409)
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    try:
+        run = await contradictions.queue(
+            db, case.slug, current_user.id, Config.AGENT_MODEL
+        )
+    except ValueError as exc:
+        return _json({"reason": "busy", "message": str(exc)}, 409)
+    await db.commit()
+    return _json({"run": str(run.id)}, 202)
+
+
+@bp_agents.get("/contradictions")
+async def read_contradictions():
+    from stk.cases.service import Unknown, require
+
+    db = g.db_session
+    try:
+        case = await require(db, request.args.get("investigation"))
+    except Unknown:
+        abort(404)
+    return _json(await contradictions.show(db, current_user, case.slug))
+
+
+@bp_agents.get("/contradictions/runs/<uuid:rid>")
+async def contradiction_status(rid):
+    run = await g.db_session.get(Run, rid)
+    if run is None or run.tool != contradictions.TOOL:
+        abort(404)
+    if run.inputs.get("for_user") != current_user.id and not current_user.has_role(
+        "admin"
+    ):
+        abort(404)
+    return _json({"status": run.status})
 
 
 @bp_agents.get("/brief")
@@ -160,6 +213,54 @@ async def find_links():
     return _json({"run": str(run.id)}, 202)
 
 
+@bp_agents.get("/gaps")
+async def read_gaps():
+    from stk.agents import gaps
+    from stk.cases import service as cases
+
+    try:
+        case = await cases.require(g.db_session, request.args.get("investigation"))
+    except cases.Unknown:
+        abort(404)
+    return _json(await gaps.show(g.db_session, current_user, case.slug))
+
+
+@bp_agents.post("/gaps")
+async def find_gaps():
+    from stk.agents import gaps
+    from stk.cases import service as cases
+
+    db = g.db_session
+    investigation = (await _item()).get("investigation")
+    if not isinstance(investigation, str) or not investigation.strip():
+        abort(400, description="Choose a case to find gaps.")
+    try:
+        case = await cases.require(db, investigation)
+    except cases.Unknown:
+        abort(404)
+    if missing():
+        return _json(
+            {
+                "reason": "off",
+                "message": "Gap finder needs a local model. Ask an administrator to enable it.",
+            },
+            409,
+        )
+    if any(
+        r.status in ("queued", "running")
+        for r in await gaps.runs(db, case.slug, current_user.id)
+    ):
+        return _json(
+            {"reason": "busy", "message": "Gap finder is reading this case."}, 409
+        )
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    run = await gaps.queue(db, case.slug, current_user.id, Config.AGENT_MODEL)
+    await db.commit()
+    return _json({"run": str(run.id)}, 202)
+
+
 async def _case(db, scope: str) -> str | None:
     if scope.startswith("blob:"):
         sha = scope.removeprefix("blob:")
@@ -183,7 +284,7 @@ async def _case(db, scope: str) -> str | None:
 async def run_status(rid):
     db = g.db_session
     run = await db.get(Run, rid)
-    if run is None or run.tool not in (brief.TOOL, linker.TOOL):
+    if run is None or run.tool not in (brief.TOOL, linker.TOOL, standing.TOOL):
         abort(404)
     if run.inputs.get("for_user") != current_user.id and not current_user.has_role(
         "admin"
@@ -208,3 +309,147 @@ async def run_status(rid):
             "cost": out.get("cost"),
         }
     )
+
+
+async def _owned_task(tid, lock=False):
+    query = select(AgentTask).where(
+        AgentTask.id == tid, AgentTask.user_id == current_user.id
+    )
+    task = await g.db_session.scalar(query.with_for_update() if lock else query)
+    if task is None or not await tasks.can_read(
+        g.db_session, current_user.id, task.investigation
+    ):
+        abort(404)
+    return task
+
+
+@bp_agents.post("/tasks")
+async def create_task():
+    item = await _item()
+    kind, question = item.get("kind"), item.get("question")
+    if kind not in tasks.KINDS:
+        abort(400, description="Choose which agent keeps checking.")
+    if kind == "standing" and (
+        not isinstance(question, str) or not 3 <= len(question.strip()) <= 300
+    ):
+        abort(400, description="Ask a question of 3 to 300 characters.")
+    db = g.db_session
+    investigation = item.get("investigation")
+    if not isinstance(investigation, str) or not await tasks.can_read(
+        db, current_user.id, investigation
+    ):
+        abort(404)
+    interval = item.get("every_seconds", 86400)
+    if interval is not None and (type(interval) is not int or interval <= 0):
+        abort(
+            400, description="The check interval must be a positive number of seconds."
+        )
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    if kind != "standing":
+        # One standing check per person, case and agent: asking again resumes it.
+        task = await db.scalar(
+            select(AgentTask)
+            .where(
+                AgentTask.user_id == current_user.id,
+                AgentTask.investigation == investigation,
+                AgentTask.kind == kind,
+            )
+            .with_for_update()
+        )
+        if task:
+            task.enabled, task.paused_reason, task.failures = True, None, 0
+            task.next_at = datetime.now(UTC)
+            await db.commit()
+            return _json({"id": str(task.id)}, 200)
+    task = AgentTask(
+        user_id=current_user.id,
+        investigation=investigation,
+        kind=kind,
+        spec={"question": question.strip()} if kind == "standing" else {},
+        every_seconds=interval,
+        next_at=datetime.now(UTC),
+    )
+    db.add(task)
+    await db.commit()
+    return _json({"id": str(task.id)}, 201)
+
+
+@bp_agents.get("/tasks")
+async def list_tasks():
+    db = g.db_session
+    query = select(AgentTask).where(AgentTask.user_id == current_user.id)
+    if investigation := request.args.get("investigation"):
+        query = query.where(AgentTask.investigation == investigation)
+    query = query.where(AgentTask.kind == (request.args.get("kind") or "standing"))
+    items = []
+    for task in await db.scalars(
+        query.order_by(AgentTask.created_at.desc(), AgentTask.id)
+    ):
+        if not await tasks.can_read(db, current_user.id, task.investigation):
+            continue
+        found = await tasks.runs(db, task)
+        active = any(r.status in tasks.ACTIVE for r in found)
+        good = next((r for r in found if r.status == "done"), None)
+        out = read_output(await db.get(Blob, good.output_hash)) if good else None
+        items.append(
+            {
+                "id": str(task.id),
+                "question": task.spec.get("question"),
+                "enabled": task.enabled,
+                "state": "checking"
+                if active
+                else "paused"
+                if task.paused_reason or not task.enabled
+                else "watching",
+                "reason": task.paused_reason
+                or ("You stopped this check." if not task.enabled else None),
+                "last_checked": task.last_success_at.isoformat()
+                if task.last_success_at
+                else None,
+                "matches": out["outcome"]["proposed"] if out else None,
+            }
+        )
+    return _json({"items": items, "off": bool(missing())})
+
+
+@bp_agents.post("/tasks/<uuid:tid>/run")
+async def check_task(tid):
+    task = await _owned_task(tid, lock=True)
+    db = g.db_session
+    run = await db.get(Run, task.last_run_id) if task.last_run_id else None
+    if run and run.status in tasks.ACTIVE:
+        return _json({"message": "This is already being checked."}, 409)
+    if not task.enabled or task.paused_reason:
+        return _json({"message": "Resume this before checking it."}, 409)
+    if missing():
+        return _json(
+            {"message": "Agents are off until the local model is set up."},
+            409,
+        )
+    await tasks.wake(db, task.id, f"manual:{uuid.uuid4()}", "manual", {})
+    task.next_at = datetime.now(UTC)
+    await db.commit()
+    return _json({"state": "checking"}, 202)
+
+
+@bp_agents.patch("/tasks/<uuid:tid>")
+async def toggle_task(tid):
+    task = await _owned_task(tid, lock=True)
+    enabled = (await _item()).get("enabled")
+    if type(enabled) is not bool:
+        abort(400, description="Choose whether this keeps checking.")
+    task.enabled = enabled
+    if enabled:
+        task.paused_reason, task.failures = None, 0
+        task.next_at = datetime.now(UTC)
+    await g.db_session.commit()
+    return _json({"enabled": task.enabled})
+
+
+@bp_agents.get("/tasks/<uuid:tid>")
+async def read_task(tid):
+    if (await _owned_task(tid)).kind != "standing":
+        abort(404)
+    return _json(await standing.show(g.db_session, current_user, tid))

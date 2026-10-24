@@ -17,4 +17,5 @@ const stkNavigation = [
   {title: 'Stories', icon: 'ti ti-timeline', to: '/stories', match: '/stories'},
   {title: 'Packages', icon: 'ti ti-package', to: '/packages', match: '/packages'},
   {title: 'Map and live feed', icon: 'ti ti-map-2', to: '/monitor', match: '/monitor'},
+  {title: 'Guide', icon: 'ti ti-book', to: '/guide', match: '/guide'},
 ];

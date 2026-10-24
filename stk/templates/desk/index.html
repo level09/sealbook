@@ -40,6 +40,10 @@
     <p>${ recentTotal === null ? 'Loading' : plural(recentTotal, 'source') }</p>
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
+  <section class="desk-panel mb-3" aria-labelledby="h-standing">
+    <header><h2 id="h-standing"><i class="ti ti-eye" aria-hidden="true"></i> Standing questions</h2></header>
+    <div class="pa-3"><standing-questions :investigation="caseSel"></standing-questions></div>
+  </section>
   <section v-if="brief" class="desk-panel mb-3" aria-labelledby="h-brief">
     <header><h2 id="h-brief"><i class="ti ti-sparkles" aria-hidden="true"></i> Intake brief</h2><span class="desk-muted text-caption">a batch you added finished, ${ ago(brief.at) }</span>
       <span class="act"><v-btn size="small" variant="text" :href="'/inbox?item=note:' + brief.notification" prepend-icon="ti ti-inbox">Open in Inbox</v-btn><v-btn size="small" variant="text" prepend-icon="ti ti-check" @click="briefRead">Mark read</v-btn></span></header>
@@ -115,6 +119,7 @@
 <script type="module">
 import {registerMediaViewers} from '/static/js/components/media.js';
 import {IntakeBrief} from '/static/js/components/IntakeBrief.js';
+import {StandingQuestions} from '/static/js/components/StandingQuestions.js';
 
 const DISCOVER = '/discover';
 const VERBS = {
@@ -297,6 +302,7 @@ window.app = Vue.createApp({
   beforeUnmount() { document.removeEventListener('keydown', this.onKey); },
 });
 app.component('intake-brief', IntakeBrief);
+app.component('standing-questions', StandingQuestions);
 registerStkComponents(app);
 registerMediaViewers(app);
 app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');

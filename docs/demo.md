@@ -36,6 +36,13 @@ say `sealbook-demo-fixed-output` as the served model and carry a `demo` note in
 their inputs. Every other run is the real tool. Human decisions are signed by a demo
 passkey held by `senior-analyst`, the same signature path a browser passkey uses.
 
+## The Guide
+
+`/guide` (Guide in the rail) walks through each flow below as a task, with Open it
+links that switch to `case-demo-02`, and ends with Why the record holds: one
+accepted claim from this case recomputed in the browser, hash by hash, with a
+control that changes one character and shows where the check breaks.
+
 ## Start at the Desk
 
 The top panel is the intake brief for the newest batch you added that you have not
