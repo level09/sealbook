@@ -358,6 +358,7 @@ async def crawl_width(browser, base, token_url, case, width):
         "/watch",
         "/packages",
         "/monitor",
+        "/ingest/",
     ]:
         await visit(path)
 

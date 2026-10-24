@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import re
 import uuid
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
@@ -36,6 +37,60 @@ from stk.settings import Config
 from stk.sheets import parse as sheets
 
 AGENT_NAME = "ingest"
+
+# What a person says an item is. Policies and readers key on these.
+DOC_TYPES = {
+    "unknown": "Not sure yet",
+    "detention_register": "Detention register",
+    "transfer_order": "Transfer order",
+    "witness_statement": "Witness statement",
+    "letter": "Letter",
+    "photo": "Photo",
+    "video": "Video",
+    "voice_note": "Voice note",
+    "web_post": "Web post",
+    "news_article": "News article",
+    "report": "Report",
+}
+# First match wins; words in English and Arabic as they appear in file names.
+_NAMED = (
+    ("detention_register", ("register", "detainee", "سجل", "معتقل")),
+    ("transfer_order", ("transfer", "order", "نقل", "أمر")),
+    ("witness_statement", ("witness", "testimony", "statement", "شهادة", "شاهد")),
+    ("voice_note", ("voice", "ptt", "memo", "صوت")),
+    ("news_article", ("news", "article", "خبر")),
+    ("report", ("report", "تقرير")),
+    ("letter", ("letter", "note", "رسالة")),
+    ("web_post", ("post", "tweet", "telegram", "منشور")),
+)
+_BY_MIME = (
+    ("image/", "photo"),
+    ("video/", "video"),
+    ("audio/", "voice_note"),
+    ("text/html", "web_post"),
+)
+
+
+def suggest_doc_type(filename: str, mime: str, people: bool = False) -> dict:
+    """A first guess a person confirms or changes: a sheet whose columns read as a
+    list of people, words in the file name, then the kind of file."""
+    if people:
+        return {
+            "doc_type": "detention_register",
+            "why": "Recognised as a list of people from its columns",
+        }
+    words = re.split(r"[\W_]+", (filename or "").casefold())
+    for key, names in _NAMED:
+        if any(n in w for w in words if w for n in names):
+            return {"doc_type": key, "why": "Suggested from the file name"}
+    for prefix, key in _BY_MIME:
+        if (mime or "").startswith(prefix):
+            return {"doc_type": key, "why": "Suggested from the file type"}
+    return {"doc_type": "unknown", "why": "Nothing in the name or type says what it is"}
+
+
+class Mismatch(ValueError):
+    """The bytes the server received are not the bytes the browser fingerprinted."""
 
 
 # --- origins -------------------------------------------------------------------
@@ -190,10 +245,23 @@ async def ingest(
     sensitivity: str = "sensitive",
     partner: str | None = None,
     context: dict | None = None,
+    expect_sha256: str | None = None,
 ) -> dict:
     """Store bytes, record where they came from, and on first sight run hash
-    (and C2PA for images and video). Re-ingest only adds an acquisition."""
+    (and C2PA for images and video). Re-ingest only adds an acquisition, which is
+    the repeat upload's entry on that source's custody record. With `expect_sha256`
+    (the browser's fingerprint), different bytes record nothing."""
     sha, md5, size = await store(chunks, blob_dir)
+    if expect_sha256 is not None:
+        if expect_sha256.lower() != sha:
+            # ponytail: the stored file stays on disk without a blob row; content
+            # addressed, so a later correct upload reuses it. Sweep if it matters.
+            raise Mismatch(
+                f"The file changed on the way: your browser's fingerprint was "
+                f"{expect_sha256[:12]}, the server's is {sha[:12]}. Nothing was "
+                "recorded; add it again."
+            )
+        context = (context or {}) | {"browser_sha256": "matched"}
     new = await session.get(Blob, sha) is None
     if new:
         session.add(
