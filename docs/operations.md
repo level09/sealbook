@@ -16,7 +16,7 @@ PostGIS was checked locally with 3.6.4 (`brew install postgis`). The migration
 superuser or a role allowed to create extensions; on a managed or hardened server,
 have the database owner run that statement first, then migrate. Debian and Ubuntu
 package it as `postgresql-<major>-postgis-3`. `docker-compose.yml` builds
-`postgres/Dockerfile` (PostGIS 17 plus pgvector), and `postgres/init-db.sh` creates
+`postgres/Dockerfile` (PostGIS 3.6 on Postgres 17, plus pgvector), and `postgres/init-db.sh` creates
 postgis, vector and pg_trgm as the superuser at first start, so the restricted `stk`
 role can run every migration. CI uses the same PostGIS image and installs pgvector
 into the service container. The PostGIS image is published for amd64 only, so on an

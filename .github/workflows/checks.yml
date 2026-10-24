@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-24.04  # playwright has no chromium build for 26.04 yet
     services:
       postgres:
-        image: postgis/postgis:17-3.5
+        image: postgis/postgis:17-3.6
         env:
           POSTGRES_USER: sealbook
           POSTGRES_PASSWORD: ci-only-password
@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgis/postgis:17-3.5
+        image: postgis/postgis:17-3.6
         env:
           POSTGRES_USER: review
           POSTGRES_PASSWORD: isolated-review-password
