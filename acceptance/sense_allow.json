@@ -1,0 +1,14 @@
+[
+  {
+    "rule": "empty-label",
+    "page": ".",
+    "match": "^Items per page:$",
+    "reason": "Vuetify table footer: the per-page value sits in a select input, which innerText does not include."
+  },
+  {
+    "rule": "hex-id",
+    "page": "^/monitor ",
+    "match": "^([0-9a-f]{32}|[0-9a-f]{64})$",
+    "reason": "The monitor lists a document's Sha256 and Md5 statements; the full digest is that statement's value."
+  }
+]
