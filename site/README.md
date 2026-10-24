@@ -2,7 +2,10 @@
 
 Static HTML, CSS and JavaScript with no build step. Fonts are self-hosted in
 `fonts/` under the SIL Open Font License (`fonts/OFL-*.txt`). The page makes no
-third-party requests.
+third-party requests. The one dynamic part is the invite form: `js/invite.js` posts
+to `/api/invite`, which `worker.js` stores in the D1 (SQLite) database
+`sealbook-invites` (`invites.sql`). It has no captcha, which would load a third-party
+script; a honeypot field and five requests per hour per salted IP hash keep it quiet.
 
 ## Regenerate data
 
@@ -48,3 +51,14 @@ cd site && npx wrangler@4 deploy
 ```
 
 Afterwards check that https://sealbook.org/build_data.py and /README.md return 404.
+
+The Worker needs the `INVITE_SALT` secret (`npx wrangler@4 secret put INVITE_SALT`).
+For local testing put `INVITE_SALT=...` in `site/.dev.vars`, apply `invites.sql` with
+`--local` and run `npx wrangler@4 dev --local`.
+
+## Invite requests
+
+```sh
+cd site && npx wrangler@4 d1 execute sealbook-invites --remote \
+  --command "SELECT created_at, name, email, organisation, use_case FROM invite ORDER BY id DESC"
+```

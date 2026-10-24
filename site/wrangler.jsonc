@@ -1,8 +1,13 @@
-// Public teaser: static files only. `dist/` is assembled by the deploy steps in README.md.
+// Public teaser: static files plus one endpoint that stores invite requests.
+// `dist/` is assembled by the deploy steps in README.md.
 {
   "name": "sealbook",
+  "main": "worker.js",
   "compatibility_date": "2026-10-01",
-  "assets": { "directory": "dist" },
+  "assets": { "directory": "dist", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "sealbook-invites", "database_id": "d1a26ec7-da6c-41c3-97fe-5f964179c307" }
+  ],
   "routes": [
     { "pattern": "sealbook.org", "custom_domain": true },
     { "pattern": "www.sealbook.org", "custom_domain": true }

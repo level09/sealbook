@@ -35,3 +35,4 @@ site/dist/
 
 # Wrangler local cache (account id)
 .wrangler/
+site/.dev.vars
