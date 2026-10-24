@@ -23,6 +23,38 @@ Product acceptance still needs a named first workflow, an Arabic gold set and a
 timed comparison using [the synthetic acceptance case](../acceptance/data/README.md).
 Local tests do not settle ownership, adoption, model quality or legal readiness.
 
+## Proactive agents (proposed 2026-10-24, not built)
+
+Today agents are pipelines: extraction proposes claims, discovery proposes findings
+from rules and embeddings, speech and thumbnails process media, and outside assistants
+connect through MCP with three tools (read, propose statements, propose identity). None
+of them notices, plans or suggests on its own. The next layer is agents that work the
+case alongside the analyst, each one a signed run that can only propose.
+
+1. **Intake brief.** After each batch: what arrived, who, where and when, what it links
+   to, what contradicts, and the suggested next steps.
+2. **Linker.** Reads across sources and proposes same-person, same-place, related-incident
+   and document relations with the passages that justify each, beyond today's rules.
+3. **Standing questions.** An analyst asks once, for example "tell me when anyone is placed
+   at Branch 999 after 2014", and the agent watches new evidence and proposes matches.
+4. **Gap finder.** Turns "no evidence for 60 days" into where to look: which sources, which
+   web queries, which colleague has related work.
+5. **Contradiction hunter.** Finds claims that disagree, explains why, and drafts the
+   question for a colleague.
+6. **Next step suggester.** Orders each analyst's queue by value and suggests flows, such
+   as reviewing a register before the testimony that cites it.
+7. **Shadow reviewer.** Predicts each human decision without acting and measures agreement
+   per claim type; where agreement holds, analysts get batches to sign together.
+8. **Research runner.** Runs approved web queries on schedule and proposes captures.
+9. **Narrative drafter.** Drafts incident and person summaries in which every sentence cites
+   its claims, as a proposal for review.
+
+Guardrails: every output is a proposal in the existing review path, run under the
+requesting person's permissions, logged and signed. Autonomy grows by evidence (observe,
+shadow, draft, bounded) and never includes accepting semantic or perceptual matches.
+Building blocks already exist: sealed runs, the MCP propose tools, findings,
+notifications, watches and the research service.
+
 ## Gaps to close
 
 1. **Descriptions and titles.** Authored, cited, versioned title and description statements
