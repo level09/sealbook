@@ -72,7 +72,7 @@ AGENTS = (
         "Notices evidence that resembles other evidence you can read: same "
         "picture, same wording, a name spelled another way, the same person or "
         "place in another case.",
-        "When evidence arrives if it keeps checking, and when you press Check now.",
+        "When evidence arrives if it keeps checking, and whenever you ask.",
         None,
         "Also on each evidence page",
     ),
@@ -245,7 +245,7 @@ def _state(key: str, runs: list[Run], mine: list[AgentTask], off: bool):
             return "ready", "No questions yet. Ask one on the Desk."
         return (
             "ready",
-            "Runs when you ask. Turn on keep checking to watch new evidence.",
+            "Runs when you ask. Turn on keep checking to watch evidence as it arrives.",
         )
     live = [t for t in mine if t.enabled and not t.paused_reason]
     if live:
@@ -254,6 +254,6 @@ def _state(key: str, runs: list[Run], mine: list[AgentTask], off: bool):
                 "watching",
                 f"Watching {plural(len(live), 'question', 'questions').lower()}.",
             )
-        return "watching", "Watching new evidence."
+        return "watching", "Watching evidence as it arrives."
     task = mine[0]
     return "paused", task.paused_reason or "You stopped this check."

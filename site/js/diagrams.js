@@ -155,6 +155,58 @@
     };
   });
 
+  // Agents that keep watching
+  scene("watch", "Arriving claims, a fingerprint and the daily check each wake an agent; one run takes in all three after access is checked. A cited line is kept, an uncited one dropped, a sensitive one locked. A person's click sends a resemblance to Review. Empty checks wait longer; three failures pause the agent and tell its owner.", 720, 250, (svg, say) => {
+    const wakes = ["claims written", "source fingerprinted", "daily check due"]
+      .map((t, i) => [box(svg, 10, 14 + i * 42, 170, 28, t, "f"), curve(svg, 180, 28 + i * 42, 220, 70)]);
+    const run = box(svg, 220, 50, 140, 40, "3 wakes, one run", "f", true);
+    const access = txt(svg, 290, 106, "access checked first", "lbl f", "middle");
+    const toAgent = curve(svg, 360, 70, 400, 70);
+    const agent = box(svg, 400, 50, 110, 40, "agent", "f v", true);
+    const local = txt(svg, 455, 106, "local model", "lbl f", "middle");
+    const lines = ["cited line, kept", "uncited line", "sensitive line"]
+      .map((t, i) => [txt(svg, 550, 30 + i * 30, t, "f"), curve(svg, 510, 70, 545, 26 + i * 30)]);
+    const drop = txt(svg, 550, 73, "no citation, dropped", "lbl r f");
+    const locked = txt(svg, 550, 103, "locked until a logged reveal", "lbl f");
+    const link = box(svg, 400, 128, 310, 34, "Propose a link: a question in Review", "f dash");
+    const click = txt(svg, 400, 178, "only on a person's click", "lbl v f");
+    // Checks that find nothing: the gap before the next doubles, capped at 8x.
+    const at = [0, 2, 6, 14].map((u) => 20 + u * 17);
+    const empty = txt(svg, 10, 192, "nothing found: each wait doubles, up to 8x", "lbl f");
+    const ticks = at.map((x, i) => {
+      const g = s("g", { class: "f" }, svg);
+      s("circle", { class: "dot", cx: x, cy: 210, r: 5 }, g);
+      if (i) txt(g, (x + at[i - 1]) / 2, 232, `${2 ** i}x`, "lbl", "middle");
+      return g;
+    });
+    const fails = [0, 1, 2].map((i) => { const g = s("g", { class: "f" }, svg); s("circle", { class: "dot bad", cx: 420 + i * 24, cy: 210, r: 5 }, g); return g; });
+    const paused = txt(svg, 492, 214, "3 failures: paused, owner told", "lbl r f");
+    return async () => {
+      for (const [b, l] of wakes) { on(b, l); await wait(320); }
+      say("Claims arrive, a source is fingerprinted, the daily check comes due. Each one wakes the agent.");
+      await wait(1600);
+      on(run, access, toAgent, agent, local);
+      say("Wakes are deduplicated, so one run takes in all of them. Access is checked first.");
+      await wait(2000);
+      for (const [t, l] of lines) { on(t, l); await wait(360); }
+      await wait(500);
+      lines[1][0].classList.add("strike", "r"); on(drop, locked);
+      say("Every line must cite evidence it was given, or it is dropped. A line from a sensitive source stays locked.", "bad");
+      await wait(2600);
+      on(link, click);
+      say("Nothing is accepted. Only a person's click sends a resemblance to Review as a question.");
+      await wait(2400);
+      on(empty);
+      for (const t of ticks) { on(t); await wait(300); }
+      say("A check that finds nothing waits twice as long before the next, up to eight times. Missed checks are skipped.");
+      await wait(2400);
+      for (const f of fails) { on(f); await wait(300); }
+      on(paused);
+      say("Three failures in a row pause the agent and tell its owner.", "bad");
+      await wait(4000);
+    };
+  });
+
   // One search, grouped
   scene("search", "A Latin-script query returns exact matches in either script first, then leads by meaning labelled close, related or loose. A lead far below the best match is left out.", 720, 260, (svg, say) => {
     const q = box(svg, 10, 14, 200, 34, "", "v");
@@ -395,6 +447,53 @@
       await wait(2800);
       on(queue);
       say("Names the gazetteer cannot match wait in a list for an analyst to confirm.");
+      await wait(4200);
+    };
+  });
+
+  // Who was where, and when
+  scene("casemap", "Three people on a timeline. Two held at place 1 at the same time are joined by a band; one record has a hatched silence, another stops. The path from person B to person C runs through the band and place 2, and its last step is weak because the two stays at place 2 do not overlap.", 720, 210, (svg, say) => {
+    const defs = s("defs", {}, svg);
+    const pat = s("pattern", { id: "dg-cm-hatch", width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
+    s("line", { class: "hatch-line", x1: 0, y1: 0, x2: 0, y2: 6 }, pat);
+    const mx = (m) => 110 + m * 40, ry = (r) => 44 + r * 50;
+    for (let m = 0; m <= 8; m++) txt(svg, mx(m), 16, `m${m + 1}`, "lbl", "middle");
+    ["person A", "person B", "person C"].forEach((t, r) => { txt(svg, 10, ry(r) + 4, t); s("line", { class: "ed", x1: 100, x2: 450, y1: ry(r), y2: ry(r) }, svg); });
+    const seg = (r, a, b, t) => {
+      const g = s("g", { class: "f" }, svg);
+      s("rect", { class: "bar", x: mx(a), y: ry(r) - 6, width: mx(b) - mx(a), height: 12, rx: 2 }, g);
+      txt(g, mx(a), ry(r) - 12, t, "lbl");
+      return g;
+    };
+    const segs = [seg(0, 0, 3, "place 1"), seg(1, 1, 3, "place 1"), seg(0, 5, 6, "place 2"), seg(2, 7, 8, "place 2")];
+    const band = s("rect", { class: "ln v", pathLength: 1, x: mx(1) - 4, y: ry(0) - 20, width: mx(3) - mx(1) + 8, height: ry(1) - ry(0) + 30, rx: 6 }, svg);
+    const bandT = txt(svg, mx(1), ry(1) + 24, "held together", "lbl v f");
+    const gap = s("g", { class: "f" }, svg);
+    s("rect", { x: mx(3), y: ry(0) - 3, width: mx(5) - mx(3), height: 6, fill: "url(#dg-cm-hatch)" }, gap);
+    txt(gap, (mx(3) + mx(5)) / 2, ry(0) + 18, "no evidence", "lbl", "middle");
+    const stop = s("g", { class: "f" }, svg);
+    s("path", { class: "ed bad", d: `M${mx(3) + 2} ${ry(1)} h24`, "stroke-dasharray": "3 3" }, stop);
+    txt(stop, mx(3) + 30, ry(1) + 4, "no record after", "lbl r");
+    const ask = txt(svg, 480, 30, "How is person B connected to person C?", "hd f");
+    const steps = ["B, A together at place 1", "A held at place 2, m6", "C held at place 2, m8"]
+      .map((t, i) => box(svg, 480, 44 + i * 44, 230, 32, `${i + 1}. ${t}`, "f"));
+    const weak = txt(svg, 480, 190, "weak: the two stays do not overlap", "lbl r f");
+    return async () => {
+      for (const g of segs) { on(g); await wait(260); }
+      say("Each person is a row; each stay at a place is a segment.");
+      await wait(1600);
+      on(band, bandT);
+      say("Two people at one place at the same time are joined by a band.");
+      await wait(1800);
+      on(gap, stop);
+      say("Stretches with no evidence are hatched, and a row shows where the record stops.");
+      await wait(2200);
+      on(ask);
+      for (const b of steps) { on(b); await wait(500); }
+      say("The path question finds the shortest chain of sourced steps, at most eight.");
+      await wait(1800);
+      steps[2].classList.add("bad"); on(weak);
+      say("A step through one place at different times is marked as weak, with how far apart.", "bad");
       await wait(4200);
     };
   });

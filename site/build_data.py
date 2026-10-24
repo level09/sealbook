@@ -1079,6 +1079,44 @@ ASK = {
 }
 
 
+def card(r: dict) -> dict:
+    """One claim a proposal rests on, as Review shows it."""
+    return {
+        "prop": r["prop"],
+        "value": None if r["value"]["masked"] else r["value"]["text"],
+        "person": (r.get("person") or {}).get("name"),
+        "source": (r.get("source") or {}).get("file"),
+        "sensitive": bool((r.get("source") or {}).get("sensitive")),
+        "where": r["where"]["label"],
+        "tier": r["tier"],
+    }
+
+
+def proposal(c: dict) -> dict:
+    """A proposed link read back from GET /api/review/claim/<id>."""
+    kind = c.get("relation") or c["kind"]
+    other = c.get("other") if isinstance(c.get("other"), dict) else {}
+    joins = (
+        [c["source"]["file"], c["document"]["file"]]
+        if c.get("document")
+        else [other.get("name"), (c.get("incident") or {}).get("title")]
+        if c.get("incident")
+        else [
+            (c.get("person") or {}).get("name"),
+            (c.get("identity") or other).get("name"),
+        ]
+    )
+    return {
+        "kind": kind,
+        "ask": ASK[kind],
+        "joins": joins,
+        "reason": c["reasoning"],
+        "proposer": c["proposer"]["name"],
+        "tier": c["tier"],
+        "basis": [card(r) for r in c["basis"]],
+    }
+
+
 def build_agents(live: dict) -> dict:
     """The intake brief for both demo batches and every linker proposal, read back
     through the endpoints Desk, Inbox and Review use."""
@@ -1114,42 +1152,7 @@ def build_agents(live: dict) -> dict:
             }
         )
 
-    def card(r: dict) -> dict:
-        return {
-            "prop": r["prop"],
-            "value": None if r["value"]["masked"] else r["value"]["text"],
-            "person": (r.get("person") or {}).get("name"),
-            "source": (r.get("source") or {}).get("file"),
-            "sensitive": bool((r.get("source") or {}).get("sensitive")),
-            "where": r["where"]["label"],
-            "tier": r["tier"],
-        }
-
-    proposals = []
-    for c in live["linked"]:
-        kind = c.get("relation") or c["kind"]
-        other = c.get("other") if isinstance(c.get("other"), dict) else {}
-        joins = (
-            [c["source"]["file"], c["document"]["file"]]
-            if c.get("document")
-            else [other.get("name"), (c.get("incident") or {}).get("title")]
-            if c.get("incident")
-            else [
-                (c.get("person") or {}).get("name"),
-                (c.get("identity") or other).get("name"),
-            ]
-        )
-        proposals.append(
-            {
-                "kind": kind,
-                "ask": ASK[kind],
-                "joins": joins,
-                "reason": c["reasoning"],
-                "proposer": c["proposer"]["name"],
-                "tier": c["tier"],
-                "basis": [card(r) for r in c["basis"]],
-            }
-        )
+    proposals = [proposal(c) for c in live["linked"]]
     runs = live["link_runs"]
     assert all(r["model"] == "sealbook-demo-fixed-output" for r in runs), runs
     status = (ROOT / "docs/status.md").read_text()
@@ -1161,6 +1164,241 @@ def build_agents(live: dict) -> dict:
         "already_known": sum(r["already_known"] for r in runs),
         "measured": measured.group(1).replace("`", "").removeprefix("Measured once ")
         + ".",
+    }
+
+
+WATCHERS = ("standing", "contradictions", "gaps", "noticer")
+
+
+def build_watch(live: dict) -> dict:
+    """The four agents that keep checking, as the Agents page, Desk and People show
+    them to their owner after one run each on the demo's fixed answer."""
+    w = live["watch"]
+
+    def cards(view: dict) -> dict:
+        return {a["key"]: a for a in view["agents"]}
+
+    ready, watching = cards(w["ready"]), cards(w["watching"])
+    agents = []
+    for key in WATCHERS:
+        on, before = watching[key], ready[key]
+        assert on["last"]["text"].endswith("Demo output."), on["last"]
+        agents.append(
+            {
+                "key": key,
+                "name": on["name"],
+                "does": on["does"],
+                "when": on["when"],
+                "where": on["where"],
+                "last": on["last"]["text"],
+                "on": on["note"],
+                # Never switched on: what the card says before; else after a stop.
+                "off": before["note"]
+                if before["state"] == "ready"
+                else cards(w["stopped"][key])[key]["note"],
+            }
+        )
+
+    def claim(c: dict) -> dict:
+        return {k: c[k] for k in ("field", "value", "when")} | {
+            "source": c.get("title") or c.get("source")
+        }
+
+    q = w["question"]
+    assert q["fixed"], q
+    question = {
+        "text": q["question"],
+        "outcome": q["outcome"],
+        "people": [
+            {"locked": True, "count": g["count"], "source": g["title"]}
+            if g["locked"]
+            else {
+                "name": g["name"],
+                "matches": [
+                    {"why": m["why"], "claims": [claim(c) for c in m["claims"]]}
+                    for m in g["matches"]
+                ],
+            }
+            for g in q["matches"]
+        ],
+    }
+    r = w["reports"]
+    contradictions = {
+        "outcome": r["contradictions"]["outcome"],
+        "items": [
+            {"locked": [x["title"] for x in i["locked"]]}
+            if i["locked"]
+            else {
+                "kind": i["kind"],
+                "why": i["why"],
+                "question": i["question"],
+                "sides": [
+                    claim(c) | {"name": c["name"], "decided": c["decided"]}
+                    for c in i["claims"]
+                ],
+            }
+            for i in r["contradictions"]["items"]
+        ],
+    }
+
+    def line(c: dict) -> dict:
+        return {"text": c["text"], "when": c["when"], "source": c["source"]["title"]}
+
+    gaps = {
+        "outcome": r["gaps"]["outcome"],
+        "items": [
+            {"name": i.get("name"), "locked": [x["title"] for x in i["locked"]]}
+            if i["locked"]
+            else {
+                "name": i["name"],
+                "window": i["window_text"],
+                "claims": [line(c) for c in i["claims"]],
+                "leads": [line(c) for c in i["leads"]],
+                "where": i["where"],
+                "searches": i["searches"],
+                "colleagues": i["colleagues"],
+                "maybe": (i.get("maybe") or {}).get("where"),
+            }
+            for i in r["gaps"]["items"]
+        ],
+    }
+    picked = (w["proposed"] or {}).get("key")
+    noticer = {
+        "outcome": r["noticer"]["outcome"],
+        "deferred": r["noticer"]["deferred"],
+        "items": [
+            {"locked": True, "count": i["count"], "source": i["title"]}
+            if i.get("locked")
+            else {
+                "kind": i["kind"],
+                "why": i["why"],
+                "next": i["next"],
+                "a": i["here"]["title"],
+                "b": i["there"]["title"],
+                "other_case": i["there"]["case"],
+                "signals": i["signals"],
+                "claims": [claim(c) for c in i["claims"]],
+                "link": i["link"],
+                "proposed": i["key"] == picked,
+            }
+            for i in r["noticer"]["items"]
+        ],
+    }
+    return {
+        "case": "case-demo-02",
+        "agents": agents,
+        "question": question,
+        "contradictions": contradictions,
+        "gaps": gaps,
+        "noticer": noticer,
+        # What "Propose a link" wrote, read back from Review.
+        "proposal": proposal(w["proposed"]["claim"] | {"kind": "same_person"})
+        if w["proposed"]
+        else None,
+    }
+
+
+def build_casemap(live: dict) -> dict:
+    """GET /api/case-map for the demo case, with ids replaced by short page ids, and
+    the path answer between every two people whose names are unique on the map."""
+    from collections import Counter
+
+    c = live["casemap"]
+    v = c["view"]
+    row = {r["key"]: f"r{i + 1}" for i, r in enumerate(v["rows"])}
+    place = {p["id"]: f"p{i + 1}" for i, p in enumerate(v["places"])}
+    point = {p["id"]: f"c{i + 1}" for i, p in enumerate(v["points"])}
+    labels = Counter(r["label"] for r in v["rows"])
+    pickable = [r["key"] for r in v["rows"] if r["named"] and labels[r["label"]] == 1]
+    paths = [
+        {
+            "from": row[p["from"]],
+            "to": row[p["to"]],
+            "found": p["found"],
+            "steps": [
+                {
+                    "text": s["text"],
+                    "kind": s["kind"],
+                    "sources": [x["title"] for x in s["sources"]],
+                    "unconfirmed": s["unconfirmed"],
+                    "weak": s["weak"],
+                    # What to mark on the timeline and map.
+                    "rows": [row[n] for n in s["nodes"] if n in row],
+                    "places": [
+                        place[n.removeprefix("place:")]
+                        for n in s["nodes"]
+                        if n.startswith("place:")
+                    ],
+                    "points": [point[i] for i in s["claims"] if i in point],
+                }
+                for s in p["steps"]
+            ],
+        }
+        for p in c["paths"]
+        if p["from"] in pickable and p["to"] in pickable
+    ]
+    # Opens on a path that walks a held-together band and flags a weak step.
+    preset = next(
+        (
+            p
+            for p in paths
+            if any(s["kind"] == "with" for s in p["steps"])
+            and any(s["weak"] for s in p["steps"])
+        ),
+        next(p for p in paths if p["found"]),
+    )
+    return {
+        "case": v["investigation"],
+        "rows": [
+            {
+                "id": row[r["key"]],
+                "label": r["label"],
+                "named": r["named"],
+                "gaps": r["gaps"],
+            }
+            for r in v["rows"]
+        ],
+        "points": [
+            {
+                "id": point[p["id"]],
+                "row": row[p["subject"]],
+                "prop": p["prop"],
+                "place": place.get(p["place_id"]),
+                "written": p["place"],
+                "from": p["from"],
+                "to": p["to"],
+                "tier": p["tier"],
+                "file": p["file"],
+                "sensitive": p["sensitive"],
+            }
+            for p in v["points"]
+        ],
+        "places": [
+            {k: p[k] for k in ("en", "ar", "lonlat", "precision_m", "approximate")}
+            | {"id": place[p["id"]]}
+            for p in v["places"]
+        ],
+        "bands": [
+            {
+                "people": [row[k] for k in b["people"]],
+                "places": [place[i] for i in b["places"]],
+                "members": [point[i] for i in b["members"]],
+                "proposed": b["finding"] is not None,
+            }
+            | {k: b[k] for k in ("from", "to", "month", "label")}
+            for b in v["bands"]
+        ],
+        "open_ends": [
+            {"row": row[o["person"]], "after": o["after"], "label": o["label"]}
+            for o in v["open_ends"]
+        ],
+        "pairs": [[row[a], row[b]] for a, b in v["pairs"]],
+        "unresolved": len(v["unresolved"]),
+        "attribution": v["attribution"],
+        "people": [row[k] for k in pickable],
+        "paths": paths,
+        "preset": [preset["from"], preset["to"]],
+        "depth": c["paths"][0]["depth"],
     }
 
 
@@ -1577,14 +1815,7 @@ def main():
         "photos": photos,
         "search": build_search(photos),
         "video": build_video(),
-        "connections": build_connections(live),
-        "story": build_story(live),
-        "sheet": build_sheet(live),
-        "grouped_search": build_grouped(live),
-        "agents": build_agents(live),
-        "disagree": build_disagree(live),
-        "entities": build_places_pages(live),
-        "research": build_research(live),
+        **{key: build(live) for key, build in LIVE.items()},
         "speech": build_speech(),
         "status": build_status(),
     }
@@ -1595,5 +1826,34 @@ def main():
         assert p.stat().st_size <= MAX_BYTES or p.suffix in (".ogg", ".mp4"), p
 
 
+# Keys built from the throwaway app run alone, so they can be refreshed without the
+# speech model or Ollama: `uv run python site/build_data.py --live watch casemap`.
+LIVE = {
+    "connections": build_connections,
+    "story": build_story,
+    "sheet": build_sheet,
+    "grouped_search": build_grouped,
+    "agents": build_agents,
+    "watch": build_watch,
+    "casemap": build_casemap,
+    "disagree": build_disagree,
+    "entities": build_places_pages,
+    "research": build_research,
+}
+
+
+def refresh(keys: list[str]):
+    """Rebuild only these live keys in the existing case.json; every other key,
+    generated_at included, is written back as it was read."""
+    path = SITE / "data/case.json"
+    data = json.loads(path.read_text())
+    live = build_live.live()
+    data |= {key: LIVE[key](live) for key in keys}
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n")
+
+
 if __name__ == "__main__":
-    main()
+    if sys.argv[1:2] == ["--live"]:
+        refresh(sys.argv[2:])
+    else:
+        main()

@@ -6,6 +6,7 @@ Called by build_data.py. Needs a local Postgres role with CREATEDB.
 """
 
 import asyncio
+import os
 import tempfile
 import time
 import uuid
@@ -246,6 +247,17 @@ async def _read(app) -> dict:
     incident_id = incidents[0]["id"].removeprefix("incident:")
     incident_page = await get(f"/api/incidents/{incident_id}", investigation=CASE)
 
+    async def send(method, path, item, status):
+        r = await getattr(client, method)(
+            path, json={"item": item}, headers={"X-CSRFToken": token}
+        )
+        assert r.status_code == status, (path, r.status_code, await r.get_data(True))
+        return await r.get_json()
+
+    # Before research marks the case sensitive below.
+    watch = await _watch(get, send)
+    casemap = await _casemap(get)
+
     research = {
         "person": L1.removeprefix("person:"),
         "queries": await post("/api/research/queries", {"item": {"scope": L1}}),
@@ -263,6 +275,8 @@ async def _read(app) -> dict:
     )
 
     return {
+        "watch": watch,
+        "casemap": casemap,
         "batches": batches,
         "briefs": briefs,
         "link_runs": link_runs,
@@ -290,6 +304,91 @@ async def _read(app) -> dict:
         "reveals": finding_reveals,
         "access_records": access_findings,
     }
+
+
+async def _watch(get, send) -> dict:
+    """The four agents that keep checking, run by the worker's own code on the demo's
+    fixed answer, then read back through the endpoints the Agents page, Desk and
+    People call, as their owner reads them."""
+    from stk.agents import tasks
+    from stk.agents.read import FIXED
+    from stk.runs.worker import work_once
+
+    with (
+        mock.patch.object(Config, "AGENT_MODEL", FIXED),
+        # Never called: the fixed answer stands in for the local model.
+        mock.patch.dict(
+            os.environ, {"ROUTE_LOCAL_BASE_URL": "http://fixed-output.invalid/v1"}
+        ),
+    ):
+        ready = await get("/api/agents/overview", investigation=CASE)
+        made = {}
+        for kind in ("contradictions", "gaps", "noticer"):
+            item = {"kind": kind, "investigation": CASE}
+            made[kind] = (await send("post", "/api/agents/tasks", item, 201))["id"]
+        await tasks.tick(ext.async_session_factory)
+        tools = ["standing", "contradictions", "gaps", "notice"]
+        while await work_once(ext.async_session_factory, tools):
+            pass
+        watching = await get("/api/agents/overview", investigation=CASE)
+        lists = {
+            kind: (await get("/api/agents/tasks", investigation=CASE, kind=kind))[
+                "items"
+            ]
+            for kind in tasks.KINDS
+        }
+        question = await get(f"/api/agents/tasks/{lists['standing'][0]['id']}")
+        reports = {
+            "contradictions": await get(
+                "/api/agents/contradictions", investigation=CASE
+            ),
+            "gaps": await get("/api/agents/gaps", investigation=CASE),
+            "noticer": await get("/api/agents/notice", investigation=CASE),
+        }
+        # The keep checking switch, off and on again.
+        stopped = {}
+        made["standing"] = lists["standing"][0]["id"]
+        for kind, tid in made.items():
+            await send("patch", f"/api/agents/tasks/{tid}", {"enabled": False}, 200)
+            stopped[kind] = await get("/api/agents/overview", investigation=CASE)
+            await send("patch", f"/api/agents/tasks/{tid}", {"enabled": True}, 200)
+        # The person's click: one resemblance sent to Review as a proposed link.
+        pick = next(
+            (i for i in reports["noticer"]["items"] if i.get("link") == "can"), None
+        )
+        proposed = None
+        if pick:
+            item = {"run": pick["run"], "key": pick["key"]}
+            sid = (await send("post", "/api/agents/notice/link", item, 201))[
+                "statement"
+            ]
+            proposed = {
+                "key": pick["key"],
+                "claim": await get(f"/api/review/claim/{sid}"),
+            }
+    return {
+        "ready": ready,
+        "watching": watching,
+        "stopped": stopped,
+        "tasks": lists,
+        "question": question,
+        "reports": reports,
+        "proposed": proposed,
+    }
+
+
+async def _casemap(get) -> dict:
+    """The case map, and the path answer from every person on it to every other."""
+    view = await get("/api/case-map", investigation=CASE)
+    keys = [r["key"] for r in view["rows"]]
+    paths = []
+    for a in keys:
+        for b in keys:
+            if a != b:
+                args = {"investigation": CASE, "from": a, "to": b}
+                found = await get("/api/case-map/path", **args)
+                paths.append({"from": a, "to": b} | found)
+    return {"view": view, "paths": paths}
 
 
 async def _cited(s, run_id: str) -> dict:

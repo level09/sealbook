@@ -33,6 +33,8 @@
 <link rel="stylesheet" href="css/demo-brief.css">
 <link rel="stylesheet" href="css/demo-places.css">
 <link rel="stylesheet" href="css/demo-research.css">
+<link rel="stylesheet" href="css/demo-watch.css">
+<link rel="stylesheet" href="css/demo-casemap.css">
 <link rel="stylesheet" href="css/hero.css">
 <link rel="stylesheet" href="css/diagrams.css">
 <link rel="stylesheet" href="css/invite.css">
@@ -59,6 +61,7 @@
         <li><a href="#arrive">A file arrives</a></li>
         <li><a href="#sheet">A messy sheet</a></li>
         <li><a href="#brief">A batch, read as a whole</a></li>
+        <li><a href="#watch">Agents that keep watching</a></li>
       </ol>
     </li>
     <li><span class="toc-group">Search</span>
@@ -74,6 +77,7 @@
         <li><a href="#people">One name, two people</a></li>
         <li><a href="#connections">Connections, with their reasons</a></li>
         <li><a href="#places">A page for every place and incident</a></li>
+        <li><a href="#casemap">Who was where, and when</a></li>
         <li><a href="#story">A person over time</a></li>
       </ol>
     </li>
@@ -188,6 +192,22 @@
   <div class="demo" data-demo="brief"></div>
 </section>
 
+<section class="link" id="watch" data-signer="agents">
+  <div class="copy">
+    <h2>Agents that keep watching</h2>
+    <p class="job">Ask once, and hear back when the evidence answers.</p>
+    <p>Four assistants keep reading the case after you look away. A standing question waits for its answer, such as anyone placed at one detention branch. The contradiction hunter finds sources that disagree, says why they might, and drafts a question to settle it. The gap finder points at silences in a person's record and where to look. The Noticer spots evidence that resembles other evidence: the same picture, the same wording, a name spelled another way, or the same person or place in another case.</p>
+    <p>Switch on keep checking and each one runs when evidence arrives and once a day. Every line it writes cites the evidence behind it. It only suggests: a person decides, in Review. If it keeps failing, it pauses and tells you.</p>
+    <details class="how"><summary>How it works</summary>
+      <p>Each agent runs on a local model for one named person and reads only what that person may open, checked again before every run. A standing question is screened, then judged against every condition it names: place, time and person. The contradiction hunter reads the disagreements person pages already show, and records an open same-person proposal joins, then explains each in one or two sentences and drafts a question for a colleague. The gap finder marks more than 60 days without evidence after an arrest, detention or last sighting, and the point where a record stops; its suggested searches only fill in the research drawer. The Noticer compares sources by meaning, picture and sound fingerprints, Arabic name variants, open same-person proposals, the same person or place in another case the person can open, and runs of eight or more shared words.</p>
+      <p>With keep checking on, claims written from arriving evidence wake the agent, the Noticer also wakes when a source is fingerprinted or indexed by meaning, and a scheduled check runs daily. Wakes are deduplicated, so one run takes in many. Each empty check doubles the wait, up to eight times the interval. The next check counts from when the last one finished, so missed checks are skipped, not replayed. A failed check retries after five minutes; three failures in a row pause it and notify its owner, and losing access to the case pauses it at once.</p>
+      <p>A line without a citation, or citing something it was not given, is dropped. A line resting on a sensitive source stays locked until someone makes a logged reveal. Nothing is accepted: matches and resemblances are reports, and only a person's click on Propose a link sends one to Review as a question.</p>
+    </details>
+  </div>
+  <figure class="diagram" data-diagram="watch"></figure>
+  <div class="demo" data-demo="watch"></div>
+</section>
+
 <section class="link" id="search" data-signer="search index">
   <div class="copy">
     <h2>One search, grouped</h2>
@@ -285,6 +305,22 @@
   </div>
   <figure class="diagram" data-diagram="places"></figure>
   <div class="demo" data-demo="places"></div>
+</section>
+
+<section class="link" id="casemap" data-signer="case map">
+  <div class="copy">
+    <h2>Who was where, and when</h2>
+    <p class="job">The whole case on one timeline and one map.</p>
+    <p>Each person gets a row, and each stay at a place a segment. When two or more people were held at one place at the same time, a band joins their rows. Stretches with no evidence are hatched, and a row shows where the record stops. The map shows the same places, sized by how many people were there, with arrows for each move. One slider drives both. Pick a band or a place to see who was there and which sources say so.</p>
+    <p>Ask how two people are connected and Sealbook answers with the shortest chain of sourced steps. A step through one place at different times is marked as weak.</p>
+    <details class="how"><summary>How it works</summary>
+      <p>The case map is built from the story view of one case, with its masking, erasure and an access record for each row. A segment is a dated claim at a place, textured by its tier. Bands come from discovery's shared presence over the claims the reader can see, of any tier, so an unconfirmed claim can make one. Two records an open same-person proposal joins are marked as possibly two people and stay two rows until someone reviews it. A row's open end uses the gap finder's rules, and a release or death closes it.</p>
+      <p>On the map a place is sized by the people there in the window, and a place known only to within more than 250 metres is drawn as a faint area. Arrows join known places in time order; they are not routes. The slider plays through the case in a window of a month, a quarter, a year or the whole case.</p>
+      <p>The path question searches breadth first, at most 8 steps, over held at, transferred to, held together, named in the same source, family links and open same-person proposals. Each step is a sentence with its sources. An unconfirmed step says so, and a step through a place whose two stays do not overlap is weak, with how far apart they were. Everyone on the answer is logged as viewed.</p>
+    </details>
+  </div>
+  <figure class="diagram" data-diagram="casemap"></figure>
+  <div class="demo" data-demo="casemap"></div>
 </section>
 
 <section class="link" id="story" data-signer="story view">
@@ -416,6 +452,8 @@
 <script src="js/demo-brief.js"></script>
 <script src="js/demo-places.js"></script>
 <script src="js/demo-research.js"></script>
+<script src="js/demo-watch.js"></script>
+<script src="js/demo-casemap.js"></script>
 <script src="js/demo-proof.js"></script>
 <script src="js/hero.js"></script>
 <script src="js/diagrams.js"></script>

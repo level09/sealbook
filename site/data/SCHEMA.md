@@ -4,8 +4,8 @@
 `site/media/`. Every value comes from a real file or a real run; nothing is
 typed by hand. Pages read this file with `fetch("data/case.json")`.
 
-`connections`, `story`, `sheet`, `agents`, `disagree`, `entities`, `research` and
-`grouped_search.queries` come from
+`connections`, `story`, `sheet`, `agents`, `watch`, `casemap`, `disagree`, `entities`,
+`research` and `grouped_search.queries` come from
 `site/build_live.py`: `stk demo-seed --full` on a throwaway Postgres database
 (created and dropped by `stk.migrations.throwaway_database_url`), read back
 through the app's own endpoints by a signed-in test client, with model calls off.
@@ -128,6 +128,42 @@ docs/status.md, docs/search-eval.md and docs/models.md.
                               "where": "characters 71 to 83", "tier": "..."}]}],
     "candidates": 10, "already_known": 1,   // the demo's fixed-output runs (sealbook-demo-fixed-output)
     "measured": "the real-model sentence from docs/status.md"
+  },
+  "watch": {                             // tasks made with POST /api/agents/tasks, queued by tasks.tick and run by the worker's
+                                         // work_once on the fixed answer (sealbook-demo-fixed-output), read back as their owner
+    "case": "case-demo-02",
+    "agents": [{"key": "standing|contradictions|gaps|noticer", "name": "...", "does": "...", "when": "...", "where": "...",
+                "last": "outcome sentence ending in Demo output.",        // GET /api/agents/overview
+                "on": "card note with keep checking on", "off": "note before it was switched on, or after PATCH enabled false"}],
+    "question": {"text": "...", "outcome": {"proposed": 18, "reason": null},   // GET /api/agents/tasks/<id>
+                 "people": [{"name": "...", "matches": [{"why": "...", "claims": [{"field": "...", "value": "...", "when": "..." | null, "source": "title"}]}]}
+                            | {"locked": true, "count": 1, "source": "sensitive source title"}]},
+    "contradictions": {"outcome": {}, "items": [{"kind": "...", "why": "...", "question": "draft for a colleague",   // GET /api/agents/contradictions
+                       "sides": [{"field": "...", "value": "...", "when": null, "source": "...", "name": "...", "decided": false}]} | {"locked": ["title"]}]},
+    "gaps": {"outcome": {}, "items": [{"name": "...", "window": "No record after ...", "claims": [{"text": "Field: value", "when": "...", "source": "..."}],   // GET /api/agents/gaps
+             "leads": [], "where": "...", "searches": ["..."], "colleagues": ["..."], "maybe": "above|below" | null} | {"name": null, "locked": ["title"]}]},
+    "noticer": {"outcome": {}, "deferred": 14, "items": [{"kind": "Copied wording", "why": "...", "next": "...", "a": "title", "b": "title",   // GET /api/agents/notice
+                "other_case": null, "signals": ["..."], "claims": [], "link": "can|proposed" | null, "proposed": true} | {"locked": true, "count": 1, "source": "..."}]},
+    "proposal": null | {"kind": "related", "ask": "Related documents?", "joins": ["...", "..."], "reason": "...", "proposer": "Noticer",
+                        "tier": "unconfirmed", "basis": []}   // POST /api/agents/notice/link, then GET /api/review/claim/<id>; shaped as agents.proposals
+  },
+  "casemap": {                           // GET /api/case-map and /api/case-map/path; ids replaced by page ids (r rows, p places, c points)
+    "case": "case-demo-02",
+    "rows": [{"id": "r1", "label": "...", "named": true, "gaps": [{"from": "...", "to": "...", "days": 60}]}],
+    "points": [{"id": "c1", "row": "r1", "prop": "detained_at", "place": "p1" | null, "written": "place as written",
+                "from": "YYYY-MM-DD", "to": "YYYY-MM-DD", "tier": "...", "file": "source title", "sensitive": false}],
+    "places": [{"id": "p1", "en": "...", "ar": "...", "lonlat": [lon, lat], "precision_m": 250, "approximate": false}],
+    "bands": [{"people": ["r1"], "places": ["p1"], "members": ["c1"], "proposed": true, "from": "...", "to": "...",
+               "month": "YYYY-MM", "label": "held together, July 2013"}],
+    "open_ends": [{"row": "r1", "after": "YYYY-MM-DD", "label": "No record after ..."}],
+    "pairs": [["r2", "r3"]],             // records an open same-person proposal joins
+    "unresolved": 3, "attribution": "GeoNames (CC BY 4.0)",
+    "people": ["r1"],                    // rows whose names are unique on the map: the path pickers
+    "paths": [{"from": "r1", "to": "r5", "found": true, "steps": [{"text": "...", "kind": "at|transfer|with|source|family|same",
+               "sources": ["title"], "unconfirmed": false, "weak": "Not at the same time: ..." | null,
+               "rows": ["r1"], "places": ["p1"], "points": ["c1"]}]}],   // every ordered pair of `people`
+    "preset": ["r5", "r10"],             // first path with a held-together step and a weak step
+    "depth": 8
   },
   "disagree": {                          // GET /api/people, /api/people/<id> and POST /api/search (people)
     "fork": {"person": "...", "prop": "name", "from": "YYYY-MM-DD", "sides": [{"value": "...", "file": "..."}]},

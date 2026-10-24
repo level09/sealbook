@@ -21,6 +21,10 @@ to text run. It needs local Postgres with CREATEDB, the downloaded speech model
 (`stk speech-model`) and, for the video search part, local Ollama. The contract is
 `data/SCHEMA.md`.
 
+`uv run python site/build_data.py --live watch casemap` rebuilds only the named keys
+from the throwaway app run and writes every other key back unchanged; it needs
+Postgres only.
+
 ## Preview
 
 ```sh
@@ -31,7 +35,7 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
 
 ## Structure
 
-- `index.html`: seventeen sections, each a `section.link` in the demonstration chain.
+- `index.html`: nineteen sections, each a `section.link` in the demonstration chain.
   Each section leads with a plain `.job` line and paragraph for non-technical
   readers; the precise technical text sits in a `details.how` fold inside `.copy`,
   so it is still part of the hashed chain.
