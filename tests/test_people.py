@@ -222,6 +222,10 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(dup["not_same"])
             self.assertIn("mother_name", dup["differ"])
             self.assertIn("birth_date", dup["differ"])
+            # One line per candidate: each matching name once, however many of
+            # this person's spellings it matched. The twin's names are all masked.
+            [masked] = dup["names"]
+            self.assertEqual((masked["name"], masked["count"]), (None, 1), dup)
 
             factual = await data.person(s, p1, "factual")
             tiers = {r["tier"] for rows in factual["facts"].values() for r in rows}

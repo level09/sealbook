@@ -105,9 +105,9 @@
                     <a :href="'/people/' + d.person" dir="auto">${ who(d.person) }</a>
                     <span v-if="d.not_same" class="ppl-tag">marked not the same</span>
                     <div>Agree: ${ words(d.agree) || 'nothing' } · Differ: ${ words(d.differ) || 'nothing' }</div>
-                    <button v-for="pair in d.names" :key="pair.join()" class="ppl-line" @click="open(pair[1])">
-                        <span>Names match</span><span class="muted">open the matching name</span>
-                    </button>
+                    <div>Names match:
+                        <template v-for="(n, i) in d.names" :key="n.statement"><span v-if="i">, </span><a href="#" @click.prevent="open(n.statement)"><bdi v-if="n.name" dir="auto">${ n.name }</bdi><span v-else><i class="ti ti-lock" aria-hidden="true"></i> ${ n.count } name${ n.count === 1 ? '' : 's' } from a sensitive source</span></a></template>
+                    </div>
                 </div>
             </div>
             <div class="ppl-card" v-if="p.conflicts.length">

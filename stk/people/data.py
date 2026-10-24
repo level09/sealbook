@@ -414,10 +414,19 @@ async def _duplicates(
         c = found.setdefault(
             min(other), {"members": other, "names": [], "not_same": False}
         )
-        c["names"] += [[n, sid] for n in matched]
+        c["names"].append(sid)
         c["not_same"] = c["not_same"] or any(
             frozenset((a, b)) in blocked for a in members for b in other
         )
+    # Each matching name of theirs once, as the reader may see it (masked stays None).
+    shown = {
+        r["id"]: r["display"]
+        for r in await statement_rows(
+            session,
+            Statement.id.in_([sid for c in found.values() for sid in c["names"]]),
+            limit=5000,
+        )
+    }
     out = []
     for person, c in sorted(found.items()):
         agree, differ = [], []
@@ -433,13 +442,24 @@ async def _duplicates(
         out.append(
             {
                 "person": person,
-                "names": c["names"],
+                "names": _by_name(c["names"], shown),
                 "agree": agree,
                 "differ": differ,
                 "not_same": c["not_same"],
             }
         )
     return out
+
+
+def _by_name(sids, shown: dict) -> list[dict]:
+    """One entry per shown name with the first statement behind it and how many;
+    masked names (None) share one entry, after the readable ones."""
+    out: dict = {}
+    for sid in dict.fromkeys(sids):
+        name = shown.get(str(sid))
+        e = out.setdefault(name, {"statement": str(sid), "name": name, "count": 0})
+        e["count"] += 1
+    return sorted(out.values(), key=lambda e: e["name"] is None)
 
 
 async def _not_same_pairs(session: AsyncSession) -> set:

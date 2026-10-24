@@ -446,3 +446,8 @@ covers in the text it was read from (`span_blob`).
   lists now carry a hint built from facts the reader already sees (case, dates,
   first source), computed only for names that clash, and fall back to the id when
   those are equal too.
+- Candidate duplicates printed "Names match" once per pair of name statements, so
+  three spellings here against two there gave six identical lines with no name in
+  them. The server returned raw statement pairs and the page drew one button each.
+  Return what the reader decides on (the candidate, and each of its matching names
+  once, as the reader may see it) and draw one line per candidate.
