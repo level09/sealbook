@@ -1,0 +1,36 @@
+{
+  "type": "search",
+  "query": {
+    "original": "\"Lina Najjar\" 2013"
+  },
+  "web": {
+    "type": "search",
+    "results": [
+      {
+        "title": "Aleppo soap and olive oil recipes",
+        "url": "https://other.example.org/recipes",
+        "description": "A market guide with no names in it.",
+        "meta_url": {
+          "hostname": "other.example.org"
+        }
+      },
+      {
+        "title": "Families ask about Lina Najjar",
+        "url": "https://www.news.example.org/2013/07/families-ask/?utm_source=feed&fbclid=abc#comments",
+        "description": "The same article through a feed link.",
+        "page_age": "2013-07-21T09:00:00",
+        "meta_url": {
+          "hostname": "www.news.example.org"
+        }
+      },
+      {
+        "title": "أخبار لينا في حلب",
+        "url": "https://ar.example.org/lina",
+        "description": "تقرير قصير.",
+        "meta_url": {
+          "hostname": "ar.example.org"
+        }
+      }
+    ]
+  }
+}

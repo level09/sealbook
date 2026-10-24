@@ -73,6 +73,7 @@ class Web:
 
     def __init__(self):
         self.requests: list[httpx.Request] = []
+        self.by_query: dict[str, str] = {}  # query text -> fixture file
         other = io.BytesIO()
         Image.linear_gradient("L").convert("RGB").save(other, "JPEG")
         self.files = {
@@ -96,7 +97,8 @@ class Web:
         path = request.url.path
         if host == "api.search.brave.com":
             kind = path.split("/")[-2]
-            return httpx.Response(200, json=fixture(f"brave_{kind}.json"))
+            name = self.by_query.get(request.url.params["q"], f"brave_{kind}.json")
+            return httpx.Response(200, json=fixture(name))
         if (host, path) in self.files:
             data, mime = self.files[(host, path)]
             return httpx.Response(200, content=data, headers={"content-type": mime})
@@ -120,6 +122,37 @@ class PureTest(unittest.TestCase):
         )
         login = (FIX / "login.html").read_text()
         self.assertTrue(browser.read(login, "https://x.example.org/")[1])
+
+    def test_link_key_ignores_noise_and_keeps_meaning(self):
+        key = service.link_key
+        base = key("https://news.example.org/a/b")
+        for same in (
+            "http://www.news.example.org/a/b/",
+            "https://NEWS.example.org/a/b?utm_source=x&utm_medium=y&fbclid=1&gclid=2#top",
+        ):
+            self.assertEqual(key(same), base)
+        self.assertNotEqual(key("https://news.example.org/a/b?id=1"), base)
+        self.assertNotEqual(
+            key("https://news.example.org/a/b?id=1"),
+            key("https://news.example.org/a/b?id=2"),
+        )
+        self.assertEqual(
+            key("https://x.org/p?b=2&a=1&utm_x=3"), key("https://x.org/p?a=1&b=2")
+        )
+
+    def test_window_needs_both_ends_in_order(self):
+        self.assertIsNone(service.clean_window(None, ""))
+        self.assertEqual(
+            service.clean_window("2013-07-01", "2013-07-31"),
+            ("2013-07-01", "2013-07-31"),
+        )
+        for bad in (
+            ("2013-07-01", None),
+            ("July", "2013-07-31"),
+            ("2013-08-01", "2013-07-31"),
+        ):
+            with self.assertRaises(ValueError):
+                service.clean_window(*bad)
 
     def test_clean_keeps_exactly_what_was_confirmed(self):
         q = service.clean([{"text": '  "Lina   Najjar"  ', "kinds": ["web", "web"]}])
@@ -494,6 +527,95 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(body["queries"][0]["people"], [self.person])
         self.assertEqual(body["queries"][0]["why"][0]["value"], NAME)
         self.assertEqual(self.web.requests, [])  # proposing sends nothing
+
+    def named(self, text, name=NAME):
+        return {
+            "text": text,
+            "kinds": ["web"],
+            "people": [self.person],
+            "why": [{"label": "Name", "value": name}],
+        }
+
+    async def test_copies_merge_and_ungrounded_results_sink_but_stay(self):
+        self.web.by_query['"Lina Najjar" 2013'] = "brave_web_mixed.json"
+        self.web.by_query['"لينا النجار"'] = "brave_web_mixed.json"
+        client = await self.client()
+        q = [
+            self.named(f'"{NAME}"'),
+            self.named(f'"{NAME}" 2013'),
+            self.named('"لينا النجار"', "لينا النجار"),
+        ]
+        status, body = await self.send(client, q)
+        self.assertEqual(status, 200, body)
+        web = body["groups"]["web"]
+        # the fixture page and its feed copy (www, slash, utm, fragment) are one
+        self.assertEqual(
+            [r["url"] for r in web],
+            [
+                "https://news.example.org/2013/07/families-ask",
+                "https://ar.example.org/lina",
+                "https://other.example.org/recipes",
+            ],
+        )
+        self.assertEqual(
+            web[0]["queries"], [f'"{NAME}"', f'"{NAME}" 2013', '"لينا النجار"']
+        )
+        # grounded by an English or an Arabic spelling; the recipe page is kept
+        self.assertEqual([r["grounded"] for r in web], [True, True, False])
+        self.assertEqual(web[2]["subject"], NAME)
+        self.assertIsNone(body["closest"])
+        held = [c for u in store._store.values() for _, c in u.values()]
+        merged = next(c for c in held if c["url"] == web[0]["url"])
+        self.assertEqual(len(merged["accesses"]), 3)
+
+    async def test_nothing_grounded_names_the_closest_weak_result(self):
+        self.web.by_query[f'"{NAME}"'] = "brave_web_ungrounded.json"
+        client = await self.client()
+        status, body = await self.send(client, [self.named(f'"{NAME}"')])
+        self.assertEqual(status, 200, body)
+        web = body["groups"]["web"]
+        self.assertEqual([r["grounded"] for r in web], [False, False])  # not hidden
+        self.assertEqual(body["closest"], web[0]["id"])
+        self.assertEqual(body["subject"], NAME)
+
+    async def test_typed_queries_are_not_judged(self):
+        client = await self.client()
+        q = [{"text": "anything", "kinds": ["web"], "people": [], "why": []}]
+        status, body = await self.send(client, q)
+        self.assertEqual(status, 200, body)
+        self.assertIsNone(body["groups"]["web"][0]["grounded"])
+        self.assertIsNone(body["closest"])
+
+    async def test_date_window_goes_to_web_only_and_is_logged(self):
+        client = await self.client()
+        q = [{**self.named(f'"{NAME}"'), "kinds": ["web", "images"]}]
+        item = {"scope": self.person, "investigation": "case-r", "queries": q}
+        status, body = await self.post(
+            client,
+            "/api/research/search",
+            item | {"from": "2013-07-01", "to": "2013-07-31"},
+        )
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body["window"], ["2013-07-01", "2013-07-31"])
+        web, images = self.web.sent("api.search.brave.com")
+        self.assertEqual(web.url.params["freshness"], "2013-07-01to2013-07-31")
+        self.assertNotIn("freshness", images.url.params)
+        async with ext.async_session_factory() as s:
+            logged = (
+                await s.execute(
+                    select(Payload.value).where(
+                        Payload.value["action"].astext == "research",
+                        Payload.value["kind"].astext == "web",
+                    )
+                )
+            ).scalar_one()
+        self.assertEqual(logged["window"], ["2013-07-01", "2013-07-31"])
+        before = len(self.web.requests)
+        status, _ = await self.post(
+            client, "/api/research/search", item | {"from": "2013-07-01"}
+        )
+        self.assertEqual(status, 400)
+        self.assertEqual(len(self.web.requests), before)
 
     async def test_place_proposals_are_gazetteer_names(self):
         async with ext.async_session_factory() as s, s.begin():

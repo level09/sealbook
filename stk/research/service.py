@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import asyncio
 import io
+import re
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from urllib.parse import parse_qsl, urlencode, urlsplit
 
 import httpx
 import numpy as np
@@ -31,12 +33,17 @@ from stk.monitor import filter as mfilter
 from stk.research import brave, browser, store
 from stk.research.models import CaseSetting
 from stk.research.queries import KINDS
+from stk.search.arabic import normalize
 from stk.settings import Config
 from stk.utils.ratelimit import consume_limit
 
 MAX_QUERIES = 8
 MAX_QUERY_CHARS = 300
 THUMB_BYTES = 2 * 1024 * 1024
+TRACKING = re.compile(
+    r"utm_.*|fbclid|gclid|dclid|msclkid|igshid|mc_cid|mc_eid|_ga", re.I
+)
+SUBJECT_LABELS = {"Name", "Gazetteer name", "Incident place"}
 
 
 class Refusal(Exception):
@@ -145,8 +152,60 @@ def clean(queries) -> list[dict]:
     return out
 
 
+def clean_window(start, end) -> tuple[str, str] | None:
+    """The analyst's date window: both ends as YYYY-MM-DD, or neither."""
+    if not start and not end:
+        return None
+    try:
+        a, b = date.fromisoformat(str(start)), date.fromisoformat(str(end))
+    except ValueError as exc:
+        raise ValueError("set both dates as YYYY-MM-DD, or neither") from exc
+    if a > b:
+        raise ValueError("the window starts after it ends")
+    return a.isoformat(), b.isoformat()
+
+
+def link_key(url: str | None) -> str | None:
+    """One page, one key: scheme, www, trailing slash, fragment and tracking
+    parameters do not tell two links apart; other query parameters do."""
+    if not url:
+        return None
+    try:
+        parts = urlsplit(normalise_url(url))
+    except ValueError:
+        return url
+    query = sorted(
+        (k, v)
+        for k, v in parse_qsl(parts.query, keep_blank_values=True)
+        if not TRACKING.fullmatch(k)
+    )
+    host = (parts.netloc.removeprefix("www.")) + parts.path.rstrip("/")
+    return host + ("?" + urlencode(query) if query else "")
+
+
+def _tokens(text: str) -> set[str]:
+    return {t.removeprefix("ال") for t in re.findall(r"\w+", normalize(text).lower())}
+
+
+def _head(name: str) -> str | None:
+    words = [
+        t for t in re.findall(r"\w+", normalize(name).lower()) if t not in ("al", "el")
+    ]
+    return words[0].removeprefix("ال") if words else None
+
+
+def subject_names(q: dict) -> list[str]:
+    return [w["value"] for w in q.get("why") or [] if w.get("label") in SUBJECT_LABELS]
+
+
 async def log_query(
-    db: AsyncSession, who, scope: str, investigation: str, q: dict, kind: str
+    db: AsyncSession,
+    who,
+    scope: str,
+    investigation: str,
+    q: dict,
+    kind: str,
+    window: tuple[str, str] | None = None,
 ) -> uuid.UUID:
     """The access record for one query, committed before the request leaves. The
     text is in the payload, which erasure can delete; the chain keeps only its
@@ -164,6 +223,7 @@ async def log_query(
                 "investigation": investigation,
                 "people": q["people"],
                 "at": datetime.now(UTC).isoformat(),
+                **({"window": list(window)} if window and kind == "web" else {}),
             },
             author_id=who.id,
         ),
@@ -249,6 +309,7 @@ async def search(
     investigation: str,
     queries: list[dict],
     transport: httpx.AsyncBaseTransport | None = None,
+    window: tuple[str, str] | None = None,
 ) -> dict:
     if missing()["search"]:
         raise Refusal("Search is not configured: " + ", ".join(missing()["search"]))
@@ -268,10 +329,10 @@ async def search(
             if not first:
                 await asyncio.sleep(Config.RESEARCH_SEARCH_INTERVAL)
             first = False
-            access = await log_query(db, who, scope, investigation, q, kind)
+            access = await log_query(db, who, scope, investigation, q, kind, window)
             try:
                 found = await brave.search(
-                    kind, q["text"], Config.RESEARCH_RESULTS, transport
+                    kind, q["text"], Config.RESEARCH_RESULTS, transport, window
                 )
             except brave.SearchError as exc:
                 sent.append(q | {"kind": kind, "error": str(exc), "count": 0})
@@ -279,22 +340,32 @@ async def search(
             sent.append(q | {"kind": kind, "count": len(found)})
             results += [(r, q, access) for r in found]
 
-    urls = {r.url for r, _, _ in results} | {
-        r.media_url for r, _, _ in results if r.media_url
+    # Copies of one page found by several queries become one result.
+    merged: dict[tuple, list] = {}
+    for r, q, access in results:
+        key = (r.kind, link_key(r.url), link_key(r.media_url))
+        if key in merged:
+            if q["text"] not in merged[key][3]:
+                merged[key][3].append(q["text"])
+                merged[key][4].append(access)
+        else:
+            merged[key] = [r, q, access, [q["text"]], [access]]
+    results = list(merged.values())
+    names = [n for q in queries for n in subject_names(q)]
+    heads = {h for n in names if (h := _head(n))}
+
+    urls = {r.url for r, *_ in results} | {
+        r.media_url for r, *_ in results if r.media_url
     }
     held = await _same_url(db, urls, investigation)
     thumbs = await asyncio.gather(
         *(
             _thumb(r.thumbnail, transport) if r.thumbnail else _none()
-            for r, _, _ in results
+            for r, *_ in results
         )
     )
     groups: dict[str, list] = {k: [] for k in KINDS}
-    seen = set()
-    for (r, q, access), thumb in zip(results, thumbs, strict=True):
-        if (r.kind, r.url, r.media_url) in seen:
-            continue
-        seen.add((r.kind, r.url, r.media_url))
+    for (r, q, access, texts, accesses), thumb in zip(results, thumbs, strict=True):
         in_case = []
         for u in (r.url, r.media_url):
             if u in held:
@@ -326,12 +397,17 @@ async def search(
             "description": r.description,
             "query": q["text"],
             "access": str(access),
+            "accesses": [str(a) for a in accesses],
             "investigation": investigation,
             "scope": scope,
             "thumb": thumb,
             "found_at": datetime.now(UTC).isoformat(),
         }
         cid = store.put(user_id, candidate)
+        # Never dropped: an ungrounded result sorts below the grounded ones.
+        grounded = (
+            bool(heads & _tokens(f"{r.title} {r.description}")) if heads else None
+        )
         groups[r.kind].append(
             {
                 "id": cid,
@@ -345,9 +421,22 @@ async def search(
                 "thumb": bool(thumb),
                 "in_case": in_case,
                 "why": {"query": q["text"], "from": q["why"]},
+                "queries": texts,
+                "grounded": grounded,
+                "subject": next(iter(subject_names(q)), None),
             }
         )
-    return {"sent": sent, "groups": groups}
+    for rows in groups.values():
+        rows.sort(key=lambda x: x["grounded"] is False)
+    every = [x for k in KINDS for x in groups[k]]
+    nothing = bool(heads and every and not any(x["grounded"] for x in every))
+    return {
+        "sent": sent,
+        "groups": groups,
+        "window": list(window) if window else None,
+        "subject": names[0] if names else None,
+        "closest": every[0]["id"] if nothing else None,
+    }
 
 
 async def _none():
@@ -405,6 +494,7 @@ async def queue_capture(
                 "date": c["date"],
                 "found_at": c["found_at"],
                 "query_access": c["access"],
+                "query_accesses": c["accesses"],
                 "provider": {"name": "brave", "endpoint": brave.endpoint(c["kind"])},
                 "investigation": c["investigation"],
                 "sensitivity": sensitivity,
