@@ -79,7 +79,8 @@ def why(kind: str, f: dict) -> str:
     s = f.get("sources", 0)
     docs = f"{s} source{'s' if s != 1 else ''}"
     if kind == discovery.SHARED:
-        return f"{docs}, overlapping {f.get('days', 0)} days"
+        days = f.get("days", 0)
+        return f"{docs}, overlapping {days} day{'s' if days != 1 else ''}"
     return (
         f"{f.get('people', 0)} people from {docs} within {f.get('span_days', 0)} days"
     )

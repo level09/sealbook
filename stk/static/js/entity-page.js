@@ -130,7 +130,7 @@ export function entityPage(boot, page) {
         return (this.story?.incidents || []).filter(i => i.window).map(i => ({id: i.id, from: i.window[0], to: i.window[1], rows: i.people, label: i.title}));
       },
       pending() {
-        return (this.story?.suggestions || []).map(f => ({id: f.id, from: f.window[0], to: f.window[1], rows: f.people, label: `${f.label.toLowerCase()}, pending`}));
+        return (this.story?.suggestions || []).map(f => ({id: f.id, from: f.window[0], to: f.window[1], rows: f.people, label: `${f.label.toLowerCase()}, pending`, title: `${f.label}, pending: ${f.reason}`}));
       },
       storyHref() { return page.storyHref(this.e); },
       evShown() { return this.$vuetify.display.xs ? this.evHeaders.filter(h => ['title', 'claims', 'tier'].includes(h.key)) : this.evHeaders; },
@@ -142,12 +142,17 @@ export function entityPage(boot, page) {
       },
       evQuery() { return page.params ? page.params(this) : {}; },
       gestures() {
-        // History grouped by the one passkey gesture that signed it; loose rows stand alone.
+        // History grouped by the one passkey gesture that signed it; unsigned rows by
+        // one person in one minute read as one sitting. Within a group a repeated
+        // sentence is one counted line, with the claims it covers behind it.
         const out = [], by = {};
         for (const h of this.e?.history || []) {
-          const k = h.gesture || h.id;
-          if (!by[k]) out.push(by[k] = {key: k, gesture: h.gesture, rows: [], at: h.recorded_at, actor: h.actor});
-          by[k].rows.push(h);
+          const k = h.gesture || `${h.actor.principal} ${h.recorded_at.slice(0, 16)}`;
+          if (!by[k]) out.push(by[k] = {key: k, gesture: h.gesture, rows: [], lines: [], said: {}, at: h.recorded_at, actor: h.actor});
+          const g = by[k], gone = h.tier === 'rejected', said = `${this.historyText(h)}|${gone}`;
+          if (!g.said[said]) g.lines.push(g.said[said] = {rows: [], gone});
+          g.rows.push(h);
+          g.said[said].rows.push(h);
         }
         return out;
       },
@@ -201,17 +206,19 @@ export function entityPage(boot, page) {
       },
       personLabel(id) { return (this.e.relations.people || []).find(p => p.person === id)?.label || 'a person'; },
       placeLabel(ref) { const id = (ref || '').replace('place:', ''); return placeName((this.e.relations.places || []).find(p => p.id === id) || (this.e.id === id ? this.e : null)); },
-      historyText(h) {
-        const v = h.display || '';
-        return {
-          review: () => `${v === 'reject' ? 'Rejected' : 'Accepted'} ${page.reviewed}`,
+      historyText(h, n = 1) {
+        const v = h.display || '', many = n > 1;
+        const text = {
+          review: () => `${v === 'reject' ? 'Rejected' : 'Accepted'} ${many && page.reviewedMany ? page.reviewedMany(n) : page.reviewed}`,
           retraction: () => 'Undid a signed statement',
-          located_at: () => `Confirmed the place for the spelling \u201c${v}\u201d`,
+          located_at: () => `Confirmed the place for the spelling \u201c\u2068${v}\u2069\u201d${many ? ` on ${n} claims` : ''}`,
           incident: () => `Named the incident \u201c${v}\u201d`,
           occurred_at: () => `Placed it at ${this.placeLabel(h.place)}${h.when ? ', ' + h.when : ''}`,
           involved: () => `${this.personLabel(h.person)}, ${v.toLowerCase() || 'involved'}`,
           supported_by: () => 'Linked a supporting claim',
         }[h.prop]?.() || human(h.prop);
+        const counted = h.prop === 'located_at' || (h.prop === 'review' && page.reviewedMany);
+        return many && !counted ? `${text}, ${n} times` : text;
       },
       threadLabel(t) { return `${t.visible ? (t.sender || 'Someone') + ': ' + (t.reason || '') : 'A private request'}${t.comments ? `, ${plural(t.comments, 'reply', 'replies')}` : ''}`; },
       undo(g) {

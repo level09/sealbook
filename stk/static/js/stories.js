@@ -43,8 +43,8 @@ export const StoryTimeline = {
       <g v-for="t in ticks" :key="t.x"><line :x1="t.x" :x2="t.x" y1="18" :y2="H" stroke="var(--line)"/><text :x="t.x + 3" y="12" font-size="10.5" fill="var(--ink-3)">[[ t.label ]]</text></g>
       <g v-for="b in laid.incidents" :key="'i' + b.id"><rect :x="b.x" :y="b.y" :width="b.w" :height="b.h" fill="var(--incident-wash)" stroke="var(--incident-line)" rx="3"/>
         <text :x="b.x + 4" :y="b.y + b.h - 4" font-size="10.5" fill="var(--incident)">[[ b.label ]]</text></g>
-      <g v-for="b in laid.pending" :key="'f' + b.id" class="st-pend" style="cursor: pointer" tabindex="0" role="button" :aria-label="b.label + ': open the checklist'" @click="$emit('review', b.id)" @keydown.enter="$emit('review', b.id)">
-        <title>[[ b.label ]]: open the checklist</title>
+      <g v-for="b in laid.pending" :key="'f' + b.id" class="st-pend" style="cursor: pointer" tabindex="0" role="button" :aria-label="b.title + '. Open the checklist'" @click="$emit('review', b.id)" @keydown.enter="$emit('review', b.id)">
+        <title>[[ b.title ]]. Open the checklist</title>
         <rect :x="b.x" :y="b.y" :width="b.w" :height="b.h" fill="url(#st-hatch-a)" opacity=".35" stroke="var(--agent)" stroke-dasharray="3 2" rx="3"/>
         <text v-if="b.text" :x="b.x + 4" :y="b.y + b.h - 4" font-size="10.5" fill="var(--agent)">[[ b.label ]]</text></g>
       </g>
@@ -127,7 +127,7 @@ export const StoryTimeline = {
         const box = {x: x0, y: y1 - 16, w: f.label.length * 5.8 + 8, h: 14};
         const text = !taken.some(t => box.x < t.x + t.w && t.x < box.x + box.w && box.y < t.y + t.h && t.y < box.y + box.h);
         if (text) taken.push(box);
-        return {id: f.id, label: f.label, text, x: x0, y: y0, w: Math.max(26, this.x(f.to || f.from) - x0 + 8), h: y1 - y0};
+        return {id: f.id, label: f.label, title: f.title || f.label, text, x: x0, y: y0, w: Math.max(26, this.x(f.to || f.from) - x0 + 8), h: y1 - y0};
       }).filter(Boolean);
     },
   },
@@ -179,7 +179,7 @@ export const storyPage = boot => ({
     },
     span() { return Math.round((day(this.range[1]) - day(this.range[0])) / DAY); },
     cursor() { return iso(day(this.range[0]) + this.t * DAY); },
-    pending() { return this.s ? this.s.suggestions.map(f => ({id: f.id, from: f.window[0], to: f.window[1], rows: f.people, label: `${f.label.toLowerCase()}, pending`})) : []; },
+    pending() { return this.s ? this.s.suggestions.map(f => ({id: f.id, from: f.window[0], to: f.window[1], rows: f.people, label: `${f.label.toLowerCase()}, pending`, title: `${f.label}, pending: ${f.reason}`})) : []; },
     incidentBands() { return this.s ? this.s.incidents.filter(i => i.window).map(i => ({id: i.id, from: i.window[0], to: i.window[1], rows: i.people, label: `${i.title}, ${i.sources} source${i.sources === 1 ? '' : 's'}`})) : []; },
     bandList() { return [...this.pending, ...this.incidentBands]; },
     sel() { return this.points.find(p => p.id === this.selId) || null; },

@@ -14,7 +14,7 @@
             <v-list v-if="briefs.length">
                 <v-list-item v-for="b in briefs" :key="b.id" :href="'/packages/brief/' + b.id">
                     <v-list-item-title>${ b.title }</v-list-item-title>
-                    <v-list-item-subtitle>${ b.audience } . ${ b.sentences } sentences . ${ b.created_at.slice(0, 10) }</v-list-item-subtitle>
+                    <v-list-item-subtitle>For ${ b.audience }, ${ b.sentences } ${ b.sentences === 1 ? 'sentence' : 'sentences' }, created ${ b.created_at.slice(0, 10) }</v-list-item-subtitle>
                 </v-list-item>
             </v-list>
             <v-card-text v-else class="pa-6 text-medium-emphasis">${ loaded ? 'No briefs in ' + (caseSel || 'any investigation') + ' yet.' : 'Loading' }</v-card-text>

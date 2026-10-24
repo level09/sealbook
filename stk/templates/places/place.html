@@ -65,6 +65,7 @@ window.app = entityPage(boot, {
   title: placeName,
   missing: 'There is no such place.',
   reviewed: 'a claim placed here',
+  reviewedMany: n => `${n} claims placed here`,
   followsCase: true,
   mixin: {
     data: () => ({GEO}),

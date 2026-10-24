@@ -512,6 +512,13 @@ async def place(db, user, place_id: uuid.UUID, f: dict) -> dict:
     ]
     ids = [r["id"] for r in here]
     hist = await history(db, ids)
+    # Each decision names the claim it was about, so grouped decisions can list them.
+    labels = {r["key"]: r["label"] for r in story["rows"]}
+    claims = {r["id"]: r for r in here}
+    for h in hist:
+        if c := claims.get(h["subject"].removeprefix("statement:")):
+            who = labels.get(stories._canon(groups, c["subject"]), "a person")
+            h["about"] = f"{who}, {c['when']}" if c["when"] else who
     return {
         "id": ref,
         "name_ar": p.name_ar,

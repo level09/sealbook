@@ -93,7 +93,10 @@
             <div class="g"><actor-chip :actor="{kind: g.actor.kind, name: g.actor.label, key: g.actor.principal}" size="sm"></actor-chip><span class="en-muted">${ fmtDay(g.at.slice(0, 10)) } ${ g.at.slice(11, 16) } UTC</span>
               <span v-if="g.gesture" class="en-muted">· one passkey gesture, ${ plural(g.rows.length, 'statement') }</span>
               <v-btn v-if="g.gesture && (e.undoable || []).includes(g.gesture)" size="x-small" variant="outlined" prepend-icon="ti ti-arrow-back-up" class="ms-auto" :loading="signBusy" @click="undo(g)">Undo</v-btn></div>
-            <ul><li v-for="h in g.rows" :key="h.id" :class="{gone: h.tier === 'rejected'}">${ historyText(h) }<span v-if="h.tier === 'rejected'"> (undone)</span></li></ul>
+            <ul><li v-for="l in g.lines" :key="l.rows[0].id" :class="{gone: l.gone}">
+              <details v-if="l.rows.length > 1 && l.rows.some(h => h.about)"><summary>${ historyText(l.rows[0], l.rows.length) }<span v-if="l.gone"> (undone)</span></summary>
+                <ul><li v-for="h in l.rows" :key="h.id">${ h.about || historyText(h) }</li></ul></details>
+              <template v-else>${ historyText(l.rows[0], l.rows.length) }<span v-if="l.gone"> (undone)</span></template></li></ul>
           </li>
         </ul>
         <p v-else class="en-muted">Nothing signed about it yet.</p>
