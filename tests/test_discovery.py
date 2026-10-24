@@ -154,4 +154,7 @@ class DiscoveryTest(unittest.TestCase):
             )
             located, _ = parts(video, "video/webm", 0, 8)
         frames = [i["location"]["ms"][0] for i in located if i["kind"] == "frame"]
-        self.assertEqual(frames, [0, 3000])
+        # Real decode times: older ffmpeg starts this webm a few ms after zero.
+        self.assertEqual(len(frames), 2)
+        self.assertLess(frames[0], 50)
+        self.assertEqual(frames[1] - frames[0], 3000)
