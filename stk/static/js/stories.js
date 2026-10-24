@@ -280,7 +280,7 @@ export const storyPage = boot => ({
       } catch (err) { this.excerptNote = err.response?.status === 403 ? 'Sensitive source: reveal it on its evidence page to read the text (logged)' : this.fail(err); }
     },
     openFinding(id) { this.finding = this.s.suggestions.find(f => f.id === id) || null; },
-    memberLabel(m) { return this.rowLabel[m.subject] || this.rowLabel[this.s.points.find(p => p.id === m.statement)?.subject] || 'Unnamed person'; },
+    memberLabel(m) { return m.label || this.rowLabel[m.subject] || this.rowLabel[this.s.points.find(p => p.id === m.statement)?.subject] || 'Unnamed person'; },
     async save() {
       try {
         await axios.post('/api/stories/saved', {item: this.query});

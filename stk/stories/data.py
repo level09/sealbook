@@ -341,6 +341,15 @@ async def story(db, user, lens: str, ref: str | None, f: dict) -> dict:
         for c in await findings.queue(db, user, f["investigation"])
         if set(c["people"]) & set(keys) or {m["statement"] for m in c["members"]} & ids
     ]
+    # Members outside the story's rows still read by the best name the reader may see.
+    member_names = await _names(
+        db,
+        groups,
+        _subjects(groups, [m["subject"] for c in suggestions for m in c["members"]]),
+    )
+    for c in suggestions:
+        for m in c["members"]:
+            m["label"] = member_names.get(_canon(groups, m["subject"]))
     if title is None:
         if lens == "person":
             title = story_rows[0]["label"] if story_rows else "Person"
