@@ -1,0 +1,11 @@
+#!/bin/sh
+# Refuse to push any commit whose message carries an AI attribution line.
+zero=0000000000000000000000000000000000000000
+while read -r _ local_sha _ remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue
+  range=$local_sha; [ "$remote_sha" != "$zero" ] && range="$remote_sha..$local_sha"
+  bad=$(git log --format='%h %B' "$range" | grep -Ei '^co-authored-by:.*(claude|anthropic|openai|codex|copilot|gemini)|generated with \[?claude|claude-session:')
+  if [ -n "$bad" ]; then
+    echo "pre-push: AI attribution found in commit messages:" >&2; echo "$bad" >&2; exit 1
+  fi
+done

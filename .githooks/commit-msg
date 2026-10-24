@@ -1,0 +1,6 @@
+#!/bin/sh
+# The owner's rule: no AI credit or tooling trace in commit messages.
+if grep -Eiq '^co-authored-by:.*(claude|anthropic|openai|codex|copilot|gemini|noreply@anthropic)|generated with \[?claude|claude-session:' "$1"; then
+  echo "commit-msg: AI attribution lines are not allowed in this repo; remove them." >&2
+  exit 1
+fi

@@ -46,6 +46,9 @@ echo -e "${GREEN}Virtual environment will be available at .venv${NC}"
 echo -e "${GREEN}Installing dependencies from pyproject.toml...${NC}"
 uv sync --extra dev
 
+# Repo hooks refuse AI attribution lines in commit messages.
+git config core.hooksPath .githooks
+
 # Check for required commands
 for cmd in tr openssl awk; do
     if ! command -v $cmd &> /dev/null; then

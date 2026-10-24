@@ -45,6 +45,12 @@ uv run stk new <module>            # Scaffold + migrate, ends at a URL you can o
 uv run python -m unittest discover -s tests
 ```
 
+### Commit hooks
+
+`setup.sh` sets `git config core.hooksPath .githooks`. `commit-msg` and `pre-push`
+refuse AI attribution lines (`Co-Authored-By` naming an AI, "Generated with Claude",
+session links). Run that command once in an existing clone.
+
 ### Worktrees
 
 Parallel work happens in git worktrees under `../sealbook-wt/`. A worktree has no
