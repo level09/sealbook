@@ -18,7 +18,7 @@ from stk.settings import Config
 TOOL = "standing"
 PER_CALL = 12
 BUDGET_SECONDS = LEASE.total_seconds() - max(90, Config.ROUTE_LOCAL_TIMEOUT + 15)
-VERSION = "standing-1"
+VERSION = "standing-2"
 SCREEN = (
     "Screen these claims for a standing question. Prefer false positives. Return "
     "every claim handle that might help answer it, including context. This is only "
@@ -26,7 +26,11 @@ SCREEN = (
 )
 JUDGE = (
     "Read these claims against the standing question. Propose only matches the "
-    "claims support, including the question's dates and conditions. Each match "
+    "claims support. A match meets every condition in the question: place, "
+    "time and person or role. A date in the same year does not meet 'after' "
+    "that year, a record at another place does not match, and leaving a place "
+    "is not being held there. When unsure, leave it out; the screen already "
+    "kept everything that might help. Each match "
     "must cite at least one supplied claim handle in claims. Write why as one "
     "short plain sentence using only cited values. Do not put handles in why. "
     "A match is a proposal for human review, never an accepted fact."

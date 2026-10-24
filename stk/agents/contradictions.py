@@ -18,7 +18,7 @@ from stk.people import data as people
 
 TOOL = "contradictions"
 AGENT = "Contradiction hunter"
-PROMPT_VERSION = "contradictions-2"
+PROMPT_VERSION = "contradictions-3"
 CAP = 24
 PER_CALL = 4
 BUDGET_SECONDS = LEASE.total_seconds() - 90
@@ -38,7 +38,9 @@ SYSTEM = (
     "of one candidate. A candidate with proposed_link compares two person "
     "records that a proposal, not yet reviewed, calls one person; there the "
     "values may show they are two people. "
-    "Use handles only in claims, never in why or question. "
+    "Use handles only in claims. In why and question, refer to records by "
+    "their source title or as the first and second record; an item whose why "
+    "or question contains a handle such as c1 is discarded. "
     "Do not add facts or names absent from the cited claims."
 )
 SCHEMA = {
