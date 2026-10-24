@@ -214,6 +214,7 @@ class Context:
         self.runs: dict = {}
         self.acqs: dict = {}
         self.doc_dates: dict = {}
+        self.source: dict = {}  # derived text blob -> the acquired blob it was read from
 
     @classmethod
     async def load(cls, db: AsyncSession, blobs=(), runs=(), principals=()):
@@ -232,6 +233,17 @@ class Context:
             r.principal_id for r in ctx.runs.values()
         }
         if blobs:
+            # Page, OCR and transcript text has no acquisition: it is its source's.
+            ctx.source = {
+                sha: src
+                for sha, src in await db.execute(
+                    select(Blob.sha256, mfilter.source(Blob.sha256)).where(
+                        Blob.sha256.in_(blobs)
+                    )
+                )
+                if src != sha
+            }
+            blobs |= set(ctx.source.values())
             for a in (
                 await db.execute(
                     select(Acquisition)
@@ -269,7 +281,8 @@ class Context:
         return {sha: self.doc(sha)["title"] for sha in self.acqs}
 
     def doc(self, sha: str | None) -> dict:
-        acqs = self.acqs.get(sha, [])
+        src = self.source.get(sha, sha)
+        acqs = self.acqs.get(src, [])
         first = acqs[0] if acqs else None
         return {
             "sha256": sha,
@@ -292,9 +305,9 @@ class Context:
             "origins": sorted({a.origin for a in acqs}),
             # No acquisition means no sensitivity was ever set: sensitive by default.
             "sensitive": not acqs or any(a.sensitivity == "sensitive" for a in acqs),
-            "date": when(*self.doc_dates[sha]) if sha in self.doc_dates else None,
-            "date_to": self.doc_dates[sha][1].isoformat()
-            if sha in self.doc_dates
+            "date": when(*self.doc_dates[src]) if src in self.doc_dates else None,
+            "date_to": self.doc_dates[src][1].isoformat()
+            if src in self.doc_dates
             else None,
         }
 

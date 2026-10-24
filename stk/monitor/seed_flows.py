@@ -31,7 +31,7 @@ from stk.ledger.models import Acquisition, Blob, Payload, Run, RunEvent, Stateme
 from stk.places import resolve
 from stk.review import findings
 from stk.review.views import _after
-from stk.runs import routes
+from stk.runs import routes, worker
 from stk.runs.worker import Ctx, work_once
 from stk.settings import Config
 from stk.sheets import service as sheets
@@ -76,15 +76,52 @@ class Fixed(Ctx):
         return routes.Served(data, raw, "demo:fixed-output", FIXED, "demo")
 
 
-async def _start(s, run: Run, acq: Acquisition, what: str, cls=Ctx, **extra) -> Ctx:
+@dataclass
+class Recorded(Ctx):
+    """A worker context whose model call answers with a response recorded once from
+    the real route (acceptance/demo/ocr.json), so a tool runs its own writer on
+    real model output without calling the model at seed time."""
+
+    recorded: dict = field(default=None)
+
+    async def call(self, body: dict) -> routes.Served:
+        rec = self.recorded
+        raw = rec["raw"].encode()
+        stored = await blobs.put(self.s, raw, "application/json", Config.BLOB_DIR)
+        self.run.raw_output_ref = stored.sha256
+        await self.emit("model_called")
+        return routes.Served(
+            orjson.loads(raw),
+            raw,
+            rec["endpoint"],
+            rec["model_served"],
+            rec["provider_served"],
+        )
+
+
+async def _start(
+    s, run: Run, acq: Acquisition, what: str, cls=Ctx, served=None, **extra
+) -> Ctx:
     """Take `run` (queued or new) as a fixed-output run: its own key, provenance
-    naming the demo, events numbered after any it has."""
+    naming the demo, events numbered after any it has. With `served`, a recorded
+    run: provenance names the model that answered when it was recorded."""
     key = Ed25519PrivateKey.generate()
     run.pubkey = key.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
     run.status, run.model_requested = "running", FIXED
     run.model_served, run.provider_served = FIXED, "demo"
     run.endpoint = "demo:fixed-output"
     run.inputs = {**run.inputs, "demo": note(what)}
+    if served:
+        run.route, run.endpoint = served["route"], served["endpoint"]
+        run.model_requested = served["model_requested"]
+        run.model_served = served["model_served"]
+        run.provider_served = served["provider_served"]
+        run.inputs["demo"] = (
+            f"demo: {what}, recorded once from {served['model_served']} on the "
+            f"{served['route']} route at {served['recorded_at']} by "
+            "acceptance/make_demo_docs.py and replayed by stk demo-seed; the model "
+            "did not run at seed time"
+        )
     s.s.add(run)
     await s.s.flush()
     run.seq = await s.s.scalar(
@@ -135,6 +172,32 @@ async def page_text(s, key: str) -> None:
     s.texts[f"{key}_p1"] = blobs.read(
         await s.s.get(Blob, sha), Config.BLOB_DIR
     ).decode()
+
+
+async def ocr(s, key: str, rec: dict) -> None:
+    """OCR of the scan `key` through the worker's own ocr tool, answered by the
+    recording in `rec`: the derived text blob, its derived_from row and its indexing,
+    as a live run writes them. The run intake queued, if any, becomes this run.
+    Registers the text as `<key>_ocr`."""
+    acq = await _acq(s, key)
+    if s.blobs[key] != rec["image_sha256"]:
+        raise ValueError(f"{key}: the OCR recording is of other bytes; rerecord it")
+    run = await s.s.scalar(
+        select(Run).where(
+            Run.tool == "ocr",
+            Run.inputs["blobs"][0].astext == s.blobs[key],
+            Run.status == "queued",
+        )
+    ) or Run(principal_id=(await system_agent(s.s, "extractor")).id, tool="ocr")
+    # No extract_* inputs: the claims are the demo's, not a model's.
+    run.inputs = {"blobs": [s.blobs[key]], "acquisition": str(acq.id)}
+    c = await _start(s, run, acq, "OCR", Recorded, served=rec, recorded=rec)
+    ref = await worker.ocr(c)
+    if run.prompt_hash != rec["prompt_hash"]:
+        raise ValueError(f"{key}: the OCR prompt changed since it was recorded")
+    await write.seal_run(s.s, run, ref)
+    s.blobs[f"{key}_ocr"] = hashlib.sha256(rec["text"].encode()).hexdigest()
+    s.texts[f"{key}_ocr"] = rec["text"]
 
 
 async def transcript(s, key: str, sentences: list[dict], duration_ms: int) -> None:

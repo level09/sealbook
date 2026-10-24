@@ -48,12 +48,12 @@ export const ImageViewer = {
       if (z === 1) this.reset();
     },
     reset() {this.z = 1; this.x = 0; this.y = 0;},
-    // Zoom so the region fills about 60% of the stage, centred, then pulse its box.
+    // Zoom so the region fills about a third of the stage, centred, at most 3x so the page around it stays readable.
     zoomTo(bbox) {
       const W = this.nat[0], st = this.$refs.stage, inner = this.$refs.inner;
       if (!W) return;
       const s = inner.offsetWidth / W, [x0, y0, x1, y1] = bbox;
-      const z = Math.min(6, Math.max(1, Math.min(st.clientWidth * 0.6 / ((x1 - x0) * s), st.clientHeight * 0.6 / ((y1 - y0) * s))));
+      const z = Math.min(3, Math.max(1, Math.min(st.clientWidth * 0.35 / ((x1 - x0) * s), st.clientHeight * 0.35 / ((y1 - y0) * s))));
       this.z = z;
       this.x = st.clientWidth / 2 - inner.offsetLeft - z * (x0 + x1) / 2 * s;
       this.y = st.clientHeight / 2 - inner.offsetTop - z * (y0 + y1) / 2 * s;
@@ -83,7 +83,7 @@ export const ImageViewer = {
       <v-tooltip text="Full screen (f)"><template #activator="{props}"><v-btn v-bind="props" icon="ti ti-maximize" size="small" variant="text" aria-label="Full screen" @click="full"></v-btn></template></v-tooltip>
     </div>
     <div ref="stage" class="mv-stage" :class="{zoomed: z > 1, dragging: drag}" @wheel="wheel" @pointerdown="down" @pointermove="move" @pointerup="drag = null" @pointercancel="drag = null" @dblclick="z > 1 ? reset() : zoom(2)">
-      <div ref="inner" class="mv-inner" :style="{transform: 'translate(' + x + 'px,' + y + 'px) scale(' + z + ')'}">
+      <div ref="inner" class="mv-inner" :style="{transform: 'translate(' + x + 'px,' + y + 'px) scale(' + z + ')', '--z': z}">
         <img :src="src" :alt="alt" draggable="false" @load="e => nat = [e.target.naturalWidth, e.target.naturalHeight]" @error="$emit('error')">
         <button v-for="b in placed" :key="b.id" class="mv-box" :class="['tier-' + b.tier, b.agent ? 'by-agent' : 'by-person', {on: sel === b.id}]" :style="b.style" :aria-label="b.label" @click.stop="$emit('select', b.id)"><span :style="{'--lane': b.lane}">{{ b.short }}<em v-if="b.label !== b.short">{{ b.label.slice(String(b.short).length) }}</em></span></button>
       </div>

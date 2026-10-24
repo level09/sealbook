@@ -16,5 +16,11 @@
     "page": "^/guide ",
     "match": "Ed25519",
     "reason": "Ed25519 is the name of the signature scheme the Guide explains, not an id."
+  },
+  {
+    "rule": "repeated-row",
+    "page": "^/evidence/image/jpeg",
+    "match": "^Detained at:? الفرع 999",
+    "reason": "The dormitory roster's header puts each of its three people at Branch 999: three claims, one under each person, on the same header span."
   }
 ]

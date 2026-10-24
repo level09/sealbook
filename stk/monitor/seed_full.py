@@ -1,8 +1,7 @@
 """`stk demo-seed --full`: a second case, case-demo-02, that fills every analyst view.
 The real fixture files in acceptance/ go through the intake path; the people who
-appear in them, and in the text stand-ins below, are invented. Places are real
-public geography. Run `stk enrich` and `stk worker` afterwards for search, media
-matches and vectors."""
+appear in them are invented. Places are real public geography. Run `stk enrich`
+and `stk worker` afterwards for search, media matches and vectors."""
 
 from __future__ import annotations
 
@@ -61,42 +60,9 @@ R1, R2, K1, K2, K2E, L1, L2, Z1, RM, B1, F1, S1, W1 = (
     )
 )
 
-LIST = """كشف بأسماء الموقوفين
-الفرع 999 - قسم حلب
-التاريخ: 2014-02-12
-
-1. الاسم: محمد أحمد الخطيب | اسم الأم: ليلى | المواليد: 1979 | مكان التوقيف: حمص | تاريخ التوقيف: 2014-01-28
-2. الاسم: محمد أحمد الخطيب | اسم الأم: هدى | المواليد: 1994 | مكان التوقيف: حلب | تاريخ التوقيف: 2014-02-03
-3. الاسم: لينا عمر النجار | اسم الأب: عمر | المواليد: 1988 | مكان التوقيف: حي الجديدة | تاريخ التوقيف: 2014-02-11
-4. الاسم: عمر حسن الزين | اسم الأب: حسن | المواليد: 1990 | مكان التوقيف: دوما | تاريخ التوقيف: 2014-02-09
-"""
-NOTE = """Documentation note 14/2014 (synthetic)
-Lina Omar Al-Najjar, born 1988, a pharmacist from Aleppo, was arrested at a checkpoint in the Jdeideh quarter on 11 February 2014.
-Her family reports that she was held at Branch 999.
-Mohammed Ahmad Al-Khatib, born 1994, was detained in Aleppo in early February 2014.
-"""
 APPEAL = """<h1>نداء: لينا عمر النجار</h1>
 <p>آخر مرة شوهدت لينا في حي الجديدة بحلب يوم 2014-02-11 قرب الحاجز.</p>
 <p>من يعرف عنها أي شيء يرجى التواصل مع أخيها.</p>
-"""
-# Brought in by the owner as one intake batch: a cell roster and a published
-# statement that put four people at Branch 999 in July 2013.
-ROSTER = """قائمة نزلاء المهجع 4
-الفرع 999
-الشهر: تموز 2013
-
-1. يوسف خالد العلي
-2. باسل نادر
-3. فادي كرم
-"""
-RELEASE = """Statement of a released detainee (synthetic), published 4 October 2013
-Salim Haddad says he was held at Branch 999 throughout July 2013, in dormitory 4.
-He names three cellmates: Yousef Khaled Al-Ali, Bassel Nader and Fadi Karam.
-He was released on 2 August 2013.
-"""
-TESTIMONY = """[00:00] الشاهدة: اسمي ريم.
-[00:05] كنت موقوفة بالفرع 999 بشهر آذار 2014، ولينا النجار كانت معنا بالمهجع.
-[00:19] بعدين نقلوها، سمعنا إنو على سجن ك المركزي.
 """
 
 # key: (file, mime, origin, doc_type, sensitivity, extra context)
@@ -305,17 +271,20 @@ TITLES = {
     "roster": "Dormitory 4 roster, July 2013",
     "release": "Statement of a released detainee, October 2013",
 }
-TEXTS = {
+# The appeal is a captured page; the others are paper documents from
+# acceptance/make_demo_docs.py: two scans read by recorded OCR, three PDFs read by
+# the PDF reader.
+PAPERS = {
     "list": (
-        LIST,
-        "text/plain",
+        "demo/detainee_list.jpg",
+        "image/jpeg",
         "channel:partner-b/batch-3",
         "detention_register",
         "ordinary",
     ),
     "note": (
-        NOTE,
-        "text/plain",
+        "demo/documentation_note.pdf",
+        "application/pdf",
         "url:http://127.0.0.1/synthetic/documentation-note-14",
         "report",
         "ordinary",
@@ -328,13 +297,37 @@ TEXTS = {
         "ordinary",
     ),
     "testimony": (
-        TESTIMONY,
-        "text/plain",
+        "demo/testimony_reem.pdf",
+        "application/pdf",
         "device:recorder-05",
         "witness_statement",
         "sensitive",
     ),
 }
+
+PDFS = {
+    "note": "documentation_note.pdf",
+    "testimony": "testimony_reem.pdf",
+    "release": "released_detainee_statement.pdf",
+}
+SCANS = {"list": "detainee_list.jpg", "roster": "dormitory_roster.jpg"}
+
+
+def pinned(s: Seeder, paper: dict, key: str, fact: str) -> tuple[str, dict]:
+    """Where a claim on a paper document points: the PDF's page text, the scan's
+    OCR text where OCR wrote the value exactly, else the value's box on the scan."""
+    if key in SCANS:
+        f = next(f for f in paper[SCANS[key]]["facts"] if f["key"] == fact)
+        if f["ocr"]:
+            return f"{key}_ocr", f["ocr"]
+        return key, {"page": f["page"], "bbox": f["bbox"]}
+    f = next(f for f in paper[PDFS[key]]["facts"] if f["key"] == fact)
+    doc, at = f"{key}_p1", f["span"]
+    if s.texts[doc][at["start"] : at["end"]] != f["extracted_as"]:
+        raise click.ClickException(
+            f"{PDFS[key]} reads differently; rerun make_demo_docs"
+        )
+    return doc, at
 
 
 def ar(text):
@@ -511,18 +504,19 @@ async def seed_full(session, app) -> dict:
             FILES["jdeideh_2017"][5]
             | {"excerpt_of": "jdeideh_2017.webm, 20 s to 32 s"},
         )
-        for key, (text, mime, origin, doc_type, sens) in TEXTS.items():
+        for key, (src, mime, origin, doc_type, sens) in PAPERS.items():
             collector = field if origin.startswith("device:") else importer
-            await intake(
-                s, key, text.encode(), mime, origin, collector, doc_type, sens, {}
-            )
+            data = src.encode() if key == "appeal" else (ROOT / src).read_bytes()
+            await intake(s, key, data, mime, origin, collector, doc_type, sens, {})
         mine = await principal_for_user(session, owner.id, owner.name or owner.email)
+        # Brought in by the owner as one intake batch: a cell roster and a published
+        # statement that put four people at Branch 999 in July 2013.
         batch = {"batch": str(uuid.uuid4())}
         await intake(
             s,
             "roster",
-            ROSTER.encode(),
-            "text/plain",
+            (ROOT / "demo/dormitory_roster.jpg").read_bytes(),
+            "image/jpeg",
             "channel:partner-b/batch-4",
             mine,
             "detention_register",
@@ -532,8 +526,8 @@ async def seed_full(session, app) -> dict:
         await intake(
             s,
             "release",
-            RELEASE.encode(),
-            "text/plain",
+            (ROOT / "demo/released_detainee_statement.pdf").read_bytes(),
+            "application/pdf",
             "url:http://127.0.0.1/synthetic/released-detainee-statement",
             mine,
             "report",
@@ -542,10 +536,16 @@ async def seed_full(session, app) -> dict:
         )
         await session.commit()
 
-        # Claims below point into text read from the PDF and the recording, so
-        # read them first: the PDF by its real reader, the clip from its script.
+        # Claims below point into text read from the PDFs, the scans and the
+        # recording, so read them first: PDFs by their real reader, scans by OCR
+        # recorded once from the real model, the clip from its script.
         truth = json.loads((ROOT / "data/expected.json").read_text())
-        await flows.page_text(s, "transfer")
+        paper = json.loads((ROOT / "demo/expected.json").read_text())
+        recorded = json.loads((ROOT / "demo/ocr.json").read_text())
+        for key in ("transfer", *PDFS):
+            await flows.page_text(s, key)
+        for key, name in SCANS.items():
+            await flows.ocr(s, key, recorded[Path(name).stem])
         clip = truth["witness_clip.ogg"]
         await flows.transcript(s, "witness", clip["sentences"], clip["duration_ms"])
         await session.commit()
@@ -560,6 +560,10 @@ async def seed_full(session, app) -> dict:
         }
         say = s.say
         names = []
+
+        async def on(run, key, fact, subject, prop, value, **kw):
+            doc, at = pinned(s, paper, key, fact)
+            return await say(run, doc, subject, prop, value, at=at, **kw)
 
         # The real register scan: located by pixel boxes from expected.json.
         run = await s.run(extractor, "extract", ["register"], **llm)
@@ -609,68 +613,62 @@ async def seed_full(session, app) -> dict:
         run = await s.run(extractor, "extract", ["list"], **llm)
         rows = {}
         for who, row, name, born, place, when, parent in (
-            (K1, "1.", "محمد أحمد الخطيب", "1979", "حمص", "2014-01-28", "ليلى"),
-            (K2, "2.", "محمد أحمد الخطيب", "1994", "حلب", "2014-02-03", "هدى"),
-            (L1, "3.", "لينا عمر النجار", "1988", "حي الجديدة", "2014-02-11", "عمر"),
-            (Z1, "4.", "عمر حسن الزين", "1990", "دوما", "2014-02-09", "حسن"),
+            (K1, "K1", "محمد أحمد الخطيب", "1979", "حمص", "2014-01-28", "ليلى"),
+            (K2, "K2", "محمد أحمد الخطيب", "1994", "حلب", "2014-02-03", "هدى"),
+            (L1, "L1", "لينا عمر النجار", "1988", "حي الجديدة", "2014-02-11", "عمر"),
+            (Z1, "Z1", "عمر حسن الزين", "1990", "دوما", "2014-02-09", "حسن"),
         ):
             # The extractor misread the father's part of row 4's name.
             value = "عمر حسين الزين" if who == Z1 else name
-            got = {"name": await say(run, "list", who, Prop.NAME, ar(value), name, row)}
+            got = {
+                "name": await on(run, "list", f"{row}-name", who, Prop.NAME, ar(value))
+            }
             names.append(got["name"].id)
-            got["born"] = await say(
-                run, "list", who, Prop.BIRTH_DATE, ar(born), born, row
+            got["born"] = await on(
+                run, "list", f"{row}-birth_date", who, Prop.BIRTH_DATE, ar(born)
             )
-            got["arrested"] = await say(
+            got["arrested"] = await on(
                 run,
                 "list",
+                f"{row}-arrested_at",
                 who,
                 Prop.ARRESTED_AT,
                 ar(place),
-                place,
-                f"{row} الاسم",
                 valid=[when],
                 evidence=[E.PRINTED_TEXT],
             )
             prop = Prop.FATHER_NAME if who in (L1, Z1) else Prop.MOTHER_NAME
-            label = "اسم الأب: " if prop == Prop.FATHER_NAME else "اسم الأم: "
-            await say(
+            await on(run, "list", f"{row}-{prop}", who, prop, ar(parent))
+            await on(
                 run,
                 "list",
-                who,
-                prop,
-                ar(parent),
-                parent,
-                f"{row} الاسم: {name} | {label}",
-            )
-            await say(
-                run,
-                "list",
+                "branch",
                 who,
                 Prop.DETENTION_BRANCH,
                 ar("الفرع 999"),
-                "الفرع 999",
                 evidence=[E.LETTERHEAD],
             )
             rows[who] = got
-        await say(
+        await on(
             run,
             "list",
+            "date",
             f"blob:{s.blobs['list']}",
             Prop.DOCUMENT_DATE,
             {"date": "2014-02-12"},
-            "2014-02-12",
             valid=["2014-02-12"],
         )
         await s.done(run, 21)
 
         run = await s.run(extractor, "extract", ["note"], **llm)
-        for who, name, born in (
-            (L2, "Lina Omar Al-Najjar", "1988"),
-            (K2E, "Mohammed Ahmad Al-Khatib", "1994"),
+        for who, key, name, born in (
+            (L2, "L2", "Lina Omar Al-Najjar", "1988"),
+            (K2E, "K2E", "Mohammed Ahmad Al-Khatib", "1994"),
         ):
-            names.append((await say(run, "note", who, Prop.NAME, en(name), name)).id)
-            await say(run, "note", who, Prop.BIRTH_DATE, ar(born), born, name)
+            names.append(
+                (await on(run, "note", f"{key}-name", who, Prop.NAME, en(name))).id
+            )
+            await on(run, "note", f"{key}-birth_date", who, Prop.BIRTH_DATE, ar(born))
         await s.done(run, 4)
 
         run = await s.run(extractor, "extract", ["appeal"], **llm)
@@ -700,34 +698,34 @@ async def seed_full(session, app) -> dict:
         await s.done(run, 3)
 
         run = await s.run(extractor, "extract", ["testimony"], **llm)
-        lina_held = await say(
+        lina_held = await on(
             run,
             "testimony",
+            "branch",
             L1,
             Prop.SEEN_AT,
             ar("الفرع 999"),
-            "الفرع 999",
             valid=["2014-03-01", "2014-03-31"],
             evidence=[E.SPOKEN],
         )
-        await say(
+        await on(
             run,
             "testimony",
+            "L1-transferred_to",
             L1,
             Prop.TRANSFERRED_TO,
             ar("سجن ك المركزي"),
-            "سجن ك المركزي",
             evidence=[E.SPOKEN],
         )
         # The witness herself, held in the same month.
-        reem = await say(run, "testimony", RM, Prop.NAME, ar("ريم"), "ريم")
-        reem_held = await say(
+        reem = await on(run, "testimony", "RM-name", RM, Prop.NAME, ar("ريم"))
+        reem_held = await on(
             run,
             "testimony",
+            "branch",
             RM,
             Prop.DETAINED_AT,
             ar("الفرع 999"),
-            "الفرع 999",
             valid=["2014-03-01", "2014-03-31"],
             evidence=[E.SPOKEN],
         )
@@ -829,15 +827,19 @@ async def seed_full(session, app) -> dict:
 
         run = await s.run(extractor, "extract", ["roster"], **llm)
         roster = {}
-        for who, name in ((R1, "يوسف خالد العلي"), (B1, "باسل نادر"), (F1, "فادي كرم")):
-            await say(run, "roster", who, Prop.NAME, ar(name), name)
-            roster[who] = await say(
+        for who, key, name in (
+            (R1, "R1", "يوسف خالد العلي"),
+            (B1, "B1", "باسل نادر"),
+            (F1, "F1", "فادي كرم"),
+        ):
+            await on(run, "roster", f"{key}-name", who, Prop.NAME, ar(name))
+            roster[who] = await on(
                 run,
                 "roster",
+                "branch",
                 who,
                 Prop.DETAINED_AT,
                 ar("الفرع 999"),
-                "الفرع 999",
                 valid=july,
                 evidence=[E.PRINTED_TEXT],
             )
@@ -845,31 +847,32 @@ async def seed_full(session, app) -> dict:
 
         run = await s.run(extractor, "extract", ["release"], **llm)
         public = {}
-        for who, name in (
-            (S1, "Salim Haddad"),
-            (R1, "Yousef Khaled Al-Ali"),
-            (B1, "Bassel Nader"),
-            (F1, "Fadi Karam"),
+        for who, key, name in (
+            (S1, "S1", "Salim Haddad"),
+            (R1, "R1", "Yousef Khaled Al-Ali"),
+            (B1, "B1", "Bassel Nader"),
+            (F1, "F1", "Fadi Karam"),
         ):
-            public[who] = await say(run, "release", who, Prop.NAME, en(name), name)
-        salim_held = await say(
+            public[who] = await on(
+                run, "release", f"{key}-name", who, Prop.NAME, en(name)
+            )
+        salim_held = await on(
             run,
             "release",
+            "S1-detained_at",
             S1,
             Prop.DETAINED_AT,
             en("Branch 999"),
-            "Branch 999",
             valid=july,
             evidence=[E.PRINTED_TEXT],
         )
-        await say(
+        await on(
             run,
             "release",
+            "S1-event",
             S1,
             Prop.EVENT,
             {"text": "released", "lang": "en", "kind": "released"},
-            "released",
-            "He was ",
             valid=["2013-08-02"],
             evidence=[E.PRINTED_TEXT],
         )

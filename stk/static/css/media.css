@@ -28,8 +28,8 @@ body.dark-mode .mv { --mv-agent: var(--agent, #ab9ef7); --mv-ink: var(--ink, #e7
 .mv-box:hover, .mv-box:focus-visible, .mv-box.on { z-index: 2; }
 .mv-box span em { display: none; font-style: normal; }
 .mv-box:hover span em, .mv-box:focus-visible span em, .mv-box.on span em { display: inline; }
-.mv-box.on { outline: 3px solid var(--c); outline-offset: 2px; }
-.mv-box span { position: absolute; bottom: calc(100% + var(--lane, 0) * 14px); inset-inline-start: -1.5px; font-size: 10.5px; line-height: 1; padding: 2px 4px; background: var(--c); color: var(--mv-panel); white-space: nowrap; border-radius: 2px 2px 0 0; }
+.mv-box.on { outline: calc(3px / var(--z, 1)) solid var(--c); outline-offset: calc(2px / var(--z, 1)); }
+.mv-box span { position: absolute; bottom: calc(100% + var(--lane, 0) * 14px); inset-inline-start: -1.5px; font-size: 10.5px; line-height: 1; padding: 2px 4px; background: var(--c); color: var(--mv-panel); white-space: nowrap; border-radius: 2px 2px 0 0; transform: scale(calc(1 / var(--z, 1))); transform-origin: 0 100%; }
 
 /* time media */
 .mv video { display: block; width: 100%; max-height: 50vh; background: #000; }

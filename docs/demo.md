@@ -36,6 +36,30 @@ say `sealbook-demo-fixed-output` as the served model and carry a `demo` note in
 their inputs. Every other run is the real tool. Human decisions are signed by a demo
 passkey held by `senior-analyst`, the same signature path a browser passkey uses.
 
+Five of the case's documents are paper, made by `acceptance/make_demo_docs.py`
+(files and ground truth in `acceptance/demo/`), every name fictional and each page
+marked synthetic:
+
+- Branch 999 detainee list, 12 February 2014: a scanned typed form (letterhead,
+  reference number, a bordered table of four rows, two signatures, an office stamp).
+- Dormitory 4 roster, July 2013: a scanned printed form with three names filled in
+  by hand.
+- Documentation note 14/2014 and Statement of a released detainee, October 2013:
+  text-layer PDFs from two fictional documentation groups.
+- Testimony of Reem, Branch 999: a typed Arabic transcript as a text-layer PDF. It
+  is sensitive, so no cloud model sees it; the PDF reader reads it locally.
+
+The PDFs are read by the real PDF reader at seed time and their claims sit on that
+page text. The two scans were read once by the app's own OCR prompt on
+`google/gemini-3.1-flash-lite` over OpenRouter (both are ordinary sources, which the
+cloud route may read) and the answer is kept in `acceptance/demo/ocr.json`. The
+seed replays it through the real `ocr` tool: the run names that model, carries a
+`demo` note saying when it was recorded and that no model ran at seed time, and
+writes the text as a derived blob like a live run. A claim on a scan points at the
+OCR text where OCR wrote the value exactly, otherwise at the value's box on the
+scan. OCR wrote the list header's date as 12-02-2014, so the list's document date
+is the one claim boxed on a scan; every other value on both scans was read exactly.
+
 ## The Guide
 
 `/guide` (Guide in the rail) walks through each flow below as a task, with Open it
@@ -98,8 +122,10 @@ a heading line) shows where the header was found and a column preview to confirm
 Search the web proposes queries from case-demo-02's ordinary names; nothing is sent
 until you pick one. With no model set up for a sensitive item, its row says it is
 waiting for a model and why. Then open `/sources`
-for what is already in the case: photos, scans, the transfer order PDF, three
-recordings, two video clips, web posts, text documents and the two intake sheets.
+for what is already in the case: photos, three scans (the register page, the
+detainee list, the dormitory roster), four PDFs (the transfer order, the
+documentation note, the released detainee's statement, Reem's testimony), three
+recordings, two video clips, web posts and the two intake sheets.
 Filter by assignee to see the workload strip: the owner, analyst-2 and analyst-3
 each have open items, one of analyst-3's is done, one of analyst-2's is overdue.
 The open findings column counts findings whose members come from that source.
@@ -122,6 +148,14 @@ came from:
   scan. The twins Yousef (mother فاطمة) and Yousef (mother سعاد) are two rows.
 - `transfer_order.pdf`: claims sit on the text layer of page 1 (the detainee line,
   the holding branch, the destination and the date).
+- Branch 999 detainee list: the scanned form, with the document date boxed in the
+  header; the Read tab shows the text OCR read from it, the other 20 claims sit on
+  that text. Rows 1 and 2 are the two men named محمد أحمد الخطيب.
+- Dormitory 4 roster: the scanned form with the three handwritten names; its six
+  claims sit on the OCR text in the Read tab.
+- Documentation note, released detainee's statement and Reem's testimony: the PDF,
+  with a claim's words found and marked in the page. Reem's is sensitive; show it
+  first.
 - `witness_clip.ogg`: the transcript runs alongside the waveform. Select "Seen at"
   and the player jumps to 00:10, where the witness says he saw Yousef at Branch 999
   in July 2013.

@@ -1,0 +1,487 @@
+{
+  "about": "Ground truth placed by acceptance/make_demo_docs.py. All content is synthetic.",
+  "detainee_list.jpg": {
+    "size": [
+      1240,
+      1754
+    ],
+    "rotation_deg_ccw": 1.218,
+    "facts": [
+      {
+        "key": "branch",
+        "value": "الفرع 999",
+        "page": 1,
+        "bbox": [
+          1010,
+          72,
+          1141,
+          136
+        ],
+        "ocr": {
+          "start": 0,
+          "end": 9
+        }
+      },
+      {
+        "key": "date",
+        "value": "2014-02-12",
+        "page": 1,
+        "bbox": [
+          68,
+          138,
+          203,
+          186
+        ],
+        "ocr": null
+      },
+      {
+        "key": "K1-name",
+        "value": "محمد أحمد الخطيب",
+        "page": 1,
+        "bbox": [
+          877,
+          510,
+          1065,
+          557
+        ],
+        "ocr": {
+          "start": 289,
+          "end": 305
+        }
+      },
+      {
+        "key": "K1-birth_date",
+        "value": "1979",
+        "page": 1,
+        "bbox": [
+          501,
+          521,
+          565,
+          565
+        ],
+        "ocr": {
+          "start": 322,
+          "end": 326
+        }
+      },
+      {
+        "key": "K1-arrested_at",
+        "value": "حمص",
+        "page": 1,
+        "bbox": [
+          348,
+          524,
+          416,
+          568
+        ],
+        "ocr": {
+          "start": 329,
+          "end": 332
+        }
+      },
+      {
+        "key": "K1-mother_name",
+        "value": "ليلى",
+        "page": 1,
+        "bbox": [
+          625,
+          518,
+          674,
+          562
+        ],
+        "ocr": {
+          "start": 315,
+          "end": 319
+        }
+      },
+      {
+        "key": "K2-name",
+        "value": "محمد أحمد الخطيب",
+        "page": 1,
+        "bbox": [
+          878,
+          580,
+          1066,
+          627
+        ],
+        "ocr": {
+          "start": 354,
+          "end": 370
+        }
+      },
+      {
+        "key": "K2-birth_date",
+        "value": "1994",
+        "page": 1,
+        "bbox": [
+          502,
+          591,
+          566,
+          635
+        ],
+        "ocr": {
+          "start": 386,
+          "end": 390
+        }
+      },
+      {
+        "key": "K2-arrested_at",
+        "value": "حلب",
+        "page": 1,
+        "bbox": [
+          358,
+          594,
+          409,
+          638
+        ],
+        "ocr": {
+          "start": 393,
+          "end": 396
+        }
+      },
+      {
+        "key": "K2-mother_name",
+        "value": "هدى",
+        "page": 1,
+        "bbox": [
+          625,
+          588,
+          678,
+          633
+        ],
+        "ocr": {
+          "start": 380,
+          "end": 383
+        }
+      },
+      {
+        "key": "L1-name",
+        "value": "لينا عمر النجار",
+        "page": 1,
+        "bbox": [
+          902,
+          651,
+          1046,
+          697
+        ],
+        "ocr": {
+          "start": 418,
+          "end": 433
+        }
+      },
+      {
+        "key": "L1-birth_date",
+        "value": "1988",
+        "page": 1,
+        "bbox": [
+          504,
+          661,
+          568,
+          705
+        ],
+        "ocr": {
+          "start": 446,
+          "end": 450
+        }
+      },
+      {
+        "key": "L1-arrested_at",
+        "value": "حي الجديدة",
+        "page": 1,
+        "bbox": [
+          325,
+          663,
+          444,
+          709
+        ],
+        "ocr": {
+          "start": 453,
+          "end": 463
+        }
+      },
+      {
+        "key": "L1-father_name",
+        "value": "عمر",
+        "page": 1,
+        "bbox": [
+          757,
+          656,
+          803,
+          700
+        ],
+        "ocr": {
+          "start": 423,
+          "end": 426
+        }
+      },
+      {
+        "key": "Z1-name",
+        "value": "عمر حسن الزين",
+        "page": 1,
+        "bbox": [
+          898,
+          720,
+          1052,
+          767
+        ],
+        "ocr": {
+          "start": 485,
+          "end": 498
+        }
+      },
+      {
+        "key": "Z1-birth_date",
+        "value": "1990",
+        "page": 1,
+        "bbox": [
+          505,
+          731,
+          569,
+          775
+        ],
+        "ocr": {
+          "start": 511,
+          "end": 515
+        }
+      },
+      {
+        "key": "Z1-arrested_at",
+        "value": "دوما",
+        "page": 1,
+        "bbox": [
+          361,
+          734,
+          411,
+          778
+        ],
+        "ocr": {
+          "start": 518,
+          "end": 522
+        }
+      },
+      {
+        "key": "Z1-father_name",
+        "value": "حسن",
+        "page": 1,
+        "bbox": [
+          751,
+          726,
+          812,
+          770
+        ],
+        "ocr": {
+          "start": 489,
+          "end": 492
+        }
+      }
+    ],
+    "ocr_missed": [
+      "date"
+    ]
+  },
+  "dormitory_roster.jpg": {
+    "size": [
+      1240,
+      1754
+    ],
+    "rotation_deg_ccw": 1.18,
+    "facts": [
+      {
+        "key": "branch",
+        "value": "الفرع 999",
+        "page": 1,
+        "bbox": [
+          991,
+          90,
+          1121,
+          143
+        ],
+        "ocr": {
+          "start": 0,
+          "end": 9
+        }
+      },
+      {
+        "key": "R1-name",
+        "value": "يوسف خالد العلي",
+        "page": 1,
+        "bbox": [
+          591,
+          484,
+          879,
+          584
+        ],
+        "ocr": {
+          "start": 132,
+          "end": 147
+        }
+      },
+      {
+        "key": "B1-name",
+        "value": "باسل نادر",
+        "page": 1,
+        "bbox": [
+          641,
+          583,
+          824,
+          677
+        ],
+        "ocr": {
+          "start": 158,
+          "end": 167
+        }
+      },
+      {
+        "key": "F1-name",
+        "value": "فادي كرم",
+        "page": 1,
+        "bbox": [
+          643,
+          672,
+          823,
+          763
+        ],
+        "ocr": {
+          "start": 178,
+          "end": 186
+        }
+      }
+    ],
+    "ocr_missed": []
+  },
+  "documentation_note.pdf": {
+    "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as stk.discovery.indexing.pdf_pages",
+    "text_len": 647,
+    "facts": [
+      {
+        "key": "L2-name",
+        "value": "Lina Omar Al-Najjar",
+        "extracted_as": "Lina Omar Al-Najjar",
+        "span": {
+          "start": 192,
+          "end": 211
+        }
+      },
+      {
+        "key": "L2-birth_date",
+        "value": "1988",
+        "extracted_as": "1988",
+        "span": {
+          "start": 218,
+          "end": 222
+        }
+      },
+      {
+        "key": "K2E-name",
+        "value": "Mohammed Ahmad Al-Khatib",
+        "extracted_as": "Mohammed Ahmad Al-Khatib",
+        "span": {
+          "start": 375,
+          "end": 399
+        }
+      },
+      {
+        "key": "K2E-birth_date",
+        "value": "1994",
+        "extracted_as": "1994",
+        "span": {
+          "start": 406,
+          "end": 410
+        }
+      }
+    ]
+  },
+  "released_detainee_statement.pdf": {
+    "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as stk.discovery.indexing.pdf_pages",
+    "text_len": 833,
+    "facts": [
+      {
+        "key": "S1-name",
+        "value": "Salim Haddad",
+        "extracted_as": "Salim Haddad",
+        "span": {
+          "start": 230,
+          "end": 242
+        }
+      },
+      {
+        "key": "S1-detained_at",
+        "value": "Branch 999",
+        "extracted_as": "Branch 999",
+        "span": {
+          "start": 264,
+          "end": 274
+        }
+      },
+      {
+        "key": "R1-name",
+        "value": "Yousef Khaled Al-Ali",
+        "extracted_as": "Yousef Khaled Al-Ali",
+        "span": {
+          "start": 388,
+          "end": 408
+        }
+      },
+      {
+        "key": "B1-name",
+        "value": "Bassel Nader",
+        "extracted_as": "Bassel Nader",
+        "span": {
+          "start": 410,
+          "end": 422
+        }
+      },
+      {
+        "key": "F1-name",
+        "value": "Fadi Karam",
+        "extracted_as": "Fadi Karam",
+        "span": {
+          "start": 427,
+          "end": 437
+        }
+      },
+      {
+        "key": "S1-event",
+        "value": "released",
+        "extracted_as": "released",
+        "span": {
+          "start": 546,
+          "end": 554
+        }
+      }
+    ]
+  },
+  "testimony_reem.pdf": {
+    "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as stk.discovery.indexing.pdf_pages",
+    "text_len": 382,
+    "facts": [
+      {
+        "key": "branch",
+        "value": "الفرع 999",
+        "extracted_as": "999 الفرع",
+        "span": {
+          "start": 215,
+          "end": 224
+        }
+      },
+      {
+        "key": "L1-transferred_to",
+        "value": "سجن ك المركزي",
+        "extracted_as": "سجن ك المركزي",
+        "span": {
+          "start": 262,
+          "end": 275
+        }
+      },
+      {
+        "key": "RM-name",
+        "value": "ريم",
+        "extracted_as": "ريم",
+        "span": {
+          "start": 127,
+          "end": 130
+        }
+      }
+    ]
+  }
+}

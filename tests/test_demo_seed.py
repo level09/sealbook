@@ -26,6 +26,7 @@ from stk.people import data as people
 from stk.places.models import Place
 from stk.review import findings
 from stk.runs.worker import work_once
+from stk.search.find import find
 from stk.settings import Config
 from stk.sheets.models import DatasetVersion
 from stk.sources import scale
@@ -181,6 +182,12 @@ class DemoSeedTest(unittest.IsolatedAsyncioTestCase):
             )
         )
         self.assertEqual(len(await transcript_timeline(s, witness)), 5)
+        # A name read only from a PDF's page text shows under the PDF's sensitivity.
+        people_found = (await find(s, "Mohammed Ahmad Al-Khatib", case))["groups"]
+        self.assertIn(
+            "Mohammed Ahmad Al-Khatib",
+            [p["title"] for p in people_found["people"]["items"]],
+        )
         provenance = await s.scalar(
             select(func.count()).where(Run.model_served == "sealbook-demo-fixed-output")
         )

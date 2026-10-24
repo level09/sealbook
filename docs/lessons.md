@@ -762,3 +762,29 @@ covers in the text it was read from (`span_blob`).
 - Dropping columns on the remote invite database was refused by the agent's
   permission check even with the owner's go; the owner ran it. Plan remote schema
   changes as a command for the owner.
+
+## Paper documents for the demo case (2026-10-24)
+
+- Five demo sources were plain text whose claims were character spans, so the case
+  never showed what a scan or a PDF looks like and OCR was never in its path. They are
+  now rendered documents (`acceptance/make_demo_docs.py`): scans read by a real OCR
+  answer recorded once and replayed through the worker's own `ocr` tool (provenance
+  names the model and says it was recorded), PDFs read by the real PDF reader.
+- pypdf writes a digit run inside an Arabic line out of order: "كنت موقوفة بالفرع 999
+  بشهر آذار" came out as "...آذار999 كنت موقوفة بالفرع", so "الفرع 999" was nowhere
+  in the page text. Only a line that starts with the Arabic word keeps the digits
+  next to it ("999 الفرع"). The generator finds every claimed value in pypdf's text
+  and fails when one is missing, so a layout change cannot silently orphan a claim.
+- A name that wraps in a PDF wraps in its text layer ("Al-\nAli"), and the claim
+  quote no longer matches. Names sit in `white-space: nowrap` spans.
+- Text read from a file (PDF page text, OCR text, a transcript) has no acquisition,
+  and `Context.doc` treated a blob without one as sensitive. While most names also
+  came from plain text sources nobody saw it; once the note and the statement were
+  PDFs, their people showed as "Unnamed person" on People, Desk and search, and the
+  monitor titled the page text by its hash. `Context.load` now maps derived text to
+  the file it was read from (`filter.source`), so it takes that file's title and
+  sensitivity. `test_demo_seed` checks a name read only from a PDF shows in search.
+- An ISO date in an RTL page renders day first ("12-02-2014") unless it is isolated
+  (`<bdi>` with `direction: ltr`). OCR still wrote the header date day first, so that
+  one claim falls back to its box on the scan. Match OCR values on their own line
+  (row, letterhead, label), never the first hit anywhere: the stamp repeats the date.
