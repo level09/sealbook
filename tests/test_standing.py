@@ -94,12 +94,16 @@ class StandingRulesTest(unittest.TestCase):
             {
                 "question": "Branch 999",
                 "claims": [
-                    {"h": "c1", "value": "Branch 999"},
-                    {"h": "c2", "value": "Elsewhere"},
+                    {"h": "c1", "field": "detained at", "value": "Branch 999"},
+                    {"h": "c2", "field": "detained at", "value": "Elsewhere"},
                 ],
             }
         )
         self.assertEqual([m["claims"] for m in out["matches"]], [["c1"]])
+        self.assertEqual(
+            out["matches"][0]["why"],
+            "Demo match: the value and the question both name 999.",
+        )
 
 
 class StandingPassTest(unittest.IsolatedAsyncioTestCase):

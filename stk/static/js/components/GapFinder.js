@@ -9,6 +9,20 @@ export const GapFinder = {
   computed: {
     caseReady() { return this.investigation && this.investigation !== 'all'; },
     items() { return (this.report?.items || []).filter(i => !this.person || i.person === 'person:' + this.person); },
+    // Consecutive locked suggestions fold into one line per sensitive source.
+    rows() {
+      const rows = [];
+      for (const item of this.items) {
+        const last = rows[rows.length - 1];
+        if (!item.locked.length) { rows.push(item); continue; }
+        const block = last?.folded ? last : (rows.push({folded: []}), rows[rows.length - 1]);
+        for (const s of item.locked) {
+          const seen = block.folded.find(x => x.href === s.href);
+          if (seen) seen.count++; else block.folded.push({...s, count: 1});
+        }
+      }
+      return rows;
+    },
     busy() { return this.starting || this.report?.pending; },
     empty() { return this.person && this.report?.items.length ? 'No new gaps were reported for this person.' : this.report?.outcome.reason; },
   },
@@ -56,13 +70,14 @@ export const GapFinder = {
     <p v-if="busy" aria-live="polite">Reading the case for gaps.</p>
     <p v-if="report?.failed" role="alert">Gap finder could not finish. Try again.</p>
     <p v-if="report && !items.length && !busy">{{ empty }}</p>
-    <article v-for="(item, index) in items" :key="index" class="mt-4">
-      <template v-if="item.locked.length"><p><i class="ti ti-lock" aria-hidden="true"></i> Reveal the cited sensitive sources to read this suggestion.</p>
-        <div v-for="source in item.locked" :key="source.href"><a :href="source.href">{{ source.title }}</a></div>
-      </template>
+    <article v-for="(item, index) in rows" :key="index" class="mt-4">
+      <template v-if="item.folded"><p v-for="source in item.folded" :key="source.href"><i class="ti ti-lock" aria-hidden="true"></i> {{ source.count === 1 ? 'One suggestion rests' : source.count + ' suggestions rest' }} on <a :href="source.href" dir="auto">{{ source.title }}</a>. Reveal it to read {{ source.count === 1 ? 'it' : 'them' }}.</p></template>
       <template v-else>
         <h3 style="font-size: 14px"><a v-if="!person" :href="'/people/' + item.person.slice(7)">{{ item.name || 'Unnamed person' }}</a><span v-if="!person">: </span>{{ item.window_text }}</h3>
+        <p v-if="item.maybe" class="text-medium-emphasis">May be the same person as <a :href="'/people/' + item.maybe.person.slice(7)" dir="auto">{{ item.maybe.name || 'an unnamed person' }}</a> {{ item.maybe.where }}. A proposal links the two records and awaits review.</p>
         <div v-for="(claim, i) in item.claims" :key="i" class="mt-1"><span dir="auto">{{ claim.text }}</span><span v-if="claim.when">, {{ claim.when }}</span>. <a :href="claim.source.href" dir="auto">{{ claim.source.title }}</a></div>
+        <template v-if="item.leads.length"><p class="mt-2 text-medium-emphasis">Other people were recorded at the same place in this window.</p>
+          <div v-for="(claim, i) in item.leads" :key="'l' + i" class="mt-1"><span dir="auto">{{ claim.text }}</span><span v-if="claim.when">, {{ claim.when }}</span>. <a :href="claim.source.href" dir="auto">{{ claim.source.title }}</a></div></template>
         <p class="mt-2" dir="auto">{{ item.where }}</p>
         <div v-for="query in item.searches" :key="query" class="mt-1"><bdi dir="auto">{{ query }}</bdi> <a href="#research" @click.prevent="search(item, query)">Search in research</a></div>
         <p v-if="item.colleagues.length" class="mt-2">Related work by {{ item.colleagues.join(', ') }}.</p>

@@ -12,14 +12,13 @@ from stk.agents.read import Handles, claim_view
 from stk.discovery.evidence import granted
 from stk.ledger.models import Blob, Run, Statement
 from stk.ledger.queue import LEASE
-from stk.monitor import filter as mfilter
-from stk.monitor.data import Context
+from stk.people import data as people
 from stk.settings import Config
 
 TOOL = "standing"
 PER_CALL = 12
 BUDGET_SECONDS = LEASE.total_seconds() - max(90, Config.ROUTE_LOCAL_TIMEOUT + 15)
-VERSION = "standing-1"
+VERSION = "standing-2"
 SCREEN = (
     "Screen these claims for a standing question. Prefer false positives. Return "
     "every claim handle that might help answer it, including context. This is only "
@@ -27,7 +26,11 @@ SCREEN = (
 )
 JUDGE = (
     "Read these claims against the standing question. Propose only matches the "
-    "claims support, including the question's dates and conditions. Each match "
+    "claims support. A match meets every condition in the question: place, "
+    "time and person or role. A date in the same year does not meet 'after' "
+    "that year, a record at another place does not match, and leaving a place "
+    "is not being held there. When unsure, leave it out; the screen already "
+    "kept everything that might help. Each match "
     "must cite at least one supplied claim handle in claims. Write why as one "
     "short plain sentence using only cited values. Do not put handles in why. "
     "A match is a proposal for human review, never an accepted fact."
@@ -92,14 +95,25 @@ def validate(answer, claims, h, case_claims, seen):
 
 
 def fixed_answer(payload):
-    words = set(re.findall(r"\w+", payload["question"].casefold()))
-    return {
-        "matches": [
-            {"claims": [c["h"]], "why": f"The source gives {c['value']}."}
-            for c in payload["claims"]
-            if words.intersection(re.findall(r"\w+", c["value"].casefold()))
-        ]
-    }
+    """A demo stand-in: a claim matches when its value contains a name or number
+    from the question, and why says only that."""
+    first, *rest = re.findall(r"\w+", payload["question"])
+    keys = {w.casefold(): w for w in rest if w[0].isupper() or any(map(str.isdigit, w))}
+    if any(map(str.isdigit, first)):
+        keys[first.casefold()] = first
+    matches = []
+    for c in payload["claims"]:
+        value = set(re.findall(r"\w+", c["value"].casefold()))
+        shared = [keys[k] for k in sorted(keys) if k in value]
+        if shared:
+            matches.append(
+                {
+                    "claims": [c["h"]],
+                    "why": "Demo match: the value and the question both name "
+                    f"{' and '.join(shared)}.",
+                }
+            )
+    return {"matches": matches}
 
 
 async def runs(db, task_id):
@@ -270,56 +284,60 @@ async def show(db, user, task_id):
     if run is None:
         return result
     out = read.read_output(await db.get(Blob, run.output_hash))
-    lines = [{"claims": m["claims"]} for m in out["matches"]]
-    gone = await brief.invisible(db, {"matches": lines})
-    cited = {i for line in lines for i in line["claims"]} - gone
-    rows = (
-        list(
-            await db.execute(
-                select(Statement.id, mfilter.source(mfilter.statement_blob())).where(
-                    Statement.id.in_([uuid.UUID(i) for i in cited])
-                )
-            )
-        )
-        if cited
-        else []
-    )
-    shas = {str(i): sha for i, sha in rows}
-    ctx = await Context.load(db, blobs=set(shas.values()))
-    shown = set()
+    gone = await brief.invisible(db, {"matches": out["matches"]})
+    case = await read.case(db, task.investigation)
+    by_id = {str(c.id): c for c in case.claims}
+    groups, locked, shown = {}, {}, set()
     for match in out["matches"]:
-        if set(match["claims"]) & gone:
+        if set(match["claims"]) & gone or not set(match["claims"]) <= by_id.keys():
             continue
-        behind = {shas[i] for i in match["claims"]}
+        claims = [by_id[i] for i in match["claims"]]
         hidden = sorted(
-            sha for sha in behind if ctx.doc(sha)["sensitive"] and not granted(sha)
+            {c.source for c in claims if c.sensitive and not granted(c.source)}
         )
         if hidden:
-            result["matches"].append(
-                {
-                    "why": None,
-                    "claims": [],
-                    "locked": True,
-                    "href": f"/evidence/{hidden[0]}",
-                }
-            )
-        else:
-            shown.update(match["claims"])
-            result["matches"].append(
-                {
-                    "why": match["why"],
-                    "locked": False,
-                    "claims": [
-                        {
-                            "title": ctx.doc(shas[i])["title"],
-                            "href": f"/evidence/{shas[i]}?statement={i}",
-                        }
-                        for i in match["claims"]
-                    ],
-                }
-            )
+            # One line per sensitive source, never under a person: the person a
+            # masked match is about is part of what it would reveal.
+            locked[hidden[0]] = locked.get(hidden[0], 0) + 1
+            continue
+        shown.update(match["claims"])
+        who = claims[0].person
+        groups.setdefault(who, []).append(
+            {
+                "why": match["why"],
+                "claims": [
+                    {
+                        "field": read.label(c.prop),
+                        "value": c.text,
+                        "when": read.when(c.lo, c.hi),
+                        "title": case.docs[c.source]["title"],
+                        "href": f"/evidence/{c.source}?statement={c.id}",
+                    }
+                    for c in claims
+                ],
+            }
+        )
+    named = await people.names(db, [people.pid(p) for p in groups if p], case.groups)
+    result["matches"] = [
+        {
+            "locked": False,
+            "person": p and p.removeprefix("person:"),
+            "name": p and named.get(people.pid(p)),
+            "matches": found,
+        }
+        for p, found in groups.items()
+    ] + [
+        {
+            "locked": True,
+            "count": n,
+            "title": case.docs[sha]["title"],
+            "href": f"/evidence/{sha}",
+        }
+        for sha, n in locked.items()
+    ]
     if shown:
         await brief.log_view(db, user, run, sorted(shown))
     result["outcome"] = out["outcome"]
     result["deferred"] = out["deferred"]
+    result["fixed"] = run.model_requested == read.FIXED
     return result
