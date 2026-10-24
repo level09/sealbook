@@ -10,5 +10,11 @@
     "page": "^/monitor ",
     "match": "^([0-9a-f]{32}|[0-9a-f]{64})$",
     "reason": "The monitor lists a document's Sha256 and Md5 statements; the full digest is that statement's value."
+  },
+  {
+    "rule": "hex-id",
+    "page": "^/guide ",
+    "match": "Ed25519",
+    "reason": "Ed25519 is the name of the signature scheme the Guide explains, not an id."
   }
 ]

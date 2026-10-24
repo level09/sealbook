@@ -1,0 +1,328 @@
+{% extends "layout.html" %}
+{% block css %}<link rel="stylesheet" href="{{ asset('css/entity.css') }}">
+<style>
+.gd-page { max-width: 1240px; }
+.gd-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.gd-head h1 { font-size: 20px; font-weight: 650; letter-spacing: -.02em; margin: 0; }
+.gd-head p { margin: 0; color: var(--ink-3); max-width: 70ch; }
+.gd-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.gd-bar .v-text-field { max-width: 340px; min-width: 220px; }
+.gd-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--ink-2); font: inherit; cursor: pointer; }
+.gd-chip[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); background: var(--wash); font-weight: 600; }
+.gd-grid { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 20px; align-items: start; }
+.gd-toc { position: sticky; top: 64px; max-height: calc(100vh - 110px); overflow: auto; font-size: 12.5px; }
+.gd-toc h3 { font-size: 11.5px; font-weight: 650; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; margin: 12px 0 4px; }
+.gd-toc a { display: block; padding: 3px 0; color: var(--ink-2); text-decoration: none; }
+.gd-toc a:hover { color: var(--ink); text-decoration: underline; }
+.gd-main { display: grid; gap: 14px; min-width: 0; }
+.gd-s { scroll-margin-top: 60px; }
+.gd-s > header h2 { font-size: 15px; }
+.gd-s > header .gd-hash { color: var(--ink-3); text-decoration: none; margin-inline-start: auto; }
+.gd-who { color: var(--ink-2); margin: 0 0 8px; }
+.gd-steps { margin: 0 0 10px; padding-inline-start: 20px; display: grid; gap: 4px; line-height: 1.5; }
+.gd-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.gd-split > div { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.gd-split h4 { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 650; margin: 0 0 4px; }
+.gd-split ul { margin: 0; padding-inline-start: 18px; line-height: 1.5; }
+.gd-ai { background: var(--agent-wash); border-color: var(--agent-solid) !important; }
+.gd-ai h4 { color: var(--agent); }
+.gd-end { margin: 0 0 6px; }
+.gd-needs { display: flex; gap: 6px; color: var(--ink-3); font-size: 12.5px; margin: 0 0 8px; }
+.gd-open { display: flex; flex-wrap: wrap; gap: 8px; }
+.gd-trust { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.gd-trust > div { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.gd-trust h3 { font-size: 13px; font-weight: 650; margin: 0 0 4px; }
+.gd-trust p { margin: 0; color: var(--ink-2); line-height: 1.5; }
+.gd-n { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--wash); font-size: 11px; font-weight: 650; margin-inline-end: 6px; }
+.gd-check { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.gd-ctl { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.gd-ctl .v-selection-control-group .v-label { font-size: 12.5px; }
+.gd-steplist { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.gd-step { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 4px 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+.gd-step:first-child { border-top: 0; padding-top: 0; }
+.gd-step > .ti { font-size: 18px; margin-top: 1px; }
+.gd-step h3 { font-size: 13px; font-weight: 650; margin: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.gd-step p { margin: 2px 0 4px; color: var(--ink-2); }
+.gd-kv { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 2px 10px; font-size: 12px; margin: 0; }
+.gd-kv dt { color: var(--ink-3); }
+.gd-kv dd { margin: 0; font-family: var(--mono); overflow-wrap: anywhere; word-break: break-all; }
+.gd-kv dd.plain { font-family: inherit; word-break: normal; }
+.gd-kv mark { background: var(--negative-wash); color: var(--negative); outline: 1px solid var(--negative-line); border-radius: 2px; }
+.gd-tree { max-width: 100%; height: auto; display: block; }
+.gd-tree rect { fill: var(--panel); stroke: var(--line-strong); }
+.gd-tree rect.me { stroke: var(--ink); stroke-width: 1.5; }
+.gd-tree rect.ok { stroke: var(--accepted-line); fill: var(--accepted-wash); }
+.gd-tree rect.bad { stroke: var(--negative-line); fill: var(--negative-wash); }
+.gd-tree line { stroke: var(--line-strong); }
+.gd-tree text { fill: var(--ink-2); font-size: 10px; font-family: inherit; }
+.gd-legend { font-size: 12px; color: var(--ink-3); margin: 6px 0 0; }
+.gd-empty { color: var(--ink-3); }
+@media (max-width: 959px) {
+  .gd-grid { grid-template-columns: 1fr; }
+  .gd-toc { display: none; }
+  .gd-split, .gd-check { grid-template-columns: 1fr; }
+  .gd-kv { grid-template-columns: 1fr; }
+  .gd-kv dt { margin-top: 4px; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="gd-page py-4">
+  <div class="gd-head">
+    <h1>Guide</h1>
+    <p v-if="g.demo">Each task as it happens in the demo case. Open it switches the case to ${ g.case } and takes you to the real screen.</p>
+    <p v-else>Each task as it happens in the demo case, which is not on this server. Open it takes you to the real screen in your current case.</p>
+  </div>
+  <div class="gd-bar" role="search">
+    <v-text-field v-model="q" density="compact" hide-details clearable prepend-inner-icon="ti ti-filter" placeholder="Filter tasks, such as sheet or passkey" aria-label="Filter tasks"></v-text-field>
+    <button type="button" class="gd-chip" :aria-pressed="!area" @click="area = null">All</button>
+    <button v-for="a in g.areas" :key="a.id" type="button" class="gd-chip" :aria-pressed="area === a.id" @click="area = area === a.id ? null : a.id"><i :class="a.icon" aria-hidden="true"></i>${ a.title }</button>
+  </div>
+  <div class="gd-grid">
+    <nav class="gd-toc" aria-label="Tasks">
+      <template v-for="a in g.areas" :key="a.id">
+        <template v-if="shownIn(a.id).length || (a.id === 'trust' && trustShown)">
+          <h3>${ a.title }</h3>
+          <a v-for="s in shownIn(a.id)" :key="s.id" :href="'#' + s.id">${ s.title }</a>
+          <a v-if="a.id === 'trust' && trustShown" href="#why-the-record-holds">Why the record holds</a>
+        </template>
+      </template>
+    </nav>
+    <div class="gd-main">
+      <p v-if="!shown.length && !trustShown" class="gd-empty">No task matches. Clear the filter to see them all.</p>
+      <section v-for="s in shown" :key="s.id" :id="s.id" class="en-panel gd-s" :aria-labelledby="'h-' + s.id">
+        <header>
+          <h2 :id="'h-' + s.id">${ s.title }</h2>
+          <span class="r-chip is-source">${ areaTitle(s.area) }</span>
+          <a class="gd-hash" :href="'#' + s.id" :aria-label="'Link to ' + s.title"><i class="ti ti-link" aria-hidden="true"></i></a>
+        </header>
+        <div class="en-body">
+          <p class="gd-who">${ s.who }</p>
+          <ol class="gd-steps"><li v-for="(t, i) in s.steps" :key="i" dir="auto">${ t }</li></ol>
+          <div class="gd-split">
+            <div class="gd-ai"><h4><i class="ti ti-sparkles" aria-hidden="true"></i> AI proposes</h4><ul><li v-for="(t, i) in s.ai" :key="i">${ t }</li></ul></div>
+            <div><h4><i class="ti ti-signature" aria-hidden="true"></i> You decide</h4><ul><li v-for="(t, i) in s.you" :key="i">${ t }</li></ul></div>
+          </div>
+          <p class="gd-end"><strong>You end up with</strong> ${ s.result }</p>
+          <p v-if="s.needs" class="gd-needs"><i class="ti ti-plug" aria-hidden="true"></i><span>${ s.needs }</span></p>
+          <div class="gd-open">
+            <v-btn v-for="l in s.links" :key="l.href" :href="l.href" size="small" variant="outlined" prepend-icon="ti ti-arrow-up-right" @click="open(l.href, $event)">${ l.label }</v-btn>
+          </div>
+        </div>
+      </section>
+
+      <section v-if="trustShown" id="why-the-record-holds" class="en-panel gd-s" aria-labelledby="h-trust">
+        <header><h2 id="h-trust">Why the record holds</h2><span class="r-chip is-source">Trust</span>
+          <a class="gd-hash" href="#why-the-record-holds" aria-label="Link to Why the record holds"><i class="ti ti-link" aria-hidden="true"></i></a></header>
+        <div class="en-body">
+          <p class="gd-who">Nothing in Sealbook asks you to trust the server. Each step below can be recomputed by anyone who holds the record.</p>
+          <div class="gd-trust mb-4">
+            <div v-for="(t, i) in g.trust" :key="t.title"><h3><span class="gd-n">${ i + 1 }</span>${ t.title }</h3><p>${ t.body }</p></div>
+          </div>
+
+          <h3 class="text-body-1 font-weight-bold mb-1" id="check-one-claim">Check one claim yourself</h3>
+          <p v-if="proofError" class="gd-empty">${ proofError }</p>
+          <p v-else-if="!proof" class="gd-empty">Loading a claim from ${ g.case }.</p>
+          <p v-else-if="!proof.claim" class="gd-empty">${ g.case } has no accepted, signed claim yet. Accept one in Review and come back.</p>
+          <template v-else>
+            <p class="gd-who">A real accepted claim: <strong>${ propLabel(proof.claim.prop) }</strong> from <a :href="proof.claim.href">${ proof.claim.title }</a><span v-if="proof.claim.sensitive">, a sensitive source</span>. Your browser recomputes every hash below with WebCrypto. The value stays sealed: you see its commitment, never the value. Opening this check is logged like any read.</p>
+            <div class="gd-check">
+              <ol class="gd-steplist">
+                <li v-for="c in checks" :key="c.key" class="gd-step">
+                  <i :class="['ti', STATE[c.state].icon, STATE[c.state].cls, 'r-ink']" aria-hidden="true"></i>
+                  <div>
+                    <h3>${ c.title } <span class="r-chip" :class="STATE[c.state].cls">${ STATE[c.state].word }</span></h3>
+                    <p>${ c.text }</p>
+                    <dl v-if="c.kv.length" class="gd-kv"><template v-for="kv in c.kv" :key="kv[0]"><dt>${ kv[0] }</dt><dd :class="{plain: kv[2] === 'plain'}"><template v-if="kv[2] === 'mark'">${ kv[1].slice(0, POS) }<mark>${ kv[1][POS] }</mark>${ kv[1].slice(POS + 1) }</template><template v-else>${ kv[1] }</template></dd></template></dl>
+                  </div>
+                </li>
+              </ol>
+              <div class="d-grid ga-3">
+                <div class="gd-ctl">
+                  <strong>Change one character</strong>
+                  <span class="text-caption">Flip character ${ POS + 1 } of the commitment, as if someone edited the value, then choose how much else they rewrite to hide it.</span>
+                  <v-switch v-model="tamper" color="negative" density="compact" hide-details :label="tamper ? 'One character changed' : 'Record as stored'"></v-switch>
+                  <v-radio-group v-model="level" density="compact" hide-details :disabled="!tamper" aria-label="How much is rewritten">
+                    <v-radio v-for="(t, i) in LEVELS" :key="i" :value="i" :label="t"></v-radio>
+                  </v-radio-group>
+                </div>
+                <figure class="ma-0">
+                  <svg class="gd-tree" width="300" :height="tree.h" v-bind="{viewBox: '0 0 300 ' + tree.h}" role="img" :aria-label="'Merkle path from entry ' + proof.entry.seq + ' up to the batch root, ' + proof.batch.path.length + ' steps'">
+                    <template v-for="(n, i) in tree.nodes" :key="i">
+                      <line v-if="n.up" :x1="n.x + 50" :y1="n.y" :x2="n.up[0]" :y2="n.up[1]"></line>
+                    </template>
+                    <template v-for="(n, i) in tree.nodes" :key="'r' + i">
+                      <rect :x="n.x" :y="n.y" width="100" height="20" rx="3" :class="n.cls"><title>${ n.hash }</title></rect>
+                      <text :x="n.x + 50" :y="n.y + 14" text-anchor="middle">${ n.label }</text>
+                    </template>
+                  </svg>
+                  <figcaption class="gd-legend">Entry ${ proof.entry.seq } rises to the root through ${ proof.batch.path.length } sibling hashes, one per level. Hover a box for its hash.</figcaption>
+                </figure>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+    </div>
+  </div>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="application/json" id="guide-data">{{ guide|tojson|safe }}</script>
+<script>
+const enc = new TextEncoder();
+const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+const unhex = h => Uint8Array.from(h.match(/../g), x => parseInt(x, 16));
+const sha = async bytes => new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+const join = (...parts) => { const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let i = 0; for (const p of parts) { out.set(p, i); i += p.length; } return out; };
+// The same bytes as stk.ledger.chain.canon: sorted keys, no spaces, UTF-8.
+const canon = v => Array.isArray(v) ? '[' + v.map(canon).join(',') + ']'
+  : v && typeof v === 'object' ? '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}'
+  : JSON.stringify(v);
+const shaHex = async s => hex(await sha(enc.encode(s)));
+// RFC 6962, as stk.ledger.merkle: leaf 0x00, node 0x01, split at the largest power of two below size.
+const split = n => { let k = 1; while (k * 2 < n) k *= 2; return k; };
+async function climb(leafHex, index, size, path) {
+  const steps = path.map(unhex), trail = [];
+  async function up(i, n) {
+    if (n === 1) return sha(join(Uint8Array.of(0), unhex(leafHex)));
+    const k = split(n);
+    const left = i < k;
+    const child = left ? await up(i, k) : await up(i - k, n - k);
+    const sib = steps.shift();
+    const node = await sha(join(Uint8Array.of(1), left ? child : sib, left ? sib : child));
+    trail.push({side: left ? 'right' : 'left', child: hex(child), sib: hex(sib), node: hex(node)});
+    return node;
+  }
+  const root = hex(await up(index, size));
+  return {root, trail};
+}
+async function ed25519(pubHex, sigHex, message) {
+  try {
+    const key = await crypto.subtle.importKey('raw', unhex(pubHex), {name: 'Ed25519'}, false, ['verify']);
+    return await crypto.subtle.verify({name: 'Ed25519'}, key, unhex(sigHex), enc.encode(message));
+  } catch { return null; }
+}
+const flip = (h, i) => h.slice(0, i) + (h[i] === '0' ? '1' : '0') + h.slice(i + 1);
+
+const app = Vue.createApp({
+  mixins: [layoutMixin], delimiters: config.delimiters,
+  data() {
+    const g = JSON.parse(document.getElementById('guide-data').textContent);
+    return {
+      g, q: '', area: null, proof: null, proofError: '', tamper: false, level: 0, checks: [], tree: {nodes: [], h: 40}, POS: 9,
+      LEVELS: ['Edit the row only', 'Also rewrite its row hash', 'Also rewrite its chain entry', 'Also rewrite every later entry'],
+      STATE: {
+        holds: {word: 'Holds', icon: 'ti-circle-check', cls: 'tier-accepted'},
+        breaks: {word: 'Breaks here', icon: 'ti-circle-x', cls: 'state-negative'},
+        rewritten: {word: 'Rewritten to match', icon: 'ti-pencil', cls: 'state-conflict'},
+        open: {word: 'Not anchored yet', icon: 'ti-clock', cls: 'state-due'},
+        server: {word: 'Checked by the server', icon: 'ti-server', cls: 'tier-unconfirmed'},
+      },
+    };
+  },
+  computed: {
+    shown() {
+      const q = (this.q || '').trim().toLowerCase();
+      const order = this.g.areas.map(a => a.id);
+      return this.g.scenarios.filter(s => (!this.area || s.area === this.area)
+        && (!q || [s.title, s.who, s.result, s.needs || '', ...s.steps, ...s.ai, ...s.you].join(' ').toLowerCase().includes(q)))
+        .sort((a, b) => order.indexOf(a.area) - order.indexOf(b.area));
+    },
+    trustShown() {
+      const q = (this.q || '').trim().toLowerCase();
+      return (!this.area || this.area === 'trust') && (!q || ['why the record holds', 'hash chain merkle anchor signature verify', ...this.g.trust.map(t => t.title + ' ' + t.body)].join(' ').toLowerCase().includes(q));
+    },
+  },
+  watch: {tamper: 'verify', level: 'verify'},
+  methods: {
+    shownIn(id) { return this.shown.filter(s => s.area === id); },
+    areaTitle(id) { return this.g.areas.find(a => a.id === id).title; },
+    propLabel(p) { const t = p.replace(/_/g, ' '); return t[0].toUpperCase() + t.slice(1); },
+    open(href, e) {
+      if (!this.g.demo || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      this.switchCase(this.g.case);
+      location.href = href;
+    },
+    async load() {
+      try { this.proof = (await axios.get('/api/guide/proof', {params: {investigation: this.g.case}})).data; }
+      catch (err) { this.proofError = err.response?.status === 403 ? 'Only analysts can open this check.' : 'The check could not load. Reload the page to try again.'; return; }
+      if (this.proof.claim) await this.verify();
+    },
+    // What a forger stored, then every check against it: the first that fails is where it breaks.
+    async verify() {
+      const p = this.proof, lvl = this.tamper ? this.level : -1;
+      const row = {...p.row, commitment: this.tamper ? flip(p.row.commitment, this.POS) : p.row.commitment};
+      const rowHash = await shaHex(canon(row));
+      const storedRow = lvl >= 1 ? rowHash : p.row_hash;
+      const linked = await shaHex(canon([p.entry.prev_hash, p.entry.seq, p.kind, storedRow]));
+      const storedEntry = lvl >= 2 ? linked : p.entry.hash;
+      const nextPrev = !p.next ? null : lvl >= 3 ? storedEntry : p.next.prev_hash;
+      const sig = await ed25519(p.run_signature.pubkey, p.run_signature.sig, storedRow);
+      const {root, trail} = await climb(storedEntry, p.batch.index, p.batch.size, p.batch.path);
+      const rootOk = root === p.batch.root;
+      const forged = (lvl2) => lvl >= lvl2 ? 'rewritten' : null;
+      const mark = this.tamper ? 'mark' : null;
+      this.checks = [
+        {key: 'row', title: 'The row and its hash', state: rowHash === storedRow ? (forged(1) || 'holds') : 'breaks',
+         text: rowHash === storedRow ? 'The fields of the row, written in fixed order, hash to the stored row hash.' : 'The row no longer hashes to the row hash stored for it.',
+         kv: [['Commitment hash', row.commitment, mark], ['Recomputed row hash', rowHash], ['Stored row hash', storedRow]]},
+        {key: 'sig', title: 'The run signature', state: sig === null ? 'server' : sig ? 'holds' : 'breaks',
+         text: sig === null ? `This browser cannot check Ed25519 signatures. The server's check: ${p.run_signature.verifies ? 'it holds' : 'it fails'}.`
+           : sig ? 'The key made for the run that read this claim signed exactly this row hash. That key no longer exists, so nobody can sign a new one.'
+           : 'The run signed the original row hash. Its key is gone, so a rewritten row hash cannot be signed again.',
+         kv: [['Signed row hash', storedRow]]},
+        {key: 'link', title: 'The chain entry', state: linked === storedEntry ? (forged(2) || 'holds') : 'breaks',
+         text: linked === storedEntry ? `Entry ${p.entry.seq} hashes the previous entry, its number, its kind and the row hash.` : `Entry ${p.entry.seq} no longer matches the row hash it should seal.`,
+         kv: [['Previous entry hash', p.entry.prev_hash], ['Recomputed entry hash', linked], ['Stored entry hash', storedEntry]]},
+        ...(p.next ? [{key: 'next', title: 'The next entry', state: nextPrev === storedEntry ? (forged(3) || 'holds') : 'breaks',
+         text: nextPrev === storedEntry ? `Entry ${p.next.seq} names this entry as the one before it.` : `Entry ${p.next.seq} still names the original entry hash.`,
+         kv: [["Next entry's previous hash", nextPrev]]}] : []),
+        {key: 'root', title: p.batch.closed ? 'The batch root' : 'The batch the next anchor closes', state: rootOk ? 'holds' : 'breaks',
+         text: rootOk ? `Climbing ${p.batch.path.length} sibling hashes from entry ${p.entry.seq} gives the root of entries ${p.batch.first_seq} to ${p.batch.last_seq}.`
+           : 'Climbing from the changed entry gives a different root.',
+         kv: [['Batch root hash', p.batch.root], ...(rootOk ? [] : [['Recomputed root hash', root]])]},
+        p.batch.closed
+          ? {key: 'anchor', title: 'Receipts held outside', state: !p.batch.anchors.length ? 'open' : rootOk ? 'holds' : 'breaks',
+             text: !p.batch.anchors.length ? 'This batch is closed but has no receipt yet. The next anchor run sends it.'
+               : rootOk ? 'Each receipt was made for this root when it was anchored.' : 'Every receipt holds the old root. No rewrite inside the server can change them.',
+             kv: p.batch.anchors.map(a => [ANCHOR[a.kind], RECEIPT[a.state], 'plain'])}
+          : {key: 'anchor', title: 'Receipts held outside', state: 'open',
+             text: 'Not anchored yet. stk anchor closes this range into a batch and sends its root out. Until then, a rewrite of the whole chain is caught only by copies held elsewhere.', kv: []},
+        ...(p.review ? [{key: 'review', title: 'The acceptance', state: 'server',
+          text: `${p.review.by} accepted it with ${p.review.demo ? 'the demo passkey' : p.review.passkey ? 'a passkey' : 'no passkey'}. ${p.review.verifies ? 'The server checked the passkey signature: it holds.' : 'The server could not verify that signature.'} An offline package carries it for anyone to check.`, kv: []}] : []),
+      ];
+      this.drawTree(storedEntry, trail, rootOk);
+    },
+    // Our node climbs the middle column; each sibling sits on the side the path says.
+    drawTree(leaf, trail, rootOk) {
+      const W = 100, gap = 30, cx = 100, h = (trail.length + 1) * gap + 30;
+      const state = this.tamper && !rootOk ? 'bad' : 'ok';
+      let y = h - 26;
+      let cur = {x: cx, y, label: `Entry ${this.proof.entry.seq}`, hash: leaf, cls: 'me ' + state};
+      const nodes = [cur];
+      trail.forEach((t, i) => {
+        const top = i === trail.length - 1;
+        const parent = {x: cx, y: y - gap, label: top ? 'Batch root' : `Level ${i + 1}`, hash: t.node, cls: top ? 'me ' + state : 'me'};
+        const sib = {x: t.side === 'right' ? cx + W : cx - W, y, label: `Sibling ${i + 1}`, hash: t.sib, cls: ''};
+        cur.up = sib.up = [parent.x + W / 2, parent.y + 20];
+        nodes.push(sib, parent);
+        cur = parent;
+        y -= gap;
+      });
+      this.tree = {nodes, h};
+    },
+  },
+  mounted() {
+    this.load();
+    // Vue renders the sections after load, so the browser's own jump to #id missed them.
+    if (location.hash) this.$nextTick(() => document.getElementById(location.hash.slice(1))?.scrollIntoView());
+  },
+});
+const ANCHOR = {ots: 'OpenTimestamps', tsa: 'Time-stamp authority', partner: 'Partner copy'};
+const RECEIPT = {held: 'Receipt held', pending: 'Receipt held, waiting for Bitcoin', failed: 'Not sent yet, retried next run'};
+registerStkComponents(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

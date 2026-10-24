@@ -19,6 +19,7 @@ from stk.desk.views import bp as bp_desk
 from stk.discovery.views import bp as bp_discovery
 from stk.entities.views import bp_entities
 from stk.extensions import session
+from stk.guide.views import bp_guide
 from stk.ingest.views import bp_ingest
 from stk.maps.views import bp_maps
 from stk.mcp.views import bp_mcp
@@ -175,6 +176,7 @@ def register_blueprints(app):
     app.register_blueprint(bp_research)
     app.register_blueprint(bp_agents)
     app.register_blueprint(bp_cases)
+    app.register_blueprint(bp_guide)
     if agent_login_enabled(app):
         app.register_blueprint(bp_agent_login)
     return None

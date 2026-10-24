@@ -61,7 +61,7 @@ dropdb sealbook_sense_check   # after stopping that server
 
 It logs in as `admin@example.com`, opens every analyst page of `case-demo-02` at
 desktop and phone width (Desk, Inbox, Discover, Review, Sources, Add evidence, People and five
-person pages, Places and three place pages, incidents, Stories, Watching, Packages,
+person pages, Places and three place pages, incidents, Stories, Watching, Packages, Guide,
 the monitor, one evidence page per source type with its Read, Copies and Relations
 tabs and sensitive items shown, and Arabic, English and hash searches), and runs
 text rules over what is visible: raw hex ids and uuids, snake_case tokens, storage
