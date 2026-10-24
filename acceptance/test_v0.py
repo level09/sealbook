@@ -1052,13 +1052,12 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(view["members"]), 3)
         self.assertNotIn(twin, view["members"])
         steps = {s["date"]: s for s in view["track"]["steps"]}
-        self.assertTrue(steps["2013-05-02"]["fork"])
+        # Last seen in Douma, arrested in Harasta: one plausible day, no fork.
+        self.assertFalse(steps["2013-05-02"]["fork"])
         self.assertEqual(sorted(steps["2013-05-02"]["places"]), ["حرستا", "دوما"])
         self.assertIn("سجن ك المركزي", steps["2013-09-17"]["places"])
         self.assertEqual(view["track"]["gap_after"], "2013-09-17")
-        self.assertIn(
-            ("position", "position"), {(f["kind"], f["prop"]) for f in view["forks"]}
-        )
+        self.assertNotIn("position", {f["kind"] for f in view["forks"]})
         self.assertTrue(any(g["to"] == "2013-09-17" for g in view["gaps"]))
         [dup] = view["duplicates"]
         self.assertEqual(dup["person"], twin)

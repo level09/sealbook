@@ -203,11 +203,12 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
 
             steps = view["track"]["steps"]
             self.assertGreaterEqual(len(steps), 4)
-            # Each disagreement once: Harasta and Douma on one day as places, and
-            # P3's unmapped Homs sighting against P1's branch as one seen_at pair.
+            # Each disagreement once: P3's unmapped Homs sighting against P1's
+            # branch as one seen_at pair. Last seen in Douma and arrested in
+            # Harasta on one day is a sequence, not a disagreement.
             pairs = [frozenset(x["id"] for x in f["sides"]) for f in view["forks"]]
             self.assertEqual(len(pairs), len(set(pairs)))
-            self.assertIn("position", {f["kind"] for f in view["forks"]})
+            self.assertNotIn("position", {f["kind"] for f in view["forks"]})
             [homs] = [f for f in view["forks"] if f["from"] == "2013-07-10"]
             self.assertEqual(homs["prop"], "seen_at")
             self.assertIn("حمص", {x["value"] for x in homs["sides"]})

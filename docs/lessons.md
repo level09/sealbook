@@ -451,3 +451,12 @@ covers in the text it was read from (`span_blob`).
   them. The server returned raw statement pairs and the page drew one button each.
   Return what the reader decides on (the candidate, and each of its matching names
   once, as the reader may see it) and draw one line per candidate.
+
+## Reading every screen as an analyst (2026-10-24)
+
+- `track()` flagged two same-day positions at different place ids as a fork, so
+  "arrested at Harasta" and "last seen at Douma" (3.8 km) read "sources disagree".
+  Positions now disagree only past the larger of the two place precisions (the rule
+  `findings.near` uses for shared presence) and never for a last-seen and arrest
+  pair. A last-seen and arrest pair far apart is still not flagged; that is a
+  deliberate limit.

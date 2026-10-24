@@ -3,10 +3,12 @@ panel, the side panel pages and the live stream."""
 
 from __future__ import annotations
 
+import math
 import re
 import uuid
 from calendar import monthrange
 from datetime import date
+from itertools import combinations
 
 from sqlalchemy import Text, cast, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -399,13 +401,44 @@ async def investigations(db: AsyncSession) -> list[str]:
 # --- tracks -------------------------------------------------------------------
 
 
+# Last seen somewhere, then arrested, is one plausible day, not two places at once.
+SEQUENCE = frozenset({Prop.LAST_SEEN, Prop.ARRESTED_AT})
+
+
+def _apart(a: dict, b: dict) -> bool:
+    """Two same-day positions that cannot both hold: different places, not a
+    last-seen and arrest pair, and farther apart than the larger of their
+    precisions (the rule discovery's `near()` uses for shared presence)."""
+    if (a["place_id"] or normalise(a["place"])) == (
+        b["place_id"] or normalise(b["place"])
+    ):
+        return False
+    if {a["prop"], b["prop"]} == SEQUENCE:
+        return False
+    reach = max(a.get("precision_m") or 0, b.get("precision_m") or 0)
+    if a.get("precision_m") and b.get("precision_m") and a.get("lonlat"):
+        return _metres(a["lonlat"], b["lonlat"]) > reach
+    return True
+
+
+def _metres(a, b) -> float:
+    """Great-circle distance between two [lon, lat] points."""
+    (lon1, lat1), (lon2, lat2) = (map(math.radians, p) for p in (a, b))
+    h = (
+        math.sin((lat2 - lat1) / 2) ** 2
+        + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2
+    )
+    return 2 * 6_371_008.8 * math.asin(math.sqrt(h))
+
+
 def track(points: list[dict]) -> dict:
     """One subject's located statements as a sequence of dated steps. Pure.
 
     `points` carry "id", "place", "place_id", "from" (ISO date), "prop" and
     "inherited". Points on one date form a step; a step whose position props name
-    different places is a fork. Places compare by resolved id, so two spellings of
-    one place never fork; an unresolved place compares by its normalised text.
+    places that cannot both hold (`_apart`) is a fork. Places compare by resolved id,
+    so two spellings of one place never fork; an unresolved place compares by its
+    normalised text.
     Silences between steps and after the last one are gaps, never smoothed."""
     steps: dict = {}
     for p in sorted(points, key=lambda p: (p["from"], p["id"])):
@@ -413,17 +446,13 @@ def track(points: list[dict]) -> dict:
     out, prev = [], None
     for day, pts in steps.items():
         places = sorted({p["place"] for p in pts})
-        positions = {
-            p["place_id"] or normalise(p["place"])
-            for p in pts
-            if p["prop"] in POSITION and not p["inherited"]
-        }
+        positions = [p for p in pts if p["prop"] in POSITION and not p["inherited"]]
         out.append(
             {
                 "date": day,
                 "places": places,
                 "ids": [p["id"] for p in pts],
-                "fork": len(positions) > 1,
+                "fork": any(_apart(a, b) for a, b in combinations(positions, 2)),
                 "gap_days": (date.fromisoformat(day) - prev).days if prev else None,
             }
         )
@@ -473,6 +502,7 @@ def map_layer(rows: list[dict], places: dict) -> dict:
             "place": label,
             "place_id": str(place.id),
             "lonlat": [float(place.lon), float(place.lat)],
+            "precision_m": place.precision_m,
             "from": r["from"],
             "when": r["when"],
             "inherited": r["inherited"],

@@ -73,11 +73,35 @@ class TrackTest(unittest.TestCase):
         self.assertEqual(
             [s["date"] for s in steps], ["2013-05-02", "2013-05-03", "2013-09-17"]
         )
-        self.assertTrue(steps[0]["fork"])
+        # Last seen in Douma and arrested in Harasta the same day is one sequence.
+        self.assertFalse(steps[0]["fork"])
         # A branch letterhead and a transfer destination on one day are a move, not a conflict.
         self.assertFalse(steps[2]["fork"])
         self.assertEqual(steps[2]["gap_days"], 137)
         self.assertEqual(t["gap_after"], "2013-09-17")
+
+    def test_same_day_positions_fork_only_when_far_apart(self):
+        def pt(i, place, lonlat, prop="seen_at", precision=3000):
+            return {
+                "id": i,
+                "place": place,
+                "place_id": place,
+                "lonlat": lonlat,
+                "precision_m": precision,
+                "from": "2013-05-02",
+                "prop": prop,
+                "inherited": False,
+            }
+
+        harasta = pt("a", "Harasta", [36.365, 33.558])
+        # About 2.5 km away: inside a 3 km town precision, so the same position.
+        nearby = pt("b", "Harasta east", [36.392, 33.558])
+        aleppo = pt("c", "Aleppo", [37.16, 36.2], "detained_at")
+        self.assertFalse(track([harasta, nearby])["steps"][0]["fork"])
+        self.assertTrue(track([harasta, aleppo])["steps"][0]["fork"])
+        # Without a precision there is no distance rule: different places fork.
+        loose = pt("d", "Harasta east", [36.392, 33.558], precision=None)
+        self.assertTrue(track([harasta, loose])["steps"][0]["fork"])
 
     def test_tracks_many_subjects(self):
         def p(i, subject, day):
@@ -120,8 +144,8 @@ class TrackTest(unittest.TestCase):
                 "actor": {"agent": False},
             }
 
-        aleppo = SimpleNamespace(id=uuid.uuid4(), lon=37.16, lat=36.2)
-        douma = SimpleNamespace(id=uuid.uuid4(), lon=36.4, lat=33.57)
+        aleppo = SimpleNamespace(id=uuid.uuid4(), lon=37.16, lat=36.2, precision_m=None)
+        douma = SimpleNamespace(id=uuid.uuid4(), lon=36.4, lat=33.57, precision_m=None)
         en, ar, other = row("Aleppo"), row("حلب"), row("Douma")
         places = {uuid.UUID(en["id"]): aleppo, uuid.UUID(ar["id"]): aleppo}
         # The map's tracks and the Stories rows both come from track().
@@ -176,8 +200,8 @@ class TrackTest(unittest.TestCase):
             }
 
         a, b = row("2013-05-02"), row("2013-05-03")
-        near = SimpleNamespace(id=uuid.uuid4(), lon=36.3, lat=33.5)
-        far = SimpleNamespace(id=uuid.uuid4(), lon=37.1, lat=36.2)
+        near = SimpleNamespace(id=uuid.uuid4(), lon=36.3, lat=33.5, precision_m=None)
+        far = SimpleNamespace(id=uuid.uuid4(), lon=37.1, lat=36.2, precision_m=None)
         layer = map_layer([a, b], {uuid.UUID(a["id"]): near, uuid.UUID(b["id"]): far})
         labels = {p["place"] for p in layer["points"]}
         self.assertEqual(len(labels), 2)

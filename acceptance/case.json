@@ -96,7 +96,7 @@
   "person_view_for_P1": {
     "search": ["Yousef Khaled Al-Ali", "يوسف خالد العلي", "Yusuf Khalid al Ali"],
     "track": ["2013-05-02 arrested at حرستا", "2013-05 detained at الفرع 999", "2013-07 seen at الفرع 999 (witness)", "2013-09-17 transferred to سجن ك المركزي"],
-    "forks": ["2013-05-02: last seen in دوما (post) vs arrested at حرستا (register)"],
+    "forks": [],
     "gaps": ["after 2013-09-17: no evidence"],
     "never_merge": ["P2"]
   },
