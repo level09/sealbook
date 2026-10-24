@@ -1090,6 +1090,12 @@ async def seed_full(session, app) -> dict:
     done = await flows.assign(s, owner, third, [blob["market"]], 4, "low")
     await assignments.update(session, third, done[0], {"status": "done"})
     await session.commit()
+
+    # The proactive agents on both batches, with the fixed answer so the demo reads
+    # the same without a model: the linker first, then the brief that names its links.
+    agents = await flows.agents(
+        session, owner, [batch["batch"], sheet_batch], colleague=colleague
+    )
     return {
         "investigation": CASE,
         "counts": {
@@ -1099,5 +1105,7 @@ async def seed_full(session, app) -> dict:
             "brief sentences": 2,
             "open findings": found["open"],
             "incidents": 1,
+            "agent links": agents["links"],
+            "intake briefs": agents["briefs"],
         },
     }

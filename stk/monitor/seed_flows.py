@@ -564,3 +564,41 @@ async def reply(s, request_id, author, text) -> None:
     found = await collaboration.comment(s.s, request_id, author, text)
     await s.s.commit()
     await collaboration.comment_notices(s.s, request_id, found, author, text)
+
+
+async def agents(session, owner, batches: list[str], colleague=None) -> dict:
+    """The linker and the intake brief for each batch, run by the worker's own code
+    on the fixed answer (`sealbook-demo-fixed-output`, a demo note in the inputs).
+    Batches belong to whoever collected them: the owner's, or the colleague's."""
+    from stk.agents import brief, linker
+    from stk.agents.read import FIXED
+    from stk.runs.worker import process
+
+    links = briefs = 0
+    for batch in batches:
+        collector = await session.scalar(
+            select(Acquisition.collector_id)
+            .where(Acquisition.context["batch"].astext == batch)
+            .limit(1)
+        )
+        user = owner
+        if colleague is not None:
+            mine = await write.principal_for_user(session, owner.id, owner.name)
+            user = owner if collector == mine.id else colleague
+        case = await session.scalar(
+            select(Acquisition.context["investigation"].astext)
+            .where(Acquisition.context["batch"].astext == batch)
+            .limit(1)
+        )
+        found = await linker.queue(session, case, user.id, FIXED, f"batch:{batch}")
+        told = await brief.queue(session, batch, user.id, FIXED)
+        await session.commit()
+        for run in (found, told):
+            await process(ext.async_session_factory, run.id)
+        await session.refresh(found)
+        out = orjson.loads(
+            blobs.read(await session.get(Blob, found.output_hash), Config.BLOB_DIR)
+        )
+        links += len(out["written"])
+        briefs += 1
+    return {"links": links, "briefs": briefs}

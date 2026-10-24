@@ -65,6 +65,8 @@ class DemoSeedTest(unittest.IsolatedAsyncioTestCase):
                 await seed_full(s, self.app)
         self.assertEqual(out["counts"]["watch hits"], 4)
         self.assertEqual(out["counts"]["open findings"], 4)
+        self.assertEqual(out["counts"]["intake briefs"], 2)
+        self.assertGreaterEqual(out["counts"]["agent links"], 3)
         while await work_once(ext.async_session_factory):
             pass
         async with ext.async_session_factory() as s:
@@ -182,7 +184,8 @@ class DemoSeedTest(unittest.IsolatedAsyncioTestCase):
         provenance = await s.scalar(
             select(func.count()).where(Run.model_served == "sealbook-demo-fixed-output")
         )
-        self.assertEqual(provenance, 3)
+        # The transcript, two sheet extractions, and the linker and brief per batch.
+        self.assertEqual(provenance, 7)
         # Team work: notifications for every active analyst, overdue work.
         for email in ("analyst-2@example.com", "analyst-3@example.com"):
             user = await s.scalar(select(User).where(User.email == email))
