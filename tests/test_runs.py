@@ -589,7 +589,11 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_ocr_derives_text_and_queues_extract(self):
         run_id = await self.queue(
-            data=b"\x89PNG fake", mime="image/png", tool="ocr", extract_model="m/e"
+            data=b"\x89PNG fake",
+            mime="image/png",
+            tool="ocr",
+            extract_route="local",
+            extract_model="m/e",
         )
         await work_once(self.Session, transport=self.transport(completion(TEXT)))
         self.assertEqual((await self.get_run(run_id)).status, "done")
@@ -604,7 +608,8 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(
                 child.inputs["blobs"][0], derived.subject.removeprefix("blob:")
             )
-            self.assertEqual((child.route, child.model_requested), ("cloud", "m/e"))
+            # Extraction keeps the route its own policy chose, not the OCR one.
+            self.assertEqual((child.route, child.model_requested), ("local", "m/e"))
 
     @unittest.skipUnless(os.environ.get("OPENROUTER_API_KEY"), "no OPENROUTER_API_KEY")
     async def test_live_openrouter_extract(self):

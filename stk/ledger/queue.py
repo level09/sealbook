@@ -9,8 +9,11 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from stk.ledger.models import Run
+from stk.settings import Config
 
-LEASE = timedelta(minutes=5)
+# A model call must end inside its run's lease, or another worker reclaims the run
+# and calls again.
+LEASE = timedelta(seconds=max(300, Config.ROUTE_LOCAL_TIMEOUT + 60))
 
 _CLAIM = text(
     """

@@ -56,6 +56,7 @@ body.dark-mode .evp {
 .ev-fold { cursor: pointer; }
 .ev-folded { padding-inline-start: 28px; }
 .ev-note { font-size: 12px; color: var(--e-ink-3); }
+.ev-reading { list-style: none; } .ev-reading li { padding: 2px 0; }
 .ev-legend { display: inline-flex; gap: 10px; font-size: 11.5px; color: var(--e-ink-3); align-items: center; flex-wrap: wrap; margin-inline-start: auto; }
 
 /* tier textures; --c is author hue */

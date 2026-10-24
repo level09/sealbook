@@ -317,7 +317,9 @@ async def ocr(c: Ctx) -> str | None:
                         {"type": "image_url", "image_url": {"url": data_url}},
                     ],
                 }
-            ]
+            ],
+            "temperature": 0,
+            **({"reasoning_effort": "none"} if c.run.route == "local" else {}),
         }
     )
     text = routes.content(served)
@@ -339,17 +341,19 @@ async def ocr(c: Ctx) -> str | None:
         sign=c.sign,
     )
     await c.emit("statements_written", written=1, chars=len(text))
-    c.s.add(
-        Run(
-            principal_id=c.run.principal_id,
-            tool="extract",
-            route=c.run.route,
-            model_requested=c.run.inputs["extract_model"],
-            inputs={"blobs": [derived.sha256], "acquisition": str(c.acq.id)},
+    # Extraction has its own policy row, so it may run on another route than OCR.
+    if c.run.inputs.get("extract_model"):
+        c.s.add(
+            Run(
+                principal_id=c.run.principal_id,
+                tool="extract",
+                route=c.run.inputs["extract_route"],
+                model_requested=c.run.inputs["extract_model"],
+                inputs={"blobs": [derived.sha256], "acquisition": str(c.acq.id)},
+            )
         )
-    )
-    await c.s.flush()
-    await c.emit("extract_queued")
+        await c.s.flush()
+        await c.emit("extract_queued")
     await discovery.queue(c.s, c.acq, derived.mime, blob_sha256=derived.sha256)
     return c.run.raw_output_ref
 

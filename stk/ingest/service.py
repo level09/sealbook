@@ -248,8 +248,9 @@ async def ingest(
 
 
 def _tool(mime: str) -> str | None:
-    if mime in sheets.MIMES:
-        # A person confirms what each column holds first (stk.sheets).
+    if mime in sheets.MIMES or mime == "application/pdf":
+        # A person maps a sheet's columns first (stk.sheets); the pdf run reads a
+        # PDF's text layer and queues extraction per page.
         return None
     if mime.startswith("image/"):
         return "ocr"
@@ -257,24 +258,46 @@ def _tool(mime: str) -> str | None:
         return "extract"
     if mime.startswith(("audio/", "video/")):
         return "transcribe"
-    # ponytail: PDFs need rasterising; scanned pages wait for a person until then.
     return None
+
+
+READS = {"ocr": "reading text in images", "extract": "reading claims from text"}
+
+
+def _model_setting(route: str) -> str:
+    return f"MODEL_{route.upper().replace('-', '_')}"
 
 
 async def _route(
     session: AsyncSession, tool: str, acq: Acquisition
 ) -> tuple[Route | None, str]:
     """The most private route the policy allows that has a model configured, or None
-    and the reason. Nothing allowed and configured is reported, never rerouted."""
+    and the reason in words. Nothing allowed and configured is reported, never
+    rerouted."""
     policy = resolve(await write.policies(session), tool, acq.doc_type, acq.sensitivity)
     route = next(
         (r for r in Route if r in policy.routes and r in Config.RUN_MODELS), None
     )
-    return route, (
-        f"no configured model on a route allowed for {tool}/"
-        f"{acq.doc_type}/{acq.sensitivity} "
-        f"(allowed: {', '.join(policy.routes) or 'none'})"
+    if route or not policy.routes:
+        return route, (
+            f"The policy for {acq.sensitivity} sources allows no model for "
+            f"{READS.get(tool, tool)}."
+        )
+    settings = " or ".join(_model_setting(r) for r in policy.routes)
+    return None, (
+        f"No model is configured for {READS.get(tool, tool)} on the routes this "
+        f"{acq.sensitivity} source may use ({', '.join(policy.routes)}). Set "
+        f"{settings} in settings."
     )
+
+
+async def extract_target(session: AsyncSession, acq: Acquisition) -> dict:
+    """Where claims are read from text derived later (OCR, transcript), or nothing
+    when no allowed route has a model."""
+    route, _ = await _route(session, "extract", acq)
+    if route is None:
+        return {}
+    return {"extract_route": str(route), "extract_model": Config.RUN_MODELS[route]}
 
 
 async def queue_transcribe(session: AsyncSession, acq: Acquisition) -> dict:
@@ -282,7 +305,10 @@ async def queue_transcribe(session: AsyncSession, acq: Acquisition) -> dict:
     sensitive recordings qualify. Claims are then read from the transcript on the
     route extraction is allowed, if any. One transcription per recording."""
     if not Config.SPEECH_MODEL:
-        return {"queued": None, "reason": "speech to text is off (SPEECH_MODEL)"}
+        return {
+            "queued": None,
+            "reason": "Speech to text is off. Set SPEECH_MODEL in settings.",
+        }
     known = await session.scalar(
         select(Run.id)
         .where(
@@ -292,29 +318,64 @@ async def queue_transcribe(session: AsyncSession, acq: Acquisition) -> dict:
         .limit(1)
     )
     if known:
-        return {"queued": None, "reason": "already transcribed or queued"}
+        return {"queued": None, "reason": "The speech is already read or queued."}
     policy = resolve(
         await write.policies(session), "transcribe", acq.doc_type, acq.sensitivity
     )
     if Route.LOCAL not in policy.routes:
-        return {"queued": None, "reason": "policy does not allow local transcription"}
-    inputs = {"blobs": [acq.blob_sha256], "acquisition": str(acq.id)}
-    route, _ = await _route(session, "extract", acq)
-    if route:
-        inputs |= {
-            "extract_route": str(route),
-            "extract_model": Config.RUN_MODELS[route],
+        return {
+            "queued": None,
+            "reason": "The policy does not allow local speech to text for this source.",
         }
     run = Run(
         principal_id=(await system_agent(session, "transcriber")).id,
         tool="transcribe",
         route=str(Route.LOCAL),
         model_requested=Config.SPEECH_MODEL,
-        inputs=inputs,
+        inputs={"blobs": [acq.blob_sha256], "acquisition": str(acq.id)}
+        | await extract_target(session, acq),
     )
     session.add(run)
     await session.flush()
     return {"queued": "transcribe", "run": str(run.id), "route": str(Route.LOCAL)}
+
+
+async def queue_read(
+    session: AsyncSession, acq: Acquisition, tool: str, sha: str
+) -> dict:
+    """Queue OCR or extraction of `sha` (the source, or text derived from it) once;
+    a failed run may be queued again."""
+    known = await session.scalar(
+        select(Run.id)
+        .where(
+            Run.tool == tool,
+            Run.inputs["blobs"][0].astext == sha,
+            Run.status != "failed",
+        )
+        .limit(1)
+    )
+    if known:
+        return {
+            "queued": None,
+            "why": "already_read",
+            "reason": f"{READS[tool].capitalize()} is already done or queued.",
+        }
+    route, reason = await _route(session, tool, acq)
+    if route is None:
+        return {"queued": None, "why": "no_model", "reason": reason}
+    inputs = {"blobs": [sha], "acquisition": str(acq.id)}
+    if tool == "ocr":
+        inputs |= await extract_target(session, acq)
+    run = Run(
+        principal_id=(await system_agent(session, "extractor")).id,
+        tool=tool,
+        route=str(route),
+        model_requested=Config.RUN_MODELS[route],
+        inputs=inputs,
+    )
+    session.add(run)
+    await session.flush()
+    return {"queued": tool, "run": str(run.id), "route": str(route)}
 
 
 async def queue_processing(session: AsyncSession, acq: Acquisition, mime: str) -> dict:
@@ -322,26 +383,17 @@ async def queue_processing(session: AsyncSession, acq: Acquisition, mime: str) -
     contact is a review card. The policy picks the routes."""
     tool = _tool(mime)
     if tool is None:
-        return {"queued": None, "reason": f"no automatic processing for {mime}"}
+        reason = (
+            "A person maps the sheet's columns first."
+            if mime in sheets.MIMES
+            else "PDF pages are read by the PDF run, then claims page by page."
+            if mime == "application/pdf"
+            else f"Nothing reads {mime} files automatically."
+        )
+        return {"queued": None, "reason": reason}
     if tool == "transcribe":
         return await queue_transcribe(session, acq)
-    route, reason = await _route(session, tool, acq)
-    if route is None:
-        return {"queued": None, "reason": reason}
-    model = Config.RUN_MODELS[route]
-    inputs = {"blobs": [acq.blob_sha256], "acquisition": str(acq.id)}
-    if tool == "ocr":
-        inputs["extract_model"] = model
-    run = Run(
-        principal_id=(await system_agent(session, "extractor")).id,
-        tool=tool,
-        route=str(route),
-        model_requested=model,
-        inputs=inputs,
-    )
-    session.add(run)
-    await session.flush()
-    return {"queued": tool, "run": str(run.id), "route": str(route)}
+    return await queue_read(session, acq, tool, acq.blob_sha256)
 
 
 async def ingest_bytes(session: AsyncSession, data: bytes, **kw) -> dict:

@@ -26,13 +26,15 @@ const FOLD_PLACE = 3;
 const spanLabel = s => !s ? '' : s.bbox ? `region, p. ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.start != null ? `characters ${s.start} to ${s.end}` : '';
 
 export function mount(boot) {
+  // Outside data: Vue's proxy breaks EventSource methods.
+  let stream = null, nudge = null;
   const app = Vue.createApp({
     mixins: [layoutMixin], delimiters: config.delimiters,
     data() {
       return {boot, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
         cursor: {list: 'claims', i: -1}, excerpt: null, threadId: null, thread: null, threadBusy: false, comment: '',
         ask: {open: false, statement: null, reviewer: null, reason: '', busy: false}, analysts: [], relate: {open: false, row: null, value: 'same_recording'},
-        snack: {show: false, text: ''}, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
+        snack: {show: false, text: ''}, unfolded: {}, busy: false, queueing: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
     },
     computed: {
       claims() {return this.it ? this.it.claims.map(c => ({...c, label: prop(c.prop), value: this.read?.values?.[c.id] ?? c.display})) : [];},
@@ -75,6 +77,7 @@ export function mount(boot) {
       lists() {return {claims: this.other ? [] : this.ordered, copies: this.it?.copies || [], rel: this.relations};},
       activeList() {return this.cursor.list === 'claims' && this.lists.claims.length ? 'claims' : this.tab === 'dups' ? 'copies' : this.tab === 'rel' ? 'rel' : this.lists.claims.length ? 'claims' : 'copies';},
       current() {const l = this.lists[this.cursor.list]; return l && this.cursor.i >= 0 ? l[this.cursor.i] : null;},
+      readPending() {return (this.it?.reading || []).some(r => ['queued', 'running'].includes(r.status));},
       hl() {const s = this.boot.segment; return s?.span && ['text', 'web'].includes(this.it?.kind) && s.kind === 'text' ? s.span : null;},
     },
     methods: {
@@ -201,9 +204,29 @@ export function mount(boot) {
         try {await api.post(`/api/collaboration/requests/${this.thread.id}/comments`, {item: {text: this.comment}}); this.comment = ''; await this.openThread({id: this.thread.id, visible: true}); await this.refresh();}
         catch (err) {this.say(message(err));} finally {this.threadBusy = false;}
       },
+      readWords(r) {
+        const parts = r.runs > 1 ? `${r.runs} parts, ` : '';
+        if (r.status === 'failed') return `${parts}did not finish. ${r.failure || ''}`;
+        if (r.status === 'done') return `${parts}done${r.model ? ' with ' + r.model : ''}`;
+        return `${parts}${r.status === 'running' ? 'running now' : 'queued'} on the ${r.route} route`;
+      },
+      // While this source is read, live run events nudge a reload, so claims appear
+      // when the run finishes; the stream closes once nothing is queued.
+      follow() {
+        if (!this.readPending) {stream?.close(); stream = null; return;}
+        if (stream) return;
+        stream = new EventSource('/monitor/stream');
+        stream.addEventListener('run_event', e => {
+          if (JSON.parse(e.data).doc?.sha256 !== this.it.sha256) return;
+          clearTimeout(nudge);
+          nudge = setTimeout(async () => {await this.refresh(); this.follow();}, 400);
+        });
+      },
       async queue() {
-        try {const runs = (await api.post(`/api/evidence/${this.it.sha256}/analyse`, {item: {}})).data.runs; this.say(`Queued ${runs.length || 'no new'} run${runs.length === 1 ? '' : 's'} for ${this.it.title}`);}
+        this.queueing = true;
+        try {const {data} = await api.post(`/api/evidence/${this.it.sha256}/analyse`, {item: {}}); this.say(data.message); await this.refresh(); this.follow();}
         catch (err) {this.say(message(err));}
+        finally {this.queueing = false;}
       },
       aboutLabel(id) {const c = this.claims.find(x => x.id === id); return c ? `${prop(c.prop)}${c.value ? ': ' + c.value : ''}` : `proposal ${short(id)}`;},
       key(e) {
@@ -221,6 +244,7 @@ export function mount(boot) {
       if (location.pathname.startsWith('/evidence/segments/')) history.replaceState(null, '', `/evidence/${boot.sha}?segment=${boot.segment.id}${boot.segment.span ? `&start=${boot.segment.span.start}&end=${boot.segment.span.end}` : ''}`);
       document.addEventListener('keydown', this.key);
       await this.load();
+      if (this.it) this.follow();
     },
   });
   Object.assign(app.config.globalProperties, {ICON, DOC});

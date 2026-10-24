@@ -26,9 +26,18 @@ from stk import blobs
 from stk.collaboration.views import guard, no_store
 from stk.discovery import coverage, embeddings, evidence, media, service
 from stk.discovery.models import Segment
+from stk.ingest import batch
+from stk.ingest import service as ingest
 from stk.ledger import write
 from stk.ledger.contracts import Prop, Refused, StatementIn
-from stk.ledger.models import Acquisition, Blob, Payload, Statement, StatementTier
+from stk.ledger.models import (
+    Acquisition,
+    Blob,
+    Payload,
+    Run,
+    Statement,
+    StatementTier,
+)
 from stk.monitor import data
 from stk.monitor import filter as mfilter
 from stk.people import data as people_data
@@ -305,6 +314,10 @@ async def analyse(sha):
     if not isinstance(rebuild, bool):
         abort(400, description="rebuild must be a boolean")
     queued = await service.queue(db, acq, blob.mime, rebuild=rebuild)
+    # Reading claims (OCR, extraction, speech) is queued here too, once.
+    read = await ingest.queue_processing(db, acq, blob.mime)
+    if read.get("run"):
+        queued.append(read["run"])
     subjects = (
         await db.execute(
             select(Statement.subject)
@@ -317,8 +330,17 @@ async def analyse(sha):
     ).scalars()
     for subject in subjects:
         await service.queue_actor(db, subject, acq, rebuild=rebuild)
+    tools = (
+        await db.scalars(
+            select(Run.tool).where(Run.id.in_([uuid.UUID(i) for i in queued]))
+        )
+    ).all()
+    labels = sorted({batch.LABEL.get(t, t).lower() for t in tools})
+    said = f"Queued {', '.join(labels)}." if labels else "Nothing new to queue."
+    if not read["queued"]:
+        said += f" {read['reason']}"
     await db.commit()
-    return output({"runs": queued}, 202)
+    return output({"runs": queued, "processing": read, "message": said}, 202)
 
 
 @bp.get("/api/evidence/matches")

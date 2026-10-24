@@ -166,6 +166,7 @@ def pdf_pages(path, cursor, limit):
 
 async def pdf(c):
     from stk.discovery.service import _input, queue
+    from stk.ingest.service import queue_read
 
     blob = await _input(c)
     if Config.PDF_BATCH_PAGES < 1:
@@ -214,6 +215,12 @@ async def pdf(c):
             blob_sha256=child.sha256,
             location=location,
             ordinal=ordinal,
+        )
+        read = await queue_read(c.s, c.acq, "extract", child.sha256)
+        await c.emit(
+            "extract_queued" if read["queued"] else "extract_skipped",
+            drop_reason=read.get("why"),
+            page=ordinal,
         )
         output.append({"page": ordinal, "text": child.sha256})
     await progress(c, end, total, "pages")

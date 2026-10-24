@@ -656,6 +656,43 @@ async def _acquired(db, investigation, *where):
     )
 
 
+async def reading(db, fam: list[str]) -> list[dict]:
+    """Where reading this source stands, one row per read tool: the latest run on
+    each blob of the family, worst state first, as the intake page ranks them."""
+    from stk.ingest import batch
+
+    latest: dict[tuple[str, str], Run] = {}
+    for run in (
+        await db.execute(
+            select(Run)
+            .where(
+                Run.tool.in_(batch.READ_TOOLS),
+                Run.inputs["blobs"][0].astext.in_(fam),
+            )
+            .order_by(Run.created_at)
+        )
+    ).scalars():
+        latest[(run.tool, run.inputs["blobs"][0])] = run
+    tools: dict[str, list[Run]] = {}
+    for (tool, _), run in latest.items():
+        tools.setdefault(tool, []).append(run)
+    return [
+        {
+            "tool": tool,
+            "label": batch.LABEL[tool],
+            "status": batch._stage(runs),
+            "runs": len(runs),
+            "model": next((r.model_served or r.model_requested for r in runs), None),
+            "route": runs[0].route,
+            "failure": next(
+                (batch._failure(r)["detail"] for r in runs if r.status == "failed"),
+                None,
+            ),
+        }
+        for tool, runs in tools.items()
+    ]
+
+
 async def item(db, sha: str, user) -> dict | None:
     blob = await source_blob(db, sha)
     if blob is None:
@@ -789,6 +826,7 @@ async def item(db, sha: str, user) -> dict | None:
         "synthetic": blob.storage_ref == blobs.SYNTHETIC,
         "pages": pages,
         "claims": claims,
+        "reading": await reading(db, fam),
         # The one label rule for each person the claims are about.
         "people": await people_data.names(
             db,

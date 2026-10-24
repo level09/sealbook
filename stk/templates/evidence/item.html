@@ -60,8 +60,11 @@
             </div>
           </template>
         </div>
-        <v-empty-state v-else icon="ti ti-file-search" title="No claims extracted yet" :text="'The extractor reads ' + (it.kind === 'audio' ? 'transcripts' : it.kind === 'video' ? 'speech and on-screen text' : 'text') + ' once the model service has processed this source.'">
-          <template #actions><v-btn variant="outlined" prepend-icon="ti ti-refresh" @click="queue">Queue processing</v-btn></template>
+        <ul v-if="it.reading.length && (readPending || !claims.length)" class="ev-reading ev-note pa-3 mb-0" role="status" aria-live="polite" aria-label="Reading this source">
+          <li v-for="r in it.reading" :key="r.tool"><i class="ti" :class="{queued: 'ti-clock', running: 'ti-loader-2', done: 'ti-check', failed: 'ti-alert-triangle'}[r.status]" aria-hidden="true"></i> ${ r.label }: ${ readWords(r) }</li>
+        </ul>
+        <v-empty-state v-if="!claims.length" icon="ti ti-file-search" :title="readPending ? 'Reading this source' : 'No claims extracted yet'" :text="readPending ? 'Claims appear here when the run finishes.' : it.reading.some(r => r.status === 'done' && ['extract', 'extract_sheet'].includes(r.tool)) ? 'The model read this source and proposed no claims.' : 'The extractor reads ' + (it.kind === 'audio' ? 'transcripts' : it.kind === 'video' ? 'speech and on-screen text' : 'text') + ' once a model has processed this source.'">
+          <template #actions><v-btn variant="outlined" prepend-icon="ti ti-refresh" :loading="queueing" :disabled="readPending" @click="queue">Queue processing</v-btn></template>
         </v-empty-state>
       </section>
 

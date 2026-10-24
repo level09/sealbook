@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import httpx
 
 from stk.ledger.contracts import Route
+from stk.settings import Config
 
 OPENROUTER = "https://openrouter.ai/api/v1"
 TIMEOUT = httpx.Timeout(120.0, connect=10.0)
@@ -52,7 +53,12 @@ async def chat(
     endpoint = f"{base.rstrip('/')}/chat/completions"
     headers = {"Authorization": f"Bearer {key}"} if key else {}
     try:
-        async with httpx.AsyncClient(transport=transport, timeout=TIMEOUT) as client:
+        timeout = (
+            httpx.Timeout(float(Config.ROUTE_LOCAL_TIMEOUT), connect=10.0)
+            if route is Route.LOCAL
+            else TIMEOUT
+        )
+        async with httpx.AsyncClient(transport=transport, timeout=timeout) as client:
             resp = await client.post(endpoint, json=body, headers=headers)
     except httpx.HTTPError as exc:
         raise RouteError(f"{route} unreachable: {exc!r}") from exc

@@ -402,8 +402,17 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
         rid = await self.queue(
             data=buffer.getvalue(), mime="application/pdf", tool="pdf", route="local"
         )
+        self.enterContext(mock.patch.object(Config, "RUN_MODELS", {"local": "m/l"}))
         await work_once(self.Session, tools=["pdf"])
         self.assertEqual((await self.get_run(rid)).status, "done")
+        # Claims are read from each page with text, once, on the extraction route.
+        async with self.Session() as db:
+            [extract] = (
+                await db.execute(select(Run).where(Run.tool == "extract"))
+            ).scalars()
+        self.assertEqual((extract.route, extract.model_requested), ("local", "m/l"))
+        pdf = await self.get_run(rid)
+        self.assertNotEqual(extract.inputs["blobs"], pdf.inputs["blobs"])
         while await work_once(self.Session, tools=["index"]):
             pass
         async with self.Session() as db:
@@ -472,6 +481,29 @@ class SourceAccessTest(unittest.IsolatedAsyncioTestCase):
         async with ext.async_session_factory() as db, db.begin():
             await erase(db, subject, self.viewer.id, "test erasure")
         self.assertEqual((await client.get(path)).status_code, 404)
+
+    async def test_queue_processing_says_what_it_queued_and_why_not(self):
+        client = await self.client()
+        path = f"/api/evidence/{self.sha}/analyse"
+        with mock.patch.object(Config, "RUN_MODELS", {}):
+            off = await (
+                await client.post(path, headers=client.csrf, json={"item": {}})
+            ).get_json()
+        self.assertIsNone(off["processing"]["queued"])
+        self.assertIn("Set MODEL_LOCAL in settings.", off["message"])
+        with mock.patch.object(Config, "RUN_MODELS", {"local": "m/l"}):
+            on = await (
+                await client.post(path, headers=client.csrf, json={"item": {}})
+            ).get_json()
+            again = await (
+                await client.post(path, headers=client.csrf, json={"item": {}})
+            ).get_json()
+        self.assertEqual(on["processing"]["queued"], "extract")
+        self.assertIn("reading the text", on["message"])
+        self.assertIn("already done or queued", again["message"])
+        item = await (await client.get(f"/api/evidence/{self.sha}/item")).get_json()
+        [read] = item["reading"]
+        self.assertEqual((read["tool"], read["status"]), ("extract", "queued"))
 
     async def test_pdf_page_preview_is_rendered_only_after_logged_reveal(self):
         from PIL import Image

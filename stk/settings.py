@@ -208,6 +208,10 @@ class Config:
     ]
     ANCHOR_INTERVAL_SECONDS = int(os.environ.get("ANCHOR_INTERVAL_SECONDS", "3600"))
 
+    # Seconds one local model call may take. A laptop reads a register page at a few
+    # tokens a second; the run lease grows with it (stk.ledger.queue).
+    ROUTE_LOCAL_TIMEOUT = int(os.environ.get("ROUTE_LOCAL_TIMEOUT", "120"))
+
     # The model each route serves for OCR and extraction (MODEL_LOCAL,
     # MODEL_CLOUD_ZDR, MODEL_CLOUD). Ingest queues work on the most private route
     # the policy allows that has a model; none means the file waits, unprocessed.
