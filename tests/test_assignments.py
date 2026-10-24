@@ -3,6 +3,7 @@
 import asyncio
 import unittest
 from datetime import UTC, datetime, timedelta
+from unittest import mock
 
 from sqlalchemy import select, text, update
 from sqlalchemy.exc import DBAPIError
@@ -55,7 +56,7 @@ class AssignmentTest(CollabCase):
     async def test_due_today_is_allowed_and_the_past_is_not(self):
         alice = await self.client("alice")
         today = datetime.now(UTC).date()
-        past = (today - timedelta(days=1)).isoformat()
+        past = (today - timedelta(days=2)).isoformat()
         self.assertEqual(
             (await self.bulk(alice, self.blob_subjects(), due=past))[0], 400
         )
@@ -63,6 +64,20 @@ class AssignmentTest(CollabCase):
         self.assertEqual(
             (await self.bulk(alice, self.blob_subjects(), due=due))[0], 201
         )
+
+    async def test_due_today_west_of_utc_is_allowed(self):
+        """At 03:00 UTC it is still yesterday evening in New York."""
+        alice = await self.client("alice")
+
+        class At(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return datetime(2026, 10, 25, 3, tzinfo=UTC)
+
+        with mock.patch("stk.collaboration.views.datetime", At):
+            ok = await self.bulk(alice, self.blob_subjects(), due="2026-10-24")
+            late = await self.bulk(alice, self.blob_subjects(), due="2026-10-23")
+        self.assertEqual((ok[0], late[0]), (201, 400))
 
     async def test_validation(self):
         alice = await self.client("alice")

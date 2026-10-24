@@ -1,5 +1,5 @@
 import uuid
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 
 import orjson
 from quart import Blueprint, Response, abort, g, render_template, request
@@ -186,10 +186,13 @@ async def notification_read():
 
 
 async def _assignment_body() -> dict:
-    """A person cannot set a due date already behind them; seeding history can."""
+    """A person cannot set a due date already behind them; seeding history can.
+    "Today" is the earliest date anywhere (UTC-12), so a reader west of UTC late in
+    the evening can still pick their own today."""
     item = await _body()
     due = item.get("due")
-    if isinstance(due, str) and due < datetime.now(UTC).date().isoformat():
+    earliest = (datetime.now(UTC) - timedelta(hours=12)).date().isoformat()
+    if isinstance(due, str) and due < earliest:
         try:
             date.fromisoformat(due)
         except ValueError:
