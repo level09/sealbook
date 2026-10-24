@@ -68,7 +68,8 @@ text rules over what is visible: raw hex ids and uuids, snake_case tokens, stora
 words (`<prop> values`, `<tool> run`, model ids, built from `Prop`, the worker's
 `TOOLS` and the seeds), raw scores, a row repeated 3+ times in one list, "1
 <plural>", stray separators, empty labels, and `undefined`, `null`, `NaN`,
-`[object Object]`. It prints page, rule, snippet and count, writes
+`[object Object]`. It also checks that each visited person has one count of facts
+and documents on the People list, the person page and in search. It prints page, rule, snippet and count, writes
 `instance/check_sense.json` with each page's text, and exits 1 on any finding.
 
 Fix the screen, not the check. `acceptance/sense_allow.json` holds only content

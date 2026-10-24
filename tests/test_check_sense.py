@@ -5,6 +5,7 @@ import unittest
 from acceptance.check_sense import (
     broken_value,
     check_page,
+    count_mismatch,
     empty_label,
     internal_words,
     load_allow,
@@ -86,6 +87,21 @@ class RuleTest(unittest.TestCase):
         self.assertEqual(rules, {"hex-id"})
         page = {"page": "/desk @phone", "text": "Sha256\ndocument\n" + "ab12" * 16}
         self.assertTrue(check_page(page, allow), "the digest allowance is monitor only")
+
+    def test_one_person_has_one_count_per_scope(self):
+        rows = [
+            ("p", "Yousef", "People list", 19, 6),
+            ("p", "Yousef", "People list, all cases", 21, 7),
+            ("p", "Yousef", "person page", 21, 7),
+            ("p", "Yousef", "search", 19, 6),
+        ]
+        # The person page spans every case and search the filtered one: both agree.
+        self.assertEqual(count_mismatch(rows), [])
+        rows[2] = ("p", "Yousef", "person page", 20, 7)
+        [found] = count_mismatch(rows)
+        self.assertIn("person page 20 facts", found)
+        page = {"page": "counts @desktop", "text": "", "counts": rows}
+        self.assertEqual([f["rule"] for f in check_page(page)], ["count-mismatch"])
 
 
 if __name__ == "__main__":

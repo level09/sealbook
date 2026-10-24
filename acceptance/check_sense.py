@@ -190,6 +190,29 @@ def repeated_rows(lists, at_least=3):
     return sorted(set(out))
 
 
+COUNTED = re.compile(r"\b(\d+) facts? from (\d+) documents?\b")
+
+
+def count_mismatch(counts):
+    """counts: (person, label, screen, facts, documents) rows. The People list row
+    for the same scope is the reference: the person page against the list of every
+    case, search against the list of the case it searched. Any other count for the
+    same person is a finding: the reader sees two numbers for one thing."""
+    ref = {(c[0], c[2]): c for c in counts if c[2].startswith("People list")}
+    out = []
+    for person, label, screen, facts, docs in counts:
+        if screen.startswith("People list"):
+            continue
+        scope = "People list, all cases" if screen == "person page" else "People list"
+        base = ref.get((person, scope))
+        if base and (base[3], base[4]) != (facts, docs):
+            out.append(
+                f"{label}: {scope} {base[3]} facts from {base[4]} documents, "
+                f"{screen} {facts} facts from {docs} documents"
+            )
+    return out
+
+
 TEXT_RULES = {
     "uuid": raw_uuid,
     "hex-id": raw_hex_id,
@@ -212,6 +235,7 @@ MESSAGES = {
     "empty-label": "a label with no value",
     "broken-value": "a missing value printed as code",
     "repeated-row": "the same row 3+ times in one list",
+    "count-mismatch": "one person counted differently on two screens",
 }
 
 
@@ -226,6 +250,7 @@ def check_page(page, allow=()):
         )
         found += [(rule, s) for s in fn(*args)]
     found += [("repeated-row", s) for s in repeated_rows(page.get("lists", []))]
+    found += [("count-mismatch", s) for s in count_mismatch(page.get("counts", []))]
     counts = Counter(found)
     return [
         {"page": page["page"], "rule": rule, "snippet": snip, "count": n}
@@ -377,12 +402,68 @@ async def crawl_width(browser, base, token_url, case, width):
                 await settle(page)
                 pages.append(await read(page, f"{name} {tab} @{width}", expected))
 
+    if width == "desktop":
+        counts = await person_counts(page, base, case, people)
+        pages.append(
+            {"page": "counts @desktop", "url": base, "text": "", "counts": counts}
+        )
+
     queries = SEARCHES + [sources[0]["sha256"][:12]] if sources else SEARCHES
     for q in queries:
         await visit(f"/search?q={quote(q)}&case={quote(case)}", f"/search {q}", [q])
 
     await ctx.close()
     return pages, errors
+
+
+async def person_counts(page, base, case, hrefs):
+    """Facts and documents for each visited person as the People list (in the case
+    and across cases), the person page and a search for their name count them."""
+    lists = {}
+    for scope, q in (
+        ("People list", f"?investigation={quote(case)}"),
+        ("People list, all cases", ""),
+    ):
+        resp = await page.request.get(f"{base}/api/people{q}")
+        lists[scope] = {i["person"]: i for i in (await resp.json())["items"]}
+    csrf = await page.get_attribute('meta[name="csrf-token"]', "content")
+    out = []
+    for href in hrefs:
+        pid = href.rsplit("/", 1)[1]
+        mine = lists["People list"].get(pid)
+        if mine is None:
+            continue
+        label = mine["name"] or "Unnamed person"
+        for scope, rows in lists.items():
+            if pid in rows:
+                out.append(
+                    (pid, label, scope, rows[pid]["facts"], rows[pid]["documents"])
+                )
+        resp = await page.request.get(f"{base}/api/people/{pid}")
+        facts = [r for rs in (await resp.json())["facts"].values() for r in rs]
+        docs = {r["doc"]["sha256"] for r in facts if r.get("doc")}
+        out.append((pid, label, "person page", len(facts), len(docs)))
+        if not mine["name"]:
+            continue
+        resp = await page.request.post(
+            f"{base}/api/search",
+            data=json.dumps(
+                {
+                    "item": {
+                        "query": mine["name"],
+                        "types": ["people"],
+                        "semantic": False,
+                        "filter": {"investigation": case, "time": None},
+                    }
+                }
+            ),
+            headers={"X-CSRFToken": csrf, "Content-Type": "application/json"},
+        )
+        for hit in (await resp.json())["groups"]["people"]["items"]:
+            m = COUNTED.search(hit.get("subtitle") or "")
+            if hit["id"] == f"person:{pid}" and m:
+                out.append((pid, label, "search", int(m[1]), int(m[2])))
+    return out
 
 
 async def crawl(base, user, case):
@@ -449,7 +530,10 @@ def main():
             {
                 "findings": findings,
                 "errors": errors,
-                "pages": [{k: p[k] for k in ("page", "url", "text")} for p in pages],
+                "pages": [
+                    {k: p[k] for k in ("page", "url", "text", "counts") if k in p}
+                    for p in pages
+                ],
             },
             ensure_ascii=False,
             indent=1,
