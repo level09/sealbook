@@ -56,7 +56,7 @@
       </v-data-table-server>
     </section>
     <section class="desk-panel" aria-labelledby="h-need">
-      <header><h2 id="h-need">Needs you</h2><span class="desk-muted text-caption">requests, mentions and assigned work</span><v-btn class="act" size="small" variant="text" href="/review" prepend-icon="ti ti-inbox">Inbox</v-btn></header>
+      <header><h2 id="h-need">Needs you</h2><span class="desk-muted text-caption">requests, mentions and assigned work</span><v-btn class="act" size="small" variant="text" href="/inbox" prepend-icon="ti ti-inbox">Inbox</v-btn></header>
       <v-data-table-server class="desk-table" :headers="hNeed" :items="need.items" :items-length="need.total" :loading="need.loading" density="compact" :items-per-page="need.perPage" :items-per-page-options="[10, 25, 50]" :row-props="rowProps(r => needHref(r))" :hide-default-footer="need.total <= need.perPage" @update:options="o => load('need', o)" @click:row="clickRow">
         <template #item.on="{ item }"><a :href="needHref(item)" @click.stop>${ needTitle(item) }</a><div v-if="item.detail" class="desk-muted text-caption desk-clamp" dir="auto" :title="item.detail">${ item.detail }</div><div class="show-m"><v-chip size="x-small" :color="needState(item)" :prepend-icon="needIcon(item)" variant="outlined">${ needLabel(item) }</v-chip></div></template>
         <template #item.status="{ item }"><v-chip size="small" :color="needState(item)" :prepend-icon="needIcon(item)" variant="outlined">${ needLabel(item) }</v-chip></template>
@@ -204,6 +204,7 @@ window.app = Vue.createApp({
     needLabel(i) { return this.needState(i) === 'overdue' ? 'overdue since ' + i.status.slice(4) : i.status; },
     needIcon(i) { return {overdue: 'ti ti-alert-triangle', due: 'ti ti-clock', new: 'ti ti-point-filled'}[this.needState(i)]; },
     needHref(i) {
+      if (i.kind === 'mention' || i.kind === 'reply') return '/inbox?item=note:' + i.id;
       if (i.kind !== 'assignment') return i.href;
       if (i.subject === 'finding') return DISCOVER;
       return i.source?.sha256 ? '/evidence/' + i.source.sha256 : '/review';
