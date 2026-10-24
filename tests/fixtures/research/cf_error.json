@@ -1,0 +1,11 @@
+{
+  "success": false,
+  "errors": [
+    {
+      "code": 2001,
+      "message": "Rate limit exceeded"
+    }
+  ],
+  "messages": [],
+  "result": null
+}

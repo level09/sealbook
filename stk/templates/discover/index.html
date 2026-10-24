@@ -1,0 +1,320 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.dv-page { max-width: 1480px; }
+.dv-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.dv-head h1 { font-size: 18px; font-weight: 650; margin: 0; }
+.dv-head p { margin: 0; color: var(--ink-3); }
+.dv-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.dv-panel > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); min-height: 42px; flex-wrap: wrap; }
+.dv-panel > header h2 { font-size: 13px; font-weight: 650; margin: 0; }
+.dv-panel > header .act { margin-inline-start: auto; }
+.dv-grid { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 12px; align-items: start; }
+.dv-muted { color: var(--ink-3); }
+.dv-q .v-list-item { border-top: 1px solid var(--line); outline: none; }
+.dv-q .v-list-item.sel, .dv-q .v-list-item:focus-visible { background: var(--wash); box-shadow: inset 2px 0 0 var(--ink); }
+.dv-q .v-list-item-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dv-band { display: inline-flex; gap: 2px; vertical-align: middle; }
+.dv-band i { width: 14px; height: 6px; border-radius: 1px; background: var(--line-strong); }
+.dv-band.strong i, .dv-band.moderate i:nth-child(-n+2), .dv-band.weak i:first-child { background: var(--agent); }
+.dv-sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; flex: none; border: 1.5px dashed var(--agent); background: repeating-linear-gradient(135deg, var(--agent) 0 1.5px, transparent 1.5px 4px); }
+.dv-sw.accepted { border: 1.5px solid var(--accepted); background: var(--accepted); }
+.dv-sw.corroborated { border: 1.5px solid var(--corroborated); background: transparent; }
+.dv-sw.human { --agent: var(--ink); }
+.dv-mem { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; padding: 12px; }
+.dv-mem .v-card { padding: 10px 12px; }
+.dv-ex { font-size: 14px; line-height: 1.7; background: var(--raise); padding: 6px 8px; border-radius: 5px; margin: 6px 0; white-space: pre-wrap; }
+.dv-ex mark { background: var(--agent-wash); color: inherit; border-bottom: 1.5px solid var(--agent); padding: 0 1px; border-radius: 2px; }
+.dv-lock { font-size: 12px; background: var(--raise); padding: 6px 8px; border-radius: 5px; margin: 6px 0; color: var(--ink-3); }
+.dv-chk td { vertical-align: middle; }
+.dv-chk .role { min-width: 150px; }
+.dv-done { border-color: var(--agent) !important; }
+@media (max-width: 959px) { .dv-grid { grid-template-columns: 1fr; } .dv-hide-m { display: none !important; } }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="dv-page py-4">
+  <div class="dv-head">
+    <h1>Discover</h1>
+    <p v-if="loaded">${ plural(items.length, 'finding') } proposed by agents in ${ caseSel || 'all investigations' }, ${ newCount } new since you last looked</p>
+    <p v-else>Loading</p>
+  </div>
+  <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
+  <v-alert v-if="done" class="mb-3 dv-done" variant="outlined" density="compact" aria-live="polite">
+    <div class="d-flex align-center ga-2 flex-wrap"><v-icon icon="ti ti-signature"></v-icon><span>${ done.text }</span><a v-if="done.incident" :href="'/incidents/' + done.incident">Open the incident</a><v-spacer></v-spacer>
+      <v-btn v-if="done.left.length" size="small" variant="text" prepend-icon="ti ti-list" @click="done.open = !done.open">${ done.open ? 'Hide' : 'Per statement' }</v-btn>
+      <v-btn v-if="done.left.length" size="small" variant="outlined" prepend-icon="ti ti-arrow-back-up" :loading="busy" @click="undo(done.left.map(s => s.id))">Undo all</v-btn>
+      <v-btn size="small" variant="text" icon="ti ti-x" aria-label="Dismiss" @click="done = null"></v-btn></div>
+    <v-list v-if="done.open" density="compact" class="mt-1 bg-transparent">
+      <v-list-item v-for="s in done.left" :key="s.id" :title="stLabel(s)">
+        <template #append><v-btn size="small" variant="text" prepend-icon="ti ti-arrow-back-up" :disabled="busy" @click="undo([s.id])">Undo</v-btn></template>
+      </v-list-item>
+    </v-list>
+  </v-alert>
+  <div class="dv-grid">
+    <section class="dv-panel dv-q" aria-labelledby="h-q">
+      <header><h2 id="h-q">Queue</h2>
+        <v-chip-group v-model="kinds" multiple filter aria-label="Kinds"><v-chip v-for="k in kindList" :key="k" :value="k" size="x-small" variant="outlined">${ kindLabel(k) }</v-chip></v-chip-group>
+        <span class="act d-flex ga-1 align-center" v-if="picked.length"><span class="text-caption">${ picked.length } selected</span><v-btn size="small" variant="text" prepend-icon="ti ti-user-plus" @click="assigning = true">Assign</v-btn></span>
+      </header>
+      <v-list density="compact" lines="three" class="py-0" aria-label="Findings">
+        <template v-for="grp in grouped" :key="grp.title">
+          <v-list-subheader v-if="grp.items.length" class="font-weight-bold">${ grp.title }</v-list-subheader>
+          <v-list-item v-for="f in grp.items" :key="f.id" class="dv-row" :class="{ sel: cur && cur.id === f.id }" tabindex="-1" :data-key="f.id" @click="pick(f.id)">
+            <template #prepend><v-checkbox-btn class="me-1" density="compact" :model-value="picked.includes(f.id)" :aria-label="'Select ' + f.reason" @click.stop @update:model-value="togglePick(f.id)"></v-checkbox-btn></template>
+            <v-list-item-title class="text-body-2 font-weight-medium"><bdi dir="auto">${ f.reason }</bdi></v-list-item-title>
+            <v-list-item-subtitle><v-icon icon="ti ti-robot" size="13" color="agent"></v-icon> ${ f.label }, ${ plural(f.members.length, 'member') } <span class="dv-band ms-1" :class="f.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ f.band }</v-list-item-subtitle>
+          </v-list-item>
+        </template>
+      </v-list>
+      <v-empty-state v-if="loaded && !items.length" icon="ti ti-robot-off" title="No findings waiting">
+        <template #text>Discovery proposes people held at the same place and time, and candidate incidents, from accepted position claims at confirmed places. Run <code class="mono">uv run stk discover --investigation ${ caseSel || 'case-name' }</code> and the worker fills this queue.</template>
+      </v-empty-state>
+    </section>
+
+    <section class="dv-panel" v-if="cur" aria-labelledby="h-f">
+      <header><v-chip color="agent" variant="tonal" prepend-icon="ti ti-robot" size="small">${ cur.label }</v-chip>
+        <v-chip v-if="cur.new" variant="outlined" color="new" size="small" prepend-icon="ti ti-point-filled">new since you last looked</v-chip>
+        <v-chip v-if="detail && detail.request" variant="outlined" size="small" prepend-icon="ti ti-message-question" :href="'/review?request=' + detail.request">review requested</v-chip>
+        <span class="act d-flex ga-2 align-center"><span class="dv-band" :class="cur.band" aria-hidden="true"><i></i><i></i><i></i></span><span>${ cur.band } evidence</span></span></header>
+      <div class="px-3 pt-3"><h2 id="h-f" style="font-size:17px"><bdi dir="auto">${ cur.reason }</bdi></h2>
+        <p class="dv-muted mt-1 mb-0">${ cur.why }. <template v-for="(p, i) in cur.places" :key="p.id">${ i ? '; ' : '' }<a :href="'/places/' + p.id"><bdi dir="auto">${ [p.en, p.ar].filter(Boolean).join(', ') }</bdi></a></template>. Interval ${ span(cur.window) }. Strength is a band from source count and overlap, not a probability.</p></div>
+
+      <div class="dv-mem" v-if="detail">
+        <v-card v-for="m in detail.members" :key="m.statement" border>
+          <div class="d-flex ga-2 align-baseline"><strong v-if="m.name"><bdi dir="auto">${ m.name }</bdi></strong><a v-else :href="'/people/' + m.person" class="font-weight-bold" title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> ${ memberName(m) }</a>
+            <span class="ms-auto dv-sw" :class="[m.tier, m.agent ? '' : 'human']" :title="m.tier + (m.agent ? ', by an agent' : ', by a person')"></span></div>
+          <div class="text-caption"><strong>${ human(m.prop) }</strong> <bdi dir="auto">${ m.display }</bdi><span v-if="m.place.en && m.place.en !== m.display">, <a :href="'/places/' + m.place.id"><bdi dir="auto">${ m.place.en }</bdi></a></span><span v-if="m.when">, ${ m.when }</span><span v-if="m.inherited" class="dv-muted"> (date from the document)</span></div>
+          <div v-if="m.excerpt" class="dv-ex" dir="auto">${ m.excerpt.before }<mark>${ m.excerpt.span }</mark>${ m.excerpt.after }</div>
+          <div v-else-if="m.sensitive" class="dv-lock"><i class="ti ti-eye-off"></i> Sensitive source. Open it to see the span and the name; opening is logged.</div>
+          <div class="text-caption dv-muted d-flex ga-2 align-center"><v-icon icon="ti ti-file" size="14"></v-icon><span class="flex-grow-1"><bdi dir="auto">${ m.file }</bdi>, ${ where(m.span) }</span><a class="text-no-wrap" :href="'/evidence/' + m.source">Open at span</a></div>
+        </v-card>
+      </div>
+      <v-progress-linear v-else indeterminate color="agent"></v-progress-linear>
+
+      <template v-if="detail">
+        <div class="px-3"><h3 class="text-body-1 font-weight-bold">${ cur.kind === 'candidate_incident' ? 'Accept as an incident' : 'Accept: attach these people to an incident' }</h3>
+          <p class="dv-muted text-caption mb-1">Drop any member you do not accept. Roles start as unspecified and can be corrected later. One passkey gesture writes each kept statement; undo works per statement or for the whole gesture.</p></div>
+        <div class="v-table v-table--density-compact dv-chk"><div class="v-table__wrapper"><table>
+          <thead><tr><th style="width:40px"><v-checkbox-btn :model-value="keep.length === detail.members.length" :indeterminate="keep.length > 0 && keep.length < detail.members.length" aria-label="Keep all" @update:model-value="v => keep = v ? detail.members.map(m => m.statement) : []"></v-checkbox-btn></th><th>Member</th><th class="dv-hide-m">Statement</th><th style="width:190px">Role</th></tr></thead>
+          <tbody><tr v-for="(m, i) in detail.members" :key="m.statement">
+            <td><v-checkbox-btn v-model="keep" :value="m.statement" :id="i === 0 ? 'dv-first' : null" :aria-label="'Keep ' + memberName(m)"></v-checkbox-btn></td>
+            <td><bdi dir="auto">${ memberName(m) }</bdi></td><td class="text-caption dv-hide-m">involved, supported by <bdi dir="auto">${ m.file }</bdi></td>
+            <td class="role"><v-select v-model="roles[personOf(m)]" :items="ROLES" item-title="t" item-value="v" density="compact" hide-details variant="plain" :disabled="!keep.includes(m.statement)" :aria-label="'Role of ' + memberName(m)"></v-select></td></tr></tbody>
+        </table></div></div>
+        <div class="px-3 pt-3 d-flex ga-2 flex-wrap">
+          <v-select v-model="incident" :items="incidentOptions" item-title="t" item-value="v" density="compact" hide-details label="Incident" style="flex: 1 1 220px; max-width: 300px"></v-select>
+          <v-text-field v-if="!incident" v-model="title" density="compact" hide-details label="Incident title" style="flex: 2 1 260px; max-width: 420px" dir="auto"></v-text-field>
+        </div>
+        <div class="pa-3 d-flex ga-2 flex-wrap align-center">
+          <v-btn id="dv-sign" color="primary" prepend-icon="ti ti-signature" :disabled="!canSign" :loading="busy" @click="accept">Sign once: ${ plural(planned, 'statement') }</v-btn>
+          <v-btn variant="outlined" prepend-icon="ti ti-x" @click="rejecting = true">Reject</v-btn>
+          <v-btn variant="text" prepend-icon="ti ti-message-question" :disabled="!!detail.request" @click="asking = true">Ask a colleague</v-btn>
+        </div>
+      </template>
+    </section>
+  </div>
+
+  <v-dialog v-model="signing" width="560"><v-card border v-if="staged">
+    <v-card-item prepend-icon="ti ti-fingerprint"><v-card-title>Confirm with your passkey</v-card-title>
+      <v-card-subtitle>${ staged.title }. One assertion signs these ${ plural(staged.data.rows.length, 'row') }.</v-card-subtitle></v-card-item>
+    <div class="v-table v-table--density-compact" style="max-height: 46vh; overflow: auto"><div class="v-table__wrapper"><table>
+      <thead><tr><th>Statement</th><th>On</th><th>Value</th><th class="dv-hide-m">Hash</th></tr></thead>
+      <tbody><tr v-for="r in staged.data.rows" :key="r.hash"><td>${ stLabel(r) }</td><td class="mono">${ r.subject }</td><td><bdi dir="auto">${ r.summary }</bdi></td><td class="mono dv-hide-m" :title="r.hash">${ r.hash.slice(0, 10) }</td></tr></tbody>
+    </table></div></div>
+    <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="signing = false">Cancel</v-btn><v-btn color="primary" prepend-icon="ti ti-key" :loading="busy" @click="confirm">Use passkey</v-btn></v-card-actions></v-card></v-dialog>
+  <v-dialog v-model="rejecting" width="460"><v-card border title="Reject this finding">
+    <v-card-text><p class="mb-3">This set of people and places, in this investigation and month, will not be proposed again. New evidence for the same set is attached to this rejection as a note; a different set is a new finding.</p>
+      <v-textarea v-model="why" label="Why (kept with the rejection)" rows="2" density="compact" hide-details dir="auto" maxlength="4000"></v-textarea></v-card-text>
+    <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="rejecting = false">Cancel</v-btn><v-btn color="primary" prepend-icon="ti ti-signature" :loading="busy" @click="reject">Reject and sign</v-btn></v-card-actions></v-card></v-dialog>
+  <v-dialog v-model="asking" width="460"><v-card border title="Ask a colleague">
+    <v-card-text><v-select v-model="reviewer" :items="analysts" item-title="name" item-value="id" label="Analyst" density="compact" class="mb-3"></v-select>
+      <v-textarea v-model="ask" label="What should they check?" rows="2" density="compact" hide-details maxlength="4000" dir="auto"></v-textarea></v-card-text>
+    <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="asking = false">Cancel</v-btn><v-btn color="primary" :disabled="!reviewer || !ask.trim()" :loading="busy" @click="request">Send for review</v-btn></v-card-actions></v-card></v-dialog>
+  <v-dialog v-model="assigning" width="420"><v-card border :title="'Assign ' + plural(picked.length, 'finding')">
+    <v-card-text><v-select v-model="assignee" :items="analysts" item-title="name" item-value="id" label="Analyst" density="compact" hide-details></v-select></v-card-text>
+    <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="assigning = false">Cancel</v-btn><v-btn color="primary" :disabled="!assignee" :loading="busy" @click="assign">Assign</v-btn></v-card-actions></v-card></v-dialog>
+  <v-snackbar v-model="snack.show" timeout="4000">${ snack.text }</v-snackbar>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="module">
+import {prepare, sign} from '/static/js/monitor/passkey.js';
+
+const ROLES = [{t: 'unspecified', v: 'unspecified'}, {t: 'victim', v: 'victim'}, {t: 'witness', v: 'witness'}, {t: 'alleged perpetrator', v: 'alleged_perpetrator'}, {t: 'other', v: 'other'}];
+const KINDS = {shared_presence: 'Shared presence', candidate_incident: 'Candidate incident'};
+const LABELS = {incident: 'incident', occurred_at: 'place and time', involved: 'involved person', supported_by: 'supporting claim', review: 'decision on the finding', retraction: 'undo'};
+function plural(n, one, many) { return `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`; }
+const human = s => (s || '').replaceAll('_', ' ');
+const fmt = d => new Date(d + 'T00:00:00Z').toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'});
+
+window.app = Vue.createApp({
+  mixins: [layoutMixin], delimiters: config.delimiters,
+  data() {
+    const p = new URLSearchParams(location.search);
+    return {
+      ROLES, items: [], loaded: false, error: '', kinds: [], curId: p.get('f'), detail: null, seq: 0,
+      keep: [], roles: {}, title: '', incident: null, incidents: [], picked: [], analysts: [],
+      staged: null, signing: false, rejecting: false, asking: false, assigning: false, busy: false,
+      why: '', reviewer: null, ask: '', assignee: null, done: null, snack: {show: false, text: ''},
+      shellHints: [['/', 'search'], ['meta+k', 'go to'], ['j', 'next'], ['k', 'previous'], ['a', 'accept'], ['r', 'reject'], ['s', 'ask'], ['x', 'select']],
+    };
+  },
+  computed: {
+    kindList() { return [...new Set(this.items.map(f => f.kind))]; },
+    shown() { return this.items.filter(f => !this.kinds.length || this.kinds.includes(f.kind)); },
+    grouped() { return [{title: 'New since you last looked', items: this.shown.filter(f => f.new)}, {title: 'Earlier', items: this.shown.filter(f => !f.new)}]; },
+    ordered() { return this.grouped.flatMap(g => g.items); },
+    newCount() { return this.items.filter(f => f.new).length; },
+    cur() { return this.items.find(f => f.id === this.curId) || this.ordered[0] || null; },
+    keptPeople() { return this.detail ? [...new Set(this.detail.members.filter(m => this.keep.includes(m.statement)).map(this.personOf))] : []; },
+    planned() {
+      if (!this.keep.length) return 0;
+      const fresh = this.incident ? 0 : 1 + this.cur.places.length;
+      return fresh + this.keptPeople.length + this.keep.length + 1;
+    },
+    canSign() { return this.keep.length > 0 && (this.incident || this.title.trim()); },
+    incidentOptions() { return [{t: 'New incident', v: null}, ...this.incidents.map(i => ({t: i.title, v: i.id}))]; },
+  },
+  methods: {
+    plural, human,
+    kindLabel: k => KINDS[k] || human(k),
+    span(w) { return w[0] === w[1] ? fmt(w[0]) : `${fmt(w[0])} to ${fmt(w[1])}`; },
+    where(s) { return !s ? 'whole item' : 'start' in s ? `characters ${s.start} to ${s.end}` : s.page ? `region on page ${s.page}` : s.ms ? `${(s.ms[0] / 1000).toFixed(1)} s` : 'whole item'; },
+    // The finding names people by identity cluster; a member's subject is one mention in it.
+    personOf: m => m.cluster,
+    // People without a name the reader may see, numbered in order within the finding.
+    memberName(m) {
+      if (m.name) return m.name;
+      const unnamed = [...new Set((this.detail?.members || []).filter(x => !x.name).map(x => x.person))];
+      return `Unnamed person ${unnamed.indexOf(m.person) + 1}`;
+    },
+    stLabel(s) { return LABELS[s.prop] || human(s.prop); },
+    say(text) { this.snack = {show: true, text}; },
+    fail(err) { this.error = err.response?.data?.error || err.response?.data?.description || err.message; },
+    pick(id) { this.curId = id; const u = new URL(location); u.searchParams.set('f', id); history.replaceState(null, '', u); },
+    togglePick(id) { this.picked = this.picked.includes(id) ? this.picked.filter(x => x !== id) : [...this.picked, id]; },
+    useCase() { this.picked = []; this.load(); },
+    async load() {
+      try {
+        const {data} = await axios.get('/api/discover/findings', {params: {investigation: this.caseSel || undefined}});
+        this.items = data.items;
+        this.loaded = true;
+      } catch (err) { this.fail(err); }
+    },
+    async open(f) {
+      const seq = ++this.seq;
+      this.detail = null;
+      try {
+        const [d, inc] = await Promise.all([axios.get('/api/discover/findings/' + f.id), axios.get('/api/discover/incidents', {params: {investigation: f.investigation}})]);
+        if (seq !== this.seq) return;
+        this.detail = d.data;
+        this.incidents = inc.data.items;
+        this.keep = d.data.members.map(m => m.statement);
+        this.roles = Object.fromEntries(d.data.people.map(p => [p, 'unspecified']));
+        this.incident = null;
+        const place = f.places[0] || {};
+        this.title = `${place.en || place.ar || 'Unnamed place'}, ${this.monthName(f.month)}`;
+      } catch (err) { if (seq === this.seq) this.fail(err); }
+    },
+    monthName(m) { return new Date(m + '-01T00:00:00Z').toLocaleDateString('en', {month: 'long', year: 'numeric', timeZone: 'UTC'}); },
+    gone(id) { this.items = this.items.filter(f => f.id !== id); this.picked = this.picked.filter(x => x !== id); this.curId = this.ordered[0]?.id || null; },
+    // Stage on the server, show the rows the passkey will sign, then sign on confirm.
+    async stage(item, start, title, after) {
+      this.busy = true;
+      try {
+        this.staged = {data: await prepare(item, start), title, after};
+        this.signing = true;
+      } catch (err) { this.error = err.message; } finally { this.busy = false; }
+    },
+    async confirm() {
+      const {data, after} = this.staged;
+      this.busy = true;
+      try { after(await sign(data)); } catch (err) { this.error = err.message; } finally { this.busy = false; this.signing = false; this.staged = null; }
+    },
+    accept() {
+      const f = this.cur, roles = Object.fromEntries(this.keptPeople.map(p => [p, this.roles[p] || 'unspecified']));
+      const made = this.incident ? 'attached to the incident' : `incident \u201c${this.title.trim()}\u201d created`;
+      this.stage({finding: f.id, kept: this.keep, roles, title: this.incident ? '' : this.title.trim(), incident: this.incident}, '/api/review/findings/options', `Accept: ${f.reason}`, out => {
+        const incident = out.statements.find(s => s.subject.startsWith('incident:'))?.subject.slice(9);
+        this.done = {text: `Signed once: ${plural(out.statements.length, 'statement')} accepted, ${made}. Undo is per statement or for the whole gesture.`, gesture: out.gesture, left: out.statements, open: false, incident};
+        this.gone(f.id);
+      });
+    },
+    reject() {
+      const f = this.cur;
+      this.rejecting = false;
+      this.stage({finding: f.id, reason: this.why.trim()}, '/api/review/findings/reject', `Reject: ${f.reason}`, out => {
+        this.done = {text: 'Rejected and signed. This set will not be proposed again.', gesture: out.gesture, left: out.statements, open: false};
+        this.why = '';
+        this.gone(f.id);
+      });
+    },
+    undo(ids) {
+      const all = ids.length === this.done.left.length;
+      this.stage({gesture: this.done.gesture, ...(all ? {} : {statements: ids})}, '/api/review/undo', all ? 'Undo the whole gesture' : `Undo ${plural(ids.length, 'statement')}`, async () => {
+        const reopened = this.done.left.some(s => s.prop === 'review' && ids.includes(s.id));
+        this.done.left = this.done.left.filter(s => !ids.includes(s.id));
+        this.done.text = reopened ? 'Undone. The finding is back in the queue.' : `Undone: ${plural(ids.length, 'statement')}.`;
+        if (reopened) await this.load();
+      });
+    },
+    async loadAnalysts() {
+      if (!this.analysts.length) this.analysts = (await axios.get('/api/collaboration/analysts')).data.items;
+    },
+    async request() {
+      this.busy = true;
+      try {
+        await axios.post('/api/collaboration/requests', {item: {statement: this.cur.statement, reviewer: this.reviewer, reason: this.ask.trim()}});
+        this.asking = false; this.ask = '';
+        this.say('Review requested. They are notified, and only they can decide this finding now.');
+        await this.open(this.cur);
+      } catch (err) { this.fail(err); this.asking = false; } finally { this.busy = false; }
+    },
+    async assign() {
+      this.busy = true;
+      try {
+        const by = {};
+        for (const f of this.items.filter(f => this.picked.includes(f.id))) (by[f.investigation] ||= []).push('finding:' + f.id);
+        let n = 0;
+        for (const [investigation, subjects] of Object.entries(by)) {
+          n += (await axios.post('/api/assignments/bulk', {item: {investigation, assignee: this.assignee, subjects}})).data.assigned;
+        }
+        this.assigning = false; this.picked = [];
+        this.say(`${plural(n, 'finding')} assigned.`);
+      } catch (err) { this.fail(err); this.assigning = false; } finally { this.busy = false; }
+    },
+    onKey(e) {
+      const t = e.target, typing = t.isContentEditable || ['TEXTAREA', 'SELECT', 'INPUT'].includes(t.tagName) && t.type !== 'checkbox';
+      if (typing || t.closest('.v-overlay') || e.metaKey || e.ctrlKey || e.altKey || !this.cur) return;
+      const list = this.ordered, i = list.findIndex(f => f.id === this.cur.id);
+      const act = {
+        j: () => list[i + 1] && this.pick(list[i + 1].id),
+        k: () => i > 0 && this.pick(list[i - 1].id),
+        a: () => { const el = document.getElementById('dv-first'); el?.scrollIntoView({block: 'center'}); document.querySelector('#dv-sign')?.focus(); },
+        r: () => { this.rejecting = true; },
+        s: () => { if (!this.detail?.request) this.asking = true; },
+        x: () => this.togglePick(this.cur.id),
+      }[e.key];
+      if (!act) return;
+      e.preventDefault();
+      act();
+      this.$nextTick(() => document.querySelector(`.dv-row[data-key="${this.cur.id}"]`)?.scrollIntoView({block: 'nearest'}));
+    },
+  },
+  watch: {
+    cur: {handler(f) { if (f && f.id !== this.detail?.id) this.open(f); }},
+    asking(v) { if (v) this.loadAnalysts().catch(this.fail); },
+    assigning(v) { if (v) this.loadAnalysts().catch(this.fail); },
+  },
+  created() {
+    const p = new URLSearchParams(location.search);
+    if (p.has('investigation')) this.caseSel = p.get('investigation') || null;
+  },
+  mounted() { this.load(); document.addEventListener('keydown', this.onKey); },
+  beforeUnmount() { document.removeEventListener('keydown', this.onKey); },
+});
+registerStkComponents(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

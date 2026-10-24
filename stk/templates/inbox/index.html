@@ -1,0 +1,364 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.ibx-page { max-width: 1480px; }
+.ibx-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.ibx-head h1 { font-size: 18px; font-weight: 650; margin: 0; }
+.ibx-head p { margin: 0; color: var(--ink-3); }
+.ibx-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.ibx { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 12px; align-items: start; }
+.ibx-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.ibx-panel > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); min-height: 42px; }
+.ibx-panel > header h2 { font-size: 13px; font-weight: 650; margin: 0; }
+.ibx-panel > header .act { margin-inline-start: auto; }
+.ibx-muted { color: var(--ink-3); }
+.ibx-row { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border-bottom: 1px solid var(--line); cursor: pointer; outline: none; }
+.ibx-row:last-child { border-bottom: 0; }
+.ibx-row:hover, .ibx-row:focus-visible { background: var(--wash); }
+.ibx-row.sel { background: var(--wash); box-shadow: inset 2px 0 0 var(--ink); }
+.ibx-row .ic { color: var(--ink-3); margin-top: 2px; }
+.ibx-row.unread .ic { color: var(--agent); }
+.ibx-row .t { min-width: 0; flex: 1; }
+.ibx-row .t1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+.ibx-row.unread .t1 { font-weight: 650; }
+.ibx-row .t2 { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ibx-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--agent); flex: none; margin-top: 7px; }
+.ibx-about { padding: 12px; background: var(--raise); border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: flex-start; }
+.ibx-about .t { min-width: 0; flex: 1; }
+.ibx-msg { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.ibx-msg .who { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: 13px; }
+.ibx-msg .body { margin-top: 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ibx-reply { padding: 12px; }
+.ibx-actor { display: inline-flex; gap: 6px; align-items: center; min-width: 0; }
+.ibx-msg .ibx-actor strong { white-space: nowrap; }
+.ibx-actor .v-avatar.bot { background: var(--agent-wash); color: var(--agent); }
+@media (max-width: 959px) { .ibx { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="ibx-page py-4">
+  <div class="ibx-head">
+    <h1>Inbox</h1>
+    <p>Everything addressed to you: review requests, threads you are in, mentions, assigned work, decisions and finished intake.</p>
+  </div>
+  <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
+  <div class="ibx-chips" v-show="!(isMobile && pane)" role="group" aria-label="Filter">
+    <v-chip v-for="f in filters" :key="f.key" size="small" filter :variant="filter === f.key ? 'flat' : 'outlined'" :color="filter === f.key ? 'primary' : undefined" @click="setFilter(f.key)">${ f.title } <span class="ms-1 ibx-muted" v-if="f.n">${ f.n }</span></v-chip>
+  </div>
+  <div class="ibx">
+    <section class="ibx-panel" v-show="!(isMobile && pane)" aria-labelledby="ibx-h-list">
+      <header><h2 id="ibx-h-list">Newest first</h2><span class="ibx-muted text-caption">${ loading && !rows.length ? 'Loading' : unread + ' unread' }</span>
+        <v-btn class="act" size="small" variant="text" prepend-icon="ti ti-checks" :disabled="!unread" @click="readAll">Mark all read</v-btn></header>
+      <v-skeleton-loader v-if="loading && !rows.length" type="list-item-two-line@6"></v-skeleton-loader>
+      <div v-else-if="shown.length" role="listbox" aria-label="Inbox items">
+        <div v-for="(r, i) in shown" :key="r.key" :id="'ibx-' + i" class="ibx-row" :class="{ sel: sel === r.key, unread: r.unread }" role="option" :aria-selected="sel === r.key" tabindex="-1" @click="pick(r, true)">
+          <v-icon :icon="r.icon" size="18" class="ic"></v-icon>
+          <div class="t"><div class="t1" dir="auto">${ r.title }</div><div class="t2" dir="auto">${ r.sub }, ${ ago(r.at) }</div></div>
+          <v-chip v-if="r.due" size="x-small" variant="outlined" :color="r.due.late ? 'error' : undefined">${ r.due.text }</v-chip>
+          <span v-if="r.unread" class="ibx-dot" aria-label="Unread"></span>
+        </div>
+      </div>
+      <v-empty-state v-else-if="!rows.length" icon="ti ti-inbox" title="Nothing addressed to you yet" text="Review requests asked of you or sent by you, replies and @mentions in your threads, work assigned to you, decisions on your proposals and finished intake batches appear here."></v-empty-state>
+      <v-empty-state v-else icon="ti ti-filter-off" title="Nothing in this filter" :text="'Other items: ' + rows.length + '.'"><template #actions><v-btn size="small" variant="outlined" @click="setFilter('all')">Show all</v-btn></template></v-empty-state>
+    </section>
+
+    <section class="ibx-panel" v-show="!isMobile || pane" aria-label="Conversation">
+      <header v-if="isMobile"><v-btn size="small" variant="text" prepend-icon="ti ti-arrow-left" @click="back">Inbox</v-btn></header>
+      <template v-if="cur && cur.kind === 'request'">
+        <v-skeleton-loader v-if="!cur.req && !cur.failed" type="article"></v-skeleton-loader>
+        <p v-else-if="!cur.req" class="pa-4 ibx-muted">${ cur.failed }</p>
+        <template v-else>
+          <div class="ibx-about">
+            <media-thumb v-if="doc(cur.req)" :sha="doc(cur.req).sha256" :file="doc(cur.req).file" :href="srcHref(cur.req)" :caption="false" :width="isMobile ? 64 : 96" :height="isMobile ? 44 : 64"></media-thumb>
+            <div class="t">
+              <div class="text-caption ibx-muted">Review request on a ${ cur.req.proposal.prop === 'finding' ? 'finding' : 'claim' }</div>
+              <div><strong dir="auto">${ sentence(cur.req) }</strong>
+                <v-chip size="x-small" variant="outlined" class="ms-1">${ cur.req.proposal.tier }</v-chip></div>
+              <div class="text-caption ibx-muted"><template v-if="doc(cur.req)">In <a :href="srcHref(cur.req)">${ doc(cur.req).file }</a><template v-if="spanLabel(cur.req.proposal.span)">, ${ spanLabel(cur.req.proposal.span) }</template>,</template>
+                proposed by <actor-chip v-if="cur.req.proposal.actor" :name="cur.req.proposal.actor.label" :kind="cur.req.proposal.actor.kind"></actor-chip></div>
+              <div class="d-flex ga-2 mt-2 flex-wrap">
+                <v-btn v-if="doc(cur.req)" size="small" variant="outlined" prepend-icon="ti ti-file-search" :href="srcHref(cur.req)">Open source</v-btn>
+                <v-btn size="small" :color="decidable(cur.req) ? 'primary' : undefined" :variant="decidable(cur.req) ? 'flat' : 'outlined'" prepend-icon="ti ti-checklist" :href="'/review?request=' + cur.req.id">${ decidable(cur.req) ? 'Decide in Review' : 'Open in Review' }</v-btn>
+              </div>
+            </div>
+          </div>
+          <div class="ibx-msg">
+            <div class="who"><actor-chip :name="cur.req.sender.name" role="asked for review" :me="cur.req.sender.id === me"></actor-chip><span class="ibx-muted text-caption">${ ago(cur.req.at) }</span>
+              <v-chip size="x-small" color="warning" variant="outlined" prepend-icon="ti ti-user-plus">asks ${ cur.req.reviewer === me ? 'you' : nameOf(cur.req.reviewer) }</v-chip></div>
+            <div class="body" dir="auto" v-html="mark(cur.req.reason)"></div>
+          </div>
+          <div v-for="m in cur.req.comments" :key="m.id" class="ibx-msg">
+            <div class="who"><actor-chip :name="m.author" :role="roleOf(m.author)"></actor-chip><span class="ibx-muted text-caption">${ ago(m.at) }</span></div>
+            <div class="body" dir="auto" v-html="mark(m.text)"></div>
+          </div>
+          <div class="ibx-reply">
+            <v-menu v-model="mentionOpen" location="top start" :open-on-click="false" :close-on-content-click="true">
+              <template #activator="{ props }">
+                <v-textarea id="ibx-reply" v-bind="props" v-model="reply" rows="2" auto-grow density="compact" hide-details maxlength="4000" label="Reply. Type @ to mention a colleague" dir="auto" @update:model-value="typed" @keydown="replyKey"></v-textarea>
+              </template>
+              <v-list density="compact" aria-label="Mention a colleague">
+                <v-list-item v-for="u in suggestions" :key="u.id" prepend-icon="ti ti-at" :title="u.name" :subtitle="u.inThread ? 'in this thread' : 'notified only if an admin'" @click="insertMention(u)"></v-list-item>
+              </v-list>
+            </v-menu>
+            <div class="d-flex ga-2 mt-2 align-center flex-wrap">
+              <span class="text-caption ibx-muted">Mentions reach this thread's people and admins.</span><v-spacer></v-spacer>
+              <v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-send" :disabled="!reply.trim()" :loading="posting" @click="post">Post</v-btn>
+            </div>
+          </div>
+        </template>
+      </template>
+      <template v-else-if="cur && cur.kind === 'assignment'">
+        <div class="ibx-about">
+          <media-thumb v-if="cur.a.source && cur.a.source.sha256" :sha="cur.a.source.sha256" :file="cur.a.source.title || ''" :href="cur.href" :caption="false" :width="isMobile ? 64 : 96" :height="isMobile ? 44 : 64"></media-thumb>
+          <div class="t">
+            <div class="text-caption ibx-muted d-flex flex-wrap ga-1 align-center"><actor-chip :name="myName" role="assignee" :me="true"></actor-chip><template v-if="cur.a.investigation"> in ${ cur.a.investigation }</template></div>
+            <div><strong dir="auto">${ cur.title }</strong></div>
+            <div class="d-flex ga-2 mt-1 flex-wrap"><v-chip v-if="cur.due" size="x-small" variant="outlined" :color="cur.due.late ? 'error' : undefined">${ cur.due.text }</v-chip><v-chip size="x-small" variant="outlined">${ cur.a.priority } priority</v-chip></div>
+            <v-btn class="mt-2" size="small" color="primary" variant="flat" prepend-icon="ti ti-arrow-right" :href="cur.href">Open it</v-btn>
+          </div>
+        </div>
+        <p class="pa-3 ibx-muted text-body-2">Assigned work has no thread of its own. Ask a colleague about a claim from the source page and the thread appears here.</p>
+      </template>
+      <template v-else-if="cur">
+        <div class="ibx-about"><v-icon :icon="cur.icon" size="22" class="ibx-muted"></v-icon>
+          <div class="t"><div class="text-caption ibx-muted">${ cur.label }, ${ ago(cur.at) }</div><div><strong dir="auto">${ cur.n.title }</strong></div><div class="ibx-muted" dir="auto">${ cur.n.subtitle }</div>
+            <v-btn class="mt-2" size="small" color="primary" variant="flat" prepend-icon="ti ti-arrow-right" :href="cur.n.to">${ cur.n.kind === 'intake_done' ? 'Open the batch' : 'Open it' }</v-btn></div>
+        </div>
+      </template>
+      <v-empty-state v-else icon="ti ti-message" title="Select an item" text="Its conversation, the claim or source it is about and a reply box show here."></v-empty-state>
+    </section>
+  </div>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="module">
+import {registerMediaViewers} from '/static/js/components/media.js';
+
+const ME = {{ current_user.id | tojson }}, MY_NAME = {{ (current_user.name or current_user.email) | tojson }};
+// ponytail: local stand-in for the shared ActorChip (stk/static/js/components/ActorChip.js); swap when it lands.
+const ActorChip = {
+  props: {name: String, kind: {type: String, default: 'human'}, role: String, me: Boolean},
+  delimiters: ['[[', ']]'],
+  computed: {initials() { return (this.name || '?').split(/[-\s@.]/).filter(Boolean).map(x => x[0]).join('').slice(0, 2).toUpperCase(); }},
+  template: `<span class="ibx-actor"><v-avatar size="22" :class="{bot: kind !== 'human'}" :color="kind === 'human' ? (me ? 'primary' : 'surface-variant') : undefined">
+    <v-icon v-if="kind === 'import'" icon="ti ti-file-import" size="14"></v-icon><v-icon v-else-if="kind !== 'human'" icon="ti ti-robot" size="14"></v-icon><span v-else class="text-caption">[[ initials ]]</span></v-avatar>
+    <strong :class="{'text-agent': kind !== 'human'}">[[ name ]]</strong><span v-if="role" class="text-caption" style="color: var(--ink-3)">[[ role ]]</span></span>`,
+};
+const PROP = {name: 'Name', father_name: "Father's name", mother_name: "Mother's name", birth_date: 'Born', place_of_birth: 'Born in', arrested_at: 'Arrested at', last_seen: 'Last seen', detention_branch: 'Held by branch', transferred_to: 'Transferred to', seen_at: 'Seen at', detained_at: 'Detained at', document_date: 'Document date', document_type: 'Document type', same_as: 'Same person', media_match: 'Media match', finding: 'Finding'};
+const ICON = {request: 'ti ti-message-question', mention: 'ti ti-at', reply: 'ti ti-message', decision: 'ti ti-signature', assignment: 'ti ti-user-plus', assigned: 'ti ti-user-plus', intake_done: 'ti ti-upload'};
+const LABEL = {assigned: 'Assigned to you', mention: 'Mentioned you', reply: 'New reply', decision: 'Decision', intake_done: 'Intake finished'};
+const PENDING = ['unconfirmed', 'corroborated'];
+const REQ = /(?:[?&]request=|[?&]item=request:)([0-9a-f-]{36})/;
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c]);
+const ms = v => {const s = Math.round((v || 0) / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;};
+// The local part of an email is what the server matches when a person has no display name.
+const handle = n => n.includes('@') ? n.split('@')[0] : n;
+
+window.app = Vue.createApp({
+  mixins: [layoutMixin], delimiters: config.delimiters,
+  data() {
+    return {
+      me: ME, myName: MY_NAME, rows: [], loading: true, error: '', filter: 'all', sel: null, pane: false, analysts: [],
+      reply: '', posting: false, mentionOpen: false,
+      shellHints: [['/', 'search'], ['meta+k', 'go to'], ['j', 'next'], ['k', 'previous'], ['enter', 'open'], ['c', 'comment'], ['r', 'reply']],
+    };
+  },
+  computed: {
+    filters() {
+      const n = test => this.rows.filter(test).length;
+      return [{key: 'all', title: 'All'}, {key: 'asked', title: 'Asked of me'}, {key: 'sent', title: 'I sent'}, {key: 'threads', title: 'Threads and mentions'},
+        {key: 'work', title: 'Assigned to me'}, {key: 'decisions', title: 'Decisions'}, {key: 'intake', title: 'Intake finished'}]
+        .map(f => ({...f, n: f.key === 'all' ? 0 : n(r => r.tags.includes(f.key))}));
+    },
+    shown() { return this.filter === 'all' ? this.rows : this.rows.filter(r => r.tags.includes(this.filter)); },
+    cur() { return this.rows.find(r => r.key === this.sel) || null; },
+    unread() { return this.rows.filter(r => r.unread).length; },
+    suggestions() {
+      const q = (/@([^\s@]*)$/.exec(this.reply) || [])[1]?.toLowerCase() ?? '';
+      const r = this.cur?.req, inThread = new Set(r ? [r.sender.id, r.reviewer] : []);
+      const names = new Set(r ? r.comments.map(c => c.author) : []);
+      return this.analysts.map(u => ({...u, inThread: inThread.has(u.id) || names.has(u.name)}))
+        .filter(u => u.name.toLowerCase().includes(q)).sort((a, b) => b.inThread - a.inThread).slice(0, 8);
+    },
+  },
+  methods: {
+    prop: p => PROP[p] || (p || '').replaceAll('_', ' ').replace(/^./, c => c.toUpperCase()),
+    ago(iso) {
+      const s = (Date.now() - new Date(iso)) / 1000;
+      return s < 60 ? 'now' : s < 3600 ? `${Math.floor(s / 60)} min ago` : s < 86400 ? `${Math.floor(s / 3600)} h ago` : s < 30 * 86400 ? `${Math.floor(s / 86400)} d ago` : iso.slice(0, 10);
+    },
+    mark(t) { return esc(t).replace(/(^|\s)@([^\s@,.;:!?]+)/g, '$1<strong>@$2</strong>'); },
+    nameOf(id) { return this.analysts.find(u => u.id === id)?.name || 'a colleague'; },
+    spanLabel(s) { return !s ? '' : s.bbox ? `region on page ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.page ? `page ${s.page}` : s.start != null ? `characters ${s.start} to ${s.end}` : ''; },
+    // A claim as a person reads it; never an id or a raw value.
+    sentence(req) {
+      const c = req.proposal, file = c.doc?.file, v = c.display && !/^[{[]/.test(c.display) ? c.display : null;
+      if (c.prop === 'same_as') return 'Same person? Two records that may name one person';
+      if (c.prop === 'media_match') return req.media ? `Same picture or sound? ${req.media.left.file} and ${req.media.right.file}` : 'Same picture or sound? A source was erased';
+      if (c.prop === 'finding') return 'A connection proposed by discovery';
+      if (c.masked) return `${this.prop(c.prop)}: sensitive, shown on the source page after a logged reveal`;
+      // First-strong isolates keep an Arabic value from reordering the words around it.
+      return [this.prop(c.prop), v && ('\u2068' + v + '\u2069' + (c.when && !['birth_date', 'document_date'].includes(c.prop) ? ', ' + c.when : ''))].filter(Boolean).join(' ') || `${this.prop(c.prop)}${file ? ' in ' + file : ''}`;
+    },
+    roleOf(name) { const r = this.cur?.req; return !r ? '' : name === r.sender.name ? 'requester' : name === this.nameOf(r.reviewer) || (r.reviewer === ME && name === this.myName) ? 'reviewer' : 'in the thread'; },
+    doc(req) { return req.proposal.doc?.sha256 ? req.proposal.doc : null; },
+    srcHref(req) { const d = this.doc(req), page = req.proposal.span?.page; return d ? `/evidence/${d.sha256}${page ? '?page=' + page : ''}` : null; },
+    decidable(req) { return req.can_review && PENDING.includes(req.proposal.tier); },
+    fail(err) { this.error = err.response?.data?.error || err.response?.data?.description || err.message; },
+    threadRow(id, req, notes) {
+      const at = [req?.at, ...(req?.comments || []).map(c => c.at), ...notes.map(n => n.at)].filter(Boolean).sort().pop();
+      const asked = req?.reviewer === ME, sent = req?.sender.id === ME, last = req?.comments.at(-1);
+      const decided = notes.some(n => n.kind === 'decision') || (req && !PENDING.includes(req.proposal.tier));
+      const top = notes.find(n => !n.isSeen) || notes[0];
+      const who = !req ? (top ? LABEL[top.kind] : 'Thread') : asked ? `${req.sender.name} asks you` : sent ? `You asked ${this.nameOf(req.reviewer)}` : `${req.sender.name} asked ${this.nameOf(req.reviewer)}`;
+      const what = req ? this.sentence(req) : top?.subtitle;
+      return {
+        key: 'request:' + id, id, kind: 'request', req, notes, at,
+        unread: notes.some(n => !n.isSeen),
+        icon: ICON[top && !top.isSeen ? top.kind : 'request'],
+        title: last ? `${last.author}: ${last.text}` : req ? req.reason : top?.title,
+        sub: [top && !top.isSeen && top.kind !== 'assigned' ? LABEL[top.kind] : who, what, decided ? 'decided' : ''].filter(Boolean).join(', '),
+        tags: [asked && 'asked', sent && 'sent', (req?.comments.length || notes.some(n => ['mention', 'reply'].includes(n.kind))) && 'threads', decided && 'decisions'].filter(Boolean),
+      };
+    },
+    dueOf(status) {
+      const m = /^due (\d{4}-\d{2}-\d{2})$/.exec(status || '');
+      if (!m) return null;
+      const days = Math.round((new Date(m[1]) - new Date(new Date().toISOString().slice(0, 10))) / 864e5);
+      return {late: days < 0, text: days < 0 ? `${-days} d overdue` : days === 0 ? 'due today' : `due in ${days} d`};
+    },
+    workRow(a) {
+      const what = a.subject === 'blob' ? (a.source?.title || 'A source') : a.subject === 'statement' ? `${this.prop(a.prop)} claim${a.source?.title ? ' in ' + a.source.title : ''}` : `${(a.finding || 'A').replaceAll('_', ' ')} finding`;
+      const href = a.subject === 'finding' ? '/discover' : a.source?.sha256 ? '/evidence/' + a.source.sha256 : '/sources?assignee=me';
+      return {key: 'assignment:' + a.id, kind: 'assignment', a, at: a.at, unread: false, icon: ICON.assignment, title: what, sub: `Assigned to you, ${a.priority} priority`, due: this.dueOf(a.status), href, notes: [], tags: ['work']};
+    },
+    noteRow(n) {
+      return {key: 'note:' + n.id, kind: 'note', n, at: n.at, notes: [n], unread: !n.isSeen, icon: ICON[n.kind] || 'ti ti-bell', label: LABEL[n.kind] || 'Notice',
+        title: n.title, sub: [LABEL[n.kind], n.subtitle].filter(Boolean).join(', '), tags: [{assigned: 'work', intake_done: 'intake', decision: 'decisions', mention: 'threads', reply: 'threads'}[n.kind]].filter(Boolean)};
+    },
+    // Desk "Needs you" labels assigned work in one batch; page through it for the assignments only.
+    async work() {
+      const out = [];
+      for (let page = 1; page <= 5; page++) {
+        const {data} = await axios.get('/api/desk/needs', {params: {page, per_page: 100}});
+        out.push(...data.items.filter(i => i.kind === 'assignment'));
+        if (page * 100 >= data.total) break;
+      }
+      return out;
+    },
+    // ponytail: the newest 100 notifications and 100 requests per box, merged here; a server inbox query replaces this when an analyst has more.
+    async load() {
+      try {
+        const [notes, recv, sent, work] = await Promise.all([
+          axios.get('/api/notifications', {params: {limit: 100}}),
+          axios.get('/api/collaboration/requests', {params: {box: 'received'}}),
+          axios.get('/api/collaboration/requests', {params: {box: 'sent'}}),
+          this.work(),
+        ]);
+        const reqs = new Map([...recv.data.items, ...sent.data.items].map(r => [r.id, r]));
+        const byReq = new Map(), loose = [];
+        for (const n of notes.data.items) {
+          const id = (REQ.exec(n.to) || [])[1];
+          if (id) { if (!byReq.has(id)) byReq.set(id, []); byReq.get(id).push(n); } else loose.push(n);
+        }
+        const old = new Map(this.rows.filter(r => r.req).map(r => [r.id, r.req]));
+        const ids = new Set([...reqs.keys(), ...byReq.keys()]);
+        this.rows = [
+          ...[...ids].map(id => this.threadRow(id, reqs.get(id) || old.get(id) || null, byReq.get(id) || [])),
+          ...work.map(a => this.workRow(a)),
+          ...loose.map(n => this.noteRow(n)),
+        ].sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+        this.navCounts = {...this.navCounts, notifications: notes.data.unread};
+      } catch (err) { this.fail(err); } finally { this.loading = false; }
+    },
+    resolve(item) {
+      if (!item) return null;
+      const direct = this.rows.find(r => r.key === item);
+      if (direct) return direct;
+      const id = item.startsWith('note:') && item.slice(5);
+      return id ? this.rows.find(r => r.notes.some(n => n.id === id)) : null;
+    },
+    async pick(r, open) {
+      if (this.sel !== r.key) { this.reply = ''; this.mentionOpen = false; }
+      this.sel = r.key;
+      if (open) this.pane = true;
+      history.replaceState(null, '', '/inbox?item=' + encodeURIComponent(r.key));
+      this.$nextTick(() => { const el = document.getElementById('ibx-' + this.shown.indexOf(r)); el?.focus({preventScroll: true}); el?.scrollIntoView({block: 'nearest'}); });
+      const unseen = r.notes.filter(n => !n.isSeen);
+      if (unseen.length) {
+        unseen.forEach(n => { n.isSeen = true; });
+        r.unread = false;
+        try { await this.markNotes({ids: unseen.map(n => n.id)}); } catch (err) { this.fail(err); }
+      }
+      if (r.kind === 'request' && !r.req) await this.fetchThread(r);
+    },
+    async fetchThread(r) {
+      try { r.req = (await axios.get('/api/collaboration/requests/' + r.id)).data; r.failed = null; }
+      catch (err) { r.failed = err.response?.status === 403 ? 'This thread is private to its sender, reviewer and admins.' : (err.response?.data?.error || err.message); }
+    },
+    back() { this.pane = false; history.replaceState(null, '', '/inbox'); },
+    setFilter(key) { this.filter = key; },
+    move(d) {
+      const list = this.shown;
+      if (!list.length) return;
+      const i = list.findIndex(r => r.key === this.sel);
+      this.pick(list[i < 0 ? 0 : Math.max(0, Math.min(list.length - 1, i + d))], false);
+    },
+    async readAll() {
+      try { await this.markNotes({all: true}); this.rows.forEach(r => { r.unread = false; r.notes.forEach(n => { n.isSeen = true; }); }); } catch (err) { this.fail(err); }
+    },
+    typed(v) { this.mentionOpen = /(^|\s)@[^\s@]*$/.test(v) && this.suggestions.length > 0; },
+    insertMention(u) { this.reply = this.reply.replace(/@[^\s@]*$/, '@' + handle(u.name) + ' '); this.mentionOpen = false; this.$nextTick(() => document.getElementById('ibx-reply')?.focus()); },
+    replyKey(e) {
+      if (this.mentionOpen && (e.key === 'Enter' || e.key === 'Tab') && this.suggestions.length) { e.preventDefault(); this.insertMention(this.suggestions[0]); }
+      else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); this.post(); }
+      else if (e.key === 'Escape') { this.mentionOpen = false; }
+    },
+    async post() {
+      const r = this.cur;
+      if (!r?.req || !this.reply.trim() || this.posting) return;
+      this.posting = true;
+      try {
+        await axios.post(`/api/collaboration/requests/${r.id}/comments`, {item: {text: this.reply}});
+        this.reply = '';
+        await this.fetchThread(r);
+        Object.assign(r, this.threadRow(r.id, r.req, r.notes), {unread: false});
+      } catch (err) { this.fail(err); } finally { this.posting = false; }
+    },
+    onKey(e) {
+      if (TYPING(e.target) || e.target.closest('.v-overlay') || e.metaKey || e.ctrlKey || e.altKey) return;
+      const act = {
+        j: () => this.move(1), k: () => this.move(-1),
+        Enter: () => { if (this.cur) { this.pane = true; this.$nextTick(() => document.querySelector('.ibx-msg:last-of-type, .ibx-about')?.scrollIntoView({block: 'nearest'})); } },
+        c: () => this.focusReply(), r: () => this.focusReply(),
+        Escape: () => { if (this.isMobile && this.pane) this.back(); },
+      }[e.key];
+      if (!act || (e.key === 'Enter' && ['A', 'BUTTON'].includes(e.target.tagName))) return;
+      e.preventDefault(); act();
+    },
+    focusReply() {
+      if (this.cur?.kind !== 'request') return;
+      this.pane = true;
+      this.$nextTick(() => document.getElementById('ibx-reply')?.focus());
+    },
+    _onWsMessage(msg) {
+      layoutMixin.methods._onWsMessage.call(this, msg);
+      if (msg.type === 'notification') this.load();
+    },
+  },
+  async mounted() {
+    document.addEventListener('keydown', this.onKey);
+    axios.get('/api/collaboration/analysts').then(r => { this.analysts = r.data.items; }).catch(err => this.fail(err));
+    await this.load();
+    const want = this.resolve(new URLSearchParams(location.search).get('item'));
+    if (want) await this.pick(want, true);
+    else if (this.rows.length && !this.isMobile) await this.pick(this.rows[0], false);
+  },
+  beforeUnmount() { document.removeEventListener('keydown', this.onKey); },
+});
+app.component('actor-chip', ActorChip);
+registerStkComponents(app);
+registerMediaViewers(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

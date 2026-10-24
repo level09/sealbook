@@ -1,0 +1,127 @@
+{% extends "layout.html" %}
+{% block css %}<link rel="stylesheet" href="{{ asset('css/entity.css') }}">
+<style>
+.pl-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.pl-un { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(0, 1.4fr) minmax(220px, 300px) auto; gap: 6px 14px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--line); }
+.pl-un .claims { font-size: 12.5px; color: var(--ink-2); }
+@media (max-width: 900px) { .pl-un { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="en-page py-4">
+  <div class="d-flex align-baseline ga-3 flex-wrap mb-3">
+    <h1 class="text-headline-small">Places</h1>
+    <p class="en-muted ma-0">Where claims resolve in ${ caseSel || 'all investigations' }. Names stay unresolved until a person confirms a place.</p>
+  </div>
+  <section class="en-panel">
+    <v-tabs v-model="tab" density="compact" class="px-2" style="border-bottom: 1px solid var(--line)">
+      <v-tab value="places" prepend-icon="ti ti-map-pin">Places <span class="en-muted ms-1">${ total ?? '' }</span></v-tab>
+      <v-tab value="unresolved" prepend-icon="ti ti-map-question">Unresolved names <span class="en-muted ms-1">${ un.loaded ? un.items.length : '' }</span></v-tab>
+    </v-tabs>
+    <template v-if="tab === 'places'">
+      <div class="pl-bar">
+        <v-text-field v-model="q" density="compact" hide-details clearable prepend-inner-icon="ti ti-filter" placeholder="Filter by any name or spelling" aria-label="Filter places" style="max-width: 320px; min-width: 220px" dir="auto" @update:model-value="typed"></v-text-field>
+        <v-switch v-model="all" density="compact" hide-details color="primary" label="Include places nothing resolves to" @update:model-value="reload"></v-switch>
+      </div>
+      <v-data-table-server class="en-table" :headers="shown" :items="items" :items-length="total || 0" :loading="loading" item-value="id" density="compact"
+        :items-per-page="opts.itemsPerPage" :sort-by="opts.sortBy" must-sort :items-per-page-options="[25, 50, 100]" @update:options="load" @click:row="(_, {item}) => location.href = '/places/' + item.id">
+        <template #item.name="{ item }"><a :href="'/places/' + item.id" @click.stop><bdi dir="auto">${ item.name_ar }</bdi></a><span v-if="item.name_en" class="en-muted"> · <bdi dir="auto">${ item.name_en }</bdi></span></template>
+        <template #item.kind="{ item }"><span class="r-chip is-place">${ item.kind_label }</span></template>
+        <template #item.governorate="{ item }">${ item.governorate || '' }<span v-if="item.district && item.district !== item.governorate" class="en-muted">, ${ item.district }</span></template>
+        <template #item.last="{ item }"><span v-if="item.from">${ fmtSpan(item.from, item.last) }</span><span v-else class="en-muted">no dated claim</span></template>
+        <template #no-data><v-empty-state icon="ti ti-map-pin-off" :title="q ? 'No place has that name' : 'No claim resolves to a place yet'" text="Confirm unresolved names, or include places nothing resolves to."></v-empty-state></template>
+      </v-data-table-server>
+    </template>
+    <template v-else>
+      <p class="en-muted text-caption px-3 pt-3 mb-2">A claim names a place in its own words. Pick the place it means and sign; the same spelling then resolves by itself within that case and governorate when the gazetteer has one candidate for it.</p>
+      <v-skeleton-loader v-if="!un.loaded" type="list-item-two-line@4"></v-skeleton-loader>
+      <div v-for="u in un.items" :key="u.norm" class="pl-un">
+        <div><strong><bdi dir="auto">${ u.name }</bdi></strong><div class="en-muted text-caption">${ plural(u.count, 'claim') }, ${ u.candidates.length ? plural(u.candidates.length, 'candidate place') : 'no gazetteer match' }</div></div>
+        <div class="claims"><div v-for="c in u.claims.slice(0, 3)" :key="c.id">${ PROP[c.prop] || human(c.prop) }${ c.when ? ', ' + c.when : '' }: <a v-if="c.href" :href="c.href"><bdi>${ c.file }</bdi></a><span v-else>${ c.file }</span></div>
+          <div v-if="u.count > 3" class="en-muted">and ${ plural(u.count - 3, 'more claim') }</div></div>
+        <template v-if="u.claims[0].proposal"><span class="text-caption">Proposed: <a :href="'/places/' + u.claims[0].proposal.place.id"><bdi dir="auto">${ placeName(u.claims[0].proposal.place) }</bdi></a>, waiting for a decision</span>
+          <v-btn size="small" variant="outlined" prepend-icon="ti ti-checklist" :href="'/review?statement=' + u.claims[0].proposal.id">Decide in Review</v-btn></template>
+        <template v-else>
+        <v-autocomplete v-model="choice[u.norm]" :items="options(u)" item-title="t" item-value="v" density="compact" hide-details no-filter placeholder="Which place?" aria-label="Place this name means" prepend-inner-icon="ti ti-map-pin" @update:search="s => find(u, s)"></v-autocomplete>
+        <v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-signature" :disabled="!choice[u.norm]" :loading="signBusy" @click="confirm(u)">Confirm for one claim</v-btn></template>
+      </div>
+      <v-empty-state v-if="un.loaded && !un.items.length" icon="ti ti-map-check" title="Every place name resolves" text="New claims with names no one has confirmed appear here."></v-empty-state>
+    </template>
+  </section>
+  {% include "entity/_sign.html" %}
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="module">
+import {signing, human, plural, placeName} from '/static/js/entity-page.js';
+import {PROP, fmtSpan} from '/static/js/stories.js';
+
+window.app = Vue.createApp({
+  mixins: [layoutMixin, signing], delimiters: config.delimiters,
+  data() {
+    const tab = new URLSearchParams(location.search).get('tab') === 'unresolved' ? 'unresolved' : 'places';
+    return {
+      PROP, tab, q: '', all: false, items: [], total: null, loading: false, opts: {page: 1, itemsPerPage: 50, sortBy: [{key: 'claims', order: 'desc'}]},
+      un: {items: [], loaded: false}, choice: {}, found: {},
+      headers: [
+        {title: 'Name', key: 'name'}, {title: 'Kind', key: 'kind'}, {title: 'Governorate', key: 'governorate'},
+        {title: 'Claims', key: 'claims', align: 'end'}, {title: 'People', key: 'people', align: 'end'}, {title: 'Sources', key: 'sources', align: 'end'},
+        {title: 'Incidents', key: 'incidents', align: 'end', sortable: false}, {title: 'Evidence dated', key: 'last', nowrap: true},
+      ],
+    };
+  },
+  computed: {
+    location: () => window.location,
+    // A phone keeps the name and the counts that rank it; the rest is on the place page.
+    shown() { return this.$vuetify.display.xs ? this.headers.filter(h => ['name', 'claims', 'people'].includes(h.key)) : this.headers; },
+  },
+  watch: {tab(t) { history.replaceState(null, '', t === 'unresolved' ? '?tab=unresolved' : location.pathname); if (t === 'unresolved' && !this.un.loaded) this.loadUnresolved(); }},
+  methods: {
+    human, plural, fmtSpan, placeName,
+    params() { return {investigation: this.caseSel || undefined}; },
+    async load(opts) {
+      this.opts = opts;
+      const sort = opts.sortBy?.[0];
+      this.loading = true;
+      try {
+        const {data} = await axios.get('/api/places/table', {params: {...this.params(), q: this.q || undefined, all: this.all ? 1 : undefined, page: opts.page, per_page: opts.itemsPerPage, sort: sort?.key || 'claims', desc: sort?.order === 'asc' ? 0 : 1}});
+        this.items = data.items; this.total = data.total;
+      } catch (err) { this.say(this.fail(err)); }
+      finally { this.loading = false; }
+    },
+    reload() { this.load({...this.opts, page: 1}); },
+    typed() { clearTimeout(this._t); this._t = setTimeout(this.reload, 250); },
+    async loadUnresolved() {
+      this.un.loaded = false;
+      try {
+        this.un.items = (await axios.get('/api/places/unresolved', {params: this.params()})).data.items;
+        for (const u of this.un.items) if (u.candidates.length === 1 && !this.choice[u.norm]) this.choice[u.norm] = u.candidates[0].id;
+      }
+      catch (err) { this.say(this.fail(err)); }
+      this.un.loaded = true;
+    },
+    options(u) {
+      const seen = new Set(), out = [];
+      for (const p of [...u.candidates, ...(this.found[u.norm] || [])]) if (!seen.has(p.id)) { seen.add(p.id); out.push({t: `${placeName(p)}${p.name_en ? ' / ' + p.name_ar : ''}${p.governorate ? ', ' + (p.governorate.en || p.governorate) : ''}`, v: p.id}); }
+      return out;
+    },
+    async find(u, s) {
+      if (!s || s.trim().length < 2) return;
+      try { this.found = {...this.found, [u.norm]: (await axios.get('/api/places', {params: {q: s}})).data.items}; } catch {}
+    },
+    confirm(u) {
+      const place = this.options(u).find(o => o.v === this.choice[u.norm]);
+      this.stage({statement: u.claims[0].id, place: place.v}, '/api/places/confirm', `“${u.name}” is ${place.t}`, async () => {
+        this.say('Signed. That claim now resolves; others with this spelling follow when the rule allows.');
+        await this.loadUnresolved();
+        this.reload();
+      });
+    },
+    useCase() { this.reload(); if (this.un.loaded) this.loadUnresolved(); },
+  },
+  mounted() { if (this.tab === 'unresolved') this.loadUnresolved(); },
+});
+registerStkComponents(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+/* Evidence page (mockups/evidence.html). Tier is texture (solid accepted, outlined
+   corroborated, hatched unconfirmed) in its role hue (teal, steel, neutral); author is
+   hue on unconfirmed marks and text (ink people, violet agents).
+   Tokens come from shell.css; the fallbacks keep the page legible without it. */
+.evp {
+  --e-panel: var(--panel, #fff); --e-raise: var(--raise, #fafaf8); --e-line: var(--line, #e4e4e0); --e-line-strong: var(--line-strong, #c9c9c3);
+  --e-ink: var(--ink, #18191b); --e-ink-2: var(--ink-2, #44464a); --e-ink-3: var(--ink-3, #62656a);
+  --e-wash: var(--wash, rgba(24,25,27,.06)); --e-solid: var(--solid, rgba(24,25,27,.13));
+  --e-agent: var(--agent, #5a46c8); --e-agent-wash: var(--agent-wash, rgba(90,70,200,.09)); --e-agent-solid: var(--agent-solid, rgba(90,70,200,.18));
+  --e-mono: var(--mono, ui-monospace, 'SF Mono', Menlo, Consolas, monospace);
+  width: 100%; align-self: flex-start; padding: 14px 20px 64px; font-size: 13px; color: var(--e-ink);
+}
+body.dark-mode .evp {
+  --e-panel: var(--panel, #141518); --e-raise: var(--raise, #1a1c20); --e-line: var(--line, #25282d); --e-line-strong: var(--line-strong, #383c43);
+  --e-ink: var(--ink, #e7e7e4); --e-ink-2: var(--ink-2, #b9bbbf); --e-ink-3: var(--ink-3, #969aa0);
+  --e-wash: var(--wash, rgba(231,231,228,.06)); --e-solid: var(--solid, rgba(231,231,228,.16));
+  --e-agent: var(--agent, #ab9ef7); --e-agent-wash: var(--agent-wash, rgba(171,158,247,.1)); --e-agent-solid: var(--agent-solid, rgba(171,158,247,.22));
+}
+.evp h1 { font-size: 18px; letter-spacing: -.02em; margin: 0; font-weight: 650; }
+.evp h2 { font-size: 14px; margin: 0; font-weight: 650; }
+.evp h3 { font-size: 13px; margin: 0; font-weight: 600; }
+.evp .muted { color: var(--e-ink-3); }
+.evp .mono { font-family: var(--e-mono); font-size: 12px; }
+.evp .agent { color: var(--e-agent); }
+.evp a:not(.v-btn):not(.v-card) { color: inherit; text-underline-offset: 2px; }
+.ev-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.ev-head p { margin: 0; }
+.ev-crumbs { font-size: 13px; color: var(--e-ink-3); margin-bottom: 6px; }
+
+.ev { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, .95fr) minmax(0, 1.15fr); gap: 12px; align-items: start; }
+.ev.side { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+.ev-panel { background: var(--e-panel); border: 1px solid var(--e-line); border-radius: 8px; overflow: hidden; }
+.ev-panel > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--e-line); min-height: 42px; flex-wrap: wrap; }
+.ev-panel > header .muted { font-size: 12px; }
+.ev-stick { position: sticky; top: 76px; }
+
+.ev-conn { border-top: 1px solid var(--e-line); padding: 8px 8px 10px; }
+.ev-thumb { width: 116px; margin-inline-end: 8px; text-decoration: none; }
+.ev-thumb .mv-thumb { border: 0; border-radius: 0; }
+.ev-thumb .k { font-size: 11px; color: var(--e-agent); padding: 3px 6px 0; }
+.ev-thumb .n { font-size: 11px; color: var(--e-ink-2); padding: 0 6px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* rows */
+.ev-row { outline: none; cursor: pointer; }
+.ev-row.sel, .ev-row:focus-visible { background: var(--e-wash); box-shadow: inset 2px 0 0 var(--e-ink); }
+.ev-claim { display: grid; grid-template-columns: 14px 104px 1fr auto; gap: 2px 10px; align-items: baseline; padding: 6px 12px; border-top: 1px solid var(--e-line); }
+.ev-claim .val { font-size: 14px; }
+.ev-claim .meta, .ev-claim .acts { grid-column: 3 / -1; font-size: 11.5px; color: var(--e-ink-3); }
+.ev-grp { padding: 8px 12px 4px; font-weight: 600; display: flex; gap: 8px; align-items: baseline; background: var(--e-raise); border-top: 1px solid var(--e-line); }
+.ev-kv { display: grid; grid-template-columns: 108px 1fr; gap: 4px 10px; margin: 0; padding: 10px 12px; }
+.ev-kv dt { color: var(--e-ink-3); }
+.ev-kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.ev-tx { white-space: pre-wrap; font-size: 14px; line-height: 1.8; padding: 8px 10px; background: var(--e-raise); border-radius: 6px; max-height: 260px; overflow: auto; }
+.ev-rel { padding: 8px 12px; border-top: 1px solid var(--e-line); }
+.ev-rel .why { font-size: 12px; color: var(--e-ink-2); }
+.ev-note { font-size: 12px; color: var(--e-ink-3); }
+.ev-legend { display: inline-flex; gap: 10px; font-size: 11.5px; color: var(--e-ink-3); align-items: center; flex-wrap: wrap; margin-inline-start: auto; }
+
+/* tier textures; --c is author hue */
+.evp .by-agent, .ev-drawer .by-agent { --c: var(--e-agent, #5a46c8); --cs: var(--e-agent-solid, rgba(90,70,200,.18)); }
+.evp .by-person, .ev-drawer .by-person { --c: var(--e-ink, #18191b); --cs: var(--e-solid, rgba(24,25,27,.13)); }
+.ev-sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; flex: none; vertical-align: -1px; border: 1.5px solid var(--c); }
+.tier-accepted .ev-sw, .ev-sw.tier-accepted { background: var(--accepted, var(--c)); border-color: var(--accepted, var(--c)); }
+.tier-corroborated .ev-sw, .ev-sw.tier-corroborated { border-color: var(--corroborated, var(--c)); }
+.by-agent.tier-accepted .ev-sw, .by-agent.tier-corroborated .ev-sw { box-shadow: 0 0 0 1.5px var(--panel, #fff), 0 0 0 3px var(--e-agent); }
+.tier-unconfirmed .ev-sw, .ev-sw.tier-unconfirmed { border-style: dashed; background: repeating-linear-gradient(135deg, var(--c) 0 1.5px, transparent 1.5px 4px); }
+.tier-rejected .ev-sw { border-color: var(--negative-line, var(--e-ink-3)); background: linear-gradient(45deg, transparent 45%, var(--negative, var(--e-ink-3)) 45% 55%, transparent 55%); }
+.tier-rejected .val { text-decoration: line-through var(--negative, currentColor); color: var(--e-ink-3); }
+.evp mark.span { background: var(--e-agent-wash); color: inherit; border-bottom: 1.5px solid var(--e-agent); padding: 0 1px; border-radius: 2px; cursor: pointer; }
+.evp mark.span.tier-unconfirmed { background: repeating-linear-gradient(135deg, var(--e-agent-solid) 0 1.5px, transparent 1.5px 4px); }
+.evp mark.span.tier-accepted { background: var(--e-agent-solid); border-bottom: 2px solid var(--accepted, var(--e-agent)); }
+.evp mark.span.tier-corroborated { border-bottom-color: var(--corroborated, var(--e-agent)); }
+.evp mark.span.on { outline: 2px solid var(--e-agent); }
+.evp mark.hit { background: var(--e-solid); color: inherit; font-weight: 650; }
+
+@media (max-width: 1279px) { .ev, .ev.side { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); } .ev .ev-intel { grid-column: 1 / -1; } .ev-stick { position: static; } }
+@media (max-width: 959px) {
+  .evp { padding: 12px 16px 72px; }
+  .ev, .ev.side { grid-template-columns: 1fr; }
+  .ev-claim { grid-template-columns: 14px 1fr auto; }
+  .ev-claim .lbl { grid-column: 2 / -1; font-size: 11.5px; color: var(--e-ink-3); }
+  .ev-claim .val { grid-column: 2; }
+  .ev-claim .meta, .ev-claim .acts { grid-column: 2 / -1; }
+}

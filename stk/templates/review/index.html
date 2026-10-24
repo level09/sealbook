@@ -1,0 +1,389 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.rv { padding: 14px 20px 64px; max-width: 1720px; }
+.rv-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.rv-head h1 { font-size: 18px; font-weight: 650; letter-spacing: -.02em; margin: 0; }
+.rv-head p { margin: 0; color: var(--ink-3); }
+.rv-grid { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 12px; align-items: start; }
+.rv-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.rv-panel > header { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); min-height: 44px; flex-wrap: wrap; }
+.rv-muted { color: var(--ink-3); }
+.rv-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.rv-tab { font: inherit; font-size: 12.5px; color: var(--ink-2); background: none; border: 1px solid transparent; border-radius: 6px; padding: 3px 9px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.rv-tab:hover { background: var(--wash); }
+.rv-tab[aria-selected="true"] { color: var(--ink); border-color: var(--line-strong); background: var(--raise); font-weight: 600; }
+.rv-tab .n { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* list */
+.rv-list { list-style: none; margin: 0; padding: 0; max-height: calc(100vh - 190px); overflow: auto; }
+.rv-row { display: grid; grid-template-columns: 18px 64px minmax(0, 1fr); gap: 4px 10px; padding: 9px 10px 9px 8px; border-top: 1px solid var(--line); cursor: pointer; outline: none; align-items: start; }
+.rv-row:first-child { border-top: 0; }
+.rv-row:hover { background: var(--wash); }
+.rv-row.sel { background: var(--wash); box-shadow: inset 2px 0 0 var(--ink); }
+.rv-row.picked { background: var(--agent-wash); }
+.rv-row:focus-visible { box-shadow: inset 0 0 0 2px var(--ink); }
+.rv-row .pk { margin-top: 1px; }
+.rv-row .mv-thumb { border-radius: 4px; overflow: hidden; }
+.rv-row .tile { width: 64px; height: 44px; border-radius: 4px; background: var(--raise); border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink-3); font-size: 20px; }
+.rv-s { font-size: 13.5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.rv-s .q { color: var(--ink-3); }
+.rv-s b { font-weight: 600; }
+.rv-mask { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-3); font-style: italic; }
+.rv-mask i { font-style: normal; }
+.rv-src { font-size: 12px; color: var(--ink-2); display: flex; gap: 4px; align-items: baseline; min-width: 0; }
+.rv-src .f { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-src .w { white-space: nowrap; color: var(--ink-3); }
+.rv-who { grid-column: 3; display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: center; font-size: 12px; color: var(--ink-3); }
+.rv-due { font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.rv-due.late { color: rgb(var(--v-theme-warning)); }
+
+/* tier texture; --c is author hue */
+.by-agent { --c: var(--agent); --cs: var(--agent-solid); }
+.by-person { --c: var(--ink); --cs: var(--solid); }
+.rv-sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; flex: none; border: 1.5px solid var(--c); margin-top: 3px; }
+.rv-sw.tier-accepted { background: var(--c); }
+.rv-sw.tier-unconfirmed { border-style: dashed; background: repeating-linear-gradient(135deg, var(--c) 0 1.5px, transparent 1.5px 4px); }
+.rv-sw.tier-rejected { border-color: var(--ink-3); background: linear-gradient(45deg, transparent 45%, var(--ink-3) 45% 55%, transparent 55%); }
+
+/* pane */
+.rv-pane > header .tier { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; }
+.rv-pane > header .act { margin-inline-start: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+.rv-claim { padding: 12px 14px 4px; }
+.rv-claim h2 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; line-height: 1.4; margin: 0; overflow-wrap: anywhere; }
+.rv-claim h2 .q { color: var(--ink-3); font-weight: 450; }
+.rv-claim .at { margin: 4px 0 0; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.rv-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); gap: 0; border-top: 1px solid var(--line); margin-top: 10px; }
+.rv-ev { min-width: 0; border-inline-end: 1px solid var(--line); }
+.rv-side { min-width: 0; }
+.rv-sec { padding: 10px 14px; border-top: 1px solid var(--line); }
+.rv-sec:first-child { border-top: 0; }
+.rv-sec h3 { font-size: 12px; font-weight: 600; color: var(--ink-3); margin: 0 0 6px; }
+.rv-acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rv-acts .v-btn .v-kbd, .rv-kbd { font-size: 10.5px; min-width: 0; padding: 0 4px; margin-inline-start: 6px; opacity: .8; }
+.rv-form { display: grid; gap: 8px; margin-top: 10px; }
+.rv-form .row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.rv-checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.rv-checks li { display: flex; gap: 6px; align-items: baseline; }
+.rv-checks .bad { color: rgb(var(--v-theme-warning)); font-weight: 550; }
+.rv-kv { display: grid; grid-template-columns: 92px 1fr; gap: 4px 10px; margin: 0; }
+.rv-kv dt { color: var(--ink-3); }
+.rv-kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.rv-quote { margin: 6px 0 0; padding: 6px 8px; background: var(--raise); border-radius: 5px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rv-rel { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 2px 8px; padding: 6px 0; border-top: 1px solid var(--line); align-items: start; }
+.rv-rel:first-of-type { border-top: 0; }
+.rv-rel .v { overflow-wrap: anywhere; }
+.rv-rel .m { grid-column: 2 / -1; font-size: 12px; color: var(--ink-3); }
+.rv-rel .st { font-size: 12px; white-space: nowrap; }
+.rv-rel .st.differ { color: rgb(var(--v-theme-warning)); font-weight: 600; }
+.rv-msg { padding: 6px 0; border-top: 1px solid var(--line); }
+.rv-msg:first-of-type { border-top: 0; }
+.rv-msg p { margin: 2px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rv-done { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 14px; border-bottom: 1px solid var(--line); background: var(--raise); }
+.rv-need span { flex: 1 1 180px; }
+.rv-gate { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; margin: 10px 14px 0; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--raise); }
+.rv-gate .t { flex: 1 1 260px; min-width: 0; overflow-wrap: anywhere; }
+.rv-need { display: flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; padding: 8px 10px; margin-top: 10px; border: 1px solid var(--line-strong); border-radius: 6px; }
+.rv-ev .ev-viewer { min-height: 200px; }
+.rv-ev .ev-txt { white-space: pre-wrap; font-size: 14px; line-height: 1.8; padding: 12px 14px; max-height: 60vh; overflow: auto; }
+.rv-ev mark.span { background: var(--agent-wash); color: inherit; border-bottom: 1.5px solid var(--agent); padding: 0 1px; border-radius: 2px; }
+.rv-ev mark.span.tier-unconfirmed { background: repeating-linear-gradient(135deg, var(--agent-solid) 0 1.5px, transparent 1.5px 4px); }
+.rv-ev mark.span.on { outline: 2px solid var(--agent); }
+.rv-ev .ev-gate { padding: 16px 0; }
+.rv-excerpt { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--raise); font-size: 14px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rv-excerpt mark.span { background: var(--agent-wash); color: inherit; border-bottom: 1.5px solid var(--agent); padding: 0 1px; border-radius: 2px; }
+.rv-excerpt mark.span.tier-unconfirmed { background: repeating-linear-gradient(135deg, var(--agent-solid) 0 1.5px, transparent 1.5px 4px); }
+.rv-crop { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--raise); }
+.rv-crop-f { position: relative; overflow: hidden; width: 100%; max-height: 220px; border-radius: 4px; background: var(--panel); }
+.rv-crop-f img { position: absolute; display: block; max-width: none; }
+.rv-crop-m { position: absolute; border: 2px solid var(--c); border-radius: 2px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .18); }
+.rv-crop.tier-unconfirmed .rv-crop-m { border-style: dashed; }
+.rv-at { display: flex; gap: 8px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--line); font-size: 12.5px; flex-wrap: wrap; }
+.rv-at .f { font-weight: 600; overflow-wrap: anywhere; }
+.rv-cmp { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rv-cmp th, .rv-cmp td { text-align: start; padding: 6px 10px; border-top: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+.rv-cmp thead th { border-top: 0; font-size: 12px; color: var(--ink-3); font-weight: 600; }
+.rv-cmp td.st { white-space: nowrap; font-size: 12px; }
+.rv-cmp td.st.differ { color: rgb(var(--v-theme-warning)); font-weight: 600; }
+.rv-cmp td.st.agree { color: var(--ink-2); }
+.rv-basis { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; padding: 10px 14px 14px; }
+.rv-card { border: 1px solid var(--line); border-radius: 6px; padding: 8px; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 4px 8px; font-size: 12.5px; }
+.rv-card .w { grid-column: 1 / -1; color: var(--ink-3); display: flex; gap: 6px; }
+.rv-empty { padding: 28px 18px; text-align: center; }
+.rv-empty h2 { font-size: 15px; font-weight: 600; margin: 8px 0 4px; }
+.rv-empty p { margin: 0 auto 12px; color: var(--ink-3); max-width: 44ch; }
+.rv-bulk { display: flex; gap: 6px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--agent-wash); flex-wrap: wrap; }
+@media (max-width: 1279px) { .rv-body { grid-template-columns: 1fr; } .rv-ev { border-inline-end: 0; border-bottom: 1px solid var(--line); } }
+@media (max-width: 959px) {
+  .rv { padding: 12px 16px 72px; }
+  .rv-grid { grid-template-columns: 1fr; }
+  .rv-list { max-height: 46vh; }
+  .rv-row { grid-template-columns: 18px 52px minmax(0, 1fr); }
+  .rv-row .mv-thumb, .rv-row .tile { width: 52px !important; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="rv">
+  <div class="rv-head"><h1>Review</h1><p>${ summary }</p></div>
+  <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
+  <div class="rv-grid">
+    <section class="rv-panel" aria-labelledby="rv-h-list">
+      <header>
+        <h2 id="rv-h-list" class="d-sr-only">Claims to review</h2>
+        <div class="rv-tabs" role="tablist" aria-label="Which claims">
+          <button v-for="b in BOXES" :key="b.v" type="button" role="tab" class="rv-tab" :aria-selected="box === b.v" @click="setBox(b.v)">${ b.t }<span class="n" v-if="counts[b.v] != null">${ counts[b.v] }</span></button>
+        </div>
+      </header>
+      <div v-if="picked.length" class="rv-bulk">
+        <span>${ plural(picked.length, 'claim') } selected</span>
+        <v-select v-model="assignee" :items="analysts" item-title="name" item-value="id" label="Assign to" density="compact" hide-details style="max-width: 200px" @focus="needAnalysts"></v-select>
+        <v-btn size="small" color="primary" :disabled="!assignee" :loading="busy" @click="assign">Assign</v-btn>
+        <v-btn size="small" variant="text" @click="picked = []">Clear</v-btn>
+      </div>
+      <template v-if="!loaded"><v-skeleton-loader type="list-item-three-line@5"></v-skeleton-loader></template>
+      <ul v-else-if="list.length" class="rv-list" role="listbox" aria-label="Claims to review, due first" title="Due first, then newest request">
+        <li v-for="it in list" :key="it.id" class="rv-row" :class="{sel: it.id === selId, picked: picked.includes(it.id)}" role="option" :aria-selected="it.id === selId" tabindex="-1" :data-id="it.id" @click="pick(it.id)">
+          <span v-if="it.kind === 'finding'" class="rv-sw tier-unconfirmed by-agent" title="Unconfirmed, proposed by an agent"></span>
+          <v-checkbox-btn v-else-if="picked.length" class="pk" density="compact" :model-value="picked.includes(it.id)" :aria-label="'Select ' + sentence(it)" @click.stop @update:model-value="togglePick(it.id)"></v-checkbox-btn>
+          <span v-else class="rv-sw" :class="['tier-' + it.tier, it.agent ? 'by-agent' : 'by-person']" :title="TIER[it.tier] + (it.agent ? ', proposed by an agent' : ', proposed by a person')"></span>
+          <template v-if="it.kind === 'finding'"><span class="tile"><i class="ti ti-users-group" aria-hidden="true"></i></span></template>
+          <media-thumb v-else-if="it.source" :key="it.source.sha256 + it.source.revealed" :locked="it.source.sensitive && !it.source.revealed" :sha="it.source.sha256" :mime="it.source.mime" :file="it.source.file" :link="false" :caption="false" :width="64" :height="44"></media-thumb>
+          <span v-else class="tile"><i class="ti ti-users" aria-hidden="true"></i></span>
+          <div style="min-width: 0">
+            <div class="rv-s" dir="auto"><template v-for="(p, i) in parts(it)" :key="i"><span v-if="i" class="q"> · </span><span v-if="p && p.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>${ p.t }</span><b v-else-if="p && p.strong"><bdi>${ p.t }</bdi></b><span v-else-if="p" :class="{q: p.quiet}"><bdi>${ p.t }</bdi></span></template></div>
+            <div class="rv-src" v-if="it.kind === 'finding'"><span class="f">${ KINDS[it.kind] || it.label }, ${ plural(it.members.length, 'member') }</span></div>
+            <div class="rv-src" v-else-if="it.source"><span class="f"><bdi>${ it.source.file }</bdi>,</span><span class="w">${ it.where.label }</span></div>
+          </div>
+          <div class="rv-who" v-if="it.kind !== 'finding'">
+            <actor-chip :actor="it.proposer" size="sm"></actor-chip>
+            <span v-if="it.request && it.request.visible" class="d-inline-flex ga-1 align-center"><i class="ti ti-arrow-right" aria-hidden="true"></i><template v-if="it.request.mine">asked by <actor-chip :actor="it.request.by" size="sm"></actor-chip></template><template v-else>asked <actor-chip :actor="it.request.to" size="sm"></actor-chip></template>${ ago(it.request.at) }</span>
+            <span v-else-if="it.request" class="d-inline-flex ga-1 align-center"><i class="ti ti-message-question" aria-hidden="true"></i>review requested</span>
+            <span v-if="due(it)" class="rv-due" :class="{late: due(it).late}">${ due(it).text }</span>
+          </div>
+          <div class="rv-who" v-else><actor-chip :actor="{kind: 'agent', name: 'discovery'}" size="sm"></actor-chip><span>${ it.band } evidence</span><span v-if="it.new">new</span></div>
+        </li>
+      </ul>
+      <div v-else class="rv-empty">
+        <v-icon icon="ti ti-checklist" size="28" class="rv-muted"></v-icon>
+        <h2>${ emptyText[0] }</h2><p>${ emptyText[1] }</p>
+        <div class="d-flex ga-2 justify-center flex-wrap">
+          <v-btn v-if="box === 'mine' && counts.open" variant="outlined" size="small" @click="setBox('open')">See ${ plural(counts.open, 'open claim') }</v-btn>
+          <v-btn href="/discover" variant="outlined" size="small" prepend-icon="ti ti-robot">Discover</v-btn>
+          <v-btn href="/sources" variant="outlined" size="small" prepend-icon="ti ti-files">Sources</v-btn>
+        </div>
+      </div>
+    </section>
+
+    <!-- a claim -->
+    <section class="rv-panel rv-pane" v-if="box !== 'findings' && selId" aria-labelledby="rv-h-claim">
+      <template v-if="claim">
+        <header>
+          <span class="tier"><span class="rv-sw" :class="['tier-' + claim.tier, claim.agent ? 'by-agent' : 'by-person']"></span><span>${ TIER[claim.tier] }<span class="rv-muted">, proposed by ${ claim.agent ? 'an agent' : 'a person' }</span></span></span>
+          <div class="act">
+            <v-btn v-if="claim.source" size="small" variant="text" prepend-icon="ti ti-external-link" :href="'/evidence/' + claim.source.sha256">Evidence page</v-btn>
+            <v-btn v-if="claim.person" size="small" variant="text" prepend-icon="ti ti-user" :href="'/people/' + claim.person.id">Person</v-btn>
+          </div>
+        </header>
+        <div v-if="done && done.id === claim.id" class="rv-done" role="status"><v-icon icon="ti ti-signature" size="18"></v-icon><span>${ done.text }</span><v-spacer></v-spacer><v-btn v-if="done.review" size="small" variant="outlined" prepend-icon="ti ti-arrow-back-up" :loading="busy" @click="undo">Undo</v-btn></div>
+        <div class="rv-claim">
+          <h2 id="rv-h-claim" dir="auto"><template v-for="(p, i) in parts(claim)" :key="i"><span v-if="i" class="q"> · </span><span v-if="p && p.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>${ p.t }</span><span v-else-if="p" :class="{q: p.quiet}"><bdi>${ p.t }</bdi></span></template></h2>
+          <p class="at">
+            <span>Proposed by</span><actor-chip :actor="claim.proposer"></actor-chip><span class="rv-muted">${ ago(claim.recorded_at) }</span>
+          </p>
+          <p class="at" v-if="claim.request && claim.request.visible">
+            <span>Asked by</span><actor-chip :actor="claim.request.by"></actor-chip><i class="ti ti-arrow-right" aria-hidden="true"></i><actor-chip :actor="claim.request.to" :you="claim.request.mine"></actor-chip><span class="rv-muted">${ ago(claim.request.at) }</span>
+            <span v-if="due(claim)" class="rv-due" :class="{late: due(claim).late}">${ due(claim).text }</span>
+          </p>
+          <p class="at" v-else-if="claim.assignment">
+            <span>Assigned by</span><actor-chip :actor="claim.assignment.by"></actor-chip><i class="ti ti-arrow-right" aria-hidden="true"></i><actor-chip :actor="claim.assignment.to"></actor-chip>
+            <span v-if="due(claim)" class="rv-due" :class="{late: due(claim).late}">${ due(claim).text }</span>
+          </p>
+          <p class="rv-quote" v-if="claim.request && claim.request.reason" dir="auto">${ claim.request.reason }</p>
+        </div>
+
+        <div v-if="blind" class="rv-gate" role="region" aria-label="Sensitive sources">
+          <v-icon icon="ti ti-lock" size="18"></v-icon>
+          <div class="t"><b>This decision rests on ${ plural(claim.hidden_sources.length, 'sensitive source') }:</b> <bdi>${ claim.hidden_sources.map(x => x.file).join(', ') }</bdi>. Showing them writes your name and the time to each source's custody chain.</div>
+          <v-btn color="primary" variant="flat" size="small" prepend-icon="ti ti-eye" :loading="busy" @click="revealAll">Show the sensitive values for this decision</v-btn>
+        </div>
+        <div class="rv-body">
+          <div class="rv-ev" id="rv-evidence">
+            <!-- identity: two people compared field by field, then the statements it rests on -->
+            <template v-if="claim.compare">
+              <table class="rv-cmp" aria-label="The two people compared">
+                <thead><tr><th>Field</th><th><bdi>${ personName(claim.person) }</bdi></th><th><bdi>${ personName(claim.identity) }</bdi></th><th></th></tr></thead>
+                <tbody><tr v-for="row in claim.compare" :key="row.prop">
+                  <th scope="row">${ label(row.prop) }</th>
+                  <td v-for="side in [row.a, row.b]" dir="auto"><template v-for="(r, i) in side" :key="r.id"><br v-if="i"><span v-if="r.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ fmtDate(r.value.text) }</bdi></template><span v-if="!side.length" class="rv-muted">not stated</span></td>
+                  <td class="st" :class="row.state">${ row.state === 'unknown' ? 'cannot tell' : row.state }</td>
+                </tr></tbody>
+              </table>
+              <div class="rv-sec" v-if="!claim.compare.length"><p class="rv-muted ma-0">The proposal names no statements to compare.</p></div>
+              <div class="rv-basis">
+                <div v-for="r in claim.basis" :key="r.id" class="rv-card">
+                  <media-thumb v-if="r.source" :key="r.id + r.source.revealed" :locked="r.source.sensitive && !r.source.revealed" :sha="r.source.sha256" :mime="r.source.mime" :file="r.source.file" :width="56" :height="40" :caption="false" :href="'/evidence/' + r.source.sha256"></media-thumb>
+                  <div style="min-width: 0"><div><b>${ label(r.prop) }</b> <span v-if="r.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else dir="auto">${ fmtDate(r.value.text) }</bdi></div>
+                    <div class="rv-muted"><bdi>${ personName(r.person) }</bdi></div></div>
+                  <div class="w" v-if="r.source"><span style="overflow-wrap: anywhere"><bdi>${ r.source.file }</bdi>, ${ r.where.label }</span><v-spacer></v-spacer>
+                    <a :href="'/evidence/' + r.source.sha256">Open</a></div>
+                </div>
+              </div>
+            </template>
+            <!-- media match: both recordings at their offsets -->
+            <template v-else-if="claim.prop === 'media_match' && claim.media && claim.media.other">
+              <div class="rv-at"><media-thumb :locked="claim.source.sensitive && !claim.source.revealed" :sha="claim.source.sha256" :mime="claim.source.mime" :file="claim.source.file" :width="80" :height="48" :caption="false"></media-thumb><span class="f"><bdi>${ claim.source.file }</bdi></span><i class="ti ti-arrows-left-right" aria-hidden="true"></i><media-thumb :sha="claim.media.other.sha256" :mime="claim.media.other.mime" :file="claim.media.other.file" :width="80" :height="48" :caption="false"></media-thumb><span class="f"><bdi>${ claim.media.other.file }</bdi></span></div>
+              <div class="pa-3"><evidence-pair :media="{left: {...claim.source, page: 1}, right: {...claim.media.other, page: 1}, sound: claim.media.sound, picture: claim.media.picture}"></evidence-pair></div>
+            </template>
+            <!-- one source at the exact span -->
+            <template v-else-if="viewerItem">
+              <div class="rv-at"><v-icon :icon="ICON[claim.source.kind]" size="16"></v-icon><span class="f"><bdi>${ claim.source.file }</bdi></span><span class="rv-muted">${ claim.where.label }</span><v-spacer></v-spacer><a :href="'/evidence/' + claim.source.sha256 + (claim.where.ms ? '?at=' + claim.where.ms[0] : '')" class="text-no-wrap">Open at span</a></div>
+              <p v-if="claim.excerpt && !['text', 'web'].includes(claim.source.kind)" class="rv-excerpt" dir="auto">${ claim.excerpt.before }<mark class="span" :class="'tier-' + claim.tier">${ claim.excerpt.span }</mark>${ claim.excerpt.after }</p>
+              <claim-crop v-if="claim.source.kind === 'image' && claim.span && claim.span.bbox && claim.source.revealed" :src="'/api/evidence/' + claim.source.sha256 + '/content'" :bbox="claim.span.bbox" :tier="claim.tier" :agent="claim.agent" :alt="'Claimed region of ' + claim.source.file"></claim-crop>
+              <evidence-viewer :key="claim.id + ':' + claim.source.revealed" :item="viewerItem" :claims="viewerClaims" :sel="claim.id" :focus="claim.where.ms ? claim.where.ms[0] : null" :page="claim.where.page || null" :read="read" :read-error="readError" :highlight="pdfHighlight" @revealed="revealed" @retry-read="loadRead"></evidence-viewer>
+            </template>
+            <div v-else class="rv-sec"><p class="rv-muted ma-0">This claim is not read from a source, so there is nothing to show beside it.</p></div>
+          </div>
+
+          <div class="rv-side">
+            <div class="rv-sec">
+              <div class="rv-acts" v-if="decidable">
+                <span :title="blind ? 'Show the values first' : null"><v-btn color="primary" size="small" prepend-icon="ti ti-signature" :disabled="busy || blocked || blind" :loading="busy && !mode" @click="start('accept')">Accept<v-kbd class="rv-kbd">a</v-kbd></v-btn></span>
+                <span :title="blind ? 'Show the values first' : null"><v-btn variant="outlined" size="small" prepend-icon="ti ti-x" :disabled="busy || blind" @click="start('reject')">Reject<v-kbd class="rv-kbd">r</v-kbd></v-btn></span>
+                <v-btn v-if="correctable" variant="text" size="small" prepend-icon="ti ti-pencil" @click="start('correct')">Correct<v-kbd class="rv-kbd">e</v-kbd></v-btn>
+                <v-btn variant="text" size="small" prepend-icon="ti ti-message-question" @click="start('ask')">Ask<v-kbd class="rv-kbd">s</v-kbd></v-btn>
+              </div>
+              <div class="rv-acts" v-else>
+                <span class="rv-muted" v-if="!claim.can_review">Another analyst was asked to decide this claim.</span>
+                <span class="rv-muted" v-else>${ TIER[claim.tier] }. Nothing to decide.</span>
+                <v-btn v-if="claim.my_review && !(done && done.review)" size="small" variant="outlined" prepend-icon="ti ti-arrow-back-up" :loading="busy" @click="undo">Undo my decision</v-btn>
+                <v-btn v-if="correctable && claim.can_review === false" variant="text" size="small" prepend-icon="ti ti-pencil" @click="start('correct')">Correct</v-btn>
+              </div>
+              <p v-if="stale && decidable" class="mt-2 mb-0 text-caption">Something changed since this was proposed. Accepting records that you saw the current state.</p>
+              <div v-if="needPasskey" class="rv-need" role="alert"><v-icon icon="ti ti-fingerprint" size="18"></v-icon><span>Decisions are signed with your passkey. You have not set one up yet.</span><v-btn size="small" color="primary" variant="flat" :href="needPasskey">Set up a passkey</v-btn></div>
+              <div v-if="mode === 'reject'" class="rv-form">
+                <v-textarea id="rv-reason" v-model="reason" label="Why reject it (kept with the decision)" rows="2" density="compact" hide-details maxlength="4000" dir="auto" @keydown.meta.enter="decide('reject')"></v-textarea>
+                <div class="row"><v-btn size="small" variant="text" @click="mode = null">Cancel</v-btn><v-btn size="small" color="primary" prepend-icon="ti ti-signature" :loading="busy" @click="decide('reject')">Reject and sign</v-btn></div>
+              </div>
+              <div v-if="mode === 'accept'" class="rv-form">
+                <v-select id="rv-rel" v-model="relationship" :items="RELATIONSHIPS" label="What the evidence supports" density="compact" hide-details></v-select>
+                <div class="row"><v-btn size="small" variant="text" @click="mode = null">Cancel</v-btn><v-btn size="small" color="primary" prepend-icon="ti ti-signature" :disabled="!relationship" :loading="busy" @click="decide('accept')">Accept and sign</v-btn></div>
+              </div>
+              <div v-if="mode === 'correct'" class="rv-form">
+                <v-text-field id="rv-fix" v-model="fix.text" label="Corrected value" density="compact" hide-details dir="auto" maxlength="8000"></v-text-field>
+                <div class="d-flex ga-2"><v-text-field v-model="fix.lang" label="Language" density="compact" hide-details style="max-width: 96px"></v-text-field><v-select v-model="fix.reviewer" :items="analysts" item-title="name" item-value="id" label="Colleague who signs it" density="compact" hide-details></v-select></div>
+                <v-textarea v-model="fix.note" label="What you read in the source" rows="2" density="compact" hide-details maxlength="4000" dir="auto"></v-textarea>
+                <p class="text-caption rv-muted ma-0">Same place in the source. The original stays on record; the correction replaces it only once your colleague signs it.</p>
+                <div class="row"><v-btn size="small" variant="text" @click="mode = null">Cancel</v-btn><v-btn size="small" color="primary" :disabled="!fix.text.trim() || !fix.lang.trim() || !fix.reviewer" :loading="busy" @click="sendCorrection">Send correction</v-btn></div>
+              </div>
+              <div v-if="mode === 'ask'" class="rv-form">
+                <v-select id="rv-ask" v-model="ask.reviewer" :items="analysts" item-title="name" item-value="id" label="Colleague" density="compact" hide-details></v-select>
+                <v-textarea v-model="ask.text" label="What should they check?" rows="2" density="compact" hide-details maxlength="4000" dir="auto"></v-textarea>
+                <div class="row"><v-btn size="small" variant="text" @click="mode = null">Cancel</v-btn><v-btn size="small" color="primary" :disabled="!ask.reviewer || !ask.text.trim()" :loading="busy" @click="sendAsk">Send for review</v-btn></div>
+              </div>
+            </div>
+
+            <div class="rv-sec">
+              <h3>Checks</h3>
+              <ul class="rv-checks"><li v-for="c in checks" :key="c.name"><v-icon :icon="c.ok === false ? 'ti ti-alert-triangle' : c.ok ? 'ti ti-check' : 'ti ti-help-circle'" size="15" :color="c.ok === false ? 'warning' : undefined"></v-icon><span :class="{bad: c.ok === false}">${ c.text }</span></li></ul>
+            </div>
+
+            <div class="rv-sec">
+              <h3>Where it came from</h3>
+              <dl class="rv-kv">
+                <dt>Proposed by</dt><dd><actor-chip :actor="claim.proposer"></actor-chip></dd>
+                <template v-if="claim.run"><dt>Run</dt><dd><a :href="'/monitor?run=' + claim.run.id" class="mono">${ claim.run.tool }</a><span v-if="claim.run.model_served" class="rv-muted">, ${ claim.run.model_served }</span></dd>
+                  <dt v-if="claim.run.route">Route</dt><dd v-if="claim.run.route">${ claim.run.route }<span v-if="claim.run.provider_served" class="rv-muted">, ${ claim.run.provider_served }</span></dd></template>
+                <template v-if="claim.evidence.length"><dt>Evidence</dt><dd>${ claim.evidence.map(e => e.replaceAll('_', ' ')).join(', ') }</dd></template>
+                <template v-if="claim.source"><dt>Source</dt><dd><bdi>${ claim.source.file }</bdi>, ${ claim.where.label }</dd></template>
+                <template v-if="claim.corrects"><dt>Corrects</dt><dd dir="auto"><span v-if="claim.corrects.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ claim.corrects.value.text }</bdi>, by <actor-chip :actor="claim.corrects.proposer" size="sm"></actor-chip></dd></template>
+              </dl>
+              <p v-if="claim.reasoning" class="rv-quote" dir="auto">${ claim.reasoning }</p>
+              <p v-else-if="claim.agent" class="text-caption rv-muted mt-2 mb-0">The run recorded no reasoning; it gives evidence kinds, never a confidence score.</p>
+            </div>
+
+            <div class="rv-sec" v-if="!claim.compare">
+              <h3>Other claims about ${ claim.person ? 'this person' : 'this source' }, ${ label(claim.prop) }</h3>
+              <p v-if="!claim.related.length" class="rv-muted ma-0">None. This is the only claim of its kind${ claim.person ? ' for this person' : '' }.</p>
+              <div v-for="r in claim.related" :key="r.id" class="rv-rel">
+                <span class="rv-sw" :class="['tier-' + r.tier, r.agent ? 'by-agent' : 'by-person']" :title="TIER[r.tier]"></span>
+                <span class="v" dir="auto"><span v-if="r.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ fmtDate(r.value.text) }</bdi><span class="rv-muted" v-if="r.from"> · ${ span(r.from, r.to) }</span></span>
+                <span class="st" :class="{differ: !r.value.masked && !claim.value.masked && r.value.text !== valueText(claim)}">${ r.value.masked || claim.value.masked ? '' : r.value.text === valueText(claim) ? 'agrees' : 'differs' }</span>
+                <span class="m"><template v-if="r.source"><a :href="'/evidence/' + r.source.sha256"><bdi>${ r.source.file }</bdi></a>, ${ r.where.label }, </template>${ TIER[r.tier].toLowerCase() }, <actor-chip :actor="r.proposer" size="sm"></actor-chip></span>
+              </div>
+            </div>
+
+            <div class="rv-sec">
+              <h3>Thread</h3>
+              <template v-if="claim.request && claim.request.visible">
+                <p v-if="!claim.thread.length" class="rv-muted ma-0">No replies yet.</p>
+                <div v-for="m in claim.thread.slice(-4)" :key="m.id" class="rv-msg"><div class="text-caption"><b>${ m.by }</b> <span class="rv-muted">${ ago(m.at) }</span></div><p dir="auto">${ m.text }</p></div>
+                <v-textarea id="rv-reply" v-model="reply" label="Reply" rows="1" auto-grow density="compact" hide-details maxlength="4000" dir="auto" class="mt-2"></v-textarea>
+                <div class="d-flex ga-2 mt-2"><v-btn size="small" variant="outlined" :disabled="!reply.trim()" :loading="busy" @click="sendReply">Reply</v-btn><v-spacer></v-spacer><v-btn size="small" variant="text" append-icon="ti ti-arrow-right" :href="'/inbox?item=request:' + claim.request.id">Open in Inbox</v-btn></div>
+              </template>
+              <p v-else-if="claim.request" class="rv-muted ma-0">A colleague was asked to review this. Their thread is private to them.</p>
+              <p v-else class="rv-muted ma-0">No one has been asked about this claim. Ask a colleague with s.</p>
+            </div>
+          </div>
+        </div>
+      </template>
+      <v-skeleton-loader v-else type="heading, image, paragraph"></v-skeleton-loader>
+    </section>
+
+    <!-- a finding -->
+    <section class="rv-panel rv-pane" v-else-if="box === 'findings' && selId" aria-labelledby="rv-h-finding">
+      <template v-if="finding">
+        <header><span class="tier"><span class="rv-sw tier-unconfirmed by-agent"></span>${ finding.label }, ${ finding.band } evidence</span>
+          <div class="act"><v-btn size="small" variant="text" prepend-icon="ti ti-adjustments" :href="'/discover?f=' + finding.id">Members and roles in Discover</v-btn></div></header>
+        <div v-if="done && done.id === finding.id" class="rv-done" role="status"><v-icon icon="ti ti-signature" size="18"></v-icon><span>${ done.text }</span><a v-if="done.incident" :href="'/incidents/' + done.incident">Open the incident</a><v-spacer></v-spacer><v-btn v-if="done.gesture" size="small" variant="outlined" prepend-icon="ti ti-arrow-back-up" :loading="busy" @click="undoGesture">Undo</v-btn></div>
+        <div class="rv-claim"><h2 id="rv-h-finding" dir="auto">${ finding.reason }</h2><p class="at rv-muted">${ finding.why }<template v-for="(p, i) in finding.places" :key="p.id">${ i ? ', ' : ', at ' }<a :href="'/places/' + p.id"><bdi dir="auto">${ p.en || p.ar }</bdi></a></template>. Strength is a band from source count and overlap, not a probability.</p></div>
+        <div class="rv-body">
+          <div class="rv-ev">
+            <div class="rv-basis">
+              <div v-for="m in finding.members" :key="m.statement" class="rv-card">
+                <media-thumb v-if="m.source" :sha="m.source" :file="m.file" :width="56" :height="40" :caption="false"></media-thumb>
+                <div style="min-width: 0"><div><b><bdi>${ m.name || 'Hidden name' }</bdi></b></div><div><span class="rv-muted">${ label(m.prop) }</span> <bdi dir="auto">${ m.display }</bdi><span v-if="m.when" class="rv-muted">, ${ fmtDate(m.when) }</span></div></div>
+                <div v-if="m.excerpt" class="w" style="display: block; color: var(--ink-2)" dir="auto">${ m.excerpt.before }<mark class="span">${ m.excerpt.span }</mark>${ m.excerpt.after }</div>
+                <div class="w"><span style="overflow-wrap: anywhere"><bdi>${ m.file }</bdi></span><v-spacer></v-spacer><a v-if="m.source" :href="'/evidence/' + m.source">Open at span</a></div>
+              </div>
+            </div>
+          </div>
+          <div class="rv-side">
+            <div class="rv-sec">
+              <v-text-field v-model="title" label="Incident title" density="compact" hide-details dir="auto" class="mb-2"></v-text-field>
+              <div class="rv-acts">
+                <v-btn color="primary" size="small" prepend-icon="ti ti-signature" :disabled="busy || !title.trim()" @click="start('accept')">Accept as incident<v-kbd class="rv-kbd">a</v-kbd></v-btn>
+                <v-btn variant="outlined" size="small" prepend-icon="ti ti-x" @click="start('reject')">Reject<v-kbd class="rv-kbd">r</v-kbd></v-btn>
+              </div>
+              <p class="text-caption rv-muted mt-2 mb-0">Accepting keeps every member, with roles unspecified, under one signed gesture. Drop members or set roles in Discover.</p>
+              <div v-if="needPasskey" class="rv-need" role="alert"><v-icon icon="ti ti-fingerprint" size="18"></v-icon><span>Decisions are signed with your passkey. You have not set one up yet.</span><v-btn size="small" color="primary" variant="flat" :href="needPasskey">Set up a passkey</v-btn></div>
+              <div v-if="mode === 'reject'" class="rv-form">
+                <v-textarea id="rv-reason" v-model="reason" label="Why reject it (kept with the decision)" rows="2" density="compact" hide-details maxlength="4000" dir="auto"></v-textarea>
+                <div class="row"><v-btn size="small" variant="text" @click="mode = null">Cancel</v-btn><v-btn size="small" color="primary" prepend-icon="ti ti-signature" :loading="busy" @click="rejectFinding">Reject and sign</v-btn></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+      <v-skeleton-loader v-else type="heading, paragraph"></v-skeleton-loader>
+    </section>
+  </div>
+
+  <v-dialog :model-value="!!staged" width="580" @update:model-value="v => { if (!v) staged = null; }"><v-card border v-if="staged">
+    <v-card-item prepend-icon="ti ti-fingerprint"><v-card-title>Confirm with your passkey</v-card-title>
+      <v-card-subtitle style="white-space: normal">${ staged.title }</v-card-subtitle></v-card-item>
+    <v-card-text class="pb-0"><p class="mb-2">Your passkey signs exactly ${ staged.data.rows.length === 1 ? 'this row' : 'these ' + staged.data.rows.length + ' rows' }:</p></v-card-text>
+    <div class="v-table v-table--density-compact" style="max-height: 46vh; overflow: auto"><div class="v-table__wrapper"><table>
+      <thead><tr><th>Statement</th><th>On</th><th>What it says</th><th>Hash</th></tr></thead>
+      <tbody><tr v-for="r in staged.data.rows" :key="r.hash"><td>${ r.prop.replaceAll('_', ' ') }</td><td class="mono">${ r.subject }</td><td dir="auto">${ r.summary }</td><td class="mono" :title="r.hash">${ r.hash.slice(0, 10) }</td></tr></tbody>
+    </table></div></div>
+    <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="staged = null">Cancel</v-btn><v-btn color="primary" variant="flat" prepend-icon="ti ti-key" :loading="busy" @click="confirm">Use passkey</v-btn></v-card-actions></v-card></v-dialog>
+  <v-snackbar v-model="snack.show" timeout="4000">${ snack.text }</v-snackbar>
+</div>
+{% endblock %}
+{% block js %}
+<script type="module">
+import {mount} from '/static/js/review-page.js';
+window.app = mount({me: {{ current_user.id | tojson }}});
+</script>
+{% endblock %}

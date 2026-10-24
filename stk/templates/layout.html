@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ config.APP_NAME }}</title>
+    <meta name="description" content="{{ config.APP_DESCRIPTION }}">
+    <meta name="author" content="{{ config.APP_NAME }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{ import_map() }}
+    <link rel="icon" href="{{ asset('img/sealbook-mark.svg') }}" type="image/svg+xml">
+
+    <link rel="stylesheet" href="{{ asset('css/vuetify.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('icons/tabler-icons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/shell.css') }}">
+
+    <link rel="preload" href="/static/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/inter-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/icons/fonts/tabler-icons.woff2" as="font" type="font/woff2" crossorigin>
+    <style>[v-cloak] { display: none !important; }</style>
+    <!-- Theme before first paint, so a dark page never flashes white. -->
+    <script>try { const t = localStorage.getItem('stk-theme'); if (t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('dark-mode'); } catch {}</script>
+
+    {% block css %}{% endblock %}
+    {% block head_js %}{% endblock %}
+</head>
+
+<body class="{% block body_class %} {% endblock %}">
+<!-- The shell frame at its mounted size, painted until Vue replaces it (see docs/lessons.md). -->
+<div id="sb-boot" class="sb-boot" aria-hidden="true">
+    <div class="sb-boot-top"><span class="brand"><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></span></div>
+    {% if current_user.is_authenticated %}<div class="sb-boot-rail"></div><div class="sb-boot-hints"></div><div class="sb-boot-bottom"></div>{% endif %}
+</div>
+<div id="app" v-cloak>
+<v-app>
+    <v-app-bar density="compact" flat class="sb-top">
+        <a class="brand" href="/desk"><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></a>
+        {% if current_user.is_authenticated %}
+        <v-autocomplete class="case-sw" :model-value="caseSel ?? 'all'" :items="caseOptions" density="compact" variant="outlined" hide-details auto-select-first prepend-inner-icon="ti ti-folder" aria-label="Switch investigation" @update:model-value="switchCase"></v-autocomplete>
+        <form class="qbox" action="/search" role="search">
+            <v-text-field id="q" name="q" v-model="shellQ" density="compact" variant="outlined" hide-details prepend-inner-icon="ti ti-search" placeholder="Search names, hashes, passages, frames" aria-label="Search evidence, people, places and identifiers" autocomplete="off">
+                <template #append-inner><v-kbd>/</v-kbd></template>
+            </v-text-field>
+        </form>
+        <v-spacer></v-spacer>
+        <v-tooltip text="Go to (Cmd K)" location="bottom"><template #activator="{ props }"><v-icon-btn v-bind="props" class="sb-pal-btn" icon="ti ti-command" variant="text" aria-label="Command palette" @click="openPalette"></v-icon-btn></template></v-tooltip>
+        <v-menu v-model="bellOpen" location="bottom end" :close-on-content-click="false">
+            <template #activator="{ props }">
+                <v-badge :content="unreadCount" :model-value="unreadCount > 0" color="new" offset-x="4" offset-y="4">
+                    <v-icon-btn v-bind="props" icon="ti ti-bell" variant="text" :aria-label="'Notifications, ' + unreadCount + ' unread'"></v-icon-btn>
+                </v-badge>
+            </template>
+            <v-card width="390" class="sb-bell">
+                <v-card-item><v-card-title class="text-body-1 font-weight-bold">Notifications</v-card-title>
+                    <template #append><v-btn size="small" variant="text" prepend-icon="ti ti-checks" :disabled="!unreadCount" @click="readAllNotes">Mark all read</v-btn></template></v-card-item>
+                <v-divider></v-divider>
+                <v-list density="compact" lines="two" max-height="420">
+                    <v-list-item v-for="n in notes" :key="n.id" :href="n.to" :class="{ unread: !n.isSeen }" :prepend-icon="noteIcons[n.kind] || 'ti ti-bell'" @click="openNote(n, $event)">
+                        <v-list-item-title class="text-body-2" dir="auto">${ n.title }</v-list-item-title>
+                        <v-list-item-subtitle dir="auto">${ n.subtitle }</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="notesNext" prepend-icon="ti ti-chevron-down" title="Older" @click="loadNotes(true)"></v-list-item>
+                    <v-empty-state v-if="!notes.length && !notesBusy" icon="ti ti-bell-off" title="Nothing new"></v-empty-state>
+                </v-list>
+            </v-card>
+        </v-menu>
+        <v-menu location="bottom end">
+            <template #activator="{ props }"><v-btn v-bind="props" icon variant="text" aria-label="Account menu for {{ current_user.name or current_user.email }}"><v-avatar color="primary" size="28"><span class="text-caption font-weight-bold">{{ (current_user.name or current_user.email)[:2]|upper }}</span></v-avatar></v-btn></template>
+            <v-list density="compact" min-width="240">
+                <v-list-item title="{{ current_user.name or current_user.email }}" subtitle="{{ current_user.email }}"></v-list-item>
+                <v-divider></v-divider>
+                <v-list-item href="/security" prepend-icon="ti ti-key" title="Security and passkeys"></v-list-item>
+                <v-list-item href="/agents/" prepend-icon="ti ti-plug-connected" title="Connected agents"></v-list-item>
+                {% if current_user.has_role('admin') %}
+                <v-list-item href="/admin" prepend-icon="ti ti-settings" title="Admin"></v-list-item>
+                {% endif %}
+                <v-divider></v-divider>
+                <v-list-item prepend-icon="ti ti-sun-moon" title="Switch light or dark" @click="toggleTheme"></v-list-item>
+                <v-list-item prepend-icon="ti ti-logout" title="Sign out" @click="logout"></v-list-item>
+            </v-list>
+        </v-menu>
+        {% else %}
+        <v-spacer></v-spacer>
+        <v-btn href="/login" variant="text">Sign in</v-btn>
+        {% endif %}
+    </v-app-bar>
+
+    {% if current_user.is_authenticated %}
+    <v-navigation-drawer v-if="!isMobile" permanent width="188" class="sb-rail">
+        <v-list nav density="compact" aria-label="Sections">
+            <v-list-item v-for="n in railItems" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :aria-current="n.current ? 'page' : null">
+                <template #append v-if="n.count"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
+            </v-list-item>
+        </v-list>
+        <div class="px-2"><v-btn block variant="outlined" prepend-icon="ti ti-upload" href="/ingest/">Add evidence</v-btn></div>
+        <template #append><div class="pa-3 text-caption text-medium-emphasis">${ caseLabel }</div></template>
+    </v-navigation-drawer>
+    <v-bottom-navigation v-else grow density="compact" aria-label="Sections">
+        <v-btn v-for="n in railItems.slice(0, 4)" :key="n.title" :href="n.to" :active="n.current"><v-icon :icon="n.icon"></v-icon><span>${ n.title }</span></v-btn>
+        <v-btn :active="railItems.slice(4).some(n => n.current)" aria-label="More sections" @click="moreOpen = true"><v-icon icon="ti ti-dots"></v-icon><span>More</span></v-btn>
+    </v-bottom-navigation>
+    <v-bottom-sheet v-model="moreOpen">
+        <v-list nav density="compact" aria-label="More sections">
+            <v-list-item v-for="n in railItems.slice(4)" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :aria-current="n.current ? 'page' : null"></v-list-item>
+            <v-list-item href="/ingest/" prepend-icon="ti ti-upload" title="Add evidence"></v-list-item>
+        </v-list>
+    </v-bottom-sheet>
+    {% endif %}
+
+    <v-main>
+        {% block content %}
+        {% endblock %}
+    </v-main>
+
+    {% if current_user.is_authenticated %}
+    <v-footer v-if="!isMobile" app height="30" class="sb-hints" aria-label="Keyboard shortcuts">
+        <span v-for="h in shellHints" :key="h[0]"><v-hotkey :keys="h[0]" variant="tonal" density="compact"></v-hotkey>${ h[1] }</span>
+        <button type="button" @click="openHelp"><v-hotkey keys="shift+/" variant="tonal" density="compact"></v-hotkey>all keys</button>
+    </v-footer>
+
+    <v-dialog v-model="palOpen" width="620" class="sb-pal" aria-label="Go to">
+        <v-card>
+            <v-text-field v-model="palQ" autofocus variant="solo" flat hide-details prepend-inner-icon="ti ti-arrow-right" placeholder="Go to a page, person or document" aria-label="Filter" @keydown="palKey"></v-text-field>
+            <v-divider></v-divider>
+            <v-list density="compact" max-height="52vh">
+                <v-list-item v-for="(x, i) in palHits" :key="x.kind + x.t + x.h" :href="x.h" :class="{ sel: i === palI }" :prepend-icon="x.icon" tabindex="-1">
+                    <v-list-item-title dir="auto">${ x.t }</v-list-item-title>
+                    <template #append><span class="text-caption text-medium-emphasis mono" dir="auto">${ x.kind } ${ x.s || '' }</span></template>
+                </v-list-item>
+                <v-empty-state v-if="!palHits.length" icon="ti ti-search-off" title="Nothing matches" text="Try a page name, a person id or a file name."></v-empty-state>
+            </v-list>
+            <v-divider></v-divider>
+            <div class="d-flex ga-4 px-3 py-2 text-caption text-medium-emphasis"><span><v-hotkey keys="arrowup"></v-hotkey> <v-hotkey keys="arrowdown"></v-hotkey> move</span><span><v-hotkey keys="enter"></v-hotkey> open</span><span><v-hotkey keys="escape"></v-hotkey> close</span></div>
+        </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="shellHelp" width="460"><v-card title="Keyboard">
+        <v-list density="compact">
+            <v-list-item v-for="h in shellKeys" :key="h[0]" :title="h[1]"><template #prepend><v-hotkey :keys="h[0]" class="me-4"></v-hotkey></template></v-list-item>
+        </v-list>
+    </v-card></v-dialog>
+    {% endif %}
+
+        <!-- Flash messages (plain HTML - renders before Vue mounts) -->
+        {% set messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-messages" class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category if category in ['success', 'warning', 'error', 'info'] else 'primary' }}">
+                        <span>{{ message }}</span>
+                        <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+</v-app>
+</div>
+
+{% if current_user.is_authenticated %}
+<!-- Logout is POST-only with CSRF (quart-security >= 1.4.1) -->
+<form id="logout-form" method="POST" action="/logout" hidden>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endif %}
+
+<!-- Flash message auto-hide (outside Vue template) -->
+{% if messages %}
+<script>
+    // Auto-hide flash messages after 5 seconds
+    setTimeout(function() {
+        const flashMessages = document.getElementById('flash-messages');
+        if (flashMessages) {
+            flashMessages.style.display = 'none';
+        }
+    }, 5000);
+</script>
+{% endif %}
+
+<!-- Core Scripts -->
+<script src="{{ asset('js/vue.min.js') }}"></script>
+<script src="{{ asset('js/config.js') }}"></script>
+<script src="{{ asset('js/vuetify.min.js') }}"></script>
+<script src="{{ asset('js/axios.min.js') }}"></script>
+<script>axios.defaults.headers.common["X-CSRFToken"] = document.querySelector('meta[name="csrf-token"]').content;</script>
+
+<!-- Navigation Data -->
+<script src="{{ asset('js/navigation.js') }}"></script>
+
+<!-- stk Components -->
+<script src="{{ asset('js/components/index.js') }}"></script>
+
+<!-- Layout Base Script -->
+<script>
+    // User roles passed from server
+    const userRoles = {{ current_user.roles | map(attribute='name') | list | tojson if current_user.is_authenticated else '[]' | safe }};
+
+    // Monitor and people APIs answer analysts and admins only.
+    const canRead = userRoles.some(r => r === 'analyst' || r === 'admin');
+    const storedCase = () => { try { return localStorage.getItem('sb.case'); } catch { return null; } };
+    // Text entry and selects swallow shortcuts; checkboxes and buttons do not.
+    const TYPING = el => el.isContentEditable || ['TEXTAREA', 'SELECT'].includes(el.tagName)
+        || (el.tagName === 'INPUT' && !['checkbox', 'radio', 'button', 'submit', 'reset', 'range', 'file', 'color'].includes(el.type));
+
+    // The shell every page shares: case switcher, search, palette, rail, hint bar, theme.
+    // A page that scopes by investigation keeps `caseSel` current and defines
+    // useCase(value) to follow the switcher. A page with its own help defines toggleHelp.
+    const layoutMixin = {
+        data() {
+            return {
+                navItems: typeof stkNavigation !== 'undefined' ? stkNavigation : [],
+                notes: [],
+                notesNext: null,
+                notesBusy: false,
+                bellOpen: false,
+                moreOpen: false,
+                noteIcons: {assigned: 'ti ti-user-plus', mention: 'ti ti-at', reply: 'ti ti-message', decision: 'ti ti-signature', intake_done: 'ti ti-upload'},
+                navCounts: {},
+                caseSel: storedCase(),
+                caseList: [],
+                shellQ: new URLSearchParams(location.search).get('q') || '',
+                palOpen: false,
+                palQ: '',
+                palI: 0,
+                palRecords: [],
+                shellHelp: false,
+                isDark: false,
+                shellHints: [['/', 'search'], ['meta+k', 'go to']],
+                shellKeys: [['/', 'Focus search'], ['meta+k', 'Go to a page, person or document'], ['shift+/', 'Keyboard shortcuts'], ['escape', 'Leave a field or close']],
+                _ws: null,
+                _wsRetry: 1000,
+            };
+        },
+        computed: {
+            isMobile() { return this.$vuetify.display.smAndDown; },
+            railItems() {
+                const path = location.pathname;
+                return filterNavByRole(this.navItems, userRoles).map(item => ({
+                    ...item,
+                    current: !!item.match && (path === item.match || path.startsWith(item.match + '/')),
+                    count: this.navCounts[item.badge] || null,
+                }));
+            },
+            caseOptions() {
+                return [...this.caseList.map(c => ({title: c, value: c})), {title: 'All investigations', value: 'all'}];
+            },
+            caseLabel() { return this.caseSel || 'All investigations'; },
+            unreadCount() { return this.navCounts.notifications || 0; },
+            palAll() {
+                const pages = [
+                    ...this.railItems.map(n => ({kind: 'Page', t: n.title, h: n.to, icon: n.icon})),
+                    {kind: 'Page', t: 'Search', h: '/search', icon: 'ti ti-search'},
+                    {kind: 'Page', t: 'Add evidence', h: '/ingest/', icon: 'ti ti-upload'},
+                    {kind: 'Page', t: 'Security and passkeys', h: '/security', icon: 'ti ti-key'},
+                    {kind: 'Page', t: 'Connected agents', h: '/agents/', icon: 'ti ti-plug-connected'},
+                    ...(userRoles.includes('admin') ? [{kind: 'Page', t: 'Admin', h: '/admin', icon: 'ti ti-settings'}] : []),
+                ];
+                return [...pages, ...this.palRecords];
+            },
+            palHits() {
+                const q = this.palQ.trim().toLowerCase();
+                return this.palAll.filter(x => !q || `${x.t} ${x.s || ''} ${x.kind}`.toLowerCase().includes(q)).slice(0, 40);
+            },
+        },
+        watch: {
+            palQ() { this.palI = 0; },
+            bellOpen(open) { if (open) this.loadNotes(false); },
+        },
+        methods: {
+            logout() {
+                document.getElementById('logout-form').submit();
+            },
+            switchCase(v) {
+                const value = v === 'all' ? null : v;
+                try { localStorage.setItem('sb.case', value ?? 'all'); } catch {}
+                this.caseSel = value;
+                if (this.useCase) this.useCase(value);
+            },
+            setTheme(dark) {
+                this.isDark = dark;
+                const name = dark ? 'dark' : 'light';
+                if (this.$vuetify.theme.change) this.$vuetify.theme.change(name);
+                else this.$vuetify.theme.global.name = name;
+                document.documentElement.classList.toggle('dark-mode', dark);
+                document.body.classList.toggle('dark-mode', dark);
+            },
+            toggleTheme() {
+                this.setTheme(!this.isDark);
+                try { localStorage.setItem('stk-theme', this.isDark ? 'dark' : 'light'); } catch {}
+            },
+            openHelp() {
+                if (this.toggleHelp) this.toggleHelp();
+                else this.shellHelp = true;
+            },
+            async openPalette() {
+                this.palQ = '';
+                this.palOpen = true;
+                if (this.palRecords.length || !canRead) return;
+                // ponytail: people come from the roster and documents from the monitor panels, both whole lists; a search endpoint replaces this when the palette needs more than the first few dozen.
+                const filter = JSON.stringify({investigation: this.caseSel, time: null});
+                const [people, panels] = await Promise.all([axios.get('/api/people'), axios.get('/api/monitor/panels', {params: {filter}})]);
+                const recent = people.data.items.slice().sort((a, b) => (b.to || '').localeCompare(a.to || '')).slice(0, 30);
+                this.palRecords = [
+                    ...recent.map(p => ({kind: 'Person', t: p.name || 'Unnamed person', s: `${p.person.slice(0, 8)}, ${p.facts} facts`, h: `/people/${p.person}`, icon: 'ti ti-user'})),
+                    ...panels.data.documents.slice(0, 30).map(d => ({kind: 'Document', t: d.file, s: d.sha256.slice(0, 8), h: `/evidence/${d.sha256}`, icon: 'ti ti-file'})),
+                ];
+            },
+            palKey(e) {
+                const n = this.palHits.length;
+                if (e.key === 'ArrowDown') { e.preventDefault(); this.palI = Math.min(n - 1, this.palI + 1); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); this.palI = Math.max(0, this.palI - 1); }
+                else if (e.key === 'Enter' && this.palHits[this.palI]) { e.preventDefault(); location.href = this.palHits[this.palI].h; }
+                this.$nextTick(() => document.querySelector('.sb-pal .v-list-item.sel')?.scrollIntoView({block: 'nearest'}));
+            },
+            _shellKey(e) {
+                if (TYPING(e.target)) {
+                    if (e.key === 'Escape' && !this.palOpen) e.target.blur();
+                    return;
+                }
+                if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.openPalette(); return; }
+                if (e.metaKey || e.ctrlKey || e.altKey) return;
+                if (e.key === '/') { e.preventDefault(); document.getElementById('q')?.focus(); return; }
+                // A page with its own help registers `?` itself.
+                if (e.key === '?' && !this.toggleHelp) { this.shellHelp = !this.shellHelp; }
+            },
+            // Stored notifications: newest unread first, cursor paging, read on open.
+            async loadNotes(more) {
+                this.notesBusy = true;
+                try {
+                    const params = {unread: 1, limit: 20, ...(more ? {before: this.notesNext} : {})};
+                    const {data} = await axios.get('/api/notifications', {params});
+                    this.notes = more ? [...this.notes, ...data.items] : data.items;
+                    this.notesNext = data.next;
+                    this.navCounts = {...this.navCounts, notifications: data.unread};
+                } finally { this.notesBusy = false; }
+            },
+            async markNotes(item) {
+                const {data} = await axios.post('/api/notifications/read', {item});
+                this.navCounts = {...this.navCounts, notifications: data.unread};
+            },
+            async openNote(n, e) {
+                if (n.isSeen) return;
+                e.preventDefault();
+                n.isSeen = true;
+                await this.markNotes({ids: [n.id]});
+                location.href = n.to;
+            },
+            async readAllNotes() {
+                await this.markNotes({all: true});
+                this.notes.forEach(n => { n.isSeen = true; });
+            },
+            _connectWs() {
+                const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const ws = new WebSocket(`${proto}//${location.host}/ws`);
+                this._ws = ws;
+                ws.onopen = () => { this._wsRetry = 1000; };
+                ws.onclose = () => {
+                    setTimeout(() => this._connectWs(), Math.min(this._wsRetry *= 1.5, 30000));
+                };
+                ws.onmessage = (e) => { this._onWsMessage(JSON.parse(e.data)); };
+            },
+            _onWsMessage(msg) {
+                // The socket only nudges: the row is already stored, so count it and show it on top.
+                if (msg.type === 'notification' && !this.notes.some(n => n.id === msg.id)) {
+                    this.notes.unshift(msg);
+                    this.navCounts = {...this.navCounts, notifications: (this.navCounts.notifications || 0) + 1};
+                }
+            }
+        },
+        created() {
+            let saved = null;
+            try { saved = localStorage.getItem('stk-theme'); } catch {}
+            this.setTheme(saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
+            if (this.caseSel === 'all') this.caseSel = null;
+        },
+        mounted() {
+            document.getElementById('sb-boot')?.remove();
+            {% if current_user.is_authenticated %}
+            window.addEventListener('keydown', this._shellKey);
+            this._connectWs();
+            axios.get('/api/nav/counts').then(r => { this.navCounts = r.data; }).catch(() => {});
+            if (canRead) axios.get('/api/monitor/investigations').then(r => { this.caseList = r.data.items; });
+            {% endif %}
+        },
+        beforeUnmount() {
+            window.removeEventListener('keydown', this._shellKey);
+            if (this._ws) this._ws.close();
+        }
+    };
+</script>
+
+{% block js %}{% endblock %}
+
+<!-- Prefetch same-origin links on hover (Chrome). Skip mutating/auth routes. -->
+<script type="speculationrules">
+{
+  "prefetch": [{
+    "where": {
+      "and": [
+        { "href_matches": "/*" },
+        { "not": { "href_matches": ["/login/*", "/oauth/*", "/ws"] } }
+      ]
+    },
+    "eagerness": "moderate"
+  }]
+}
+</script>
+</body>
+</html>

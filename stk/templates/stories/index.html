@@ -1,0 +1,173 @@
+{% extends "layout.html" %}
+{% block css %}
+<link rel="stylesheet" href="{{ asset('maplibre/maplibre-gl.css') }}">
+<style>
+.st-page { max-width: 1560px; }
+.st-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.st-head h1 { font-size: 18px; font-weight: 650; letter-spacing: -.02em; margin: 0; }
+.st-head p { margin: 0; color: var(--ink-3); }
+.st-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.st-panel > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); min-height: 42px; flex-wrap: wrap; }
+.st-panel > header h2 { font-size: 14px; font-weight: 650; margin: 0; }
+.st-muted { color: var(--ink-3); }
+.st-zoom { display: flex; gap: 6px; justify-content: flex-end; align-items: center; margin-bottom: 4px; }
+.st-zoom button { font: inherit; font-size: 12px; color: var(--ink-2, var(--ink)); border: 1px solid var(--line); border-radius: 4px; background: var(--panel); padding: 2px 8px; min-height: 26px; cursor: pointer; }
+.st-zoom button:disabled { opacity: .4; cursor: default; }
+.st-lens { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px; margin-bottom: 12px; }
+.st-legend { margin-inline-start: auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); }
+.st-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+.st-map { height: 420px; background: var(--raise); }
+.st-scrub { display: flex; gap: 10px; align-items: center; padding: 6px 12px; border-top: 1px solid var(--line); }
+.st-unres { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 12.5px; }
+.st-pend { outline: none; }
+.st-pend:focus-visible rect { stroke-width: 2.5; }
+/* tier textures in their role hue; --c is author hue, kept on unconfirmed marks */
+.by-agent { --c: var(--agent); }
+.by-person { --c: var(--ink); }
+.st-sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; flex: none; vertical-align: -1px; border: 1.5px solid var(--c); }
+.tier-accepted .st-sw, .st-sw.tier-accepted { background: var(--accepted); border-color: var(--accepted); }
+.tier-corroborated .st-sw, .st-sw.tier-corroborated { border-color: var(--corroborated); }
+.by-agent.tier-accepted .st-sw, .by-agent.tier-corroborated .st-sw { box-shadow: 0 0 0 1.5px var(--panel), 0 0 0 3px var(--agent); }
+.tier-unconfirmed .st-sw, .st-sw.tier-unconfirmed { border-style: dashed; background: repeating-linear-gradient(135deg, var(--c) 0 1.5px, transparent 1.5px 4px); }
+.st-mk { display: flex; align-items: center; gap: 5px; font: 600 11.5px/1 Inter, system-ui, sans-serif; color: var(--ink); white-space: nowrap; cursor: pointer; background: none; border: 0; padding: 0; text-shadow: 0 0 3px var(--panel), 0 0 3px var(--panel); }
+.st-mk .d { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--c); background: var(--panel); color: var(--c); font-size: 10px; text-shadow: none; }
+.st-mk.tier-accepted .d { background: var(--accepted); border-color: var(--accepted); color: var(--panel); }
+.st-mk.tier-corroborated .d { border-color: var(--corroborated); color: var(--corroborated); border-width: 2px; }
+.st-mk.by-agent.tier-accepted .d, .st-mk.by-agent.tier-corroborated .d { outline: 1.5px solid var(--agent); outline-offset: 1px; }
+.st-mk.tier-unconfirmed .d { border-style: dashed; background: repeating-linear-gradient(135deg, var(--agent-solid) 0 1.5px, var(--panel) 1.5px 4px); }
+.st-mk.future { opacity: .3; }
+.st-mk.fork .d { box-shadow: 0 0 0 2px var(--conflict); }
+.st-strip { padding: 8px 12px 12px; }
+.st-card { width: 236px; margin-inline-end: 8px; padding: 8px 10px; cursor: pointer; }
+.st-card.on { outline: 2px solid var(--ink); }
+.st-card .mv-thumb { flex: none; }
+.st-detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 10px 12px 14px; border-top: 1px solid var(--line); }
+.st-detail dl { display: grid; grid-template-columns: 96px 1fr; gap: 3px 8px; margin: 0; font-size: 12.5px; }
+.st-detail dt { color: var(--ink-3); }
+.st-ex { font-size: 13px; line-height: 1.7; background: var(--raise); padding: 6px 8px; border-radius: 4px; }
+.st-ex mark { background: var(--agent-wash); color: inherit; border-bottom: 1.5px solid var(--agent); padding: 0 1px; border-radius: 2px; }
+.st-check { padding: 6px 0; border-bottom: 1px solid var(--line); }
+@media (max-width: 1100px) { .st-grid { grid-template-columns: 1fr; } .st-map { height: 320px; } .st-detail { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .st-lbl { display: none; } .st-lens .v-btn-group .v-btn .v-btn__prepend { margin-inline: 0; } }
+@media (max-width: 959px) { .st-legend { margin-inline-start: 0; } .st-lens .v-autocomplete, .st-lens .v-select { max-width: 100% !important; flex: 1 1 100%; } }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="st-page py-4">
+  <div class="st-head">
+    <h1 dir="auto">Story: ${ s ? s.title : lensTitle }</h1><p>${ subtitle }</p><a v-if="s && entityHref" :href="entityHref">${ lens === 'place' ? 'Place page' : 'Incident page' }</a>
+    <div class="ms-auto d-flex ga-2">
+      <v-menu location="bottom end"><template #activator="{ props }"><v-btn v-bind="props" size="small" variant="text" prepend-icon="ti ti-bookmarks" aria-label="Your saved stories">Saved ${ saved.length || '' }</v-btn></template>
+        <v-list density="compact" min-width="280">
+          <v-list-item v-for="x in saved" :key="x.id" :href="savedHref(x.query)" prepend-icon="ti ti-timeline" :title="savedLabel(x.query)" :subtitle="'saved ' + fmtDay(x.at.slice(0, 10))">
+            <template #append><v-icon-btn icon="ti ti-trash" size="small" variant="text" aria-label="Remove from saved" @click.prevent.stop="unsave(x.id)"></v-icon-btn></template></v-list-item>
+          <v-list-item v-if="!saved.length" title="Nothing saved yet" subtitle="Save keeps this lens and selection, never a copy of the values"></v-list-item>
+        </v-list></v-menu>
+      <v-btn size="small" variant="outlined" prepend-icon="ti ti-device-floppy" :disabled="!s" @click="save">Save</v-btn>
+      <v-tooltip :disabled="!!factual.length" text="No accepted or corroborated points to cite yet" location="bottom"><template #activator="{ props }"><span v-bind="props">
+        <v-btn size="small" variant="outlined" prepend-icon="ti ti-package-export" :disabled="!factual.length" @click="openPackage">Package</v-btn></span></template></v-tooltip>
+    </div>
+  </div>
+  <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
+
+  <div class="st-panel st-lens">
+    <v-btn-toggle :model-value="lens" mandatory density="compact" variant="outlined" divided aria-label="Lens" @update:model-value="setLens">
+      <v-btn value="person" prepend-icon="ti ti-user" aria-label="Person"><span class="st-lbl">Person</span></v-btn><v-btn value="group" prepend-icon="ti ti-users" aria-label="Group"><span class="st-lbl">Group</span></v-btn><v-btn value="incident" prepend-icon="ti ti-alert-triangle" aria-label="Incident"><span class="st-lbl">Incident</span></v-btn><v-btn value="place" prepend-icon="ti ti-map-pin" aria-label="Place"><span class="st-lbl">Place</span></v-btn><v-btn value="filter" prepend-icon="ti ti-filter" aria-label="Filter"><span class="st-lbl">Filter</span></v-btn>
+    </v-btn-toggle>
+    <v-autocomplete v-if="lens === 'person'" :model-value="ref" :items="personItems" no-filter density="compact" hide-details style="max-width: 320px" aria-label="Person" prepend-inner-icon="ti ti-user-search" placeholder="Search a name in any spelling" @update:search="searchPeople" @update:model-value="pick"></v-autocomplete>
+    <span v-if="lens === 'group'" class="st-muted">${ ref ? ref.split(',').length + ' people, the selection saved with Save' : 'Pick people in another lens, then switch to Group' }</span>
+    <v-autocomplete v-if="lens === 'place'" :model-value="ref" :items="placeItems" density="compact" hide-details style="max-width: 300px" aria-label="Place" prepend-inner-icon="ti ti-map-pin" no-data-text="No place has confirmed claims here" @update:model-value="pick"></v-autocomplete>
+    <v-select v-if="lens === 'incident'" :model-value="ref" :items="incidentItems" density="compact" hide-details style="max-width: 420px" aria-label="Incident" no-data-text="No accepted incidents yet: accept a candidate in Discover" @update:model-value="pick"></v-select>
+    <v-chip-group v-if="lens === 'filter'" v-model="tiers" multiple filter aria-label="Tiers"><v-chip v-for="t in ['accepted', 'corroborated', 'unconfirmed']" :key="t" :value="t" size="small" variant="outlined">${ t }</v-chip></v-chip-group>
+    <span class="st-legend"><span class="by-person"><span class="st-sw tier-accepted"></span> accepted</span><span class="by-person"><span class="st-sw tier-corroborated"></span> corroborated</span><span class="by-agent"><span class="st-sw tier-unconfirmed"></span> unconfirmed or pending</span><span><v-icon icon="ti ti-git-fork" size="14" style="color: var(--conflict)"></v-icon> conflict</span></span>
+  </div>
+
+  <v-empty-state v-if="s && !points.length" icon="ti ti-timeline" title="No dated evidence in this lens" text="Claims without any date never appear on a story. Try another person, a place, or the filter lens."></v-empty-state>
+  <v-empty-state v-else-if="!s && !busy && !error" icon="ti ti-timeline" title="Pick what to tell" text="Choose a person, a place or an incident above."></v-empty-state>
+  <template v-if="s && points.length">
+  <div class="st-grid">
+    <section class="st-panel" aria-labelledby="h-tl"><header><h2 id="h-tl">Timeline</h2><span class="st-muted text-caption">rows are people; ${ pending.length } pending finding${ pending.length === 1 ? '' : 's' } hatched</span></header>
+      <div class="pa-2"><story-timeline :rows="rows" :from="range[0]" :to="range[1]" :cursor="cursor" :sel="selId" :pending="pending" :incidents="incidentBands" @pick="select" @review="openFinding"></story-timeline></div>
+      <div v-if="s.truncated" class="st-unres st-muted">Showing the first 5,000 claims. Narrow the lens or the time window to see the rest.</div>
+    </section>
+    <section class="st-panel" aria-labelledby="h-map"><header><h2 id="h-map">Map</h2><span class="st-muted text-caption">numbered in time order; sequence lines, not routes</span></header>
+      <div ref="map" class="st-map" role="region" aria-label="Map of resolved places"></div>
+      <div class="st-scrub"><v-icon-btn :icon="playing ? 'ti ti-player-pause' : 'ti ti-player-play'" variant="text" size="small" :aria-label="playing ? 'Pause' : 'Play'" @click="play"></v-icon-btn>
+        <v-slider v-model="t" :min="0" :max="span" :step="1" hide-details density="compact" color="primary" aria-label="Time" class="flex-grow-1"></v-slider><span class="mono text-no-wrap">${ fmtDay(cursor) }</span></div>
+      <div class="st-unres"><strong>Unresolved names</strong> <span class="st-muted">not on the map until a person confirms a place:</span>
+        <span v-for="u in s.unresolved" :key="u.place" class="ms-2"><bdi dir="auto">${ u.place }</bdi> <span class="st-muted">(${ u.count })</span></span><span v-if="!s.unresolved.length" class="st-muted ms-2">none</span>
+        <div class="text-caption st-muted mt-1">Places from ${ s.attribution }; outlines from Natural Earth.</div></div>
+    </section>
+  </div>
+
+  <section class="st-panel mt-3" aria-labelledby="h-ev"><header><h2 id="h-ev">Evidence</h2><span class="st-muted text-caption">the exact span behind each point, in time order</span></header>
+    <div class="st-strip"><v-slide-group :model-value="selId" show-arrows center-active>
+      <v-slide-group-item v-for="p in ordered" :key="p.id" :value="p.id">
+        <v-card border class="st-card" :class="{ on: selId === p.id }" :data-point="p.id" @click="select(p)">
+          <div class="d-flex ga-2 align-baseline"><span :class="['tier-' + p.tier, p.agent ? 'by-agent' : 'by-person']"><span class="st-sw"></span></span><strong class="text-truncate" dir="auto">${ rowLabel[p.subject] }</strong><v-icon v-if="forkIds.has(p.id)" icon="ti ti-git-fork" size="14" style="color: var(--conflict)" aria-label="conflict"></v-icon></div>
+          <div class="text-caption">${ PROP[p.prop] || p.prop } <a v-if="p.place_id" :href="'/places/' + p.place_id" @click.stop><bdi dir="auto">${ p.place }</bdi></a><bdi v-else dir="auto">${ p.place }</bdi>, ${ fmtSpan(p.from, p.to) }</div>
+          <div class="d-flex ga-2 align-center mt-1"><media-thumb v-if="p.source" :locked="p.locked" :sha="p.source" :mime="p.mime" :file="p.file" :href="p.href" :width="64" :height="40" :caption="false"></media-thumb>
+            <div class="text-caption" style="min-width: 0"><div class="st-muted text-truncate">${ p.file }</div><a :href="p.href" @click.stop>Open at span</a></div></div>
+        </v-card></v-slide-group-item></v-slide-group></div>
+    <div v-if="sel" class="st-detail" aria-live="polite">
+      <div>
+        <div v-if="excerpt" class="st-ex" dir="auto">${ excerpt.before }<mark>${ excerpt.match }</mark>${ excerpt.after }</div>
+        <div v-else class="st-muted">${ excerptNote || 'Loading the span' }</div>
+        <a class="d-inline-block mt-2" :href="sel.href">Open ${ sel.file } at this span</a>
+      </div>
+      <dl v-if="detail">
+        <dt>Claim</dt><dd dir="auto">${ PROP[detail.prop] || detail.prop } ${ detail.erased ? 'erased' : detail.masked ? 'masked' : detail.display }</dd>
+        <dt>Tier</dt><dd>${ detail.tier }${ detail.reason ? ' (' + detail.reason + ')' : '' }</dd>
+        <dt>When</dt><dd>${ detail.when || 'undated' }${ detail.inherited ? ', from the document date' : '' }</dd>
+        <dt>By</dt><dd :class="detail.actor.agent ? 'text-agent' : ''">${ detail.actor.label }</dd>
+        <dt>Signature</dt><dd>${ detail.signature.by }${ detail.signature.verifies === true ? ', verifies' : detail.signature.verifies === false ? ', does not verify' : '' }</dd>
+      </dl>
+    </div>
+  </section>
+  </template>
+
+  <v-dialog :model-value="!!finding" width="560" @update:model-value="v => { if (!v) finding = null }">
+    <v-card v-if="finding" border>
+      <v-card-item><v-card-title class="text-body-large font-weight-bold" dir="auto">${ finding.reason }</v-card-title>
+        <v-card-subtitle>${ finding.label }, ${ finding.band } evidence: ${ finding.why }. Pending, proposed by discovery.</v-card-subtitle></v-card-item>
+      <v-card-text>
+        <div class="st-muted text-caption mb-1">Members, each a claim a person decides on in Discover</div>
+        <div v-for="m in finding.members" :key="m.statement" class="st-check d-flex ga-2 align-baseline">
+          <v-icon icon="ti ti-square" size="16" aria-hidden="true"></v-icon>
+          <span><strong dir="auto">${ memberLabel(m) }</strong>
+            ${ PROP[m.prop] || m.prop } <a v-if="m.place.id" :href="'/places/' + m.place.id"><bdi dir="auto">${ m.place.en || m.place.ar || '' }</bdi></a>, ${ m.when || 'undated' } <span class="st-muted">(${ m.tier })</span></span>
+        </div>
+      </v-card-text>
+      <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="finding = null">Close</v-btn>
+        <v-btn color="primary" variant="flat" prepend-icon="ti ti-checklist" :href="'/discover?f=' + encodeURIComponent(finding.id)">Review in Discover</v-btn></v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="pkg.open" width="460">
+    <v-card border title="Package this story">
+      <v-card-text>
+        <p class="mb-3">A brief with one cited sentence per row, citing ${ factual.length } accepted or corroborated point${ factual.length === 1 ? '' : 's' }. ${ points.length - factual.length } unconfirmed point${ points.length - factual.length === 1 ? ' stays' : 's stay' } out. Rewrite the sentences on the brief before you build.</p>
+        <v-text-field v-model="pkg.title" label="Title" density="compact" dir="auto"></v-text-field>
+        <v-select v-model="pkg.audience" :items="boot.audiences" label="Audience" density="compact" hide-details></v-select>
+      </v-card-text>
+      <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="pkg.open = false">Cancel</v-btn>
+        <v-btn color="primary" variant="flat" :loading="pkg.busy" :disabled="!pkg.title.trim()" @click="makePackage">Create brief</v-btn></v-card-actions>
+    </v-card>
+  </v-dialog>
+  <v-snackbar v-model="snack" :timeout="4000">${ snackText }</v-snackbar>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="application/json" id="story-boot">{{ boot|tojson|safe }}</script>
+<script type="module">
+import {registerMediaViewers} from '/static/js/components/media.js';
+import {StoryTimeline, storyPage} from '/static/js/stories.js';
+
+const boot = JSON.parse(document.getElementById('story-boot').textContent);
+window.app = Vue.createApp(storyPage(boot));
+app.component('story-timeline', StoryTimeline);
+registerMediaViewers(app);
+registerStkComponents(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

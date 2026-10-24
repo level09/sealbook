@@ -1,0 +1,33 @@
+{
+  "type": "search",
+  "query": {
+    "original": "\"Lina Najjar\""
+  },
+  "web": {
+    "type": "search",
+    "results": [
+      {
+        "title": "Families ask about <strong>Lina Najjar</strong>",
+        "url": "https://news.example.org/2013/07/families-ask",
+        "description": "Relatives of <strong>Lina Najjar</strong> say she was taken at a checkpoint &amp; never seen again.",
+        "page_age": "2013-07-21T09:00:00",
+        "age": "July 21, 2013",
+        "meta_url": {
+          "hostname": "news.example.org"
+        },
+        "thumbnail": {
+          "src": "https://imgs.search.brave.com/web-thumb-1",
+          "original": "https://news.example.org/media/photo.jpg"
+        }
+      },
+      {
+        "title": "Not a web page",
+        "url": "ftp://files.example.org/x",
+        "description": "",
+        "meta_url": {
+          "hostname": "files.example.org"
+        }
+      }
+    ]
+  }
+}

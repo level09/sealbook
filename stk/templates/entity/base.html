@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{#- One layout for every entity page. A page fills crumbs, title, names, facts,
+    actions and side, and its script gives entityPage() a `relations` computed:
+    [{key, title, icon, role, empty, items: [{id, href, name, person, why, chip: {cls, text}, title}]}]. -#}
+{% block css %}
+<link rel="stylesheet" href="{{ asset('maplibre/maplibre-gl.css') }}">
+<link rel="stylesheet" href="{{ asset('css/entity.css') }}">
+{% endblock %}
+{% block content %}
+<v-container fluid class="en-page py-4">
+  <v-alert v-if="error" type="error" variant="tonal" class="mb-3">${ error }<template #append><v-btn variant="outlined" size="small" prepend-icon="ti ti-refresh" @click="load">Retry</v-btn></template></v-alert>
+  <template v-if="!e && !error">
+    <v-skeleton-loader type="heading, text" max-width="520" class="mb-3"></v-skeleton-loader>
+    <div class="en-grid"><v-skeleton-loader type="image, list-item-two-line@4"></v-skeleton-loader><v-skeleton-loader type="image, paragraph"></v-skeleton-loader></div>
+  </template>
+  <template v-if="e">
+    <nav class="en-crumbs" aria-label="Breadcrumb">{% block crumbs %}{% endblock %}</nav>
+    <header class="en-head">
+      <div>
+        <div class="en-title">{% block title %}{% endblock %}</div>
+        {% block names %}{% endblock %}
+        <dl class="en-facts">{% block facts %}{% endblock %}</dl>
+      </div>
+      <div class="en-acts">
+        {% block actions %}{% endblock %}
+        <v-btn size="small" variant="outlined" prepend-icon="ti ti-timeline" :href="storyHref">Open full story</v-btn>
+        <v-btn size="small" variant="outlined" prepend-icon="ti ti-message" @click="drawer = !drawer">Thread and history<v-kbd class="ms-2">t</v-kbd></v-btn>
+      </div>
+    </header>
+
+    <div class="en-grid">
+      <div class="en-main">
+        <section class="en-panel" aria-labelledby="en-h-story">
+          <header><h2 id="en-h-story">Story</h2><span class="en-muted text-caption">${ storyLine }</span>
+            <v-btn class="act" size="small" variant="text" prepend-icon="ti ti-timeline" :href="storyHref">Open full story</v-btn></header>
+          <div class="en-body">
+            <story-timeline v-if="range && rows.length" compact :rows="rows" :from="range[0]" :to="range[1]" :incidents="bands" :pending="pending" @pick="pickPoint" @review="openFinding"></story-timeline>
+            <p v-else class="en-muted ma-0">No dated, placed claims yet. Claims without a date or a confirmed place never appear on a story.</p>
+            <p v-if="story && story.truncated" class="en-muted text-caption mt-2 mb-0">The story reads the first 5,000 claims; open the full story with a time window for the rest.</p>
+          </div>
+        </section>
+
+        <section class="en-panel" aria-labelledby="en-h-rel">
+          <header><h2 id="en-h-rel">Relations</h2><span class="en-muted text-caption">each with why it is related; tiers are textures elsewhere, words here</span></header>
+          <div v-for="g in relations" :key="g.key" class="en-group">
+            <h3><i :class="[g.icon, 'r-ink', g.role]" aria-hidden="true"></i>${ g.title } <span class="en-muted">${ g.items.length }</span></h3>
+            <component :is="r.href ? 'a' : 'div'" v-for="r in g.items" :key="r.id" class="en-rel" :href="r.href || undefined" :title="r.title || undefined">
+              <span class="n">
+                <actor-chip v-if="r.person" :actor="{kind: 'human', name: r.name, key: r.person}" size="sm" bare></actor-chip>
+                <i v-else :class="[g.icon, 'r-ink', g.role]" aria-hidden="true"></i>
+                <bdi dir="auto" :class="{'en-muted': r.muted}">${ r.name }</bdi>
+              </span>
+              <span class="why" dir="auto"><span v-if="r.roles" class="en-roles me-2"><span v-for="x in r.roles" :key="x" class="r-chip is-person">${ human(x) }</span></span>${ r.why }</span>
+              <span v-if="r.chip" class="r-chip" :class="r.chip.cls">${ r.chip.text }</span><span v-else></span>
+            </component>
+            <p v-if="!g.items.length" class="en-empty">${ g.empty }</p>
+          </div>
+        </section>
+
+        <section class="en-panel" aria-labelledby="en-h-ev">
+          <header><h2 id="en-h-ev">Evidence</h2><span class="en-muted text-caption">${ plural(ev.total, 'source') } behind it; open one at the claim</span></header>
+          <v-data-table-server class="en-table" :headers="evShown" :items="ev.items" :items-length="ev.total" :loading="ev.loading" item-value="sha256" density="compact"
+            :items-per-page="ev.opts.itemsPerPage" :sort-by="ev.opts.sortBy" :items-per-page-options="[10, 25, 50, 100]" :hide-default-footer="ev.total <= 10" must-sort @update:options="loadEvidence" @click:row="openRow">
+            <template #item.thumb="{ item }"><media-thumb :sha="item.sha256" :mime="item.mime" :file="item.file" :width="64" :height="40" :caption="false" :link="false"></media-thumb></template>
+            <template #item.title="{ item }"><a :href="item.href" @click.stop><bdi dir="auto">${ item.file }</bdi></a><div class="en-muted text-caption">${ human(item.doc_type) || 'source' }<span v-if="item.sensitive"> · <i class="ti ti-eye-off r-ink state-sensitive" aria-hidden="true"></i> sensitive</span></div></template>
+            <template #item.where="{ item }"><span>${ PROP[item.prop] || human(item.prop) }</span><span class="en-muted">, ${ spanLabel(item.span) }</span></template>
+            <template #item.tier="{ item }"><span class="r-chip" :class="'tier-' + item.tier">${ item.tier }</span></template>
+            <template #no-data><v-empty-state icon="ti ti-files-off" title="No source names it yet" text="Sources appear here once a claim in them resolves to it."></v-empty-state></template>
+          </v-data-table-server>
+        </section>
+      </div>
+      <aside class="en-side">{% block side %}{% endblock %}</aside>
+    </div>
+
+    <v-navigation-drawer v-model="drawer" location="right" temporary width="420" aria-label="Thread and history">
+      <v-toolbar density="compact" color="surface" border="b"><v-toolbar-title class="text-body-1 font-weight-bold">Thread and history</v-toolbar-title><v-btn icon="ti ti-x" variant="text" aria-label="Close" @click="drawer = false"></v-btn></v-toolbar>
+      <div class="pa-3">
+        <h3 class="text-body-2 font-weight-bold mb-2">Threads</h3>
+        <v-select v-if="e.threads.length" :model-value="threadId" :items="e.threads.map(t => ({title: threadLabel(t), value: t.id}))" density="compact" hide-details label="Thread" @update:model-value="id => openThread(e.threads.find(t => t.id === id))"></v-select>
+        <p v-else class="en-muted">No colleague has been asked about these statements. Ask from Review or the evidence page.</p>
+        <v-skeleton-loader v-if="threadBusy && !thread" type="list-item-three-line@2"></v-skeleton-loader>
+        <p v-else-if="threadId && !thread" class="en-muted mt-3">This thread is private to its sender, reviewer and admins.</p>
+        <template v-if="thread">
+          <p class="mt-3 mb-1"><strong>${ thread.sender.name }</strong> asked: <span dir="auto">${ thread.reason }</span></p>
+          <div v-for="m in thread.comments" :key="m.id" class="py-2" style="border-top: 1px solid var(--line)"><strong>${ m.author }</strong> <span class="en-muted">${ m.at.slice(0, 16).replace('T', ' ') }</span><div dir="auto">${ m.text }</div></div>
+          <v-textarea v-model="comment" label="Comment, @name to mention" rows="2" auto-grow hide-details class="mt-2"></v-textarea>
+          <div class="d-flex ga-2 mt-2"><v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-send" :disabled="!comment.trim()" :loading="threadBusy" @click="sendComment">Comment</v-btn>
+            <v-btn size="small" variant="text" :href="'/review?request=' + thread.id">Decide in Review</v-btn></div>
+        </template>
+        <h3 class="text-body-2 font-weight-bold mt-6 mb-1">Signed history</h3>
+        <ul v-if="gestures.length" class="en-hist">
+          <li v-for="g in gestures" :key="g.key">
+            <div class="g"><actor-chip :actor="{kind: g.actor.kind, name: g.actor.label, key: g.actor.principal}" size="sm"></actor-chip><span class="en-muted">${ fmtDay(g.at.slice(0, 10)) } ${ g.at.slice(11, 16) } UTC</span>
+              <span v-if="g.gesture" class="en-muted">· one passkey gesture, ${ plural(g.rows.length, 'statement') }</span>
+              <v-btn v-if="g.gesture && (e.undoable || []).includes(g.gesture)" size="x-small" variant="outlined" prepend-icon="ti ti-arrow-back-up" class="ms-auto" :loading="signBusy" @click="undo(g)">Undo</v-btn></div>
+            <ul><li v-for="h in g.rows" :key="h.id" :class="{gone: h.tier === 'rejected'}">${ historyText(h) }<span v-if="h.tier === 'rejected'"> (undone)</span></li></ul>
+          </li>
+        </ul>
+        <p v-else class="en-muted">Nothing signed about it yet.</p>
+      </div>
+    </v-navigation-drawer>
+  </template>
+  {% include "entity/_sign.html" %}
+</v-container>
+{% endblock %}

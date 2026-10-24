@@ -1,0 +1,266 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.desk-page { max-width: 1480px; }
+.desk-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.desk-head h1 { font-size: 18px; font-weight: 650; margin: 0; }
+.desk-head p { margin: 0; color: var(--ink-3); }
+.desk-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.desk-panel > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); min-height: 42px; flex-wrap: wrap; }
+.desk-panel > header h2 { font-size: 13px; font-weight: 650; margin: 0; }
+.desk-panel > header .act { margin-inline-start: auto; }
+.desk-next { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 12px; margin-bottom: 12px; min-height: 50px; }
+.desk-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+.desk-grid .wide { grid-column: 1 / -1; }
+.desk-muted { color: var(--ink-3); }
+.desk-agent { color: var(--agent); }
+.desk-table td { font-size: 13px; font-variant-numeric: tabular-nums; }
+.desk-table tr.desk-row { outline: none; cursor: pointer; }
+.desk-table tr.desk-row.sel > td, .desk-table tr.desk-row:focus-visible > td { background: var(--wash) !important; }
+.desk-table tr.desk-row.sel > td:first-child { box-shadow: inset 2px 0 0 var(--ink); }
+.desk-item { display: flex; gap: 10px; align-items: center; min-width: 0; padding: 4px 0; }
+.desk-item .t { min-width: 0; }
+.desk-item .t a { font-weight: 550; }
+.desk-trunc { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 360px; }
+.desk-sens .mv-thumb .im { background: repeating-linear-gradient(135deg, var(--raise), var(--raise) 4px, var(--wash) 4px, var(--wash) 8px); filter: blur(.3px); }
+.desk-status { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.desk-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.desk-item:not(.desk-sens) .mv-thumb .lock { display: none; }
+.show-m { display: none; }
+.desk-band { display: inline-flex; gap: 2px; vertical-align: middle; }
+.desk-band i { width: 12px; height: 6px; border-radius: 1px; background: var(--line-strong); }
+.desk-band.strong i, .desk-band.moderate i:nth-child(-n+2), .desk-band.weak i:first-child { background: var(--agent); }
+@media (max-width: 959px) { .desk-grid { grid-template-columns: 1fr; } .hide-m { display: none !important; } .show-m { display: flex; margin-top: 2px; } .desk-trunc { max-width: 220px; } }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="desk-page py-4">
+  <div class="desk-head">
+    <h1>${ caseSel || 'All investigations' }</h1>
+    <p>${ recentTotal === null ? 'Loading' : plural(recentTotal, 'source') }</p>
+  </div>
+  <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
+  <div class="desk-panel desk-next" aria-live="polite">
+    <strong>Next:</strong>
+    <span v-if="next">${ next.text }</span><span v-else class="desk-muted">Loading</span>
+    <v-btn v-if="next && next.href" color="primary" size="small" prepend-icon="ti ti-arrow-right" :href="next.href">${ next.action }</v-btn>
+  </div>
+  <div class="desk-grid">
+    <section class="desk-panel" aria-labelledby="h-chg">
+      <header><h2 id="h-chg">Since you left</h2><span class="desk-muted text-caption">${ sinceText }</span></header>
+      <v-data-table-server class="desk-table" :headers="hChg" :items="chg.items" :items-length="chg.total" :loading="chg.loading" density="compact" :items-per-page="chg.perPage" :items-per-page-options="[10, 25, 50]" :row-props="rowProps(r => changeHref(r))" :hide-default-footer="chg.total <= chg.perPage" @update:options="o => load('chg', o)" @click:row="clickRow">
+        <template #item.who="{ item }"><span :class="item.who.agent ? 'desk-agent' : ''"><i v-if="item.who.agent" class="ti ti-robot" aria-label="agent"></i> ${ item.who.name }</span></template>
+        <template #item.what="{ item }"><a :href="changeHref(item)" @click.stop>${ verb(item) }</a> <span v-if="item.sources.length" class="desk-muted">in ${ where(item) }</span></template>
+        <template #item.at="{ item }"><span class="desk-muted text-no-wrap" :title="item.at">${ ago(item.at) }</span></template>
+        <template #no-data><v-empty-state icon="ti ti-coffee" title="Nothing new" :text="'No one else has worked on this case ' + sinceText + '.'"></v-empty-state></template>
+      </v-data-table-server>
+    </section>
+    <section class="desk-panel" aria-labelledby="h-need">
+      <header><h2 id="h-need">Needs you</h2><span class="desk-muted text-caption">requests, mentions and assigned work</span><v-btn class="act" size="small" variant="text" href="/review" prepend-icon="ti ti-inbox">Inbox</v-btn></header>
+      <v-data-table-server class="desk-table" :headers="hNeed" :items="need.items" :items-length="need.total" :loading="need.loading" density="compact" :items-per-page="need.perPage" :items-per-page-options="[10, 25, 50]" :row-props="rowProps(r => needHref(r))" :hide-default-footer="need.total <= need.perPage" @update:options="o => load('need', o)" @click:row="clickRow">
+        <template #item.on="{ item }"><a :href="needHref(item)" @click.stop>${ needTitle(item) }</a><div v-if="item.detail" class="desk-muted text-caption desk-clamp" dir="auto" :title="item.detail">${ item.detail }</div><div class="show-m"><v-chip size="x-small" :color="needState(item)" :prepend-icon="needIcon(item)" variant="outlined">${ needLabel(item) }</v-chip></div></template>
+        <template #item.status="{ item }"><v-chip size="small" :color="needState(item)" :prepend-icon="needIcon(item)" variant="outlined">${ needLabel(item) }</v-chip></template>
+        <template #no-data><v-empty-state icon="ti ti-mood-check" title="No one is waiting on you" text="Review requests, mentions and work assigned to you appear here."></v-empty-state></template>
+      </v-data-table-server>
+    </section>
+    <section class="desk-panel wide" aria-labelledby="h-fnd">
+      <header><h2 id="h-fnd">Findings waiting</h2><span class="desk-muted text-caption">proposed by discovery, decided by people</span><v-btn class="act" size="small" variant="text" :href="DISCOVER" prepend-icon="ti ti-robot">Discover</v-btn></header>
+      <v-data-table-server class="desk-table" :headers="hFnd" :items="fnd.items" :items-length="fnd.total" :loading="fnd.loading" density="compact" :items-per-page="fnd.perPage" :items-per-page-options="[10, 25, 50]" :row-props="rowProps(r => DISCOVER + '?f=' + r.key)" :hide-default-footer="fnd.total <= fnd.perPage" @update:options="o => load('fnd', o)" @click:row="clickRow">
+        <template #item.kind="{ item }"><v-chip size="small" color="agent" variant="tonal" prepend-icon="ti ti-robot">${ kindLabel(item.kind) }</v-chip></template>
+        <template #item.between="{ item }">
+          <span v-for="(p, i) in item.people" :key="p"><a :href="'/people/' + p" @click.stop><bdi v-if="fnd.names[p]" dir="auto">${ fnd.names[p] }</bdi><span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> ${ unnamed[p] }</span></a>${ i < item.people.length - 1 ? ', ' : '' }</span>
+          <span v-if="!item.people.length" class="desk-muted">${ plural(item.members, 'claim') }</span>
+          <span v-if="item.places.length" class="desk-muted"> at </span><a v-for="(pl, i) in item.places" :key="item.place_ids[i]" :href="'/places/' + item.place_ids[i]" @click.stop><bdi dir="auto">${ pl || 'an unnamed place' }</bdi></a>
+          <span v-if="item.month" class="desk-muted"> in ${ item.month }</span>
+        </template>
+        <template #item.why="{ item }"><span class="desk-muted">${ why(item) }</span></template>
+        <template #item.band="{ item }"><span class="text-no-wrap" title="A band from independent sources and overlap, not a probability"><span class="desk-band" :class="item.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ item.band }</span></template>
+        <template #no-data>
+          <v-empty-state v-if="fnd.ran" icon="ti ti-robot-off" title="No findings waiting" text="Every finding from the last discovery run has a decision. The next run proposes new ones as evidence arrives."></v-empty-state>
+          <v-empty-state v-else icon="ti ti-robot-off" title="Discovery has not run here yet">
+            <template #text>It proposes people seen at the same place and time, and candidate incidents. Run <code class="mono">uv run stk discover --investigation ${ caseSel || 'case-name' }</code> and the worker fills this table.</template>
+          </v-empty-state>
+        </template>
+      </v-data-table-server>
+    </section>
+    <section class="desk-panel wide" aria-labelledby="h-ev">
+      <header><h2 id="h-ev">Recent evidence</h2><span class="desk-muted text-caption">newest first</span><v-btn class="act" size="small" variant="text" :href="'/sources' + (caseSel ? '?investigation=' + encodeURIComponent(caseSel) : '')" prepend-icon="ti ti-files">All sources</v-btn></header>
+      <v-data-table-server class="desk-table" :headers="hEv" :items="ev.items" :items-length="ev.total" :loading="ev.loading" density="compact" :items-per-page="ev.perPage" :items-per-page-options="[10, 25, 50]" :row-props="rowProps(r => '/evidence/' + r.sha256)" :hide-default-footer="ev.total <= ev.perPage" @update:options="o => load('ev', o)" @click:row="clickRow">
+        <template #item.title="{ item }"><div class="desk-item" :class="{ 'desk-sens': item.sensitive }">
+          <media-thumb :sha="item.sha256" :mime="item.mime" :kind="item.type" :caption="false" :link="false" :width="56" :height="40"></media-thumb>
+          <div class="t"><div class="desk-trunc" dir="auto" :title="item.title"><i v-if="item.sensitive" class="ti ti-eye-off me-1" title="Sensitive, opening it is logged" aria-label="Sensitive"></i><a :href="'/evidence/' + item.sha256" @click.stop>${ item.title }</a></div>
+            <div class="desk-muted text-caption"><i :class="typeIcon(item.type)" aria-hidden="true"></i> ${ docLabel(item) }<span class="mono ms-2 hide-m" :title="item.sha256">${ item.sha256.slice(0, 8) }</span></div>
+            <div class="desk-status show-m"><span class="desk-muted text-caption">${ ago(item.acquired_at) }, ${ item.by.name }</span><v-chip v-for="c in chips(item)" :key="c.t" size="x-small" :variant="c.v" :color="c.c">${ c.t }</v-chip></div></div>
+        </div></template>
+        <template #item.investigation="{ item }"><span class="desk-muted">${ item.investigation }</span></template>
+        <template #item.acquired_at="{ item }"><span class="text-no-wrap" :title="item.acquired_at">${ ago(item.acquired_at) }</span><div class="desk-muted text-caption">${ item.by.name }</div></template>
+        <template #item.status="{ item }"><div class="desk-status">
+          <v-chip v-for="c in chips(item)" :key="c.t" size="small" :variant="c.v" :color="c.c">${ c.t }</v-chip>
+          <span v-if="item.status === 'processing'" class="desk-muted text-caption">processing</span>
+          <span v-else-if="!chips(item).length" class="desk-muted text-caption">indexed</span>
+        </div></template>
+        <template #no-data><v-empty-state icon="ti ti-files-off" title="No evidence in this case yet" text="Add files, links or a batch and they appear here as they are indexed."><template #actions><v-btn color="primary" size="small" prepend-icon="ti ti-upload" href="/ingest/">Add evidence</v-btn></template></v-empty-state></template>
+      </v-data-table-server>
+    </section>
+  </div>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="module">
+import {registerMediaViewers} from '/static/js/components/media.js';
+
+const DISCOVER = '/discover';
+const VERBS = {
+  acquisition: n => `added ${n.items === 1 ? 'a source' : n.items + ' sources'}`,
+  review: n => `decided ${plural(n.n, 'claim')}`, retraction: n => `retracted ${plural(n.n, 'decision')}`,
+  review_request: n => `asked for ${plural(n.n, 'review')}`, review_comment: n => `commented ${n.n === 1 ? 'once' : n.n + ' times'}`,
+  media_match: n => `proposed ${plural(n.n, 'picture or sound match', 'picture or sound matches')}`,
+  same_as: n => `proposed ${plural(n.n, 'same-person link')}`, not_same: n => `separated ${plural(n.n, 'person record')}`,
+  c2pa_verify: n => `checked content credentials on ${plural(n.items, 'source')}`, url_liveness: n => `rechecked ${plural(n.items, 'link')}`,
+  finding: n => `proposed ${plural(n.n, 'finding')}`, package: n => `built ${plural(n.n, 'package')}`, attest: n => `signed ${plural(n.n, 'package')}`,
+};
+const REVIEWS = ['review', 'retraction', 'review_request', 'review_comment'];
+function plural(n, one, many) { return `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`; }
+const human = s => (s || '').replaceAll('_', ' ').replace(/^./, c => c.toUpperCase());
+const table = () => ({items: [], total: 0, loading: true, page: 1, perPage: 10, loaded: false});
+
+window.app = Vue.createApp({
+  mixins: [layoutMixin], delimiters: config.delimiters,
+  data() {
+    return {
+      DISCOVER, error: '', since: null, basis: null, asks: 0, recentTotal: null, cursor: -1,
+      chg: table(), need: table(), fnd: {...table(), ran: true, names: {}}, ev: table(),
+      shellHints: [['/', 'search'], ['meta+k', 'go to'], ['j', 'next row'], ['k', 'previous row'], ['enter', 'open']],
+      hChg: [{title: 'Who', key: 'who', width: 140, sortable: false}, {title: 'What', key: 'what', sortable: false}, {title: 'When', key: 'at', align: 'end', width: 90, sortable: false}],
+      hNeed: [{title: 'On', key: 'on', sortable: false}, {title: 'Status', key: 'status', align: 'end', width: 150, sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}],
+      hFnd: [{title: 'Kind', key: 'kind', width: 190, sortable: false}, {title: 'Between', key: 'between', sortable: false}, {title: 'Why', key: 'why', sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}, {title: 'Strength', key: 'band', align: 'end', width: 130, sortable: false}],
+    };
+  },
+  computed: {
+    // People without a name the reader may see, numbered in order on this page.
+    unnamed() {
+      const out = {};
+      for (const f of this.fnd.items) for (const p of f.people) if (!this.fnd.names[p] && !out[p]) out[p] = `Unnamed person ${Object.keys(out).length + 1}`;
+      return out;
+    },
+    hEv() {
+      return [{title: 'Item', key: 'title', sortable: false},
+        ...(this.caseSel ? [] : [{title: 'Case', key: 'investigation', sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}]),
+        {title: 'Acquired', key: 'acquired_at', sortable: false, width: 150, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}, {title: 'Status', key: 'status', sortable: false, width: 230, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}];
+    },
+    sinceText() {
+      if (!this.since) return '';
+      const when = new Date(this.since).toLocaleString(undefined, {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+      return {access: `since your last visit, ${when}`, login: `since your previous sign-in, ${when}`, week: 'in the last 7 days'}[this.basis];
+    },
+    next() {
+      if (![this.need, this.fnd, this.ev].every(t => t.loaded)) return null;
+      const mine = this.need.items.find(i => i.mine);
+      if (this.asks && mine) {
+        const then = this.fnd.total ? `, then ${plural(this.fnd.total, 'finding')} waiting` : '';
+        return {text: `${plural(this.asks, 'review request')} addressed to you${then}.`, href: this.needHref(mine), action: 'Start with the first'};
+      }
+      const work = this.need.items.find(i => i.kind === 'assignment');
+      if (work) return {text: `${plural(this.need.total, 'item')} waiting on you, starting with ${this.needTitle(work)}.`, href: this.needHref(work), action: 'Open it'};
+      if (this.fnd.total) return {text: `${plural(this.fnd.total, 'finding')} waiting for a decision.`, href: DISCOVER, action: 'Review findings'};
+      const pending = this.ev.items.find(r => r.pending);
+      if (pending) return {text: `${pending.title} has ${plural(pending.pending, 'claim')} to review.`, href: '/evidence/' + pending.sha256, action: 'Open it'};
+      if (!this.ev.total) return {text: 'This case has no evidence yet. Add the first files or links.', href: '/ingest/', action: 'Add evidence'};
+      return {text: 'Nothing is waiting on you. Search the case or browse its sources.', href: '/sources' + (this.caseSel ? '?investigation=' + encodeURIComponent(this.caseSel) : ''), action: 'Browse sources'};
+    },
+  },
+  methods: {
+    plural, human,
+    chips(r) {
+      return [r.new && {t: 'new', v: 'tonal', c: 'new'}, r.status === 'failed' && {t: 'failed', v: 'outlined', c: 'negative'},
+        r.pending && {t: `needs review, ${r.pending}`, v: 'outlined', c: 'agent'}, r.findings && {t: plural(r.findings, 'finding'), v: 'tonal', c: 'agent'}].filter(Boolean);
+    },
+    typeIcon: t => ({image: 'ti ti-photo', pdf: 'ti ti-file-type-pdf', audio: 'ti ti-volume', video: 'ti ti-video', web: 'ti ti-world', text: 'ti ti-file-text'}[t] || 'ti ti-file'),
+    docLabel(r) { const k = r.doc_type && r.doc_type !== 'unknown' ? human(r.doc_type) : null; return [k !== r.title ? k : null, r.type].filter(Boolean).join(' · '); },
+    kindLabel: k => ({shared_presence: 'Same place and time', candidate_incident: 'Candidate incident'}[k] || human(k)),
+    why(f) {
+      const x = f.features;
+      if (f.kind === 'shared_presence') return `${plural(x.sources, 'source')}, overlapping ${plural(x.days, 'day')}`;
+      if (f.kind === 'candidate_incident') return `${plural(x.people, 'person', 'people')} from ${plural(x.sources, 'source')} within ${plural(x.span_days, 'day')}`;
+      return plural(f.members, 'claim');
+    },
+    verb(r) { return (VERBS[r.what] || (n => `read ${plural(n.n, human(r.what).toLowerCase() + ' value')}`))(r); },
+    where(r) { const t = r.sources.map(s => s.title); return t.join(', ') + (r.items > t.length ? ` and ${(r.items - t.length).toLocaleString()} more` : ''); },
+    changeHref(r) { return REVIEWS.includes(r.what) ? '/review' : r.sources[0] ? '/evidence/' + r.sources[0].sha256 : '/sources'; },
+    needTitle(i) {
+      if (i.kind === 'review') return `${human(i.prop)} claim${i.source?.title ? ' in ' + i.source.title : ''}`;
+      if (i.kind === 'assignment') {
+        if (i.subject === 'blob') return i.source?.title || 'A source';
+        if (i.subject === 'statement') return `${human(i.prop) || 'A'} claim${i.source?.title ? ' in ' + i.source.title : ''}`;
+        return `${this.kindLabel(i.finding) || 'A'} finding`;
+      }
+      return i.title;
+    },
+    // Colour role of a Needs you row: past-due work is overdue, open asks and due work are due, replies are new.
+    needState(i) {
+      if (i.kind === 'assignment' && i.status.startsWith('due ')) return i.status.slice(4) < new Date().toLocaleDateString('sv') ? 'overdue' : 'due';
+      return i.mine ? 'due' : i.kind === 'reply' ? 'new' : undefined;
+    },
+    needLabel(i) { return this.needState(i) === 'overdue' ? 'overdue since ' + i.status.slice(4) : i.status; },
+    needIcon(i) { return {overdue: 'ti ti-alert-triangle', due: 'ti ti-clock', new: 'ti ti-point-filled'}[this.needState(i)]; },
+    needHref(i) {
+      if (i.kind !== 'assignment') return i.href;
+      if (i.subject === 'finding') return DISCOVER;
+      return i.source?.sha256 ? '/evidence/' + i.source.sha256 : '/review';
+    },
+    ago(iso) {
+      const s = (Date.now() - new Date(iso)) / 1000;
+      return s < 60 ? 'now' : s < 3600 ? `${Math.floor(s / 60)} min ago` : s < 86400 ? `${Math.floor(s / 3600)} h ago` : s < 30 * 86400 ? `${Math.floor(s / 86400)} d ago` : iso.slice(0, 10);
+    },
+    rowProps(href) { return ({item}) => ({class: 'desk-row', tabindex: -1, 'data-href': href(item)}); },
+    clickRow(e) { const tr = e.target.closest('tr.desk-row'); if (tr) location.href = tr.dataset.href; },
+    useCase() { for (const k of ['chg', 'need', 'fnd', 'ev']) { this[k].page = 1; this.load(k); } },
+    async load(key, opts) {
+      const t = this[key];
+      if (opts) { t.page = opts.page; t.perPage = opts.itemsPerPage; }
+      const url = {chg: '/api/desk/changes', need: '/api/desk/needs', fnd: '/api/desk/findings', ev: '/api/desk/recent'}[key];
+      const seq = (t.seq = (t.seq || 0) + 1);
+      t.loading = true;
+      try {
+        const {data} = await axios.get(url, {params: {investigation: this.caseSel || undefined, page: t.page, per_page: t.perPage}});
+        if (seq !== t.seq) return;
+        t.items = data.items; t.total = data.total; t.loaded = true;
+        if (key === 'chg') { this.since = data.since; this.basis = data.basis; }
+        if (key === 'need') this.asks = data.asks;
+        if (key === 'fnd') { t.ran = data.ran; t.names = data.names; }
+        if (key === 'ev') this.recentTotal = data.total;
+      } catch (err) {
+        this.error = err.response?.data?.error || err.response?.data?.description || err.message;
+      } finally { if (seq === t.seq) t.loading = false; }
+    },
+    onKey(e) {
+      const t = e.target, typing = t.isContentEditable || ['TEXTAREA', 'SELECT', 'INPUT'].includes(t.tagName);
+      if (typing || t.closest('.v-overlay') || e.metaKey || e.ctrlKey || e.altKey) return;
+      const rows = [...document.querySelectorAll('tr.desk-row')];
+      if (!rows.length) return;
+      if (e.key === 'j' || e.key === 'k') {
+        e.preventDefault();
+        const cur = rows.findIndex(r => r.classList.contains('sel'));
+        const i = Math.max(0, Math.min(rows.length - 1, cur + (e.key === 'j' ? 1 : -1)));
+        rows.forEach(r => r.classList.remove('sel'));
+        rows[i].classList.add('sel');
+        rows[i].focus({preventScroll: true});
+        rows[i].scrollIntoView({block: 'nearest'});
+      } else if (e.key === 'Enter') {
+        const sel = rows.find(r => r.classList.contains('sel'));
+        if (sel && (t === sel || t === document.body)) { e.preventDefault(); location.href = sel.dataset.href; }
+      }
+    },
+  },
+  created() {
+    const p = new URLSearchParams(location.search);
+    if (p.has('investigation')) this.caseSel = p.get('investigation') || null;
+  },
+  mounted() { document.addEventListener('keydown', this.onKey); },
+  beforeUnmount() { document.removeEventListener('keydown', this.onKey); },
+});
+registerStkComponents(app);
+registerMediaViewers(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

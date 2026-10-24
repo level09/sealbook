@@ -1,0 +1,102 @@
+{% extends "entity/base.html" %}
+{% block crumbs %}<a href="/places">Places</a> / <span>${ e.kind_label }</span>{% endblock %}
+{% block title %}
+<h1 dir="auto">${ e.name_ar }</h1><span v-if="e.name_en" class="alt" dir="auto">${ e.name_en }</span>
+<span class="r-chip is-place"><i class="ti ti-map-pin" aria-hidden="true"></i>${ e.kind_label }</span>
+{% endblock %}
+{% block names %}
+<div class="en-names" aria-label="Names"><span class="k">Names</span><span v-for="n in e.names" :key="n.name + n.lang"><bdi dir="auto">${ n.name }</bdi> <span class="k">${ human(n.kind) }, ${ n.lang }${ validity(n) }</span></span></div>
+{% endblock %}
+{% block facts %}
+<div v-if="e.governorate"><dt>Governorate</dt><dd><bdi dir="auto">${ e.governorate.en || e.governorate.ar }</bdi></dd></div>
+<div v-if="e.district"><dt>District</dt><dd><bdi dir="auto">${ e.district.en || e.district.ar }</bdi></dd></div>
+<div><dt>Known to within</dt><dd>${ e.precision_m ? metres(e.precision_m) : 'its area (no radius)' }</dd></div>
+<div><dt>Location from</dt><dd>${ GEO[e.geo_source] || e.geo_source }</dd></div>
+<div><dt>Evidence</dt><dd>${ plural(e.claims, 'claim') } from ${ plural(e.sources, 'source') }</dd></div>
+{% endblock %}
+{% block actions %}
+<v-btn size="small" variant="text" prepend-icon="ti ti-search" :href="'/search?q=' + encodeURIComponent(e.name_ar)">Search mentions</v-btn>
+{% endblock %}
+{% block side %}
+<section class="en-panel" aria-labelledby="en-h-where">
+  <header><h2 id="en-h-where">Where</h2><span class="en-muted text-caption">shape and uncertainty</span></header>
+  <entity-map :shapes="shapes" :query="evQuery" :dark="isDark" :label="'Map of ' + placeName(e)"></entity-map>
+  <div class="en-body"><dl class="en-dl">
+    <dt>Point</dt><dd class="mono">${ e.lonlat[1].toFixed(5) }, ${ e.lonlat[0].toFixed(5) }</dd>
+    <dt>Shape</dt><dd>${ e.geometry.type === 'Point' ? 'a point' : 'an area' }${ e.precision_m ? ', circle of ' + metres(e.precision_m) : '' }</dd>
+    <dt>Recorded by</dt><dd>${ e.source === 'person' ? 'a person in this deployment' : e.source }</dd>
+    <dt>Credit</dt><dd>${ e.attribution }</dd>
+  </dl></div>
+</section>
+<section class="en-panel" aria-labelledby="en-h-sp">
+  <header><h2 id="en-h-sp">Spellings in the evidence</h2></header>
+  <div class="en-body">
+    <div v-for="s in e.spellings" :key="s.name" class="en-sp"><bdi dir="auto">${ s.name }</bdi><span class="en-muted">${ plural(s.claims, 'claim') }${ s.gazetteer ? '' : ', variant mapped here' }</span></div>
+    <p v-if="!e.spellings.length" class="en-muted ma-0">No claim resolves here yet.</p>
+  </div>
+</section>
+<section class="en-panel" aria-labelledby="en-h-un">
+  <header><h2 id="en-h-un">Unresolved names that may be here</h2></header>
+  <div class="en-body">
+    <div v-for="u in e.unresolved" :key="u.norm" class="en-sp align-center">
+      <span><bdi dir="auto">${ u.name }</bdi> <span class="en-muted">${ plural(u.count, 'claim') }<template v-if="u.candidates.length > 1">, ${ u.candidates.length } candidate places</template></span>
+        <a v-if="u.claims[0].href" :href="u.claims[0].href" class="d-block text-caption">${ u.claims[0].file }, at the claim</a></span>
+      <v-btn v-if="u.claims[0].proposal" size="small" variant="outlined" prepend-icon="ti ti-checklist" :href="'/review?statement=' + u.claims[0].proposal.id">Decide in Review</v-btn>
+      <v-btn v-else size="small" variant="outlined" prepend-icon="ti ti-signature" :loading="signBusy" @click="confirmHere(u)">Confirm here</v-btn>
+    </div>
+    <p v-if="!e.unresolved.length" class="en-muted ma-0">None. Every claim with one of its names resolves.</p>
+    <p class="en-muted text-caption mt-2 mb-0">Confirming signs a link for one claim. The same spelling then resolves by itself in that case and governorate when it has one candidate.</p>
+  </div>
+</section>
+{% endblock %}
+{% block js %}
+<script type="application/json" id="entity-boot">{{ boot|tojson|safe }}</script>
+<script type="module">
+import {entityPage, fmtSpan, human, metres, placeName, plural} from '/static/js/entity-page.js';
+
+const boot = JSON.parse(document.getElementById('entity-boot').textContent);
+const GEO = {geonames: 'GeoNames', 'cod-ab': 'OCHA COD-AB boundaries', geoboundaries: 'geoBoundaries', analyst: 'an analyst', exif: 'camera metadata', c2pa: 'content credentials', derived: 'derived'};
+
+window.app = entityPage(boot, {
+  api: b => `/api/places/${b.id}`,
+  evidence: b => `/api/places/${b.id}/evidence`,
+  params: vm => ({investigation: vm.caseSel || undefined}),
+  storyHref: e => `/stories?lens=place&ref=${e.id}`,
+  title: placeName,
+  missing: 'There is no such place.',
+  reviewed: 'a claim placed here',
+  followsCase: true,
+  mixin: {
+    data: () => ({GEO}),
+    computed: {
+      shapes() { return [{geometry: this.e.geometry, precision_m: this.e.precision_m}]; },
+      relations() {
+        const r = this.e.relations;
+        return [
+          {key: 'people', title: 'People placed here', icon: 'ti ti-user', role: 'is-person', empty: 'No dated claim places anyone here.',
+            items: r.people.map(p => ({id: p.person, href: `/people/${p.person}`, person: p.person, name: p.label, muted: !p.named,
+              title: p.named ? null : 'Name from a sensitive source; reveal it on the person page',
+              why: p.from ? `here ${fmtSpan(p.from, p.to)}, ${plural(p.points, 'claim')}` : 'named by an incident here, no dated claim',
+              chip: p.tier && {cls: 'tier-' + p.tier, text: p.tier}}))},
+          {key: 'incidents', title: 'Incidents here', icon: 'ti ti-alert-triangle', role: 'is-incident', empty: 'No accepted incident names this place.',
+            items: r.incidents.map(i => ({id: i.id, href: `/incidents/${i.id}`, name: i.title, why: `${i.reason}, ${plural(i.people, 'person', 'people')}, ${plural(i.sources, 'source')}`, chip: {cls: 'tier-accepted', text: 'accepted'}}))},
+          {key: 'findings', title: 'Findings waiting', icon: 'ti ti-robot', role: 'is-finding', empty: 'No open finding touches this place.',
+            items: r.findings.map(f => ({id: f.key, href: `/discover?f=${f.key}`, name: f.label, why: `${f.reason}. ${f.why}`, chip: {cls: 'is-finding', text: f.band}, title: 'Strength is a band, not a probability'}))},
+          {key: 'places', title: 'Places nearby', icon: 'ti ti-map-pin', role: 'is-place', empty: 'No other site or settlement within 5 km.',
+            items: r.places.map(p => ({id: p.id, href: `/places/${p.id}`, name: placeName(p), why: `${p.reason}, ${human(p.kind)}`}))},
+        ];
+      },
+    },
+    methods: {
+      validity(n) { return n.from || n.to ? `, ${n.from ? 'from ' + n.from : ''}${n.from && n.to ? ' ' : ''}${n.to ? 'until ' + n.to : ''}` : ''; },
+      confirmHere(u) {
+        this.stage({statement: u.claims[0].id, place: this.e.id}, '/api/places/confirm', `“${u.name}” is ${placeName(this.e)}`, async () => {
+          this.say('Signed. The claim now resolves here.');
+          await this.load();
+        });
+      },
+    },
+  },
+}).mount('#app');
+</script>
+{% endblock %}

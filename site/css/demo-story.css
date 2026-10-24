@@ -1,0 +1,38 @@
+.st-head { margin: 0 0 12px; font-size: 14px; color: var(--ink-2); }
+.st-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 8px; }
+.st-controls input[type="range"] { flex: 1 1 200px; min-height: 40px; accent-color: var(--ink); }
+.st-date { font-size: 13px; color: var(--ink-2); min-width: 10ch; }
+.st-tl { width: 100%; overflow: hidden; }
+.st-tl svg, .st-map svg { display: block; font-family: var(--sans); }
+.st-band rect { fill: color-mix(in srgb, var(--violet) 16%, transparent); stroke: var(--violet); stroke-dasharray: 4 3; }
+.st-band.future, .st-pt.future, .st-place.future { opacity: .25; }
+.st-gap { stroke: var(--ink-3); stroke-dasharray: 5 5; stroke-width: 2; }
+.st-gap-t, .st-tick-t, .st-fork-t { font-size: 12px; fill: var(--ink-3); }
+.st-fork { fill: none; stroke: var(--broken); stroke-width: 2; }
+.st-fork-t { fill: var(--broken); }
+.st-tick { stroke: var(--ink-3); }
+.st-now { stroke: var(--ink); stroke-width: 1; opacity: .5; }
+.st-pt { cursor: pointer; }
+.st-pt circle, .st-pt rect { fill: var(--ink); stroke: var(--ink); stroke-width: 1.5; }
+.st-pt.tier-corroborated circle, .st-pt.tier-corroborated rect { fill: var(--paper); }
+.st-pt.tier-unconfirmed circle, .st-pt.tier-unconfirmed rect { fill: var(--violet-wash); stroke: var(--violet); stroke-dasharray: 3 2; }
+.st-pt .st-num { fill: var(--paper); font-size: 11px; font-weight: 600; pointer-events: none; }
+.st-pt rect + .st-num { fill: var(--paper); }
+.st-pt:focus-visible, .st-place:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.st-pending { list-style: none; margin: 4px 0 18px; padding: 0; display: grid; gap: 2px; font-size: 13px; color: var(--ink-3); }
+.st-key-band { display: inline-block; width: 22px; height: 10px; border: 1px dashed var(--violet); background: color-mix(in srgb, var(--violet) 16%, transparent); border-radius: 2px; vertical-align: middle; }
+.st-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.st-views { display: flex; gap: 8px; margin: 0 0 8px; }
+.st-views [aria-pressed="true"] { border-color: var(--ink); background: var(--paper-2); }
+.st-map { background: var(--paper-2); border-radius: 12px; overflow: hidden; }
+.st-area { fill: var(--paper); stroke: var(--rule); stroke-width: 1; }
+.st-area-t { font-size: 11px; fill: var(--ink-3); }
+.st-seq { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.st-prec { fill: color-mix(in srgb, var(--ink) 10%, transparent); stroke: var(--ink-3); stroke-width: 1; }
+.st-dot { fill: var(--ink); }
+.st-place { cursor: pointer; }
+.st-place .st-num { fill: var(--paper); font-size: 11px; font-weight: 600; pointer-events: none; }
+.st-legend { margin: 10px 0 0; padding-left: 1.4em; font-size: 14px; display: grid; gap: 2px; }
+.st-info { background: var(--paper-2); border-radius: 12px; padding: 16px 18px; position: sticky; top: 16px; }
+.st-claim { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin: 0 0 10px; font-size: 14px; }
+@media (max-width: 1000px) { .st-grid { grid-template-columns: minmax(0, 1fr); } .st-info { position: static; } }

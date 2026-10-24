@@ -1,0 +1,157 @@
+/* App shell from the approved mockups (mockups/shell.css): top bar, rail, hint bar,
+   palette. Tier is texture, who authored a value is hue (ink for people, violet for
+   agents); the roles below add a quiet hue to tiers, states and entity kinds. Tokens
+   follow monitor.css; the layout marks html and body .dark-mode. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  /* optional: preloaded, so it is ready on first paint; never swaps and reflows later */
+  font-display: optional;
+  src: url('/static/fonts/inter-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext: transliterated names (Ḥ, ā, ʿ) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: optional;
+  src: url('/static/fonts/inter-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+:root {
+  --bg: #f3f3f1; --panel: #fff; --raise: #fafaf8; --line: #e4e4e0; --line-strong: #c9c9c3;
+  --ink: #18191b; --ink-2: #44464a; --ink-3: #62656a;
+  --wash: rgba(24,25,27,.06); --solid: rgba(24,25,27,.13);
+  --agent: #5a46c8; --agent-wash: rgba(90,70,200,.09); --agent-solid: rgba(90,70,200,.18);
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+:root.dark-mode, body.dark-mode {
+  --bg: #0c0d0f; --panel: #141518; --raise: #1a1c20; --line: #25282d; --line-strong: #383c43;
+  --ink: #e7e7e4; --ink-2: #b9bbbf; --ink-3: #969aa0;
+  --wash: rgba(231,231,228,.06); --solid: rgba(231,231,228,.16);
+  --agent: #ab9ef7; --agent-wash: rgba(171,158,247,.1); --agent-solid: rgba(171,158,247,.22);
+  color-scheme: dark;
+}
+/* Colour roles (docs/DESIGN.md, Colour roles). Picked in OKLCH, stored as sRGB hex so
+   MapLibre and canvas read them. Each role has an ink for text and glyphs (AA on panel,
+   bg and its own wash), a -wash for chip grounds and a -line for edges and marks (3:1
+   on panel). Colour never carries meaning alone: it rides on a texture, icon or word.
+   config.js mirrors the inks for Vuetify colour props; change both together. */
+:root {
+  --accepted: #0d6a58; --accepted-wash: #e0f6ef; --accepted-line: #569c89;
+  --corroborated: #3a6283; --corroborated-wash: #e5f2fe; --corroborated-line: #6c91b0;
+  --conflict: #915c08; --conflict-wash: #feeddb; --conflict-line: #b38144;
+  --negative: #a04034; --negative-wash: #ffebe7; --negative-line: #c96f61;
+  --sensitive: #964267; --sensitive-wash: #feeaf1; --sensitive-line: #bf6f8f;
+  --overdue: #b32e2a; --overdue-wash: #ffebe8; --overdue-line: #d96157;
+  --new: #0d6abb; --new-wash: #e6f2ff; --new-line: #488fdb;
+  --person: #0e6a9b; --person-wash: #e4f3fe; --person-line: #4e94c2;
+  --place: #397247; --place-wash: #e4f6e7; --place-line: #689a72;
+  --source: #81632f; --source-wash: #f9efdf; --source-line: #a38859;
+  --incident: #9c522e; --incident-wash: #ffece3; --incident-line: #be7858;
+  --story: #485b91; --story-wash: #eaf0ff; --story-line: #778bbe;
+  /* actor avatars: low chroma, clear of the status hues and of agent violet */
+  --av-1: #c0e6eb; --av-1-ink: #024c52; --av-2: #c7e2f6; --av-2-ink: #0d4768;
+  --av-3: #ebd6ee; --av-3-ink: #56335b; --av-4: #e7dcd2; --av-4-ink: #513e2f;
+  --av-5: #d7dfe8; --av-5-ink: #364452; --av-6: #e2ded0; --av-6-ink: #494229;
+  --av-agent: #e6e2f8; --av-agent-ink: #4a37b0; --av-import: #e9e9e6; --av-import-ink: #44464a;
+}
+:root.dark-mode, body.dark-mode {
+  --accepted: #7bd1ba; --accepted-wash: #0c2d25; --accepted-line: #388472;
+  --corroborated: #98c0e2; --corroborated-wash: #1a2834; --corroborated-line: #577895;
+  --conflict: #f6b669; --conflict-wash: #34220b; --conflict-line: #9c681f;
+  --negative: #ea998b; --negative-wash: #3a1e19; --negative-line: #a35f55;
+  --sensitive: #e9a3bd; --sensitive-wash: #361e27; --sensitive-line: #9a6077;
+  --overdue: #f6857a; --overdue-wash: #3a1d1a; --overdue-line: #b2534b;
+  --new: #77b5fb; --new-wash: #15283c; --new-line: #4177b2;
+  --person: #84c3ef; --person-wash: #122938; --person-line: #457b9f;
+  --place: #8ed09c; --place-wash: #152d1a; --place-line: #4b8358;
+  --source: #e0bf89; --source-wash: #302411; --source-line: #8b7042;
+  --incident: #eda382; --incident-wash: #391f13; --incident-line: #a06347;
+  --story: #a4b6e5; --story-wash: #202636; --story-line: #64739a;
+  --av-1: #133f44; --av-1-ink: #bae8ed; --av-2: #1f3b4e; --av-2-ink: #c2e3fb;
+  --av-3: #442f47; --av-3-ink: #eed4f1; --av-4: #41352d; --av-4-ink: #e9dbd0;
+  --av-5: #313941; --av-5-ink: #d5dfea; --av-6: #3c382a; --av-6-ink: #e3decd;
+  --av-agent: #2d2850; --av-agent-ink: #c9c0fb; --av-import: #2a2c31; --av-import-ink: #c8cace;
+}
+:root, body { --due: var(--conflict); --due-wash: var(--conflict-wash); --due-line: var(--conflict-line); }
+
+/* Role carriers: a role class names the meaning, r-ink, r-chip and r-dot draw it. No
+   role edge on rows: the inset left edge already marks the selected row everywhere. */
+.is-person { --r: var(--person); --r-wash: var(--person-wash); --r-line: var(--person-line); }
+.is-place { --r: var(--place); --r-wash: var(--place-wash); --r-line: var(--place-line); }
+.is-source { --r: var(--source); --r-wash: var(--source-wash); --r-line: var(--source-line); }
+.is-incident { --r: var(--incident); --r-wash: var(--incident-wash); --r-line: var(--incident-line); }
+.is-story { --r: var(--story); --r-wash: var(--story-wash); --r-line: var(--story-line); }
+.is-agent, .is-finding { --r: var(--agent); --r-wash: var(--agent-wash); --r-line: var(--agent); }
+.tier-accepted { --r: var(--accepted); --r-wash: var(--accepted-wash); --r-line: var(--accepted-line); }
+.tier-corroborated { --r: var(--corroborated); --r-wash: var(--corroborated-wash); --r-line: var(--corroborated-line); }
+.tier-unconfirmed { --r: var(--ink-2); --r-wash: var(--wash); --r-line: var(--line-strong); }
+.tier-rejected, .state-negative { --r: var(--negative); --r-wash: var(--negative-wash); --r-line: var(--negative-line); }
+.state-conflict { --r: var(--conflict); --r-wash: var(--conflict-wash); --r-line: var(--conflict-line); }
+.state-sensitive { --r: var(--sensitive); --r-wash: var(--sensitive-wash); --r-line: var(--sensitive-line); }
+.state-due { --r: var(--due); --r-wash: var(--due-wash); --r-line: var(--due-line); }
+.state-overdue { --r: var(--overdue); --r-wash: var(--overdue-wash); --r-line: var(--overdue-line); }
+.state-new { --r: var(--new); --r-wash: var(--new-wash); --r-line: var(--new-line); }
+.r-ink, .r-ink .ti { color: var(--r) !important; }
+.r-chip { display: inline-flex; align-items: center; gap: 4px; padding: 0 6px; border: 1px solid var(--r-line); border-radius: 3px; background: var(--r-wash); color: var(--r); font-size: 11.5px; font-weight: 600; line-height: 1.6; white-space: nowrap; }
+.r-dot::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--r); margin-inline-end: 6px; vertical-align: 1px; }
+html, body { background: var(--bg); }
+body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
+.v-application { background: var(--bg) !important; color: var(--ink); }
+::selection { background: var(--agent-solid); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.mono { font-family: var(--mono) !important; font-size: 12px; }
+.text-agent { color: var(--agent) !important; }
+
+/* boot frame: same boxes as the mounted bar, rail, hint bar and bottom bar */
+.sb-boot > div { position: fixed; box-sizing: border-box; background: var(--panel); }
+.sb-boot-top { top: 0; left: 0; right: 0; height: 49px; border-bottom: 1px solid var(--line); z-index: 1; }
+.sb-boot .brand { position: absolute; left: 12px; top: 14px; height: 20px; display: flex; align-items: center; gap: 7px; font: 700 13px/1.5 'Inter', system-ui, sans-serif; letter-spacing: -.02em; color: var(--ink); }
+.sb-boot-rail { top: 48px; left: 0; bottom: 0; width: 188px; border-right: 1px solid var(--line); }
+.sb-boot-hints { left: 188px; right: 0; bottom: 0; height: 30px; border-top: 1px solid var(--line); }
+.sb-boot-bottom { display: none; left: 0; right: 0; bottom: 0; height: 40px; box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px 1px rgba(0,0,0,.15); }
+
+/* top bar */
+.sb-top.v-app-bar { border-bottom: 1px solid var(--line) !important; }
+.sb-top .v-toolbar__content { gap: 10px; padding: 0 12px; }
+.sb-top .brand { display: flex; align-items: center; gap: 7px; font-weight: 700; letter-spacing: -.02em; text-decoration: none; color: var(--ink); width: 164px; flex: none; }
+.sb-top .brand:hover { opacity: 1; }
+.case-sw { width: 220px; max-width: 220px; flex: none; }
+.qbox { flex: 1; max-width: 560px; }
+
+/* rail */
+.sb-rail.v-navigation-drawer { border-right: 1px solid var(--line) !important; }
+.sb-rail .v-list-item--active { font-weight: 600; }
+.sb-rail .v-list-item-title { white-space: normal; }
+
+/* bell */
+.sb-bell .v-list-item.unread .v-list-item-title { font-weight: 650; }
+.sb-bell .v-list-item.unread .v-list-item__prepend .v-icon { color: var(--new); opacity: 1; }
+
+/* hint bar */
+.sb-hints { display: flex; gap: 16px; font-size: 12px; color: var(--ink-3); border-top: 1px solid var(--line); background: var(--panel) !important; white-space: nowrap; overflow: hidden; padding: 0 14px; }
+.sb-hints span, .sb-hints button { display: inline-flex; gap: 5px; align-items: center; }
+.sb-hints button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+/* palette */
+.sb-pal .v-list-item.sel { background: var(--wash); box-shadow: inset 2px 0 0 var(--ink); }
+
+@media (max-width: 959px) {
+  .sb-boot-rail, .sb-boot-hints, .sb-boot .brand span { display: none; }
+  .sb-boot-bottom { display: block; }
+  .sb-boot .brand { left: 8px; }
+  .sb-top .brand span { display: none; }
+  .sb-top .brand { width: auto; }
+  /* The case name is the one thing the switcher must show; its chevron is not. */
+  .case-sw { width: 128px; max-width: 128px; }
+  .case-sw .v-field__prepend-inner, .case-sw .v-field__append-inner { display: none; }
+  .case-sw .v-field { font-size: 14px; }
+  .qbox { flex: 1 1 auto; min-width: 0; }
+  .qbox .v-field__input { padding-inline: 4px; }
+  .qbox .v-kbd, .sb-top .sb-pal-btn { display: none; }
+  .sb-top .v-toolbar__content { gap: 6px; padding: 0 8px; }
+}

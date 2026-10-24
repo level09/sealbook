@@ -1,0 +1,772 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ asset('maplibre/maplibre-gl.css') }}">
+<link rel="stylesheet" href="{{ asset('css/monitor.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="mon" ref="mon">
+    <header class="mon-bar">
+        <div class="bar-field">
+            <label class="bar-label" for="mon-investigation">Investigation</label>
+            <select id="mon-investigation" v-model="filter.investigation" @change="applyFilter(); $event.target.blur()">
+                <option v-if="!investigations.length" :value="null">No investigations yet</option>
+                <option v-for="inv in investigations" :key="inv" :value="inv">${inv}</option>
+            </select>
+        </div>
+        <div class="bar-field">
+            <span class="bar-label">Time window</span>
+            <span v-if="filter.time" class="window-value">${filter.time[0]} to ${filter.time[1]}
+                <button class="clear" @click="clearTime" aria-label="Clear time window" title="Clear time window (t)"><i class="ti ti-x"></i></button>
+            </span>
+            <span v-else class="window-value muted">All time</span>
+        </div>
+        <label class="bar-toggle" title="Show rejected statements (Shift+R)"><input type="checkbox" v-model="showRejected" @change="$event.target.blur()"> Show rejected</label>
+        <span class="bar-spacer"></span>
+        <div class="legend" aria-label="Legend">
+            <span><i class="swatch t-accepted"></i>Accepted</span>
+            <span><i class="swatch t-corroborated"></i>Corroborated</span>
+            <span><i class="swatch t-unconfirmed"></i>Unconfirmed</span>
+            <span><i class="swatch by-agent"></i>Agent authored</span>
+        </div>
+        <span class="live" :class="live" role="status"><i></i>${liveLabel}</span>
+        <button class="help-btn" @click="toggleHelp" aria-label="Keyboard commands" title="Keyboard commands (?)">?</button>
+    </header>
+
+    <section class="timeline" ref="timeline" aria-label="Timeline: drag to set the time window">
+        <div v-if="!timeline.length" class="empty">No dated evidence in this investigation</div>
+        <svg v-else :width="tl.width" :height="74"
+             @pointerdown="brushStart" @pointermove="brushMove" @pointerup="brushEnd" @pointercancel="brushing = null">
+            <defs>
+                <pattern id="hatch-human" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                    <line x1="0" y1="0" x2="0" y2="4" class="hatch-ink"></line>
+                </pattern>
+                <pattern id="hatch-agent" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                    <line x1="0" y1="0" x2="0" y2="4" class="hatch-agent"></line>
+                </pattern>
+            </defs>
+            <g class="axis">
+                <g v-for="t in tl.ticks" :key="t.x">
+                    <line :x1="t.x" :x2="t.x" y1="6" y2="58" :class="{year: t.year}"></line>
+                    <text v-if="t.label" :x="t.x + 3" y="69">${t.label}</text>
+                </g>
+            </g>
+            <rect v-if="tl.brush" class="brush" :x="tl.brush.x" y="4" :width="tl.brush.w" height="56"></rect>
+            <text v-for="(lane, i) in tl.lanes" :key="lane" class="lane-label" x="8" :y="16 + i * 16">${lane}</text>
+            <rect v-for="m in tl.marks" :key="m.id" class="mark" :x="m.x" :y="m.y" :width="m.w" height="10" rx="1.5"
+                  :style="m.style" @click.stop="openStatement(m.id)" @pointerdown.stop>
+                <title>${m.title}</title>
+            </rect>
+            <text v-if="tl.gap" class="gap-label" :x="tl.gap.x" y="40">${tl.gap.text}</text>
+        </svg>
+    </section>
+
+    <div class="mon-grid">
+        <section class="panel p-feed" :class="{focused: focus === 'feed' && !sideKeys}" @pointerdown="focusPanel('feed')" aria-labelledby="h-feed">
+            <header class="panel-head"><kbd>1</kbd><h2 id="h-feed">Intake</h2><span class="count">${feed.length}</span>
+                <span class="hint"><kbd>j</kbd><kbd>k</kbd><kbd>Enter</kbd></span></header>
+            <div v-if="!feed.length" class="panel-empty">Nothing has come in for this filter.</div>
+            <row-pool v-else ref="feedPool" :items="feed" :row-height="48" :selected="sel.feed" label="Intake feed"
+                      @pick="i => { sel.feed = i; openRun(feed[i].run_id); }">
+                <template #default="{ item }">
+                    <div class="feed-row" :class="{fresh: fresh[item.id], dropped: item.drop_reason}">
+                        <div class="r1">
+                            <span class="stage">${item.stage}</span><span class="tool">${item.tool}</span>
+                            <span class="counts">
+                                <template v-if="item.drop_reason">${item.drop_reason}</template>
+                                <template v-else-if="item.counts.statements"><button class="num" @click.stop="openList({run: item.run_id}, item.tool + ' run statements')">${item.counts.statements}</button> statements</template>
+                                <template v-else>${countsText(item.counts)}</template>
+                            </span>
+                            <time :datetime="item.at" :title="item.at">${clock(item.at)}</time>
+                        </div>
+                        <div class="r2">
+                            <actor-tag :a="item.actor"></actor-tag>
+                            <span class="doc" v-if="item.doc">${item.doc.file}</span>
+                        </div>
+                    </div>
+                </template>
+            </row-pool>
+        </section>
+
+        <section class="panel p-map" :class="{focused: focus === 'map' && !sideKeys}" @pointerdown="focusPanel('map')" aria-labelledby="h-map">
+            <header class="panel-head"><kbd>2</kbd><h2 id="h-map">Map</h2><span class="count">${visiblePoints.length} located</span>
+                <span class="hint"><kbd>j</kbd><kbd>k</kbd> person</span></header>
+            <div class="map-wrap">
+                <div class="map-cell">
+                    <div class="map-canvas" ref="map"></div>
+                    <div class="map-legend">
+                        <span><i class="ln seq"></i>Sequence, not a path</span>
+                        <span><i class="ln fork"></i>Conflict</span>
+                        <span>Places: ${mapLayer.attribution}</span>
+                    </div>
+                </div>
+                <div class="track-card" v-if="track">
+                    <header>
+                        <span class="bar-label">Track</span>
+                        <select v-model="trackSubject" aria-label="Person">
+                            <option v-for="(t, s) in mapLayer.tracks" :key="s" :value="s">${t.label}</option>
+                        </select>
+                    </header>
+                    <template v-for="(step, i) in track.steps" :key="step.date">
+                        <div v-if="step.gap_days" class="gap">${gapText(step.gap_days)}</div>
+                        <div class="step" :class="{fork: step.fork}">
+                            <span class="d">${step.date}</span>
+                            <span class="places">
+                                <span v-if="step.fork" class="fork-note">Conflict: ${step.places.length} places</span>
+                                <value-chip v-for="id in step.ids" :key="id" :s="byId[id]" @open="openStatement"></value-chip>
+                            </span>
+                        </div>
+                    </template>
+                    <div class="gap" v-if="track.gap_after">No evidence after ${track.gap_after}</div>
+                </div>
+                <div class="track-card muted" v-else>No located statements for this filter.</div>
+            </div>
+            <div class="unresolved" v-if="mapLayer.unresolved.length">
+                <span class="bar-label">Not placed on the map</span>
+                <ul><li v-for="u in mapLayer.unresolved" :key="u.id">${u.place}<span v-if="u.count > 1"> (${u.count})</span></li></ul>
+            </div>
+        </section>
+
+        <section class="panel p-queue" :class="{focused: focus === 'queue' && !sideKeys}" @pointerdown="focusPanel('queue')" aria-labelledby="h-queue">
+            <header class="panel-head"><kbd>3</kbd><h2 id="h-queue">Review</h2><span class="count">${queue.length}</span>
+                <span class="hint"><kbd>j</kbd><kbd>k</kbd><kbd>Enter</kbd><kbd>a</kbd><kbd>r</kbd></span></header>
+            <div v-if="!queue.length" class="panel-empty">No statements waiting for review.</div>
+            <row-pool v-else ref="queuePool" :items="queue" :row-height="124" :selected="sel.queue" label="Review queue"
+                      @pick="i => { sel.queue = i; openStatement(queue[i].id); }">
+                <template #default="{ item }">
+                    <article class="card">
+                        <div class="c1"><span class="prop">${label(item.prop)}</span><span class="subj">${item.subject_label}</span>
+                            <span class="when" v-if="item.when">${item.when}</span></div>
+                        <div><value-chip :s="item" @open="openStatement"></value-chip></div>
+                        <div class="c3"><actor-tag :a="item.actor"></actor-tag><span v-if="item.doc" class="file">· ${item.doc.file}</span></div>
+                        <div class="c4">
+                            <span v-for="inv in item.invariants" :key="inv.name" class="inv" :class="invClass(inv)" :title="inv.note">
+                                <i class="ti" :class="invIcon(inv)" aria-hidden="true"></i>${inv.name}</span>
+                            <span class="actions">
+                                <span v-if="refusals[item.id]" class="fail-count" :title="refusals[item.id]">${refusals[item.id]}</span>
+                                <span v-else-if="failed(item)" class="fail-count">${failed(item)} failed</span>
+                                <button class="btn" :disabled="!!failed(item) || reviewing === item.id" title="Accept with your passkey (a)" @pointerdown.stop @click.stop="review(item, 'accept')">Accept</button>
+                                <button class="btn" :disabled="reviewing === item.id" title="Reject with your passkey (r)" @pointerdown.stop @click.stop="review(item, 'reject')">Reject</button>
+                            </span>
+                        </div>
+                    </article>
+                </template>
+            </row-pool>
+        </section>
+
+        <section class="panel p-docs" :class="{focused: focus === 'docs' && !sideKeys}" @pointerdown="focusPanel('docs')" aria-labelledby="h-docs">
+            <header class="panel-head"><kbd>4</kbd><h2 id="h-docs">Documents</h2><span class="count">${documents.length}</span>
+                <span class="hint"><kbd>j</kbd><kbd>k</kbd> document, <kbd>Enter</kbd> bytes</span></header>
+            <div class="docs-body">
+                <div class="doc-list">
+                    <div v-if="!documents.length" class="panel-empty">No documents for this filter.</div>
+                    <row-pool v-else :items="documents" :row-height="50" :selected="sel.docs" label="Documents" @pick="i => openEvidence(documents[i].sha256)">
+                        <template #default="{ item }">
+                            <div class="doc-row" style="display: flex; gap: 8px; align-items: center">
+                                <media-thumb :sha="item.sha256" :file="item.file" :link="false" :caption="false" :width="44" :height="34"></media-thumb>
+                                <div style="min-width: 0; flex: 1">
+                                <div class="name"><span>${item.file}</span><span v-if="item.sensitive" class="sens">sensitive</span></div>
+                                <div class="meta"><span>${label(item.doc_type)}</span><span v-if="item.date">${item.date}</span>
+                                    <span class="tiers">
+                                        <span v-for="t in ['accepted', 'corroborated', 'unconfirmed']" :key="t" v-show="item.tiers[t]" :title="t">
+                                            <button class="num" @click.stop="openList({blob: item.sha256, tier: t}, t + ' on ' + item.file)">${item.tiers[t]}</button>
+                                            <i class="swatch mini" :class="'t-' + t"></i>
+                                        </span>
+                                    </span>
+                                </div>
+                                </div>
+                            </div>
+                        </template>
+                    </row-pool>
+                </div>
+                <div class="doc-view">
+                    <template v-if="doc">
+                        <header>
+                            <h3><a :href="'/evidence/' + doc.sha256">${doc.file}</a></h3>
+                            <span class="muted">${label(doc.doc_type)}<template v-if="doc.date"> · ${doc.date}</template> · ${doc.origins.join(', ')}</span>
+                            <button v-if="doc.text_masked" class="btn" @click="revealDoc(doc.sha256)" title="Revealing is recorded on the chain">Reveal text</button>
+                        </header>
+                        <p v-if="doc.bytes_error" class="muted">Bytes unavailable: ${doc.bytes_error}</p>
+                        <pre v-else-if="doc.text !== null" class="doc-text" :class="{masked: doc.text_masked}" dir="auto"><span
+                            v-for="seg in segments" :key="seg.start" :class="seg.cls" @mouseenter="hoverIds = seg.ids" @mouseleave="hoverIds = []"
+                            @click="seg.ids.length && openStatement(seg.ids[0])">${seg.text}</span></pre>
+                        <template v-else>
+                            <evidence-media v-if="previewable(doc.mime)" :key="doc.sha256" :doc="doc" :title="false"></evidence-media>
+                            <p v-else class="muted">Binary blob (${doc.mime}); spans are listed beside it.</p>
+                        </template>
+                        <p class="reveal-note" v-if="doc.text_masked">Sensitive source. Text is masked; highlights show where statements were read.</p>
+                    </template>
+                    <p v-else class="muted">Pick a document.</p>
+                </div>
+                <div class="doc-statements" v-if="doc">
+                    <div v-for="s in docStatements" :key="s.id" class="st-row" :class="{hl: hoverIds.includes(s.id)}"
+                         @mouseenter="hoverIds = [s.id]" @mouseleave="hoverIds = []" @click="openStatement(s.id)">
+                        <span class="prop">${label(s.prop)}</span><span class="subj">${s.subject.startsWith('blob:') ? 'document' : s.subject_label}</span>
+                        <div class="line2"><value-chip :s="s" @open="openStatement"></value-chip><actor-tag :a="s.actor"></actor-tag></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="side" :class="{focused: sideKeys}" v-if="side.length" aria-label="Detail" ref="side">
+            <header class="side-head">
+                <button class="icon-btn" v-if="side.length > 1" @click="back" aria-label="Back" title="Back (Backspace)"><i class="ti ti-arrow-left"></i></button>
+                <span class="crumbs"><template v-for="(p, i) in side" :key="i"><i v-if="i" class="ti ti-chevron-right"></i><b v-if="i === side.length - 1">${p.title}</b><span v-else>${p.title}</span></template></span>
+                <span class="bar-spacer"></span>
+                <button class="icon-btn" @click="closeSide" aria-label="Close" title="Close (Esc)"><i class="ti ti-x"></i></button>
+            </header>
+            <div class="side-body" v-if="page.data">
+                <!-- statement -->
+                <template v-if="page.kind === 'statement'">
+                    <h3>${label(page.data.prop)}</h3>
+                    <div class="sub">${page.data.subject_label} · <span class="mono">${page.data.subject}</span></div>
+                    <value-chip class="big-value" :s="page.data" @open="() => {}"></value-chip>
+                    <div v-if="page.data.masked && !page.data.revealed">
+                        <button class="btn" style="margin-top:8px" @click="revealStatement(page.data)">Reveal value</button>
+                        <div class="reveal-note">Masked: personal data from a sensitive source. Revealing records an access statement on the chain.</div>
+                    </div>
+                    <div class="reveal-note" v-if="page.data.revealed">Revealed. Your access is recorded on the chain.</div>
+                    <a class="btn" :href="'/review?statement='+page.data.id" style="display:inline-block;margin-top:12px">Suggest a correction or ask a colleague</a>
+                    <dl class="facts">
+                        <dt>Tier</dt><dd>${page.data.tier} <span class="muted">(${page.data.reason})</span></dd>
+                        <dt>Actor</dt><dd><actor-tag :a="page.data.actor"></actor-tag></dd>
+                        <dt>When</dt><dd>${page.data.when || 'no date'}<span v-if="page.data.inherited" class="muted"> (from the document)</span></dd>
+                        <dt>Evidence</dt><dd>${page.data.evidence.length ? page.data.evidence.map(label).join(', ') : 'none given'}</dd>
+                        <dt>Span</dt><dd>${spanText(page.data.span)}</dd>
+                        <dt>Subject head</dt><dd :class="{'verify-bad': page.data.based_on !== page.data.head}">${page.data.based_on === page.data.head ? 'unchanged since proposal' : 'changed since proposal (stale)'}</dd>
+                    </dl>
+                    <div class="links">
+                        <button class="link-card" v-if="page.data.doc" @click="openBlob(page.data.doc.sha256)">
+                            <i class="ti ti-file-digit"></i><b>Bytes</b><small>${page.data.doc.file} · ${page.data.doc.sha256.slice(0, 16)}</small><i class="ti ti-chevron-right go"></i></button>
+                        <button class="link-card" v-if="page.data.run_id" @click="openRun(page.data.run_id)">
+                            <i class="ti ti-cpu"></i><b>Run</b><small>${page.data.actor.label}</small><i class="ti ti-chevron-right go"></i></button>
+                        <button class="link-card" @click="openPrincipal(page.data.signer.id)">
+                            <i class="ti ti-signature"></i><b>Signer</b>
+                            <small>${page.data.signer.name} · ${sigText(page.data.signature)}</small><i class="ti ti-chevron-right go"></i></button>
+                    </div>
+                    <dl class="facts">
+                        <dt>Chain</dt><dd v-if="page.data.chain">seq ${page.data.chain.seq} · <span class="mono">${page.data.chain.hash.slice(0, 16)}</span></dd><dd v-else>not chained</dd>
+                        <dt>Statement hash</dt><dd class="mono">${page.data.hash}</dd>
+                        <dt>Recorded</dt><dd>${page.data.recorded_at.slice(0, 19).replace('T', ' ')}</dd>
+                    </dl>
+                    <template v-if="page.data.about.length">
+                        <div class="section-label">Reviews and access</div>
+                        <div v-for="a in page.data.about" :key="a.id" class="list-row">
+                            <span>${label(a.prop)}: <b>${a.display}</b></span><actor-tag :a="a.actor"></actor-tag>
+                        </div>
+                    </template>
+                </template>
+                <!-- run -->
+                <template v-else-if="page.kind === 'run'">
+                    <h3>${page.data.tool} run</h3>
+                    <div class="sub"><actor-tag :a="page.data.actor"></actor-tag></div>
+                    <dl class="facts">
+                        <dt>Status</dt><dd>${page.data.status}<span v-if="page.data.error" class="verify-bad"> · ${page.data.error}</span></dd>
+                        <dt>Principal</dt><dd><button class="num" @click="openPrincipal(page.data.principal.id)">${page.data.principal.name}</button></dd>
+                        <dt>Route</dt><dd>${page.data.route || 'none'}</dd>
+                        <dt>Model served</dt><dd>${page.data.model_served || 'none'}<span v-if="page.data.model_requested" class="muted"> (asked for ${page.data.model_requested})</span></dd>
+                        <dt>Provider</dt><dd>${page.data.provider_served || 'none'}</dd>
+                        <dt>Endpoint</dt><dd class="mono">${page.data.endpoint || 'none'}</dd>
+                        <dt>Prompt hash</dt><dd class="mono">${page.data.prompt_hash || 'none'}</dd>
+                        <dt>Output hash</dt><dd class="mono">${page.data.output_hash || 'none'}</dd>
+                        <dt>Run key</dt><dd class="mono">${page.data.pubkey ? page.data.pubkey.slice(0, 24) + '…' : 'none'}</dd>
+                        <dt>Sealed</dt><dd>${page.data.chain ? 'chain seq ' + page.data.chain.seq : 'not sealed'}</dd>
+                        <dt>Statements</dt><dd><button class="num" @click="openList({run: page.data.id}, page.data.tool + ' run statements')">${page.data.statement_count}</button></dd>
+                    </dl>
+                    <div class="section-label">Inputs</div>
+                    <div class="links"><button v-for="b in page.data.inputs" :key="b.sha256" class="link-card" @click="openBlob(b.sha256)">
+                        <i class="ti ti-file-digit"></i><b>${b.file}</b><small class="mono">${b.sha256.slice(0, 24)}</small><i class="ti ti-chevron-right go"></i></button></div>
+                    <div class="section-label">Events</div>
+                    <div v-for="e in page.data.events" :key="e.seq" class="event-row"><span class="muted">${e.seq}</span>
+                        <span><b>${e.stage}</b> <span class="muted">${e.drop_reason || countsText(e.counts)}</span></span></div>
+                </template>
+                <!-- principal -->
+                <template v-else-if="page.kind === 'principal'">
+                    <h3>${page.data.name}</h3>
+                    <div class="sub">${page.data.kind === 'human' ? 'Human' : 'Agent'}<template v-if="page.data.on_behalf_of"> acting for ${page.data.on_behalf_of.name}</template></div>
+                    <dl class="facts">
+                        <dt>Kind</dt><dd>${page.data.kind}</dd>
+                        <dt v-if="page.data.on_behalf_of">On behalf of</dt><dd v-if="page.data.on_behalf_of"><button class="num" @click="openPrincipal(page.data.on_behalf_of.id)">${page.data.on_behalf_of.name}</button></dd>
+                        <dt>Runs</dt><dd>${page.data.run_count}</dd>
+                        <dt>Statements</dt><dd><button class="num" @click="openList({author: page.data.id}, 'by ' + page.data.name)">${page.data.statement_count}</button></dd>
+                        <dt>Key</dt><dd class="mono">${page.data.pubkey ? page.data.pubkey.slice(0, 24) + '…' : 'per-run keys'}</dd>
+                        <dt>Principal id</dt><dd class="mono">${page.data.id}</dd>
+                    </dl>
+                </template>
+                <!-- statement list -->
+                <template v-else-if="page.kind === 'list'">
+                    <h3>${page.data.items.length} statements</h3>
+                    <div class="sub">${page.title}</div>
+                    <div v-for="(s, i) in visibleList" :key="s.id" class="list-row" :class="{sel: sideKeys && i === sel.side}">
+                        <span><b>${label(s.prop)}</b> <span class="muted">${s.subject_label}</span></span>
+                        <value-chip :s="s" @open="openStatement"></value-chip>
+                        <div class="meta">
+                            <button v-if="s.doc" @click="openBlob(s.doc.sha256)">bytes</button>
+                            <button v-if="s.run_id" @click="openRun(s.run_id)">run</button>
+                            <button @click="openPrincipal(s.actor.principal)">signer</button>
+                            <span>${s.when || ''}</span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            <div class="side-body muted" v-else-if="page.error">${page.error}</div>
+            <div class="side-body muted" v-else>Loading</div>
+        </aside>
+    </div>
+
+    <div class="help" v-if="help" @click.self="toggleHelp">
+        <div class="help-card" role="dialog" aria-label="Keyboard commands">
+            <h3>Keyboard</h3>
+            <div v-for="c in helpRows" :key="c.id" class="help-row" :class="{off: !c.on}">
+                <kbd>${c.label || c.hotkey}</kbd><span>${c.title}<span v-if="!c.on" class="muted"> (unavailable)</span></span><span class="scope">${c.scope}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script type="application/json" id="monitor-boot">{{ boot|tojson|safe }}</script>
+<script type="module">
+import {createCommands} from '/static/js/monitor/commands.js';
+import {RowPool} from '/static/js/monitor/rowpool.js';
+import {createMap, updateMap, retheme} from '/static/js/monitor/mapview.js';
+import {attest} from '/static/js/monitor/passkey.js';
+import {EvidenceMedia, PREVIEWABLE} from '/static/js/evidence-media.js';
+import {registerMediaViewers} from '/static/js/components/media.js';
+
+const {createApp} = Vue;
+const {createVuetify} = Vuetify;
+const vuetify = createVuetify(config.vuetifyConfig);
+const boot = JSON.parse(document.getElementById('monitor-boot').textContent);
+const commands = createCommands();
+const LANES = ['accepted', 'corroborated', 'unconfirmed', 'rejected'];
+const ACTOR_ICONS = {human: 'ti-user', extractor: 'ti-cpu', agent: 'ti-robot', import: 'ti-file-import'};
+const DAY = 86400000;
+
+const ValueChip = {
+  props: {s: {type: Object, required: true}},
+  emits: ['open'],
+  computed: {
+    title() {
+      const who = this.s.actor.agent ? 'agent authored' : 'human authored';
+      return `${this.s.tier}, ${who}: open statement`;
+    },
+  },
+  template: `
+    <button class="v" :class="['t-' + s.tier, s.actor.agent ? 'by-agent' : 'by-human']" :title="title" @click.stop="$emit('open', s.id)">
+      <i v-if="s.actor.agent" class="ti ti-robot" aria-label="agent"></i>
+      <span v-if="s.masked && !s.revealed" class="masked"><i class="ti ti-lock" aria-hidden="true"></i> masked</span>
+      <span v-else-if="s.erased" class="masked">erased</span>
+      <span v-else dir="auto" v-text="s.display"></span>
+    </button>`,
+};
+
+const ActorTag = {
+  props: {a: {type: Object, required: true}},
+  computed: {
+    icon() { return ACTOR_ICONS[this.a.kind] || 'ti-help'; },
+  },
+  template: `<span class="actor" :class="{agent: a.agent}" :title="a.kind + ': ' + a.label"><i class="ti" :class="icon" aria-hidden="true"></i><span v-text="a.label"></span></span>`,
+};
+
+window.app = createApp({
+  mixins: [layoutMixin],
+  delimiters: config.delimiters,
+  data() {
+    return {
+      investigations: boot.investigations,
+      filter: {...boot.filter},
+      showRejected: false,
+      feed: [], documents: [], queue: [], timeline: [],
+      mapLayer: {points: [], tracks: {}, places: {}, unresolved: [], attribution: ''},
+      lastEventId: 0,
+      fresh: {},
+      sel: {feed: -1, queue: 0, docs: 0, side: 0},
+      sideActive: false,
+      reviewing: null,
+      refusals: {},
+      focus: 'queue',
+      doc: null,
+      hoverIds: [],
+      trackSubject: null,
+      side: [],
+      help: false,
+      live: 'off',
+      tl: {width: 800, ticks: [], marks: [], lanes: [], brush: null, gap: null},
+      brushing: null,
+    };
+  },
+  computed: {
+    liveLabel() { return {on: 'Live', down: 'Reconnecting', off: 'Connecting'}[this.live]; },
+    // j/k go to the detail panel while it is the last thing opened, except when the
+    // review queue drives the statement shown there.
+    sideKeys() { return this.sideActive && this.side.length > 0 && !(this.focus === 'queue' && this.page.kind === 'statement'); },
+    page() { return this.side[this.side.length - 1] || {}; },
+    byId() {
+      const out = {};
+      for (const p of this.mapLayer.points) out[p.id] = {id: p.id, tier: p.tier, display: p.place, masked: false, actor: {agent: p.agent}};
+      return out;
+    },
+    visiblePoints() { return this.mapLayer.points.filter(p => this.showRejected || p.tier !== 'rejected'); },
+    track() { return this.mapLayer.tracks[this.trackSubject] || null; },
+    docStatements() { return this.doc ? this.doc.statements.filter(s => this.showRejected || s.tier !== 'rejected') : []; },
+    visibleList() { return (this.page.data?.items || []).filter(s => this.showRejected || s.tier !== 'rejected'); },
+    segments() {
+      if (!this.doc || this.doc.text === null) return [];
+      const chars = Array.from(this.doc.text);
+      const spans = this.docStatements.filter(s => s.span && 'start' in s.span && s.doc && s.doc.sha256 === this.doc.sha256);
+      const cuts = new Set([0, chars.length]);
+      spans.forEach(s => { cuts.add(s.span.start); cuts.add(s.span.end); });
+      const edges = [...cuts].filter(c => c >= 0 && c <= chars.length).sort((a, b) => a - b);
+      const segs = [];
+      for (let i = 0; i < edges.length - 1; i++) {
+        const [a, b] = [edges[i], edges[i + 1]];
+        const over = spans.filter(s => s.span.start <= a && s.span.end >= b);
+        const cls = over.length ? ['seg-span', 't-' + over[0].tier, {agent: over[0].actor.agent, hl: over.some(s => this.hoverIds.includes(s.id))}] : [];
+        segs.push({start: a, text: chars.slice(a, b).join(''), ids: over.map(s => s.id), cls});
+      }
+      return segs;
+    },
+    helpRows() {
+      return commands.commands.map(c => ({...c, on: c.available()}));
+    },
+  },
+  watch: {
+    showRejected() { this.drawMap(); this.layoutTimeline(); },
+    trackSubject() { this.drawMap(); },
+    'filter.investigation': {handler(v) { this.caseSel = v; }, immediate: true},
+    timeline() { this.layoutTimeline(); },
+  },
+  methods: {
+    useCase(v) { this.filter.investigation = v; this.applyFilter(); },
+    previewable(mime) { return PREVIEWABLE.test(mime || ''); },
+    label(s) { return s ? (s.charAt(0).toUpperCase() + s.slice(1)).replaceAll('_', ' ') : ''; },
+    clock(iso) { return new Date(iso).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}); },
+    countsText(c) { return Object.entries(c || {}).map(([k, v]) => `${k.replaceAll('_', ' ')} ${Array.isArray(v) ? v.join('-') : v}`).join(', '); },
+    gapText(days) { return days >= 60 ? `${Math.round(days / 30.4)} months, no evidence` : `${days} ${days === 1 ? 'day' : 'days'}, no evidence`; },
+    spanText(span) {
+      if (!span) return 'none';
+      if ('start' in span) return `characters ${span.start} to ${span.end}`;
+      if ('page' in span) return `page ${span.page}, box ${span.bbox.join(', ')}`;
+      if ('ms' in span) return `${span.ms[0] / 1000}s to ${span.ms[1] / 1000}s`;
+      return JSON.stringify(span);
+    },
+    sigText(sig) {
+      if (sig.kind === 'ed25519') return sig.verifies ? 'run key, signature verifies' : 'run key, signature does NOT verify';
+      if (sig.kind === 'webauthn') return sig.demo ? 'passkey (demo stand-in)' : 'passkey';
+      return 'unsigned';
+    },
+    // A stale subject does not block: accepting it acknowledges the current head.
+    failed(card) { return card.invariants.filter(i => i.ok === false && !('acknowledge' in i)).length; },
+    invClass(inv) { return inv.ok === true ? 'ok' : inv.ok === false ? 'fail' : 'unknown'; },
+    invIcon(inv) { return inv.ok === true ? 'ti-check' : inv.ok === false ? 'ti-x' : 'ti-question-mark'; },
+    async review(card, verdict) {
+      if (this.reviewing) return;
+      this.reviewing = card.id;
+      delete this.refusals[card.id];
+      try {
+        const stale = card.invariants.find(i => i.ok === false && 'acknowledge' in i);
+        const item = {statement: card.id, verdict, reason: ''};
+        if (verdict === 'accept' && stale) item.acknowledged_head = stale.acknowledge;
+        await attest(item);
+        this.queue = this.queue.filter(c => c.id !== card.id);
+        this.sel.queue = Math.min(this.sel.queue, this.queue.length - 1);
+      } catch (err) {
+        this.refusals[card.id] = err.message;
+      } finally {
+        this.reviewing = null;
+      }
+    },
+
+    // ---- shared filter ----
+    query() { return encodeURIComponent(JSON.stringify(this.filter)); },
+    applyFilter(push = true) {
+      const linkedDocument = push ? null : new URLSearchParams(location.search).get('document');
+      const url = `${location.pathname}?filter=${this.query()}`;
+      if (push) history.pushState(null, '', url); else history.replaceState(null, '', url);
+      // ponytail: the stream opens a beat after the panels load because `stk smoke`
+      // waits for network idle, which an open stream never reaches. The `after`
+      // cursor replays anything committed in between, so the delay loses nothing;
+      // drop it once smoke stops waiting on networkidle.
+      this.refresh().then(() => {
+        if (linkedDocument) this.loadDoc(linkedDocument);
+        clearTimeout(this._connectTimer);
+        this._connectTimer = setTimeout(() => this.connect(), 1500);
+      });
+    },
+    clearTime() { this.filter.time = null; this.applyFilter(); },
+    async refresh() {
+      const {data} = await axios.get(`/api/monitor/panels?filter=${this.query()}`);
+      this.feed = data.feed;
+      this.documents = data.documents;
+      this.queue = data.queue;
+      this.timeline = data.timeline;
+      this.mapLayer = data.map;
+      this.lastEventId = data.last_event_id;
+      const subjects = Object.keys(data.map.tracks);
+      if (!subjects.includes(this.trackSubject)) {
+        this.trackSubject = subjects.sort((a, b) => data.map.tracks[b].steps.length - data.map.tracks[a].steps.length)[0] || null;
+      }
+      this.sel.queue = Math.min(Math.max(this.sel.queue, 0), this.queue.length - 1);
+      const keep = this.doc ? this.documents.findIndex(d => d.sha256 === this.doc.sha256) : -1;
+      this.sel.docs = keep >= 0 ? keep : 0;
+      if (this.documents.length) await this.loadDoc(this.documents[this.sel.docs].sha256);
+      else this.doc = null;
+      this.drawMap();
+    },
+    scheduleRefresh() {
+      clearTimeout(this._refreshTimer);
+      this._refreshTimer = setTimeout(() => this.refresh(), 500);
+    },
+
+    // ---- live stream ----
+    connect() {
+      if (this._es) this._es.close();
+      const es = new EventSource(`/monitor/stream?filter=${this.query()}&after=${this.lastEventId}`);
+      this._es = es;
+      es.onopen = () => { this.live = 'on'; };
+      es.onerror = () => { this.live = 'down'; };
+      es.addEventListener('run_event', e => {
+        const row = JSON.parse(e.data);
+        if (this.feed.some(r => r.id === row.id)) return;
+        this.feed.unshift(row);
+        this.fresh[row.id] = true;
+        setTimeout(() => { delete this.fresh[row.id]; }, 2400);
+        this.scheduleRefresh();
+      });
+    },
+
+    // ---- timeline and brush ----
+    tx(d) { return this.tl.pad + (d - this.tl.lo) / (this.tl.hi - this.tl.lo) * (this.tl.width - this.tl.pad - 16); },
+    xDate(x) {
+      const t = this.tl.lo + (x - this.tl.pad) / (this.tl.width - this.tl.pad - 16) * (this.tl.hi - this.tl.lo);
+      return new Date(Math.min(Math.max(t, this.tl.lo), this.tl.hi)).toISOString().slice(0, 10);
+    },
+    layoutTimeline() {
+      const el = this.$refs.timeline;
+      const width = el ? el.clientWidth : 800;
+      const rows = this.timeline.filter(r => this.showRejected || r.tier !== 'rejected');
+      if (!rows.length) { this.tl = {...this.tl, width, ticks: [], marks: [], lanes: [], gap: null, brush: null}; return; }
+      const ms = d => Date.parse(d);
+      const first = new Date(Math.min(...rows.map(r => ms(r.from))));
+      const last = Math.max(...rows.map(r => ms(r.to)));
+      const lo = Date.UTC(first.getUTCFullYear(), first.getUTCMonth() - 1, 1);
+      const end = new Date(last);
+      const hi = Date.UTC(end.getUTCFullYear(), end.getUTCMonth() + 3, 1);
+      const lanes = LANES.filter(l => rows.some(r => r.tier === l));
+      Object.assign(this.tl, {width, lo, hi, pad: 104, lanes});
+      const ticks = [];
+      const months = Math.round((hi - lo) / (30.4 * DAY));
+      const every = Math.max(1, Math.ceil(months / ((width - 120) / 46)));
+      for (let d = new Date(lo), i = 0; d.getTime() <= hi; d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)), i++) {
+        const year = d.getUTCMonth() === 0;
+        ticks.push({x: this.tx(d.getTime()), year,
+          label: i % every === 0 && this.tx(d.getTime()) < width - 60 ? (year || i === 0 ? d.toLocaleDateString('en', {month: 'short', year: 'numeric', timeZone: 'UTC'}) : d.toLocaleDateString('en', {month: 'short', timeZone: 'UTC'})) : ''});
+      }
+      const css = getComputedStyle(this.$refs.mon);
+      const ink = css.getPropertyValue('--ink').trim(), agent = css.getPropertyValue('--agent').trim();
+      const [accepted, corroborated, negative] = ['--accepted', '--corroborated', '--negative'].map(n => css.getPropertyValue(n).trim());
+      const marks = rows.map(r => {
+        const x = this.tx(ms(r.from));
+        // Texture and hue name the tier; a violet edge or tint keeps agent authorship visible once confirmed.
+        const color = r.agent ? agent : ink, edge = r.agent ? {stroke: agent, strokeWidth: 1.5} : {};
+        const style = {
+          accepted: {fill: accepted, ...edge},
+          corroborated: {fill: r.agent ? agent : 'none', fillOpacity: 0.3, stroke: corroborated, strokeWidth: 1.5},
+          unconfirmed: {fill: `url(#hatch-${r.agent ? 'agent' : 'human'})`, stroke: color, strokeWidth: 0.75, strokeDasharray: '2 1.5'},
+          rejected: {fill: 'none', stroke: negative, strokeOpacity: 0.6},
+        }[r.tier];
+        return {id: r.id, x, w: Math.max(3, this.tx(ms(r.to) + DAY) - x), y: 8 + lanes.indexOf(r.tier) * 16, style,
+          title: `${this.label(r.prop)}, ${r.tier}${r.agent ? ', agent authored' : ''}: ${r.from === r.to ? r.from : r.from + ' to ' + r.to}`};
+      });
+      const lastDay = new Date(last).toISOString().slice(0, 10);
+      const gx = this.tx(last + DAY) + 8;
+      const gap = gx < width - 150 ? {x: gx, text: `No evidence after ${lastDay}`} : null;
+      const brush = this.brushRect();
+      this.tl = {...this.tl, ticks, marks, gap, brush};
+      this.$nextTick(() => this.paintHatch(ink, agent));
+    },
+    paintHatch(ink, agent) {
+      this.$refs.mon.querySelectorAll('.hatch-ink').forEach(l => l.setAttribute('stroke', ink));
+      this.$refs.mon.querySelectorAll('.hatch-agent').forEach(l => l.setAttribute('stroke', agent));
+    },
+    brushRect() {
+      if (this.brushing) {
+        const [a, b] = [this.brushing.x0, this.brushing.x1].sort((p, q) => p - q);
+        return {x: a, w: Math.max(1, b - a)};
+      }
+      if (!this.filter.time || !this.tl.lo) return null;
+      const a = this.tx(Date.parse(this.filter.time[0])), b = this.tx(Date.parse(this.filter.time[1]) + DAY);
+      return {x: a, w: Math.max(2, b - a)};
+    },
+    brushStart(e) {
+      if (e.button !== 0) return;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      const x = e.offsetX;
+      this.brushing = {x0: x, x1: x};
+    },
+    brushMove(e) {
+      if (!this.brushing) return;
+      this.brushing.x1 = e.offsetX;
+      this.tl.brush = this.brushRect();
+    },
+    brushEnd() {
+      if (!this.brushing) return;
+      const {x0, x1} = this.brushing;
+      this.brushing = null;
+      if (Math.abs(x1 - x0) < 4) { this.tl.brush = this.brushRect(); return; }
+      const [a, b] = [x0, x1].sort((p, q) => p - q);
+      this.filter.time = [this.xDate(a), this.xDate(b)];
+      this.tl.brush = this.brushRect();
+      this.applyFilter();
+    },
+
+    // ---- map ----
+    drawMap() {
+      if (!this._map) return;
+      const [from, to] = this.filter.time || [];
+      updateMap(this._map, this.mapLayer, {showRejected: this.showRejected, subject: this.trackSubject,
+        query: {investigation: this.filter.investigation, from, to}});
+    },
+    cycleTrack(step) {
+      const subjects = Object.keys(this.mapLayer.tracks);
+      if (!subjects.length) return;
+      const i = subjects.indexOf(this.trackSubject);
+      this.trackSubject = subjects[(i + step + subjects.length) % subjects.length];
+    },
+
+    // ---- documents ----
+    async loadDoc(sha) {
+      const {data} = await axios.get(`/api/monitor/document/${sha}`);
+      this.doc = data;
+    },
+    pickDoc(i) {
+      this.sel.docs = i;
+      this.loadDoc(this.documents[i].sha256);
+    },
+    async revealDoc(sha) {
+      const {data} = await axios.post('/api/monitor/reveal', {item: {blob: sha}});
+      this.doc = {...this.doc, text: data.text, text_masked: false};
+    },
+    async revealStatement(s) {
+      const {data} = await axios.post('/api/monitor/reveal', {item: {statement: s.id}});
+      Object.assign(this.page.data, {display: data.display, revealed: true});
+    },
+
+    // ---- side panel page stack ----
+    async openPage(kind, title, url, key) {
+      if (this.page.kind === kind && this.page.key === key) return;
+      const entry = {kind, title, key, data: null, error: null};
+      this.side.push(entry);
+      this.sideActive = true;
+      this.sel.side = 0;
+      commands.push('side');
+      const page = this.side[this.side.length - 1];
+      try {
+        page.data = (await axios.get(url)).data;
+      } catch (err) {
+        page.error = (err.response && err.response.data && err.response.data.message) || 'Could not load';
+      }
+    },
+    openStatement(id) { this.openPage('statement', 'Statement', `/api/monitor/statement/${id}`, id); },
+    openRun(id) { this.openPage('run', 'Run', `/api/monitor/run/${id}`, id); },
+    // A file always opens on its evidence page, never inside the monitor.
+    openBlob(sha) { this.openEvidence(sha); },
+    openEvidence(sha) { location.href = `/evidence/${sha}`; },
+    openPrincipal(id) { this.openPage('principal', 'Signer', `/api/monitor/principal/${id}`, id); },
+    openList(params, title) {
+      const qs = new URLSearchParams(params).toString();
+      this.openPage('list', title, `/api/monitor/statements?${qs}`, qs);
+    },
+    back() { this.side.pop(); if (!this.side.length) commands.pop('side'); },
+    closeSide() { this.side = []; commands.pop('side'); },
+    toggleHelp() {
+      this.help = !this.help;
+      if (this.help) commands.push('help'); else commands.pop('help');
+    },
+
+    // ---- focus and keyboard ----
+    focusPanel(name) {
+      this.focus = name;
+      this.sideActive = false;
+      commands.focusPanel(name);
+    },
+    move(list, step) {
+      const items = list === 'docs' ? this.documents : this[list];
+      if (!items.length) return;
+      this.sel[list] = Math.min(items.length - 1, Math.max(0, this.sel[list] + step));
+      if (list === 'docs') this.pickDoc(this.sel.docs);
+      if (list === 'queue' && this.side.length && this.page.kind === 'statement') {
+        this.side.splice(-1, 1);
+        this.openStatement(this.queue[this.sel.queue].id);
+      }
+    },
+    moveSide(step) {
+      if (this.page.kind === 'list') {
+        this.sel.side = Math.max(0, Math.min(this.visibleList.length - 1, this.sel.side + step));
+        this.$nextTick(() => this.$refs.side.querySelector('.list-row.sel')?.scrollIntoView({block: 'nearest'}));
+      }
+      else this.$refs.side.querySelector('.side-body').scrollBy({top: step * 80});
+    },
+    registerCommands() {
+      const r = c => commands.register(c);
+      ['feed', 'map', 'queue', 'docs'].forEach((p, i) => r({id: `focus-${p}`, title: `Focus ${['Intake', 'Map', 'Review', 'Documents'][i]}`, hotkey: String([1, 2, 3, 4][i]), scope: 'global', run: () => this.focusPanel(p)}));
+      r({id: 'rejected', title: 'Show or hide rejected statements', hotkey: 'R', label: 'Shift+R', scope: 'global', run: () => { this.showRejected = !this.showRejected; }});
+      r({id: 'clear-time', title: 'Clear the time window', hotkey: 't', scope: 'global', available: () => !!this.filter.time, run: () => this.clearTime()});
+      r({id: 'help', title: 'Keyboard commands', hotkey: '?', scope: 'global', run: () => this.toggleHelp()});
+      r({id: 'help-close', title: 'Close keyboard commands', hotkey: 'Escape', scope: 'help', run: () => this.toggleHelp()});
+      r({id: 'side-close', title: 'Close the detail panel', hotkey: 'Escape', scope: 'side', available: () => this.side.length > 0, run: () => this.closeSide()});
+      r({id: 'side-back', title: 'Back one page', hotkey: 'Backspace', scope: 'side', available: () => this.side.length > 1, run: () => this.back()});
+      r({id: 'side-next', title: 'Next in the detail panel', hotkey: 'j', scope: 'side', available: () => this.sideKeys, run: () => this.moveSide(1)});
+      r({id: 'side-prev', title: 'Previous in the detail panel', hotkey: 'k', scope: 'side', available: () => this.sideKeys, run: () => this.moveSide(-1)});
+      r({id: 'side-open', title: 'Open the selected statement', hotkey: 'Enter', scope: 'side', available: () => this.sideKeys && this.page.kind === 'list' && !!this.visibleList[this.sel.side], run: () => this.openStatement(this.visibleList[this.sel.side].id)});
+      r({id: 'feed-next', title: 'Next event', hotkey: 'j', scope: 'feed', run: () => this.move('feed', 1)});
+      r({id: 'feed-prev', title: 'Previous event', hotkey: 'k', scope: 'feed', run: () => this.move('feed', -1)});
+      r({id: 'feed-open', title: 'Open the run', hotkey: 'Enter', scope: 'feed', available: () => this.sel.feed >= 0, run: () => this.openRun(this.feed[this.sel.feed].run_id)});
+      r({id: 'queue-next', title: 'Next card', hotkey: 'j', scope: 'queue', run: () => this.move('queue', 1)});
+      r({id: 'queue-prev', title: 'Previous card', hotkey: 'k', scope: 'queue', run: () => this.move('queue', -1)});
+      r({id: 'queue-open', title: 'Open the card', hotkey: 'Enter', scope: 'queue', available: () => this.queue.length > 0, run: () => this.openStatement(this.queue[this.sel.queue].id)});
+      const current = () => this.queue[this.sel.queue];
+      r({id: 'queue-accept', title: 'Accept with passkey', hotkey: 'a', scope: 'queue', available: () => !!current() && !this.failed(current()), run: () => this.review(current(), 'accept')});
+      r({id: 'queue-reject', title: 'Reject with passkey', hotkey: 'r', scope: 'queue', available: () => !!current(), run: () => this.review(current(), 'reject')});
+      r({id: 'docs-next', title: 'Next document', hotkey: 'j', scope: 'docs', run: () => this.move('docs', 1)});
+      r({id: 'docs-prev', title: 'Previous document', hotkey: 'k', scope: 'docs', run: () => this.move('docs', -1)});
+      r({id: 'docs-open', title: 'Open the evidence page', hotkey: 'Enter', scope: 'docs', available: () => !!this.doc, run: () => this.openEvidence(this.doc.sha256)});
+      r({id: 'map-next', title: 'Next person track', hotkey: 'j', scope: 'map', run: () => this.cycleTrack(1)});
+      r({id: 'map-prev', title: 'Previous person track', hotkey: 'k', scope: 'map', run: () => this.cycleTrack(-1)});
+    },
+  },
+  async mounted() {
+    this.registerCommands();
+    this.focusPanel('queue');
+    window.addEventListener('keydown', e => commands.handle(e));
+    window.addEventListener('popstate', () => {
+      const raw = new URLSearchParams(location.search).get('filter');
+      if (raw) { this.filter = JSON.parse(raw); this.applyFilter(false); }
+    });
+    new ResizeObserver(() => this.layoutTimeline()).observe(this.$refs.timeline);
+    this._map = createMap(this.$refs.map, this.$refs.mon, {
+      onPoint: id => this.openStatement(id),
+      onCluster: ids => this.openList({ids: ids.join(',')}, `${ids.length} statements at this place`),
+    });
+    this.$watch(() => this.$vuetify.theme.global.name, () => this.$nextTick(() => { retheme(this._map); this.layoutTimeline(); }));
+    const linked = new URLSearchParams(location.search).get('statement');
+    // Without a linked filter the map follows the top bar's case, not the server's first.
+    const stored = storedCase();
+    if (!new URLSearchParams(location.search).has('filter') && this.investigations.includes(stored)) this.filter.investigation = stored;
+    this.applyFilter(false);
+    if (linked) this.openStatement(linked);
+  },
+});
+
+app.component('row-pool', RowPool);
+app.component('evidence-media', EvidenceMedia);
+registerMediaViewers(app);
+app.component('value-chip', ValueChip);
+app.component('actor-tag', ActorTag);
+registerStkComponents(app);
+app.use(vuetify).mount('#app');
+</script>
+{% endblock %}

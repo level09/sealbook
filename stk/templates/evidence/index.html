@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% block content %}
+<v-container class="py-6" style="max-width:1200px">
+  <h1 class="text-headline-small mb-2">Find connections</h1>
+  <p class="text-body-medium text-medium-emphasis mb-5">Search people and source text. Compare picture and sound matches, then ask a colleague to review.</p>
+  <v-alert v-if="error" type="error" class="mb-4" closable @click:close="error=''">${error}</v-alert>
+  <v-card border class="pa-4 mb-5">
+    <form @submit.prevent="search">
+      <v-row align="center"><v-col cols="12" md="6"><v-text-field v-model="query" label="Name, phrase or investigative question" hide-details></v-text-field></v-col><v-col cols="12" md="3"><v-select v-model="investigation" :items="cases" item-title="title" item-value="value" label="Investigation" hide-details @update:model-value="loadMatches"></v-select></v-col><v-col cols="12" md="3"><v-btn type="submit" :disabled="!query.trim() || busy" :loading="busy" color="primary">Search evidence</v-btn></v-col></v-row>
+      <v-switch v-if="embeddings" v-model="semantic" label="Include semantic discovery leads" color="primary" hide-details class="mt-3"></v-switch>
+      <p v-else class="text-body-small text-medium-emphasis mt-3">Keyword search is available. Configure a local embedding model to add semantic search.</p>
+    </form>
+  </v-card>
+  <v-alert type="info" variant="tonal" class="mb-4" role="status">${!coverage ? 'Checking how much of this filter is processed.' : coverage.complete ? 'Processing is complete for this filter.' : 'Processing is incomplete for this filter. No results does not establish that evidence is absent.'}</v-alert>
+  <v-expansion-panels class="mb-5"><v-expansion-panel title="Indexing coverage" :disabled="!coverage"><v-expansion-panel-text v-if="coverage"><p class="mb-2">${coverage.total_sources} sources in this filter. ${coverage.truncated ? 'Showing the first 100.' : ''}</p><p v-if="!coverage.semantic_configured" class="mb-2">Semantic search is not configured.</p><div v-for="item in coverage.items" :key="item.sha256" class="mb-3"><b>${item.doc.file}</b>: ${item.state} · ${item.segments} searchable segments <span v-for="step in item.steps" :key="step.tool+step.unit"> · ${step.tool}: ${step.completed}/${step.total} ${step.unit}</span></div></v-expansion-panel-text></v-expansion-panel></v-expansion-panels>
+  <p v-if="searched && !documents.length && !people.length && !mediaHits.length" role="status" class="mb-4">No matching indexed evidence. New uploads become searchable after processing.</p>
+  <v-row v-if="searched">
+    <v-col cols="12" md="5"><h2 class="text-title-large mb-3">People <span class="text-medium-emphasis">${people.length}</span></h2><v-list><v-list-item v-for="person in people" :key="person.subject" :href="'/people/'+person.subject.slice(7)" :title="'Person '+person.subject.slice(7,15)" :subtitle="person.signals.join(' + ')+' match · inspect the source-backed profile'"></v-list-item></v-list></v-col>
+    <v-col cols="12" md="7"><h2 class="text-title-large mb-3">Source text <span class="text-medium-emphasis">${documents.length}</span></h2><v-list><v-list-item v-for="doc in documents" :key="doc.segment" :href="documentUrl(doc)" :title="doc.doc.file" :subtitle="doc.signals.join(' + ')+' · '+(doc.location.page ? 'page '+doc.location.page+' · ' : '')+'characters '+doc.span.start+' to '+doc.span.end+(doc.group === 'semantic_lead' ? ' · lead, check relevance' : '')"></v-list-item></v-list></v-col>
+  </v-row>
+  <div v-if="searched && mediaHits.length"><h2 class="text-title-large mb-3">Semantic media leads</h2><p class="text-body-small text-medium-emphasis mb-2">Ranked by meaning. These results do not establish reuse, identity or factual accuracy.</p><v-list><v-list-item v-for="hit in mediaHits" :key="hit.segment" :href="'/evidence/segments/'+hit.segment" :title="hit.doc.file" :subtitle="hit.location.page ? 'Page '+hit.location.page : hit.location.ms ? (hit.location.ms[0]/1000).toFixed(2)+' to '+(hit.location.ms[1]/1000).toFixed(2)+' seconds' : 'Image'"><template #prepend><media-thumb :sha="hit.sha256" :kind="{frame: 'video', page_image: 'pdf', image: 'image', audio: 'audio'}[hit.kind]" :link="false" :caption="false" :width="64" :height="40" class="me-3"></media-thumb></template></v-list-item></v-list></div>
+  <v-divider class="my-6"></v-divider>
+  <div class="d-flex align-center mb-3"><h2 class="text-title-large">Media connections</h2><v-spacer></v-spacer><v-btn variant="text" @click="loadMatches">Refresh</v-btn></div>
+  <p class="text-body-small text-medium-emphasis mb-4">Picture overlap and sound alignment are separate signals. A suggestion does not establish that two sources are independent or depict the same event.</p>
+  <p v-if="!matches.length" class="text-medium-emphasis">No media match proposals for this investigation.</p>
+  <v-card v-for="match in matches" :key="match.id" border class="pa-4 mb-3">
+    <div class="d-flex align-center ga-2"><media-thumb :sha="match.left.sha256" :mime="match.left.mime" :file="match.left.file" :caption="false" :width="72" :height="44"></media-thumb><media-thumb :sha="match.right.sha256" :mime="match.right.mime" :file="match.right.file" :caption="false" :width="72" :height="44"></media-thumb><div><h3 class="text-title-medium"><a :href="'/evidence/'+match.left.sha256+'?with='+match.right.sha256">${match.left.file} / ${match.right.file}</a></h3></div><v-spacer></v-spacer><v-chip class="mr-3">${match.tier}</v-chip><v-btn :href="'/review?statement='+match.id" variant="outlined">Ask for review</v-btn></div>
+    <evidence-pair class="mt-3" :media="match"></evidence-pair>
+  </v-card>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="application/json" id="evidence-boot">{{boot|tojson|safe}}</script>
+<script type="module">
+import {EvidencePair} from '/static/js/evidence-media.js';
+import {registerMediaViewers} from '/static/js/components/media.js';
+const {createApp} = Vue;
+const boot = JSON.parse(document.getElementById('evidence-boot').textContent);
+window.app = createApp({mixins:[layoutMixin], delimiters:config.delimiters,
+  data() {return {query:'', investigation:null, semantic:boot.embeddings, embeddings:boot.embeddings, cases:[{title:'All investigations',value:null},...boot.investigations.map(value=>({title:value,value}))], documents:[], people:[], mediaHits:[], matches:[], coverage:null, busy:false, searched:false, error:''};},
+  watch: {investigation: {handler(v) {this.caseSel=v;}, immediate:true}},
+  methods: {
+    useCase(v) {this.investigation=v; this.loadMatches();},
+    filter() {return {investigation:this.investigation,time:null};},
+    fail(err) {this.error=err.response?.data?.error || err.response?.data?.message || err.message;},
+    documentUrl(doc) {return '/evidence/segments/'+doc.segment+'?start='+doc.span.start+'&end='+doc.span.end;},
+    async search() {this.busy=true; this.error=''; try {const {data}=await axios.post('/api/evidence/search',{item:{query:this.query,mode:this.semantic?'hybrid':'keyword',filter:this.filter()}}); this.documents=data.documents; this.people=data.people; this.mediaHits=data.media; this.searched=true; await this.loadCoverage();} catch(err) {this.fail(err);} finally {this.busy=false;}},
+    async loadCoverage(){this.coverage=(await axios.get('/api/evidence/coverage',{params:{filter:JSON.stringify(this.filter())}})).data;},
+    async loadMatches() {try {this.matches=(await axios.get('/api/evidence/matches',{params:{filter:JSON.stringify(this.filter())}})).data.items; await this.loadCoverage();} catch(err) {this.fail(err);}},
+  }, mounted() {this.loadMatches();}
+});
+app.component('evidence-pair',EvidencePair); registerMediaViewers(app); registerStkComponents(app); app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

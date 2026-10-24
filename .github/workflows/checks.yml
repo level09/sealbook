@@ -1,0 +1,164 @@
+name: Checks
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  QUART_APP: run.py
+  SECRET_KEY: test-secret-key-for-ci
+  SECURITY_PASSWORD_SALT: test-salt-for-ci
+  SECURITY_TOTP_SECRETS: test-totp-secret
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04  # playwright has no chromium build for 26.04 yet
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: sealbook
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: sealbook
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U sealbook" --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      SQLALCHEMY_DATABASE_URI: postgresql+asyncpg://sealbook:ci-only-password@localhost/sealbook
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Install Chromium
+        run: uv run playwright install --with-deps chromium
+
+      - name: Install c2patool
+        run: |
+          curl -fsSL -o /tmp/c2patool.tgz https://github.com/contentauth/c2pa-rs/releases/download/c2patool-v0.27.22/c2patool-v0.27.22-x86_64-unknown-linux-gnu.tar.gz
+          echo "6f138ad53da1a62f1cd6ee71c60727efa27d13b811f4c0ea8c2a8528968b358b  /tmp/c2patool.tgz" | sha256sum -c -
+          tar -xzf /tmp/c2patool.tgz -C /tmp c2patool/c2patool
+          sudo install /tmp/c2patool/c2patool /usr/local/bin/c2patool
+          c2patool --version
+
+      - name: Create database tables
+        run: uv run stk create-db
+
+      - name: Unit tests
+        run: uv run python -m unittest discover tests -v
+
+      - name: v0 acceptance (synthetic case)
+        run: uv run python -m unittest discover -s acceptance -v
+
+      - name: Verify (lint, sanity, migrations)
+        run: uv run stk verify --json
+
+      - name: Browser smoke (behavioral)
+        run: uv run stk smoke --json
+
+      - name: Upload smoke artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-artifacts
+          path: .stk/smoke/
+          if-no-files-found: ignore
+
+  security-backends:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: review
+          POSTGRES_PASSWORD: isolated-review-password
+          POSTGRES_DB: review
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U review" --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v9.0.0
+      - run: uv python install 3.11
+      - run: uv sync --extra dev --extra full
+      - name: PostgreSQL migrations
+        env:
+          SQLALCHEMY_DATABASE_URI: postgresql+asyncpg://review:isolated-review-password@localhost/review
+        run: uv run stk db upgrade && uv run stk db check
+      - name: Restricted application database role
+        env:
+          PGHOST: localhost
+          PGUSER: review
+          PGPASSWORD: isolated-review-password
+          POSTGRES_USER: review
+          POSTGRES_DB: stk
+          DB_PASSWORD: isolated-app-password
+          SQLALCHEMY_DATABASE_URI: postgresql+asyncpg://stk:isolated-app-password@localhost/stk
+        run: |
+          psql -d review -c 'CREATE DATABASE stk'
+          sh postgres/init-db.sh
+          test "$(psql -d stk -Atc "SELECT rolsuper FROM pg_roles WHERE rolname='stk'")" = f
+          uv run stk db upgrade
+          # The drift check creates a throwaway database, so it needs CREATEDB.
+          SQLALCHEMY_DATABASE_URI=postgresql+asyncpg://review:isolated-review-password@localhost/review uv run stk db check
+      - name: Security controls with PostgreSQL and Redis
+        env:
+          STK_TEST_DATABASE_URL: postgresql+asyncpg://review:isolated-review-password@localhost/review
+          STK_TEST_REDIS_URL: redis://localhost:6379/0
+        run: uv run python -m unittest discover -s tests -p test_production_security.py -v
+      - name: Dependency advisories
+        run: |
+          uv export --frozen --no-hashes --no-emit-project --extra full --extra asgi -o /tmp/runtime.txt
+          uv run --no-project --with pip-audit python -m pip_audit -r /tmp/runtime.txt --no-deps --disable-pip
+
+  production-container:
+    runs-on: ubuntu-latest
+    env:
+      DB_ADMIN_PASSWORD: isolated-container-admin
+      DB_PASSWORD: isolated-container-app
+      REDIS_PASSWORD: isolated-container-redis
+      STK_HOST: localhost
+      TLS_CERTIFICATE: /tmp/stk-container-cert.pem
+      TLS_PRIVATE_KEY: /tmp/stk-container-key.pem
+    steps:
+      - uses: actions/checkout@v7
+      - name: Isolated TLS and application settings
+        run: |
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout "$TLS_PRIVATE_KEY" -out "$TLS_CERTIFICATE" -days 1 -subj /CN=localhost
+          chmod 644 "$TLS_PRIVATE_KEY"
+          printf '%s\n' 'SECRET_KEY=isolated-container-secret-key-for-ci' 'SECURITY_PASSWORD_SALT=isolated-container-salt-for-ci' > .env
+      - name: Start production stack
+        run: docker compose up -d --build --wait --wait-timeout 180
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail 80 website
+      - name: TLS, cookies, CSRF, and restricted database role
+        run: |
+          test "$(curl -sS -o /dev/null -w '%{http_code}' http://localhost/)" = 308
+          curl -fkSs https://localhost/health
+          curl -fkSs -D /tmp/stk-container-headers.txt https://localhost/login -o /tmp/stk-container-login.html
+          python - <<'PYTHON'
+          from pathlib import Path
+          headers = Path('/tmp/stk-container-headers.txt').read_text().lower()
+          assert 'strict-transport-security:' in headers
+          assert 'secure' in headers and 'httponly' in headers
+          assert 'x-content-type-options: nosniff' in headers
+          assert 'name="csrf_token"' in Path('/tmp/stk-container-login.html').read_text()
+          PYTHON
+          test "$(curl -ksS -o /dev/null -w '%{http_code}' -X POST https://localhost/api/role/ -H 'Content-Type: application/json' -d '{"item":{"name":"untrusted"}}')" = 400
+          test "$(docker compose exec -T postgres psql -U postgres -d stk -Atc "SELECT rolsuper FROM pg_roles WHERE rolname='stk'")" = f
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose logs --no-color

@@ -1,0 +1,351 @@
+{
+  "resultType": "complete",
+  "tools": [
+    {
+      "name": "read",
+      "title": "Read the evidence ledger",
+      "description": "Read evidence under your user's permissions. Every call is recorded on the ledger as an access by you on behalf of your user.\ntarget=search: text match on statement values (names, places, branches, dates); needs query. Returns statements with subject, tier and neighbour ids (blob, run, author, related statements).\ntarget=fetch: one item by ref (statement:<uuid>, blob:<sha256> or person:<uuid>) with its neighbours and its subject head.\ntarget=history: every statement on a subject (ref) in ledger order, with the subject head to pass as based_on when you propose.\ntarget=whoami: you, the human you act for, and your scopes.\nTiers: unconfirmed is a draft, never a fact; corroborated has independent origins; accepted is human-attested or deterministic; rejected was refused by a human. Say which tier a value has whenever you report it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "enum": [
+              "search",
+              "fetch",
+              "history",
+              "whoami"
+            ]
+          },
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "ref": {
+            "type": "string",
+            "pattern": "^(statement:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|person:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|blob:[0-9a-f]{64})$"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "const": "search"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "query"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "target": {
+                  "enum": [
+                    "fetch",
+                    "history"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "ref"
+              ]
+            }
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "propose_statements",
+      "title": "Propose facts for human review",
+      "description": "Propose facts read out of source documents. Each item becomes an unconfirmed statement authored by you on behalf of your user; nothing is a fact until a human accepts it. Rules: copy the value exactly as written, in its original script, with its language (add norm only for a normalised spelling); give the span in the source bytes it was read from; list the evidence kinds that carry it; set based_on to the subject head you read. Facts about a person mention use subject person:<uuid> (a new uuid for a new mention); document_type and document_date use blob:<sha256>. A value a human rejected for that subject, or one already pending review, is refused with the reason. Retrying an item returns the statement it already created.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "properties": {
+                "subject": {
+                  "type": "string",
+                  "pattern": "^(person:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|blob:[0-9a-f]{64})$"
+                },
+                "prop": {
+                  "enum": [
+                    "age",
+                    "arrested_at",
+                    "birth_date",
+                    "detained_at",
+                    "detention_branch",
+                    "document_date",
+                    "document_type",
+                    "event",
+                    "father_name",
+                    "last_seen",
+                    "mother_name",
+                    "name",
+                    "occupation",
+                    "place_of_birth",
+                    "seen_at",
+                    "sex",
+                    "transferred_to"
+                  ]
+                },
+                "value": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    },
+                    "lang": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+                    },
+                    "norm": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    }
+                  },
+                  "required": [
+                    "text",
+                    "lang"
+                  ],
+                  "additionalProperties": false
+                },
+                "span": {
+                  "type": "object",
+                  "properties": {
+                    "blob": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "span": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer",
+                              "minimum": 1
+                            },
+                            "bbox": {
+                              "type": "array",
+                              "items": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            }
+                          },
+                          "required": [
+                            "page",
+                            "bbox"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "start": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "end": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "start",
+                            "end"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "ms": {
+                              "type": "array",
+                              "items": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "minItems": 2,
+                              "maxItems": 2
+                            }
+                          },
+                          "required": [
+                            "ms"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ],
+                      "description": "{page, bbox} in integer pixels, {start, end} in characters, or {ms: [start, end]} for audio and video."
+                    }
+                  },
+                  "required": [
+                    "blob",
+                    "span"
+                  ],
+                  "additionalProperties": false
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "signature_block",
+                      "registry_stamp",
+                      "letterhead",
+                      "handwritten_entry",
+                      "printed_text",
+                      "spoken",
+                      "photo_content",
+                      "c2pa_manifest",
+                      "byte_equality",
+                      "corroborating_field"
+                    ]
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "description": "What in the source carries this, never a confidence score."
+                },
+                "based_on": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^[0-9a-f]{64}$",
+                  "description": "The subject head that read returned when you looked (history or fetch), or null if the subject had none. Review uses it to show proposals that went stale."
+                }
+              },
+              "required": [
+                "subject",
+                "prop",
+                "value",
+                "span",
+                "evidence",
+                "based_on"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "propose_identity",
+      "title": "Propose whether two person mentions are one person",
+      "description": "Propose same_as or not_same between two person mentions, for human review. Nothing merges until a human accepts it. Matching procedure, fail closed:\n1. Names alone never match. Exact-name twins are common and transliterations collide; a shared name is not evidence.\n2. Propose same_as only with one strong signal (an identifier unique to one person, such as a registry or ID number, on both mentions) or two independent corroborating fields (for example birth date and father's name, or birth date and detention branch at overlapping dates).\n3. Any contradicting field (a different birth date or mother's name) rules out same_as; propose not_same only when the contradiction is clear.\n4. When unsure, propose nothing.\nbasis lists the statements carrying the matching or contradicting fields: at least one on each mention and at least one that is not a name. based_on is the head of person.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "relation": {
+            "enum": [
+              "same_as",
+              "not_same"
+            ]
+          },
+          "person": {
+            "type": "string",
+            "pattern": "^person:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "other": {
+            "type": "string",
+            "pattern": "^person:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "basis": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^statement:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "minItems": 2,
+            "maxItems": 20,
+            "uniqueItems": true
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "signature_block",
+                "registry_stamp",
+                "letterhead",
+                "handwritten_entry",
+                "printed_text",
+                "spoken",
+                "photo_content",
+                "c2pa_manifest",
+                "byte_equality",
+                "corroborating_field"
+              ]
+            },
+            "minItems": 1,
+            "uniqueItems": true,
+            "description": "What in the source carries this, never a confidence score."
+          },
+          "based_on": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "The subject head that read returned when you looked (history or fetch), or null if the subject had none. Review uses it to show proposals that went stale."
+          }
+        },
+        "required": [
+          "relation",
+          "person",
+          "other",
+          "basis",
+          "evidence",
+          "based_on"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    }
+  ],
+  "ttlMs": 3600000,
+  "cacheScope": "public"
+}

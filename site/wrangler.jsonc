@@ -1,0 +1,10 @@
+// Public teaser: static files only. `dist/` is assembled by the deploy steps in README.md.
+{
+  "name": "sealbook",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "dist" },
+  "routes": [
+    { "pattern": "sealbook.org", "custom_domain": true },
+    { "pattern": "www.sealbook.org", "custom_domain": true }
+  ]
+}

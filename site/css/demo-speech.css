@@ -1,0 +1,23 @@
+.sp-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.sp-file { font-size: 13px; color: var(--ink-3); margin: 0 0 8px; }
+.sp-main audio { width: 100%; margin-bottom: 14px; }
+.sp-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.sp-line { border-left: 2px solid var(--rule); padding: 6px 0 6px 14px; transition: border-color .2s; }
+.sp-line.now { border-left-color: var(--ink); }
+.sp-claim { border-left-style: dashed; border-left-color: var(--violet); }
+.sp-claim.now { border-left-style: solid; }
+.sp-time { background: none; border: 0; padding: 4px 0; min-height: 32px; font-size: 12.5px; color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px; }
+.sp-time:hover { color: var(--ink); }
+.sp-said { margin: 2px 0 4px; font-size: 1.15rem; line-height: 1.9; color: var(--ink); }
+.sp-said span { border-radius: 3px; padding: 0 1px; }
+.sp-said span.now { background: var(--ink); color: var(--paper); }
+.sp-script { font-size: 14px; color: var(--ink-3); }
+.sp-script summary { cursor: pointer; font-size: 13px; min-height: 28px; }
+.sp-script p { margin: 4px 0; line-height: 1.8; }
+.sp-facts { background: var(--paper-2); border-radius: 12px; padding: 16px 18px; }
+.sp-wer { margin: 0; font: 400 1.4rem/1.3 var(--serif); }
+.sp-wer .mono { font-size: 2.1rem; letter-spacing: -.02em; }
+.sp-facts .kv { margin-top: 12px; }
+@media (max-width: 1000px) { .sp-grid { grid-template-columns: minmax(0, 1fr); } }
+.sp-said .sp-off { text-decoration: underline wavy var(--broken); text-decoration-thickness: 1px; text-underline-offset: 6px; }
+.sp-said .sp-fixed { text-decoration: underline dotted var(--ok); text-decoration-thickness: 1px; text-underline-offset: 6px; }

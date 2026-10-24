@@ -1,0 +1,10 @@
+{#- The rows a passkey will sign, shown before the prompt (entity-page.js `signing`). -#}
+<v-dialog :model-value="!!staged" width="560" @update:model-value="v => { if (!v) staged = null }"><v-card border v-if="staged">
+  <v-card-item prepend-icon="ti ti-fingerprint"><v-card-title>Confirm with your passkey</v-card-title>
+    <v-card-subtitle>${ staged.title }. One assertion signs ${ plural(staged.data.rows.length, 'row') }.</v-card-subtitle></v-card-item>
+  <div class="v-table v-table--density-compact" style="max-height: 46vh; overflow: auto"><div class="v-table__wrapper"><table>
+    <thead><tr><th>Statement</th><th>On</th><th>Value</th><th>Hash</th></tr></thead>
+    <tbody><tr v-for="r in staged.data.rows" :key="r.hash"><td>${ human(r.prop) }</td><td class="mono">${ r.subject }</td><td><bdi dir="auto">${ r.summary }</bdi></td><td class="mono" :title="r.hash">${ r.hash.slice(0, 10) }</td></tr></tbody>
+  </table></div></div>
+  <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="staged = null">Cancel</v-btn><v-btn color="primary" prepend-icon="ti ti-key" :loading="signBusy" @click="confirmSign">Use passkey</v-btn></v-card-actions></v-card></v-dialog>
+<v-snackbar v-model="snack.show" timeout="4000">${ snack.text }</v-snackbar>

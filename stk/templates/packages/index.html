@@ -1,0 +1,67 @@
+{% extends 'layout.html' %}
+{% block content %}
+    <v-container class="py-6">
+        <v-card class="mb-6">
+            <v-card-title class="pa-6 pb-2">New brief</v-card-title>
+            <v-card-text class="pa-6 d-flex flex-wrap" style="gap: 12px;">
+                <v-text-field v-model="title" label="Title" density="comfortable" hide-details style="min-width: 240px;"></v-text-field>
+                <v-select v-model="audience" :items="boot.audiences" label="Audience" density="comfortable" hide-details style="max-width: 200px;"></v-select>
+                <v-btn color="primary" prepend-icon="ti ti-plus" :disabled="!title || !audience" :loading="busy" @click="create">Create</v-btn>
+            </v-card-text>
+        </v-card>
+        <v-card>
+            <v-card-title class="pa-6 pb-2">Briefs in ${ caseSel || 'all investigations' }</v-card-title>
+            <v-list v-if="briefs.length">
+                <v-list-item v-for="b in briefs" :key="b.id" :href="'/packages/brief/' + b.id">
+                    <v-list-item-title>${ b.title }</v-list-item-title>
+                    <v-list-item-subtitle>${ b.audience } . ${ b.sentences } sentences . ${ b.created_at.slice(0, 10) }</v-list-item-subtitle>
+                </v-list-item>
+            </v-list>
+            <v-card-text v-else class="pa-6 text-medium-emphasis">${ loaded ? 'No briefs in ' + (caseSel || 'any investigation') + ' yet.' : 'Loading' }</v-card-text>
+        </v-card>
+        <v-snackbar v-model="error.show" color="error">${ error.text }</v-snackbar>
+    </v-container>
+{% endblock %}
+
+{% block js %}
+    <script type="application/json" id="boot">{{ boot|tojson|safe }}</script>
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+        const vuetify = createVuetify(config.vuetifyConfig);
+
+        const app = createApp({
+            delimiters: config.delimiters,
+            mixins: [layoutMixin],
+            data() {
+                return {
+                    boot: JSON.parse(document.getElementById('boot').textContent),
+                    briefs: [], loaded: false, title: '', audience: 'family', busy: false, error: {show: false, text: ''},
+                };
+            },
+            mounted() { this.load(); },
+            methods: {
+                // Shell contract: follow the top bar's investigation switcher.
+                useCase() { this.load(); },
+                async load() {
+                    try {
+                        this.briefs = (await axios.get('/api/packages/briefs', {params: {investigation: this.caseSel || undefined}})).data.items;
+                    } catch (e) {
+                        this.error = {show: true, text: e.response?.data?.message || e.message};
+                    } finally { this.loaded = true; }
+                },
+                async create() {
+                    this.busy = true;
+                    try {
+                        const {data} = await axios.post('/api/packages/briefs', {item: {title: this.title, audience: this.audience}});
+                        window.location = '/packages/brief/' + data.id;
+                    } catch (e) {
+                        this.error = {show: true, text: e.response?.data?.message || e.message};
+                    } finally { this.busy = false; }
+                },
+            },
+        });
+        registerStkComponents(app);
+        app.use(vuetify).mount('#app');
+    </script>
+{% endblock %}

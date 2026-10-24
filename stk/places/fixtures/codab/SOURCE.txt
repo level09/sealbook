@@ -1,0 +1,12 @@
+Subset of the OCHA Common Operational Dataset, Syria administrative boundaries
+(COD-AB v02, valid on 2020-12-17), from https://data.humdata.org/dataset/cod-ab-syr
+(syr_admin_boundaries.geojson.zip, sha256 448f0603d6c2866c095bf684ba7c7d3875656a3a145a7bba1cd5516ffcf7ee29,
+fetched 2026-10-24).
+
+Source: United Nations Cartographic Section (UNCS) and OCHA ROSC.
+Licence: Creative Commons Attribution 3.0 IGO (CC BY 3.0 IGO).
+
+Changed for tests: only Damascus, Aleppo, Rural Damascus and Homs (admin 1 and their
+admin 2 areas), simplified with ogr2ogr -simplify 0.01, coordinates rounded to four
+decimals, attributes limited to pcode, names, valid_on and version. Do not use these
+shapes for analysis; import the full dataset with `stk places boundaries`.

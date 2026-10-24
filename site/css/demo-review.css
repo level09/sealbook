@@ -1,0 +1,23 @@
+.rv-label { margin: 0 0 10px; font-size: 12.5px; color: var(--ink-3); }
+.rv-claim { display: grid; gap: 10px; }
+.rv-file { margin: 0; font-size: 13px; color: var(--ink-3); overflow-wrap: anywhere; }
+.rv-chip { justify-self: start; transition: background .3s, color .3s, border-color .3s; }
+.rv-span { margin: 0; padding: 8px 10px; background: var(--paper-2); border-radius: 8px; line-height: 2; font-size: 15px; overflow-wrap: anywhere; }
+.rv-span mark { padding: 1px 3px; border-radius: 3px; }
+.rv-status { margin: 0; font-size: 14px; color: var(--ink-2); }
+.rv-steps { display: grid; gap: 10px; margin: 12px 0; justify-items: start; }
+.rv-steps > .card { justify-self: stretch; }
+.rv-thread { background: var(--paper-2); }
+.rv-private { margin: 0 0 8px; font-size: 13px; color: var(--ink-2); }
+.rv-msgs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+.rv-msgs .mono { font-size: 12.5px; color: var(--ink-3); margin-right: 6px; }
+.rv-holdwrap { display: grid; gap: 4px; }
+.rv-hold { position: relative; overflow: hidden; user-select: none; -webkit-user-select: none; touch-action: none; }
+.rv-steps .quiet:active { transform: translateY(1px); }
+.rv-fill { position: absolute; inset: 0; background: var(--ink); opacity: .16; transform: scaleX(0); transform-origin: left; transition: transform 0s linear; }
+.rv-hold-t { position: relative; }
+.rv-h { font: 500 14px var(--sans); margin: 14px 0 6px; }
+.rv-log { margin: 0; padding-left: 20px; font-size: 14px; display: grid; gap: 4px; }
+.rv-log:empty::before { content: "None yet."; color: var(--ink-3); margin-left: -20px; }
+.rv-log .mono { font-size: 12.5px; color: var(--ink-3); }
+.rv-span mark { unicode-bidi: isolate; }

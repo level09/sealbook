@@ -1,0 +1,241 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ asset('maplibre/maplibre-gl.css') }}">
+<link rel="stylesheet" href="{{ asset('css/monitor.css') }}">
+<style>
+    .mon.ppl { height: auto; min-height: calc(100dvh - var(--v-layout-top, 64px)); display: block; overflow: visible; padding: 16px; }
+    .ppl-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; }
+    @media (max-width: 900px) { .ppl-grid { grid-template-columns: 1fr; } }
+    .ppl-card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin-bottom: 16px; }
+    .ppl-card h2 { font-size: 13px; font-weight: 600; margin: 0 0 8px; }
+    .ppl-map { position: relative; height: 360px; border-radius: 4px; overflow: hidden; }
+    .ppl-line { display: flex; gap: 8px; align-items: baseline; padding: 4px 6px; border-radius: 4px; cursor: pointer; width: 100%; text-align: start; background: none; border: 0; }
+    .ppl-line:hover, .ppl-line:focus-visible { background: var(--wash); }
+    .ppl-line .when { min-width: 92px; color: var(--ink-3); font-family: var(--mono); font-size: 12px; }
+    .ppl-gap { margin: 4px 0 4px 6px; padding: 4px 8px; border-inline-start: 2px dashed var(--line-strong); color: var(--ink-3); }
+    .ppl-fork { color: var(--fork); font-weight: 600; }
+    .ppl-tag { font-size: 11px; padding: 0 6px; border-radius: 8px; border: 1px solid var(--line-strong); color: var(--ink-2); }
+    .ppl-side { position: fixed; inset-block: var(--v-layout-top, 64px) 0; inset-inline-end: 0; width: min(420px, 100vw); background: var(--panel); border-inline-start: 1px solid var(--line); padding: 16px; overflow: auto; z-index: 5; }
+    .ppl-side dl { display: grid; grid-template-columns: 110px 1fr; gap: 4px 8px; }
+    .ppl-side dt { color: var(--ink-3); }
+    .ppl-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .ppl-head h1 { font-size: 16px; margin: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mon ppl" ref="mon">
+    <div class="ppl-head">
+        <a href="/people" class="muted"><i class="ti ti-arrow-left"></i> People</a>
+        <h1 v-if="title" dir="auto">${ title }</h1>
+        <h1 v-else>Person <span class="mono">${ boot.person.slice(0, 8) }</span></h1>
+        <span v-if="p" class="muted">${ p.members.length } mention${ p.members.length === 1 ? '' : 's' } linked by accepted same_as</span>
+        <span class="bar-spacer"></span>
+        <a :href="storyHref" class="ppl-tag"><i class="ti ti-timeline"></i> Open story</a>
+        <button class="ppl-tag" @click="research = true"><i class="ti ti-world-search"></i> Research the web</button>
+        <button v-if="hasMasked" class="ppl-tag" @click="revealAll"><i class="ti ti-eye"></i> Reveal personal data (logged)</button>
+        <label class="bar-toggle"><input type="radio" value="draft" v-model="projection" @change="load"> Draft (every non-rejected statement)</label>
+        <label class="bar-toggle"><input type="radio" value="factual" v-model="projection" @change="load"> Factual (accepted, corroborated)</label>
+    </div>
+    <div v-if="error" class="ppl-card">${ error }</div>
+    <div v-if="p && p.erasures.length" class="ppl-card"><i class="ti ti-eraser"></i> Erased on ${ p.erasures[0].at.slice(0, 10) }: values about this person are deleted; statements and chain remain.</div>
+
+    <div class="ppl-card" v-if="p">
+        <div class="d-flex align-center"><h2>Track</h2><span class="muted ms-2 mb-2">dated places, every tier in this projection</span><span class="bar-spacer"></span><a :href="storyHref" class="mb-2"><i class="ti ti-timeline"></i> Full story</a></div>
+        <story-timeline v-if="trackRows[0].points.length" compact :rows="trackRows" :from="trackRange[0]" :to="trackRange[1]" @pick="pt => open(pt.id)"></story-timeline>
+        <div v-else class="muted">No dated places.</div>
+    </div>
+
+    <div class="ppl-grid">
+        <div>
+            <div class="ppl-card">
+                <h2>Track on the map</h2>
+                <div class="ppl-map"><div class="map-canvas" ref="map"></div></div>
+            </div>
+            <div class="ppl-card" v-if="p">
+                <h2>Facts by property</h2>
+                <div v-if="!factProps.length" class="muted">Nothing in this projection.</div>
+                <div v-for="prop in factProps" :key="prop" class="mb-2">
+                    <div class="muted">${ prop.replace(/_/g, ' ') }</div>
+                    <button v-for="r in p.facts[prop]" :key="r.id" class="ppl-line" @click="open(r.id)">
+                        <i class="swatch" :class="'t-' + r.tier" :title="r.tier"></i>
+                        <span class="when">${ r.when || 'undated' }</span>
+                        <span dir="auto">${ label(r) }</span>
+                        <span class="ppl-tag">${ r.tier }</span>
+                        <span class="muted">${ r.actor.label }</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div v-if="p">
+            <div class="ppl-card">
+                <h2>Track in time</h2>
+                <div v-if="!p.track.steps.length" class="muted">No dated places.</div>
+                <template v-for="(s, i) in p.track.steps" :key="s.date">
+                    <div v-if="s.gap_days > p.gap_days" class="ppl-gap">No evidence for ${ s.gap_days } days</div>
+                    <button v-for="id in s.ids" :key="id" class="ppl-line" @click="open(id)">
+                        <span class="when">${ s.date }</span>
+                        <span dir="auto">${ point(id) }</span>
+                        <span v-if="s.fork" class="ppl-fork" title="Statements place the person in two places on this day"><i class="ti ti-git-fork"></i> fork</span>
+                    </button>
+                </template>
+                <div v-if="p.track.gap_after" class="ppl-gap">Nothing known after ${ p.track.gap_after }</div>
+            </div>
+            <div class="ppl-card">
+                <h2>Forks</h2>
+                <div v-if="!p.forks.length" class="muted">No conflicting values.</div>
+                <div v-for="f in p.forks" :key="f.statements.join()" class="mb-2">
+                    <div class="ppl-fork"><i class="ti ti-git-fork"></i> ${ f.prop.replace(/_/g, ' ') } ${ f.from }${ f.to !== f.from ? ' to ' + f.to : '' }</div>
+                    <button v-for="(id, j) in f.statements" :key="id" class="ppl-line" @click="open(id)">
+                        <span dir="auto">${ f.values[j] || point(id) }</span><span class="mono muted">${ id.slice(0, 8) }</span>
+                    </button>
+                </div>
+            </div>
+            <div class="ppl-card">
+                <h2>Candidate duplicates</h2>
+                <div class="muted mb-2">Proposals with their evidence. Nothing here is merged until a human links them.</div>
+                <div v-if="!p.duplicates.length" class="muted">None.</div>
+                <div v-for="d in p.duplicates" :key="d.person" class="mb-3">
+                    <a :href="'/people/' + d.person" class="mono">person ${ d.person.slice(0, 8) }</a>
+                    <span v-if="d.not_same" class="ppl-tag">marked not the same</span>
+                    <div>Agree: ${ d.agree.join(', ') || 'nothing' } · Differ: ${ d.differ.join(', ') || 'nothing' }</div>
+                    <button v-for="pair in d.names" :key="pair.join()" class="ppl-line" @click="open(pair[1])">
+                        <span>name match</span><span class="mono muted">${ pair[0].slice(0, 8) } and ${ pair[1].slice(0, 8) }</span>
+                    </button>
+                </div>
+            </div>
+            <div class="ppl-card" v-if="p.conflicts.length">
+                <h2>Identity conflicts</h2>
+                <button v-for="c in p.conflicts" :key="c.statement" class="ppl-line" @click="open(c.statement)">
+                    <span class="ppl-fork">same_as refused</span>
+                    <span class="muted">a not_same says ${ c.join.map(x => x.slice(0, 8)).join(' and ') } are different people</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <aside v-if="side" class="ppl-side" aria-label="Statement">
+        <div class="d-flex align-center mb-2">
+            <strong>Statement</strong><span class="bar-spacer"></span>
+            <a href="/monitor" class="me-3">Monitor</a>
+            <button @click="side = null" aria-label="Close"><i class="ti ti-x"></i></button>
+        </div>
+        <div v-if="!side.data" class="muted">${ side.error || 'Loading' }</div>
+        <dl v-else>
+            <dt>Property</dt><dd>${ side.data.prop }</dd>
+            <dt>Value</dt>
+            <dd dir="auto">${ label(side.data) }
+                <button v-if="side.data.masked && !side.data.erased" class="ppl-tag" @click="reveal">Reveal (logged)</button>
+            </dd>
+            <dt>Tier</dt><dd>${ side.data.tier } (${ side.data.reason })</dd>
+            <dt>When</dt><dd>${ side.data.when || 'undated' }</dd>
+            <dt>Actor</dt><dd>${ side.data.actor.label }</dd>
+            <dt>Document</dt><dd>${ side.data.doc ? side.data.doc.file : 'none' }</dd>
+            <dt>Span</dt><dd class="mono">${ side.data.span ? JSON.stringify(side.data.span) : 'none' }</dd>
+            <dt>Evidence</dt><dd>${ side.data.evidence.join(', ') || 'none' }</dd>
+            <dt>Signature</dt><dd>${ side.data.signature.by }${ side.data.signature.verifies === true ? ', verifies' : side.data.signature.verifies === false ? ', does not verify' : '' }</dd>
+            <dt>Chain</dt><dd class="mono">${ side.data.chain ? 'seq ' + side.data.chain.seq : 'not chained' }</dd>
+            <dt>Hash</dt><dd class="mono" style="word-break: break-all;">${ side.data.hash }</dd>
+        </dl>
+    </aside>
+</div>
+<research-drawer v-model="research" :scope="'person:' + boot.person" :case="caseSel" :cases="caseList"></research-drawer>
+{% endblock %}
+
+{% block js %}
+<script type="application/json" id="people-boot">{{ boot|tojson|safe }}</script>
+<script type="module">
+import {createMap, updateMap, retheme} from '/static/js/monitor/mapview.js';
+import {PROP, StoryTimeline, timelineRows} from '/static/js/stories.js';
+import {ResearchDrawer} from '/static/js/components/ResearchDrawer.js';
+
+const {createApp} = Vue;
+const {createVuetify} = Vuetify;
+const vuetify = createVuetify(config.vuetifyConfig);
+const boot = JSON.parse(document.getElementById('people-boot').textContent);
+
+const app = createApp({
+  mixins: [layoutMixin],
+  delimiters: config.delimiters,
+  data() {
+    return {boot, projection: 'draft', p: null, error: null, side: null, revealed: {}, research: false};
+  },
+  computed: {
+    factProps() { return this.p ? Object.keys(this.p.facts).sort() : []; },
+    title() {
+      const names = (this.p && this.p.facts.name) || [];
+      const shown = names.map(r => this.label(r)).filter(n => n && n !== 'masked' && n !== 'erased');
+      return [...new Set(shown)].join(' / ');
+    },
+    hasMasked() {
+      return !!this.p && Object.values(this.p.facts).flat().some(r => r.masked && !(r.id in this.revealed));
+    },
+    points() { return Object.fromEntries((this.p ? this.p.points : []).map(pt => [pt.id, pt])); },
+    storyHref() { return `/stories?lens=person&ref=${boot.person}`; },
+    trackRows() {
+      const key = `person:${this.p.person}`;
+      const pts = Object.keys(PROP).flatMap(prop => this.p.facts[prop] || []).filter(r => r.from && r.display)
+        .map(r => ({id: r.id, subject: key, prop: r.prop, place: r.display, from: r.from, to: r.to || r.from, tier: r.tier, agent: r.actor.agent, inherited: r.inherited}));
+      return timelineRows([{key, label: this.title || 'Track', steps: this.p.track.steps, gaps: this.p.gaps}], pts);
+    },
+    trackRange() {
+      const pts = this.trackRows[0].points, lo = Math.min(...pts.map(x => Date.parse(x.from))), hi = Math.max(...pts.map(x => Date.parse(x.to)));
+      const pad = Math.max(10 * 864e5, (hi - lo) / 20);
+      return [new Date(lo - pad).toISOString().slice(0, 10), new Date(hi + pad).toISOString().slice(0, 10)];
+    },
+  },
+  methods: {
+    label(r) {
+      if (r.erased) return 'erased';
+      const id = r.id || (this.side && this.side.id);
+      return r.masked ? (this.revealed[id] ?? 'masked') : r.display;
+    },
+    async revealAll() {
+      try {
+        this.revealed = (await axios.post(`/api/people/${boot.person}/reveal`, {})).data.values;
+      } catch (e) { this.error = e.response?.data?.message || e.message; }
+    },
+    point(id) { const pt = this.points[id]; return pt ? `${pt.prop.replace(/_/g, ' ')}: ${pt.place}` : id.slice(0, 8); },
+    async load() {
+      try {
+        this.p = (await axios.get(`/api/people/${boot.person}`, {params: {projection: this.projection}})).data;
+        this.error = null;
+      } catch (e) {
+        this.error = e.response && e.response.status === 404 ? 'Nothing is recorded about this person.' : 'Could not load this person.';
+        return;
+      }
+      const subject = `person:${this.p.person}`;
+      updateMap(this._map, {points: this.p.points, tracks: {[subject]: this.p.track}, places: this.p.places},
+                {showRejected: false, subject});
+    },
+    async open(id) {
+      this.side = {id, data: null, error: null};
+      try {
+        this.side.data = (await axios.get(`/api/monitor/statement/${id}`)).data;
+      } catch (e) {
+        this.side.error = 'Could not load the statement';
+      }
+    },
+    async reveal() {
+      const {data} = await axios.post('/api/monitor/reveal', {item: {statement: this.side.id}});
+      Object.assign(this.side.data, {display: data.display, masked: false});
+    },
+  },
+  mounted() {
+    this._map = createMap(this.$refs.map, this.$refs.mon, {
+      onPoint: id => this.open(id),
+      onCluster: ids => this.open(ids[0]),
+    });
+    this.$watch(() => this.$vuetify.theme.global.name, () => this.$nextTick(() => retheme(this._map)));
+    window.addEventListener('keydown', e => { if (e.key === 'Escape') this.side = null; });
+    this.load();
+  },
+});
+
+app.component('story-timeline', StoryTimeline);
+app.component('research-drawer', ResearchDrawer);
+registerStkComponents(app);
+app.use(vuetify).mount('#app');
+</script>
+{% endblock %}

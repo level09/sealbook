@@ -1,0 +1,594 @@
+{
+ "corpus": {
+  "text": [
+   "ar_market.txt",
+   "ar_water.txt",
+   "ar_school.txt",
+   "ar_clinic.txt",
+   "ar_snow.txt",
+   "ar_post.txt",
+   "sy_bakery.txt",
+   "sy_bus.txt",
+   "sy_kibbeh.txt",
+   "sy_football.txt",
+   "sy_power.txt",
+   "en_library.txt",
+   "en_ferry.txt",
+   "en_weather.txt"
+  ],
+  "image": [
+   "aleppo_checkpoint.png",
+   "aleppo_souk.jpg",
+   "scan_page.png"
+  ],
+  "audio": [
+   "speech.wav",
+   "speech_excerpt.wav",
+   "tone.wav"
+  ]
+ },
+ "speech": {
+  "duration_ms": 42600,
+  "sentences": [
+   {
+    "text": "صباح الخير، هي رسالة صوتية قصيرة عن رحلة الأسبوع الجاي عالساحل.",
+    "start_ms": 0,
+    "end_ms": 8200
+   },
+   {
+    "text": "رح ننطلق من كراج الباصات الساعة سبعة الصبح.",
+    "start_ms": 9100,
+    "end_ms": 14800
+   },
+   {
+    "text": "جيبوا معكن جاكيت خفيف لأنو الجو برد جنب البحر.",
+    "start_ms": 15700,
+    "end_ms": 22750
+   },
+   {
+    "text": "رح نوقف بضيعة صغيرة لنشتري زيتون وجبنة بلدية.",
+    "start_ms": 23650,
+    "end_ms": 30850
+   },
+   {
+    "text": "بعد الغدا رح نزور القلعة القديمة وبعدين نتمشى عالبحر.",
+    "start_ms": 31750,
+    "end_ms": 37700
+   },
+   {
+    "text": "الكل رح يرجع عالمدينة قبل نص الليل.",
+    "start_ms": 38600,
+    "end_ms": 42600
+   }
+  ],
+  "excerpt": {
+   "source": "speech.wav",
+   "start_ms": 14200,
+   "end_ms": 39200
+  }
+ },
+ "scan": {
+  "size": [
+   1200,
+   600
+  ],
+  "line_bboxes": {
+   "0": [
+    491,
+    61,
+    1118,
+    152
+   ],
+   "1": [
+    545,
+    201,
+    1120,
+    291
+   ],
+   "2": [
+    621,
+    341,
+    1123,
+    430
+   ]
+  }
+ },
+ "queries": [
+  {
+   "id": "q01",
+   "type": "msa",
+   "text": "ما سعر الطماطم في السوق؟",
+   "relevant": [
+    {
+     "file": "ar_market.txt",
+     "unit": "chars",
+     "start": 58,
+     "end": 88,
+     "expected": "بلغ سعر كيلو الطماطم ٣٥٠ ليرة."
+    }
+   ]
+  },
+  {
+   "id": "q02",
+   "type": "msa",
+   "text": "انقطاع المياه عن الحي",
+   "relevant": [
+    {
+     "file": "ar_water.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 43,
+     "expected": "انقطعت المياه عن حي النهضة لمدة ثلاثة أيام."
+    }
+   ]
+  },
+  {
+   "id": "q03",
+   "type": "msa",
+   "text": "عيادة متنقلة في القرية",
+   "relevant": [
+    {
+     "file": "ar_clinic.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 42,
+     "expected": "افتتحت عيادة متنقلة في قرية الوادي الأخضر."
+    }
+   ]
+  },
+  {
+   "id": "q04",
+   "type": "msa",
+   "text": "إغلاق الطريق السريع بسبب الثلج",
+   "relevant": [
+    {
+     "file": "ar_snow.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 45,
+     "expected": "أغلق الطريق السريع بين المدينتين بسبب الثلوج."
+    }
+   ]
+  },
+  {
+   "id": "q05",
+   "type": "msa",
+   "text": "بداية العام الدراسي في أيلول",
+   "relevant": [
+    {
+     "file": "ar_school.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 72,
+     "expected": "يَبْدَأُ العَامُ الدِّرَاسِيُّ فِي الأُسْبُوعِ الأَوَّلِ مِنْ أَيْلُولَ."
+    }
+   ]
+  },
+  {
+   "id": "q06",
+   "type": "msa",
+   "text": "كم مريضا تعالج العيادة كل يوم",
+   "relevant": [
+    {
+     "file": "ar_clinic.txt",
+     "unit": "chars",
+     "start": 43,
+     "end": 72,
+     "expected": "تعالج العيادة ٤٠ مريضا يوميا."
+    }
+   ]
+  },
+  {
+   "id": "q07",
+   "type": "msa",
+   "text": "تأخر وصول البريد إلى المركز الثقافي",
+   "relevant": [
+    {
+     "file": "ar_post.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 46,
+     "expected": "وصل البريد إلى المركز الثقافي متأخرا ٢٠ دقيقة."
+    }
+   ]
+  },
+  {
+   "id": "q08",
+   "type": "dialect",
+   "text": "ليش تأخر الباص",
+   "relevant": [
+    {
+     "file": "sy_bus.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 36,
+     "expected": "الباص تأخر ساعة ونص وما حدا عرف ليش."
+    }
+   ]
+  },
+  {
+   "id": "q09",
+   "type": "dialect",
+   "text": "ما في خبز بالفرن والطابور طويل",
+   "relevant": [
+    {
+     "file": "sy_bakery.txt",
+     "unit": "chars",
+     "start": 20,
+     "end": 54,
+     "expected": "الخبز مو متوفر والطابور طويل كتير."
+    }
+   ]
+  },
+  {
+   "id": "q10",
+   "type": "dialect",
+   "text": "ستي عم تعمل كبة",
+   "relevant": [
+    {
+     "file": "sy_kibbeh.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 26,
+     "expected": "ستي عم تحضّر كبة بالصينية."
+    }
+   ]
+  },
+  {
+   "id": "q11",
+   "type": "dialect",
+   "text": "نتيجة مباراة حارتنا بالملعب",
+   "relevant": [
+    {
+     "file": "sy_football.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 52,
+     "expected": "مبارح لعبوا ع الملعب الترابي وغلب فريق حارتنا ٣ - ١."
+    }
+   ]
+  },
+  {
+   "id": "q12",
+   "type": "dialect",
+   "text": "الكهربا مقطوعة وعم نشحن الموبايل",
+   "relevant": [
+    {
+     "file": "sy_power.txt",
+     "unit": "chars",
+     "start": 32,
+     "end": 64,
+     "expected": "هلق عم نشحن التلفون عند الجيران."
+    }
+   ]
+  },
+  {
+   "id": "q13",
+   "type": "dialect",
+   "text": "السواق قال المازوت خلص",
+   "relevant": [
+    {
+     "file": "sy_bus.txt",
+     "unit": "chars",
+     "start": 37,
+     "end": 63,
+     "expected": "السواق قال إن المازوت خلص."
+    }
+   ]
+  },
+  {
+   "id": "q14",
+   "type": "cross",
+   "text": "bread shortage and a long queue at the bakery",
+   "relevant": [
+    {
+     "file": "sy_bakery.txt",
+     "unit": "chars",
+     "start": 20,
+     "end": 54,
+     "expected": "الخبز مو متوفر والطابور طويل كتير."
+    }
+   ]
+  },
+  {
+   "id": "q15",
+   "type": "cross",
+   "text": "water outage in the neighbourhood for three days",
+   "relevant": [
+    {
+     "file": "ar_water.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 43,
+     "expected": "انقطعت المياه عن حي النهضة لمدة ثلاثة أيام."
+    }
+   ]
+  },
+  {
+   "id": "q16",
+   "type": "cross",
+   "text": "mobile clinic in a village",
+   "relevant": [
+    {
+     "file": "ar_clinic.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 42,
+     "expected": "افتتحت عيادة متنقلة في قرية الوادي الأخضر."
+    }
+   ]
+  },
+  {
+   "id": "q17",
+   "type": "cross",
+   "text": "grandmother making kibbeh",
+   "relevant": [
+    {
+     "file": "sy_kibbeh.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 26,
+     "expected": "ستي عم تحضّر كبة بالصينية."
+    }
+   ]
+  },
+  {
+   "id": "q18",
+   "type": "cross",
+   "text": "shu fi bil forn el yom",
+   "relevant": [
+    {
+     "file": "sy_bakery.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 19,
+     "expected": "شو في بالفرن اليوم؟"
+    }
+   ]
+  },
+  {
+   "id": "q19",
+   "type": "cross",
+   "text": "مكتبة المدينة تفتح أبوابها بعد إصلاح السقف",
+   "relevant": [
+    {
+     "file": "en_library.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 56,
+     "expected": "The city library reopened on Monday after a roof repair."
+    }
+   ]
+  },
+  {
+   "id": "q20",
+   "type": "cross",
+   "text": "ferry schedule at the harbor",
+   "relevant": [
+    {
+     "file": "en_ferry.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 56,
+     "expected": "The harbor ferry leaves at 6:40 and returns before noon."
+    }
+   ]
+  },
+  {
+   "id": "q21",
+   "type": "cross",
+   "text": "كمية المطر التي سجلتها محطة الطقس",
+   "relevant": [
+    {
+     "file": "en_weather.txt",
+     "unit": "chars",
+     "start": 0,
+     "end": 63,
+     "expected": "A weather station on the hill recorded 12 mm of rain overnight."
+    }
+   ]
+  },
+  {
+   "id": "q22",
+   "type": "text_to_image",
+   "text": "حاجز على الطريق وكتل إسمنتية بألوان العلم وصورة ممزقة",
+   "relevant": [
+    {
+     "file": "aleppo_checkpoint.png",
+     "unit": "whole",
+     "expected": "abandoned checkpoint, concrete barriers"
+    }
+   ]
+  },
+  {
+   "id": "q23",
+   "type": "text_to_image",
+   "text": "a roadside checkpoint with concrete barriers painted in flag colours and a torn portrait",
+   "relevant": [
+    {
+     "file": "aleppo_checkpoint.png",
+     "unit": "whole",
+     "expected": "abandoned checkpoint, concrete barriers"
+    }
+   ]
+  },
+  {
+   "id": "q24",
+   "type": "text_to_image",
+   "text": "سوق مسقوف مدمر وأنقاض في الممر وأقواس منهارة",
+   "relevant": [
+    {
+     "file": "aleppo_souk.jpg",
+     "unit": "whole",
+     "expected": "ruined covered market lane"
+    }
+   ]
+  },
+  {
+   "id": "q25",
+   "type": "text_to_image",
+   "text": "a ruined covered market lane with rubble and collapsed arches",
+   "relevant": [
+    {
+     "file": "aleppo_souk.jpg",
+     "unit": "whole",
+     "expected": "ruined covered market lane"
+    }
+   ]
+  },
+  {
+   "id": "q26",
+   "type": "text_to_scan",
+   "text": "عدد الأسر المسجلة مئتان واثنتا عشرة أسرة",
+   "relevant": [
+    {
+     "file": "scan_page.png",
+     "unit": "bbox",
+     "bbox": [
+      545,
+      201,
+      1120,
+      291
+     ],
+     "expected": "عدد الأسر المسجلة مئتان واثنتا عشرة أسرة"
+    }
+   ]
+  },
+  {
+   "id": "q27",
+   "type": "text_to_scan",
+   "text": "تم تسليم مفاتيح المخزن إلى أبي سليم",
+   "relevant": [
+    {
+     "file": "scan_page.png",
+     "unit": "bbox",
+     "bbox": [
+      621,
+      341,
+      1123,
+      430
+     ],
+     "expected": "تم تسليم مفاتيح المخزن إلى أبي سليم"
+    }
+   ]
+  },
+  {
+   "id": "q28",
+   "type": "text_to_audio",
+   "text": "موعد انطلاق الحافلة من المحطة صباحا",
+   "relevant": [
+    {
+     "file": "speech.wav",
+     "unit": "ms",
+     "start": 9100,
+     "end": 14800,
+     "expected": "رح ننطلق من كراج الباصات الساعة سبعة الصبح."
+    }
+   ]
+  },
+  {
+   "id": "q29",
+   "type": "text_to_audio",
+   "text": "ماذا نحضر معنا لأن الجو بارد قرب البحر",
+   "relevant": [
+    {
+     "file": "speech.wav",
+     "unit": "ms",
+     "start": 15700,
+     "end": 22750,
+     "expected": "جيبوا معكن جاكيت خفيف لأنو الجو برد جنب البحر."
+    },
+    {
+     "file": "speech_excerpt.wav",
+     "unit": "ms",
+     "start": 1500,
+     "end": 8550,
+     "expected": "جيبوا معكن جاكيت خفيف لأنو الجو برد جنب البحر.",
+     "excerpt_offset_ms": 14200
+    }
+   ]
+  },
+  {
+   "id": "q30",
+   "type": "text_to_audio",
+   "text": "شراء الزيتون والجبنة من قرية صغيرة",
+   "relevant": [
+    {
+     "file": "speech.wav",
+     "unit": "ms",
+     "start": 23650,
+     "end": 30850,
+     "expected": "رح نوقف بضيعة صغيرة لنشتري زيتون وجبنة بلدية."
+    },
+    {
+     "file": "speech_excerpt.wav",
+     "unit": "ms",
+     "start": 9450,
+     "end": 16650,
+     "expected": "رح نوقف بضيعة صغيرة لنشتري زيتون وجبنة بلدية.",
+     "excerpt_offset_ms": 14200
+    }
+   ]
+  },
+  {
+   "id": "q31",
+   "type": "text_to_audio",
+   "text": "visiting the old castle after lunch and walking on the beach",
+   "relevant": [
+    {
+     "file": "speech.wav",
+     "unit": "ms",
+     "start": 31750,
+     "end": 37700,
+     "expected": "بعد الغدا رح نزور القلعة القديمة وبعدين نتمشى عالبحر."
+    },
+    {
+     "file": "speech_excerpt.wav",
+     "unit": "ms",
+     "start": 17550,
+     "end": 23500,
+     "expected": "بعد الغدا رح نزور القلعة القديمة وبعدين نتمشى عالبحر.",
+     "excerpt_offset_ms": 14200
+    }
+   ]
+  },
+  {
+   "id": "q32",
+   "type": "text_to_audio",
+   "text": "a steady electronic beep tone",
+   "relevant": [
+    {
+     "file": "tone.wav",
+     "unit": "ms",
+     "start": 0,
+     "end": 5000,
+     "expected": "non-speech tone"
+    }
+   ]
+  },
+  {
+   "id": "q33",
+   "type": "negative",
+   "text": "جدول مباريات كأس العالم للأندية",
+   "relevant": []
+  },
+  {
+   "id": "q34",
+   "type": "negative",
+   "text": "recipe for a chocolate cake with hazelnuts",
+   "relevant": []
+  },
+  {
+   "id": "q35",
+   "type": "negative",
+   "text": "التعرفة الجمركية على استيراد السيارات",
+   "relevant": []
+  },
+  {
+   "id": "q36",
+   "type": "negative",
+   "text": "deadline for quarterly tax filing",
+   "relevant": []
+  }
+ ]
+}

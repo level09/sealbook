@@ -1,0 +1,109 @@
+{
+  "about": "Synthetic missing-person case for v0 acceptance. Every person is invented; Branch 999 and Central Prison K are fictional. Places are public geography. Files are generated in wave 1 from this spec; expected facts are what extraction must find, with the span each must cite.",
+  "investigation": "case-demo-01",
+  "persons": {
+    "P1": {
+      "role": "missing person (the subject of the request)",
+      "spellings": ["يوسف خالد العلي", "Yousef Khaled Al-Ali", "Yusuf Khalid al Ali", "يوسف خالد علي"],
+      "father_name": "خالد",
+      "mother_name": "فاطمة",
+      "birth_date": "1991-03-14",
+      "place_of_birth": "دوما"
+    },
+    "P2": {
+      "role": "exact-name twin: must never merge with P1",
+      "spellings": ["يوسف خالد العلي"],
+      "father_name": "خالد",
+      "mother_name": "سعاد",
+      "birth_date": "1985-11-02",
+      "place_of_birth": "حمص"
+    },
+    "W1": {"role": "witness", "spellings": ["سامر"]}
+  },
+  "documents": [
+    {
+      "key": "register",
+      "file": "register_page.png",
+      "kind": "handwritten detention register page, Arabic, two entries (P1 and P2)",
+      "origin": "device:scanner-01",
+      "doc_type": "detention_register",
+      "sensitivity": "sensitive",
+      "document_date": "2013-05-03",
+      "expect": [
+        {"person": "P1", "prop": "name", "value": "يوسف خالد العلي", "span": "row 1, name column"},
+        {"person": "P1", "prop": "father_name", "value": "خالد", "span": "row 1"},
+        {"person": "P1", "prop": "mother_name", "value": "فاطمة", "span": "row 1"},
+        {"person": "P1", "prop": "birth_date", "value": "1991", "span": "row 1, year only"},
+        {"person": "P1", "prop": "arrested_at", "value": "حرستا", "valid": "2013-05-02", "span": "row 1, place of arrest"},
+        {"person": "P1", "prop": "detention_branch", "value": "الفرع 999", "span": "page header"},
+        {"person": "P2", "prop": "name", "value": "يوسف خالد العلي", "span": "row 2"},
+        {"person": "P2", "prop": "mother_name", "value": "سعاد", "span": "row 2"},
+        {"person": "P2", "prop": "birth_date", "value": "1985", "span": "row 2"}
+      ]
+    },
+    {
+      "key": "transfer",
+      "file": "transfer_order.pdf",
+      "kind": "printed transfer order, Arabic, letterhead and registry stamp",
+      "origin": "channel:partner-a/batch-7",
+      "doc_type": "transfer_order",
+      "sensitivity": "sensitive",
+      "document_date": "2013-09-17",
+      "ingest_after_watch": true,
+      "expect": [
+        {"person": "P1", "prop": "name", "value": "يوسف خالد علي", "span": "line 3"},
+        {"person": "P1", "prop": "birth_date", "value": "1991-03-14", "span": "line 3"},
+        {"person": "P1", "prop": "transferred_to", "value": "سجن ك المركزي", "valid": "2013-09-17", "span": "line 5"},
+        {"person": "P1", "prop": "detention_branch", "value": "الفرع 999", "span": "letterhead"}
+      ]
+    },
+    {
+      "key": "witness",
+      "file": "witness_clip.ogg",
+      "kind": "witness audio clip, Arabic speech, about 40 seconds",
+      "origin": "device:recorder-03",
+      "doc_type": "witness_statement",
+      "sensitivity": "sensitive",
+      "expect": [
+        {"person": "P1", "prop": "seen_at", "value": "الفرع 999", "valid": "2013-07", "span": "ms range where the witness names him and the branch"}
+      ]
+    },
+    {
+      "key": "photo",
+      "file": "photo_damaged_building.jpg",
+      "kind": "real Commons photograph of a damaged building with a test C2PA manifest",
+      "origin": "device:camera-c2pa-01",
+      "doc_type": "photo",
+      "sensitivity": "ordinary",
+      "expect": [
+        {"subject": "blob", "prop": "c2pa_verify", "value": "valid", "deterministic": true}
+      ]
+    },
+    {
+      "key": "post",
+      "file": "missing_post.html",
+      "kind": "public web post announcing the disappearance (served locally); re-fetch returns an edited version",
+      "origin": "url:http://127.0.0.1/synthetic/missing-post",
+      "doc_type": "web_post",
+      "sensitivity": "ordinary",
+      "expect": [
+        {"person": "P1", "prop": "name", "value": "Yousef Khaled Al-Ali", "span": "headline"},
+        {"person": "P1", "prop": "last_seen", "value": "دوما", "valid": "2013-05-02", "span": "paragraph 1"},
+        {"subject": "blob", "prop": "url_liveness", "value": "edited after capture", "deterministic": true}
+      ]
+    }
+  ],
+  "person_view_for_P1": {
+    "search": ["Yousef Khaled Al-Ali", "يوسف خالد العلي", "Yusuf Khalid al Ali"],
+    "track": ["2013-05-02 arrested at حرستا", "2013-05 detained at الفرع 999", "2013-07 seen at الفرع 999 (witness)", "2013-09-17 transferred to سجن ك المركزي"],
+    "forks": ["2013-05-02: last seen in دوما (post) vs arrested at حرستا (register)"],
+    "gaps": ["after 2013-09-17: no evidence"],
+    "never_merge": ["P2"]
+  },
+  "watch": {"analyst": "analyst-1", "person": "P1", "match_on": "transfer", "signals": ["name variant", "birth_date"]},
+  "redaction_profiles": {
+    "family": {"mask_props": ["detention_branch"], "note": "family sees track and places, not the security branch"},
+    "partner": {"mask_props": [], "mask_spans_of": ["P2"]},
+    "court": {"mask_props": [], "mask_spans_of": ["P2"]}
+  }
+}

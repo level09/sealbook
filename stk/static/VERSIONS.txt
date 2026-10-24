@@ -1,0 +1,10 @@
+vue 3.5.40
+vuetify 4.1.6
+axios 1.18.1
+@tabler/icons-webfont 3.45.0
+maplibre-gl 6.12.0
+pmtiles 4.5.0 (ESM, static/maplibre/pmtiles.mjs, BSD-3-Clause; its fflate import points at the vendored file)
+fflate 0.8.2 (ESM browser build, static/maplibre/fflate.mjs, MIT)
+pdfjs-dist 4.10.38 (ESM build and worker in static/pdfjs, Apache-2.0)
+natural-earth-vector 5.1.2 (ne_50m_admin_0_countries, monitor region)
+Inter 4.001 (variable wght, latin and latin-ext subsets from Google Fonts, OFL; static/fonts/inter-latin.woff2, inter-latin-ext.woff2)

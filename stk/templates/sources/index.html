@@ -1,0 +1,322 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.src-page { max-width: 1480px; }
+.src-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.src-head p { margin: 0; color: rgba(var(--v-theme-on-surface), .6); font-variant-numeric: tabular-nums; }
+.src-panel { border: 1px solid var(--app-line); border-radius: 8px; overflow: hidden; background: rgb(var(--v-theme-surface)); }
+.src-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--app-line); }
+.src-work .who { display: inline-flex; gap: 6px; align-items: baseline; padding: 3px 8px; border: 1px solid var(--app-line); border-radius: 6px; font-size: 13px; }
+.src-work .who b { font-variant-numeric: tabular-nums; }
+.src-bulk { background: rgb(var(--v-theme-on-surface)); color: rgb(var(--v-theme-surface)); }
+.src-bulk .v-field { background: rgb(var(--v-theme-surface)); color: rgb(var(--v-theme-on-surface)); }
+.src-bulk .v-btn.v-btn--disabled { color: rgba(var(--v-theme-surface), .75) !important; border-color: rgba(var(--v-theme-surface), .45) !important; }
+.src-muted { color: rgba(var(--v-theme-on-surface), .6); }
+.src-trunc { max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.src-table td, .src-table th { font-variant-numeric: tabular-nums; }
+.src-table tr.src-cur td { background: rgba(var(--v-theme-primary), .08); }
+.src-table tr.src-cur td:first-child { box-shadow: inset 3px 0 0 rgb(var(--v-theme-primary)); }
+.src-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; padding: 12px; }
+.src-tile .src-im { position: relative; }
+.src-tile .src-im .mv-thumb { display: flex; width: 100% !important; border: 0; border-radius: 0; }
+.src-tile .src-im .src-reveal { position: absolute; inset-inline: 0; bottom: 6px; margin: auto; width: max-content; }
+.src-mini { display: inline-flex; padding: 0; border: 0; background: none; cursor: pointer; vertical-align: middle; }
+.src-mini .mv-thumb { border-radius: 4px; }
+.src-tile.src-cur { outline: 2px solid rgb(var(--v-theme-primary)); border-radius: 6px; }
+.src-hints { display: flex; gap: 14px; flex-wrap: wrap; padding: 6px 12px; font-size: 12px; color: rgba(var(--v-theme-on-surface), .6); border-top: 1px solid var(--app-line); }
+.src-hints kbd { font: inherit; border: 1px solid var(--app-line-strong); border-radius: 4px; padding: 0 4px; margin-right: 4px; }
+@media (max-width: 600px) { .src-trunc { max-width: 180px; } .src-search { min-width: 0 !important; flex: 1 1 100%; max-width: none !important; } }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="src-page py-4">
+  <div class="src-head">
+    <h1 class="text-headline-small">Sources</h1>
+    <p>${ total === null ? 'Loading' : total.toLocaleString() }${ filtered ? ' matching' : '' } in ${ caseSel || 'all investigations' }</p>
+    <v-spacer></v-spacer>
+    <v-btn color="primary" size="small" prepend-icon="ti ti-upload" href="/ingest/">Add evidence</v-btn>
+  </div>
+  <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
+  <section class="src-panel">
+    <div class="src-bar src-work" aria-label="Workload, open items per analyst">
+      <span class="src-muted me-1">Workload</span>
+      <template v-if="assignError"><span class="src-muted"><i class="ti ti-plug-connected-x me-1" aria-hidden="true"></i>${ assignError }</span></template>
+      <template v-else>
+        <span class="who" v-for="w in workload" :key="w.id"><span>${ w.name }</span><b>${ w.open.toLocaleString() }</b><span class="src-muted">open</span><span v-if="w.overdue" class="text-overdue"><i class="ti ti-alert-triangle" aria-hidden="true"></i> ${ w.overdue.toLocaleString() } overdue</span></span>
+        <span v-if="unassigned === null" class="src-muted">Loading</span>
+        <span v-else-if="!workload.length" class="src-muted">Nobody holds open work in this case.</span>
+        <span class="who" v-if="unassigned !== null"><span>Unassigned</span><b>${ unassigned.toLocaleString() }</b></span>
+      </template>
+    </div>
+    <div class="src-bar">
+      <v-text-field v-model="q" class="src-search" density="compact" hide-details clearable prepend-inner-icon="ti ti-filter" placeholder="Filter by title, origin or hash" style="min-width: 240px; max-width: 300px" aria-label="Filter sources" @update:model-value="typed"></v-text-field>
+      <v-chip-group v-model="chips" multiple filter selected-class="text-primary" aria-label="Filters" @update:model-value="changed">
+        <v-chip v-for="c in chipDefs" :key="c.v" :value="c.v" variant="outlined" size="small" :prepend-icon="c.icon">${ c.t }</v-chip>
+      </v-chip-group>
+      <v-select v-model="c2pa" :items="c2paItems" multiple chips closable-chips density="compact" hide-details variant="outlined" placeholder="C2PA" prepend-inner-icon="ti ti-shield-check" style="min-width: 150px; max-width: 260px" aria-label="C2PA state" @update:model-value="changed"></v-select>
+      <v-select v-model="by" :items="collectors" item-title="name" item-value="id" clearable density="compact" hide-details variant="outlined" placeholder="Acquired by" prepend-inner-icon="ti ti-user-down" style="min-width: 170px; max-width: 220px" aria-label="Acquired by" @update:model-value="changed"></v-select>
+      <v-date-input v-model="range" multiple="range" clearable density="compact" hide-details variant="outlined" prepend-icon="" prepend-inner-icon="ti ti-calendar" placeholder="Acquired between" style="min-width: 200px; max-width: 260px" aria-label="Acquired between" @update:model-value="changed"></v-date-input>
+      <v-chip v-if="batch" closable size="small" prepend-icon="ti ti-stack-2" @click:close="batch = null; changed()">Intake batch ${ batch.slice(0, 8) }</v-chip>
+      <v-spacer></v-spacer>
+      <v-menu :close-on-content-click="false">
+        <template #activator="{ props }"><v-tooltip text="Choose columns"><template #activator="{ props: tp }"><v-btn v-bind="{ ...props, ...tp }" icon="ti ti-columns-3" variant="text" size="small" aria-label="Choose columns"></v-btn></template></v-tooltip></template>
+        <v-list density="compact"><v-list-item v-for="h in allHeaders" :key="h.key"><v-checkbox-btn v-model="cols" :value="h.key" :label="h.title" density="compact" @update:model-value="saveCols"></v-checkbox-btn></v-list-item></v-list>
+      </v-menu>
+      <v-btn-toggle v-model="mode" mandatory density="compact" variant="outlined" divided aria-label="View">
+        <v-btn value="table" icon="ti ti-table" aria-label="Table"></v-btn><v-btn value="grid" icon="ti ti-layout-grid" aria-label="Grid of thumbnails"></v-btn>
+      </v-btn-toggle>
+    </div>
+    <div class="src-bar src-bulk" v-if="selected.length" role="region" aria-label="Bulk actions">
+      <i class="ti ti-square-check" aria-hidden="true"></i><strong>${ selected.length.toLocaleString() } selected</strong>
+      <v-btn v-if="selected.length < total" size="small" variant="text" :loading="selectingAll" @click="selectAll">Select all ${ total.toLocaleString() } matching filter</v-btn>
+      <v-btn size="small" variant="text" @click="selected = []">Clear</v-btn>
+      <v-spacer></v-spacer>
+      <span v-if="assignBlocked" class="text-caption">${ assignBlocked }</span>
+      <v-autocomplete v-model="assignee" :items="analysts" item-title="label" item-value="id" :disabled="!!assignBlocked" density="compact" hide-details variant="solo" flat prepend-inner-icon="ti ti-user-plus" placeholder="Assign to" style="min-width: 180px; max-width: 240px" aria-label="Assign to analyst"></v-autocomplete>
+      <v-date-input v-model="due" :min="today" :disabled="!!assignBlocked" density="compact" hide-details variant="solo" flat prepend-icon="" prepend-inner-icon="ti ti-calendar-due" placeholder="Due date" style="min-width: 150px; max-width: 180px" aria-label="Due date"></v-date-input>
+      <v-btn size="small" color="surface" prepend-icon="ti ti-user-plus" :disabled="!assignee || !!assignBlocked" :loading="assigning" @click="assign">Assign</v-btn>
+      <v-btn size="small" variant="outlined" prepend-icon="ti ti-message-question" :disabled="!!assignBlocked" :loading="reviewCounting" @click="openReview">Request review</v-btn>
+    </div>
+    <v-data-table-server v-if="mode === 'table'" v-model="selected" class="src-table" :headers="headers" :items="items" :items-length="total || 0" :loading="loading" item-value="sha256" show-select density="compact" fixed-header height="620"
+      v-model:sort-by="sortBy" v-model:page="page" v-model:items-per-page="perPage" :items-per-page-options="[25, 50, 100]" :row-props="rowProps" must-sort @update:options="load" @click:row="clickRow">
+      <template #item.type="{ item }"><v-tooltip :text="hidden(item) ? 'Sensitive ' + item.type + ': click to reveal, the reveal is logged' : item.type + ' · ' + item.mime"><template #activator="{ props }"><component :is="hidden(item) ? 'button' : 'span'" v-bind="props" class="src-mini" :aria-label="hidden(item) ? 'Reveal ' + item.title + ', logged' : item.type" @click.stop="hidden(item) && reveal(item)"><media-thumb :key="item.sha256 + (revealed[item.sha256] || 0)" :locked="hidden(item)" :sha="item.sha256" :mime="item.mime" :kind="item.type" :caption="false" :link="false" :width="40" :height="28"></media-thumb></component></template></v-tooltip></template>
+      <template #item.title="{ item }"><div class="src-trunc" :title="item.title"><i v-if="item.sensitive" class="ti ti-eye-off me-1" title="Sensitive, opening it is logged" aria-label="Sensitive"></i><a :href="openUrl(item)" @click.stop>${ label(item.doc_type) }</a> <span class="src-muted">${ item.title }</span><v-chip v-if="item.synthetic" size="x-small" label variant="outlined" class="ms-1" title="Synthetic filler record for testing at scale; no file is stored">synthetic</v-chip></div></template>
+      <template #item.origin="{ item }"><div class="src-trunc src-muted" style="max-width: 200px" :title="item.origin">${ item.origin }</div></template>
+      <template #item.acquired_at="{ item }"><span class="text-no-wrap">${ item.acquired_at.slice(0, 10) }</span></template>
+      <template #item.by="{ item }"><div class="src-trunc" style="max-width: 120px" :title="item.by.name">${ item.by.name }</div></template>
+      <template #item.size="{ item }"><span class="text-no-wrap">${ fmtSize(item.size) }</span></template>
+      <template #item.c2pa="{ item }"><v-tooltip :text="c2Text(item.c2pa)"><template #activator="{ props }"><i v-bind="props" :class="c2Icon(item.c2pa)" style="font-size: 16px" :aria-label="c2Text(item.c2pa)"></i></template></v-tooltip></template>
+      <template #item.claims="{ item }"><span :title="item.pending ? item.pending + ' pending review' : null">${ item.claims }</span></template>
+      <template #item.findings="{ item }"><span v-if="item.findings" class="text-agent"><i class="ti ti-robot" aria-hidden="true"></i> ${ item.findings }</span></template>
+      <template #item.assignee="{ item }"><span v-if="item.assignee" class="text-no-wrap">${ item.assignee.name }<span v-if="item.due" class="text-caption" :class="late(item.due) ? 'text-overdue' : 'src-muted'" :title="'due ' + item.due">${ (late(item.due) ? ' overdue ' : ' due ') + item.due.slice(5) }</span></span><span v-else class="src-muted">unassigned</span></template>
+      <template #item.status="{ item }"><v-chip size="small" variant="outlined" :color="item.status === 'needs review' ? 'agent' : item.status === 'failed' ? 'negative' : undefined">${ item.status }</v-chip></template>
+      <template #no-data><v-empty-state icon="ti ti-files-off" title="No sources match" text="Clear a filter or pick another case."></v-empty-state></template>
+    </v-data-table-server>
+    <template v-else>
+      <div class="src-grid" role="list" aria-label="Sources as thumbnails">
+        <v-card v-for="(r, i) in items" :key="r.sha256" border flat role="listitem" class="src-tile" :class="{ 'src-cur': i === cursor }">
+          <div class="src-im">
+            <media-thumb :key="r.sha256 + (revealed[r.sha256] || 0)" :locked="hidden(r)" :sha="r.sha256" :mime="r.mime" :kind="r.type" :file="r.title" :caption="false" :link="false" :width="160" :height="104"></media-thumb>
+            <v-btn v-if="hidden(r)" class="src-reveal" size="x-small" variant="flat" prepend-icon="ti ti-eye" :loading="revealing === r.sha256" @click="reveal(r)">Reveal, logged</v-btn>
+          </div>
+          <div class="pa-2 text-caption d-flex align-start ga-1">
+            <v-checkbox-btn :model-value="selected.includes(r.sha256)" density="compact" :aria-label="'Select ' + r.title" @update:model-value="toggle(r.sha256)"></v-checkbox-btn>
+            <div class="flex-grow-1 text-start" style="min-width: 0"><a class="d-block text-truncate font-weight-medium" :href="openUrl(r)">${ label(r.doc_type) }</a><div class="text-truncate src-muted">${ r.title }</div></div>
+          </div>
+        </v-card>
+      </div>
+      <div class="d-flex align-center justify-end ga-2 px-3 pb-2"><span class="text-caption src-muted">Sensitive sources stay hatched until a logged reveal.</span><v-pagination v-model="page" :length="Math.max(1, Math.ceil((total || 0) / perPage))" density="compact" total-visible="5" @update:model-value="load()"></v-pagination></div>
+    </template>
+    <div class="src-hints" aria-label="Keyboard shortcuts"><span><kbd>j</kbd><kbd>k</kbd>move</span><span><kbd>x</kbd>select</span><span><kbd>Enter</kbd>open</span></div>
+  </section>
+  <v-dialog v-model="reviewOpen" max-width="520">
+    <v-card title="Request review of open proposals">
+      <v-card-text>
+        <p class="mb-3"><strong>${ reviewCount.proposals }</strong> open proposal${ reviewCount.proposals === 1 ? '' : 's' } in ${ reviewCount.sources.toLocaleString() } selected source${ reviewCount.sources === 1 ? '' : 's' } will each get a review request. Proposals already under review are left out.</p>
+        <v-autocomplete v-model="reviewer" :items="colleagues" item-title="label" item-value="id" label="Colleague" density="compact" variant="outlined" class="mb-2"></v-autocomplete>
+        <v-textarea v-model="reviewReason" label="What should they check?" rows="3" maxlength="4000" density="compact" variant="outlined"></v-textarea>
+      </v-card-text>
+      <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="reviewOpen = false">Cancel</v-btn><v-btn color="primary" variant="flat" :disabled="!reviewer || !reviewReason.trim() || !reviewCount.proposals" :loading="reviewSending" @click="sendReview">Send ${ reviewCount.proposals } request${ reviewCount.proposals === 1 ? '' : 's' }</v-btn></v-card-actions>
+    </v-card>
+  </v-dialog>
+  <v-snackbar v-model="snack" :timeout="5000">${ snackText }</v-snackbar>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="application/json" id="sources-boot">{{ boot|tojson|safe }}</script>
+<script type="module">
+import {registerMediaViewers} from '/static/js/components/media.js';
+const boot = JSON.parse(document.getElementById('sources-boot').textContent);
+const TYPE_CHIPS = ['image', 'pdf', 'audio', 'video', 'text'];
+const ALL_HEADERS = [
+  {title: 'Type', key: 'type', width: 56}, {title: 'Title', key: 'title'}, {title: 'Origin', key: 'origin'},
+  {title: 'Acquired', key: 'acquired_at'}, {title: 'By', key: 'by'}, {title: 'Size', key: 'size', align: 'end'},
+  {title: 'C2PA', key: 'c2pa', align: 'center'}, {title: 'Claims', key: 'claims', align: 'end'},
+  {title: 'Open findings', key: 'findings', align: 'end'}, {title: 'Assignee', key: 'assignee'}, {title: 'Status', key: 'status'},
+];
+const DEFAULT_COLS = ['type', 'title', 'acquired_at', 'by', 'size', 'c2pa', 'claims', 'findings', 'assignee', 'status'];
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* per-viewer convenience only */ } },
+};
+const isoDay = d => { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; };
+
+window.app = Vue.createApp({
+  mixins: [layoutMixin], delimiters: config.delimiters,
+  data() {
+    const p = new URLSearchParams(location.search);
+    const chips = [...(p.get('type') || '').split(',').filter(t => TYPE_CHIPS.includes(t))];
+    if (p.get('sensitive') === '1') chips.push('sens');
+    if (p.get('findings') === '1') chips.push('find');
+    if (p.get('assignee') === 'unassigned') chips.push('unas');
+    if (p.get('assignee') === 'me') chips.push('mine');
+    return {
+      batch: p.get('batch'), q: p.get('q') || '', chips, c2pa: (p.get('c2pa') || '').split(',').filter(Boolean),
+      by: p.get('by'), range: p.get('from') && p.get('to') ? [new Date(p.get('from') + 'T00:00'), new Date(p.get('to') + 'T00:00')] : null,
+      collectors: boot.collectors, mode: store.get('sources-mode') || 'table', cols: store.get('sources-cols') || DEFAULT_COLS, allHeaders: ALL_HEADERS,
+      items: [], total: null, loading: false, page: Number(p.get('page')) || 1, perPage: 50,
+      sortBy: [{key: p.get('sort') || 'acquired_at', order: p.get('order') || 'desc'}],
+      selected: [], selectingAll: false, cursor: -1, revealed: {}, revealing: null,
+      reviewOpen: false, reviewCount: {proposals: 0, sources: 0}, reviewer: null, reviewReason: '', reviewCounting: false, reviewSending: false,
+      analysts: [], workload: [], unassigned: null, assignError: '', assignee: null, due: null, today: new Date().toLocaleDateString('sv'), assigning: false,
+      error: '', snack: false, snackText: '',
+      chipDefs: [
+        {v: 'image', t: 'Images', icon: 'ti ti-photo'}, {v: 'pdf', t: 'PDFs', icon: 'ti ti-file-type-pdf'},
+        {v: 'audio', t: 'Audio', icon: 'ti ti-volume'}, {v: 'video', t: 'Video', icon: 'ti ti-video'},
+        {v: 'text', t: 'Text and web', icon: 'ti ti-file-text'}, {v: 'sens', t: 'Sensitive', icon: 'ti ti-eye-off'},
+        {v: 'find', t: 'Open findings', icon: 'ti ti-robot'}, {v: 'unas', t: 'Unassigned', icon: 'ti ti-user-question'},
+        {v: 'mine', t: 'Assigned to me', icon: 'ti ti-user'},
+      ],
+      c2paItems: [{title: 'Valid', value: 'valid'}, {title: 'Invalid', value: 'invalid'}, {title: 'No credentials', value: 'absent'}, {title: 'Not checked', value: 'unchecked'}, {title: 'Unknown', value: 'unknown'}],
+    };
+  },
+  computed: {
+    headers() { return this.allHeaders.filter(h => this.cols.includes(h.key)); },
+    params() {
+      const c = this.chips, types = c.filter(t => TYPE_CHIPS.includes(t));
+      if (types.includes('text')) types.push('web');
+      const p = {investigation: this.caseSel || undefined, batch: this.batch || undefined, q: this.q || undefined,
+        type: types.join(',') || undefined, c2pa: this.c2pa.join(',') || undefined, by: this.by || undefined,
+        sensitive: c.includes('sens') ? '1' : undefined, findings: c.includes('find') ? '1' : undefined,
+        assignee: c.includes('mine') ? 'me' : c.includes('unas') ? 'unassigned' : undefined};
+      if (this.range?.length) { p.from = isoDay(this.range[0]); p.to = isoDay(this.range[this.range.length - 1]); }
+      return p;
+    },
+    colleagues() { return this.analysts.filter(a => a.id !== boot.me); },
+    filtered() { return Object.entries(this.params).some(([k, v]) => k !== 'investigation' && v !== undefined); },
+    assignBlocked() {
+      if (this.assignError) return this.assignError;
+      return this.caseSel ? '' : 'Pick an investigation to assign work';
+    },
+  },
+  methods: {
+    label: t => (t || 'source').replaceAll('_', ' ').replace(/^./, c => c.toUpperCase()),
+    fmtSize: b => b >= 1e6 ? (b / 1e6).toFixed(1) + ' MB' : (b / 1e3).toFixed(1) + ' KB',
+    // Only media has pictures; a sensitive one stays hatched until a logged reveal.
+    late: due => due < new Date().toLocaleDateString('sv'),
+    hidden(r) { return r.sensitive && ['image', 'pdf', 'video', 'audio'].includes(r.type) && !r.revealed && !this.revealed[r.sha256]; },
+    c2Text: s => ({valid: 'C2PA credentials valid', invalid: 'C2PA credentials invalid', absent: 'No content credentials', unchecked: 'C2PA not checked', unknown: 'C2PA result erased'}[s]),
+    c2Icon: s => ({valid: 'ti ti-shield-check text-success', invalid: 'ti ti-shield-x text-error', absent: 'ti ti-shield-off src-muted', unknown: 'ti ti-shield-question src-muted'}[s] || 'ti ti-minus src-muted'),
+    openUrl: r => `/evidence/${r.sha256}`,
+    fail(err) { this.error = err.response?.data?.description || err.response?.data?.error || err.response?.data?.message || err.message; },
+    say(text) { this.snackText = text; this.snack = true; },
+    saveCols() { store.set('sources-cols', this.cols); },
+    rowProps({item, index}) { return {class: index === this.cursor ? 'src-cur' : '', 'data-sha': item.sha256}; },
+    clickRow(_, {item}) { this.cursor = this.items.findIndex(r => r.sha256 === item.sha256); },
+    // Shell contract: follow the top bar's investigation switcher.
+    useCase() { this.changed(); },
+    typed() { clearTimeout(this._typing); this._typing = setTimeout(() => this.changed(), 250); },
+    changed() { this.page = 1; this.selected = []; this.load(); this.loadWork(); },
+    syncUrl() {
+      const s = this.sortBy[0] || {};
+      const p = Object.fromEntries(Object.entries({...this.params, investigation: this.caseSel ?? '', sort: s.key, order: s.order, page: this.page > 1 ? this.page : undefined}).filter(([, v]) => v !== undefined));
+      history.replaceState(null, '', '/sources?' + new URLSearchParams(p));
+    },
+    async load() {
+      const s = this.sortBy[0] || {key: 'acquired_at', order: 'desc'};
+      const seq = (this._seq = (this._seq || 0) + 1);
+      this.loading = true;
+      try {
+        const {data} = await axios.get('/api/sources', {params: {...this.params, page: this.page, per_page: this.perPage, sort: s.key, order: s.order}});
+        if (seq !== this._seq) return;
+        this.items = data.items; this.total = data.total; this.cursor = Math.min(this.cursor, data.items.length - 1);
+        this.syncUrl();
+      } catch (err) { this.fail(err); } finally { if (seq === this._seq) this.loading = false; }
+    },
+    async loadWork() {
+      const params = {investigation: this.caseSel || undefined};
+      try {
+        const [load, people, open] = await Promise.all([
+          axios.get('/api/assignments/workload', {params}), axios.get('/api/analysts', {params}),
+          axios.get('/api/sources', {params: {...params, assignee: 'unassigned', per_page: 1}}),
+        ]);
+        const names = Object.fromEntries(people.data.items.map(a => [a.id, a.name]));
+        this.workload = load.data.items.filter(w => w.open).map(w => ({...w, id: w.assignee, name: names[w.assignee] || `user ${w.assignee}`})).sort((a, b) => b.open - a.open);
+        this.analysts = people.data.items.map(a => ({...a, label: `${a.name} · ${a.open} open`}));
+        this.unassigned = open.data.total; this.assignError = '';
+      } catch (err) {
+        const st = err.response?.status;
+        this.assignError = st === 404 ? 'Assignment service unavailable (404). Assigning is off.' : `Assignment service unavailable (${st || err.message}).`;
+      }
+    },
+    async selectAll() {
+      this.selectingAll = true;
+      try { this.selected = (await axios.get('/api/sources/ids', {params: this.params})).data.ids; } catch (err) { this.fail(err); } finally { this.selectingAll = false; }
+    },
+    async assign() {
+      this.assigning = true;
+      const subjects = this.selected.map(s => 'blob:' + s), due = this.due ? isoDay(this.due) : null;
+      let done = 0;
+      try {
+        // The service takes at most 500 subjects per call.
+        for (let i = 0; i < subjects.length; i += 500) {
+          const {data} = await axios.post('/api/assignments/bulk', {item: {investigation: this.caseSel, subjects: subjects.slice(i, i + 500), assignee: this.assignee, due, priority: 'normal'}});
+          done += data.assigned;
+        }
+        const who = this.analysts.find(a => a.id === this.assignee)?.name;
+        this.say(`Assigned ${done.toLocaleString()} sources to ${who}${due ? ', due ' + due : ''}. They get a notification.`);
+        this.selected = []; this.assignee = null; this.due = null;
+        await Promise.all([this.load(), this.loadWork()]);
+      } catch (err) {
+        this.fail(err);
+        if (done) this.say(`${done.toLocaleString()} assigned before the error.`);
+      } finally { this.assigning = false; }
+    },
+    reviewItem(extra) { return {investigation: this.caseSel, shas: this.selected, ...extra}; },
+    async openReview() {
+      this.reviewCounting = true;
+      try {
+        const {data} = await axios.post('/api/sources/review', {item: this.reviewItem({dry_run: true})});
+        if (!data.proposals) { this.say('The selected sources have no open proposals waiting for review.'); return; }
+        this.reviewCount = data; this.reviewOpen = true;
+      } catch (err) { this.fail(err); } finally { this.reviewCounting = false; }
+    },
+    async sendReview() {
+      this.reviewSending = true;
+      try {
+        const {data} = await axios.post('/api/sources/review', {item: this.reviewItem({reviewer: this.reviewer, reason: this.reviewReason})});
+        const who = this.analysts.find(a => a.id === this.reviewer)?.name;
+        this.say(`Sent ${data.requested} review request${data.requested === 1 ? '' : 's'} to ${who}. They get one notification.`);
+        this.reviewOpen = false; this.reviewReason = ''; this.selected = [];
+      } catch (err) { this.fail(err); this.reviewOpen = false; } finally { this.reviewSending = false; }
+    },
+    toggle(sha) { this.selected = this.selected.includes(sha) ? this.selected.filter(s => s !== sha) : [...this.selected, sha]; },
+    async reveal(r) {
+      this.revealing = r.sha256;
+      try {
+        await axios.post(`/api/evidence/${r.sha256}/reveal`, {item: {}});
+        // A new key remounts the tile, which now loads under the session's grant.
+        this.revealed = {...this.revealed, [r.sha256]: (this.revealed[r.sha256] || 0) + 1};
+      } catch (err) { this.fail(err); } finally { this.revealing = null; }
+    },
+    onKey(e) {
+      const t = e.target, typing = t.isContentEditable || ['TEXTAREA', 'SELECT'].includes(t.tagName) || (t.tagName === 'INPUT' && !['checkbox', 'radio'].includes(t.type));
+      if (typing || t.closest('.v-overlay') || e.metaKey || e.ctrlKey || e.altKey) return;
+      const n = this.items.length;
+      if (!n) return;
+      if (e.key === 'j' || e.key === 'k') {
+        e.preventDefault();
+        this.cursor = Math.max(0, Math.min(n - 1, this.cursor + (e.key === 'j' ? 1 : -1)));
+        this.$nextTick(() => document.querySelector('.src-cur')?.scrollIntoView({block: 'nearest'}));
+      } else if (e.key === 'x' && this.cursor >= 0) { e.preventDefault(); this.toggle(this.items[this.cursor].sha256); }
+      else if (e.key === 'Enter' && this.cursor >= 0) { e.preventDefault(); location.href = this.openUrl(this.items[this.cursor]); }
+    },
+  },
+  watch: { mode(v) { store.set('sources-mode', v); if (v === 'grid') this.load(); } },
+  created() {
+    // A notification link names its investigation; it wins over the stored switcher.
+    const p = new URLSearchParams(location.search);
+    if (p.has('investigation')) this.caseSel = p.get('investigation') || null;
+  },
+  mounted() {
+    document.addEventListener('keydown', this.onKey);
+    if (this.mode === 'grid') this.load();
+    this.loadWork();
+  },
+  beforeUnmount() { document.removeEventListener('keydown', this.onKey); },
+});
+registerStkComponents(app);
+registerMediaViewers(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

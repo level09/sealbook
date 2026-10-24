@@ -1,0 +1,267 @@
+{
+  "about": "Ground truth placed by acceptance/make_case.py. All content is synthetic.",
+  "register_page.png": {
+    "rotation_deg_ccw": 1.067,
+    "size": [
+      1600,
+      1085
+    ],
+    "facts": [
+      {
+        "person": "P1",
+        "prop": "name",
+        "value": "يوسف خالد العلي",
+        "page": 1,
+        "bbox": [
+          1109,
+          233,
+          1371,
+          316
+        ]
+      },
+      {
+        "person": "P1",
+        "prop": "father_name",
+        "value": "خالد",
+        "page": 1,
+        "bbox": [
+          972,
+          239,
+          1074,
+          315
+        ]
+      },
+      {
+        "person": "P1",
+        "prop": "mother_name",
+        "value": "فاطمة",
+        "page": 1,
+        "bbox": [
+          841,
+          239,
+          950,
+          317
+        ]
+      },
+      {
+        "person": "P1",
+        "prop": "birth_date",
+        "value": "1991",
+        "page": 1,
+        "bbox": [
+          684,
+          245,
+          811,
+          320
+        ]
+      },
+      {
+        "person": "P1",
+        "prop": "arrested_at",
+        "value": "حرستا",
+        "page": 1,
+        "bbox": [
+          351,
+          251,
+          464,
+          326
+        ]
+      },
+      {
+        "person": "P1",
+        "prop": "detention_branch",
+        "value": "الفرع 999",
+        "page": 1,
+        "bbox": [
+          1320,
+          46,
+          1523,
+          128
+        ]
+      },
+      {
+        "person": "P2",
+        "prop": "name",
+        "value": "يوسف خالد العلي",
+        "page": 1,
+        "bbox": [
+          1112,
+          326,
+          1374,
+          410
+        ]
+      },
+      {
+        "person": "P2",
+        "prop": "mother_name",
+        "value": "سعاد",
+        "page": 1,
+        "bbox": [
+          843,
+          341,
+          949,
+          417
+        ]
+      },
+      {
+        "person": "P2",
+        "prop": "birth_date",
+        "value": "1985",
+        "page": 1,
+        "bbox": [
+          691,
+          341,
+          819,
+          418
+        ]
+      }
+    ]
+  },
+  "transfer_order.pdf": {
+    "extractor": "pypdf PdfReader(...).pages[0].extract_text(), page 1 only, default mode",
+    "facts": [
+      {
+        "person": "P1",
+        "prop": "name",
+        "value": "يوسف خالد علي",
+        "extracted_as": "يوسف خالد علي",
+        "page": 1,
+        "line": 3,
+        "char_start": 89,
+        "char_end": 102
+      },
+      {
+        "person": "P1",
+        "prop": "birth_date",
+        "value": "1991-03-14",
+        "extracted_as": "14-03-1991",
+        "page": 1,
+        "line": 3,
+        "char_start": 77,
+        "char_end": 87
+      },
+      {
+        "person": "P1",
+        "prop": "transferred_to",
+        "value": "سجن ك المركزي",
+        "extracted_as": "سجن ك المركزي",
+        "page": 1,
+        "line": 5,
+        "char_start": 192,
+        "char_end": 205
+      },
+      {
+        "person": "P1",
+        "prop": "detention_branch",
+        "value": "الفرع 999",
+        "extracted_as": "999 الفرع",
+        "page": 1,
+        "line": "letterhead",
+        "char_start": 0,
+        "char_end": 9
+      }
+    ]
+  },
+  "missing_post": {
+    "extractor": "Playwright document.body.innerText of the file loaded in Chromium",
+    "files": {
+      "missing_post.html": {
+        "visible_text_len": 200,
+        "facts": [
+          {
+            "person": "P1",
+            "prop": "name",
+            "value": "Yousef Khaled Al-Ali",
+            "valid": null,
+            "char_start": 7,
+            "char_end": 27
+          },
+          {
+            "person": "P1",
+            "prop": "last_seen",
+            "value": "دوما",
+            "valid": "2013-05-02",
+            "char_start": 50,
+            "char_end": 54
+          }
+        ]
+      },
+      "missing_post_v2.html": {
+        "visible_text_len": 205,
+        "facts": [
+          {
+            "person": "P1",
+            "prop": "name",
+            "value": "Yousef Khaled Al-Ali",
+            "valid": null,
+            "char_start": 7,
+            "char_end": 27
+          },
+          {
+            "person": "P1",
+            "prop": "last_seen",
+            "value": "دوما",
+            "valid": "2013-05-02",
+            "char_start": 50,
+            "char_end": 54
+          }
+        ]
+      }
+    },
+    "changed_sentence": {
+      "v1": "عمره 22 عاما، طويل القامة، يرتدي نظارة طبية.",
+      "v2": "عمره 22 عاما، طويل القامة، وكان يرتدي سترة زرقاء."
+    }
+  },
+  "witness_clip.ogg": {
+    "duration_ms": 33100,
+    "sentences": [
+      {
+        "text": "اسمي سامر، أنا من دوما.",
+        "start_ms": 0,
+        "end_ms": 2950
+      },
+      {
+        "text": "اعتقلوني بربيع الألفين وتلتعش، وضلّيت محجوز كم شهر.",
+        "start_ms": 3550,
+        "end_ms": 9850
+      },
+      {
+        "text": "بشهر تموز من سنة الألفين وتلتعش، شفت يوسف خالد العلي بالفرع تسعمية وتسعة وتسعين.",
+        "start_ms": 10450,
+        "end_ms": 19600
+      },
+      {
+        "text": "قلّي إنّو اعتقلوه على حاجز بحرستا، وإنّو أهلو ما بيعرفوا وينو.",
+        "start_ms": 20200,
+        "end_ms": 27300
+      },
+      {
+        "text": "أنا مستعد إشهد باللي شفتو قدّام أي جهة.",
+        "start_ms": 27900,
+        "end_ms": 33100
+      }
+    ],
+    "facts": [
+      {
+        "person": "P1",
+        "prop": "seen_at",
+        "value": "الفرع 999",
+        "valid": "2013-07",
+        "spoken_as": "بالفرع تسعمية وتسعة وتسعين",
+        "start_ms": 10450,
+        "end_ms": 19600
+      }
+    ]
+  },
+  "photo_damaged_building.jpg": {
+    "facts": [
+      {
+        "subject": "blob",
+        "prop": "c2pa_verify",
+        "value": "valid",
+        "check": "c2patool photo_damaged_building.jpg"
+      }
+    ]
+  }
+}

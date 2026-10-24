@@ -1,0 +1,39 @@
+.pp-pair { display: grid; align-items: start; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.pp-card { border: 1px solid var(--rule); border-radius: 6px; padding: 20px; background: var(--paper); }
+.pp-name { margin: 0; font: 500 24px/1.3 var(--arabic); }
+.pp-id { margin: 2px 0 12px; font-size: 13px; color: var(--ink-3); }
+.pp-sub { margin: 0 0 8px; font-size: 14px; color: var(--ink-3); }
+.pp-spell { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.pp-spell li { padding: 2px 10px; border: 1px solid var(--rule); border-radius: 4px; font-size: 15px; }
+.pp-facts { list-style: none; margin: 0; padding: 0; }
+.pp-facts li { display: grid; grid-template-columns: 9em minmax(0, 1fr); gap: 2px 12px; padding: 8px 0; border-top: 1px solid var(--rule); font-size: 15px; align-items: baseline; }
+.pp-prop { color: var(--ink-3); font-size: 14px; }
+.pp-facts .chip { justify-self: start; }
+.pp-src { grid-column: 2; font-size: 12px; color: var(--ink-3); }
+.pp-prop-card { margin-top: 28px; padding: 20px; border-radius: 6px; color: var(--ink); transition: background .4s, border-color .4s; }
+.pp-prop-card[data-state] { background: var(--paper); border: 1.5px solid var(--ink); }
+.pp-prop-card[data-state="linked"] { background: var(--paper-2); }
+.pp-prop-card h3 { margin: 0 0 12px; font: 500 20px var(--serif); color: var(--violet); }
+.pp-prop-card[data-state] h3 { color: var(--ink); }
+.pp-cmp td:not(:last-child) { font-family: var(--arabic); }
+.pp-cmp { border-collapse: collapse; width: 100%; max-width: 560px; margin-bottom: 12px; font-size: 15px; background: var(--paper); }
+.pp-cmp th, .pp-cmp td { padding: 6px 10px; border-bottom: 1px solid var(--rule); text-align: start; }
+.pp-cmp th[scope="row"] { font-weight: 400; color: var(--ink-3); font-size: 14px; }
+.pp-cmp td:last-child { font-size: 13px; color: var(--ink-3); }
+.pp-cmp tr.differs td:last-child { color: var(--broken); }
+.pp-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.pp-btns .quiet { background: var(--paper); }
+.pp-btns .quiet[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pp-state { margin: 8px 0 0; font-size: 14px; }
+.pp-rule { margin: 24px 0 0; max-width: 62ch; }
+.pp-note { margin: 8px 0 0; font-size: 14px; color: var(--ink-3); }
+@media (max-width: 760px) {
+  .pp-pair { grid-template-columns: minmax(0, 1fr); }
+  .pp-facts li { grid-template-columns: 7.5em minmax(0, 1fr); padding: 6px 0; font-size: 14px; }
+  .pp-prop { font-size: 13px; }
+  .pp-src { font-size: 11.5px; }
+  .pp-card { padding: 16px; }
+  .pp-prop-card { padding: 16px; }
+  .pp-cmp th, .pp-cmp td { padding: 6px; }
+}
+.pp-when { margin-inline-start: 8px; }

@@ -1,0 +1,407 @@
+{% extends 'layout.html' %}
+{% block css %}
+    <style>
+        .intake { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 16px; align-items: start; }
+        .stages { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+        .stage { display: inline-flex; gap: 4px; align-items: center; font-size: 12px; padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(var(--v-border-color), .35); color: rgba(var(--v-theme-on-surface), .6); }
+        .stage.done { color: rgb(var(--v-theme-on-surface)); border-color: rgb(var(--v-theme-on-surface)); }
+        .stage.running { color: rgb(var(--v-theme-primary)); border: 1px dashed rgb(var(--v-theme-primary)); }
+        .stage.failed { color: rgb(var(--v-theme-error)); border-color: rgb(var(--v-theme-error)); }
+        .stage.skipped { opacity: .6; }
+        .stage .ti-loader-2 { animation: stage-spin 1s linear infinite; }
+        @keyframes stage-spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .stage .ti-loader-2 { animation: none; } }
+        .intake-item { padding: 12px 16px; border-top: 1px solid rgba(var(--v-border-color), .2); outline: none; }
+        .intake-item:first-child { border-top: 0; }
+        .intake-item:focus-visible { background: rgba(var(--v-theme-on-surface), .06); box-shadow: inset 2px 0 0 rgb(var(--v-theme-on-surface)); }
+        .intake-name { overflow-wrap: anywhere; }
+        @media (max-width: 959px) { .intake { grid-template-columns: minmax(0, 1fr); } }
+        .map-cell { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; min-width: 180px; font-weight: 400; }
+        .map-note { font-size: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; color: rgba(var(--v-theme-on-surface), .65); }
+        .map-note.todo { color: rgb(var(--v-theme-warning)); }
+        .sheet-row { padding: 10px 0; border-top: 1px solid rgba(var(--v-border-color), .2); }
+        .sheet-row:first-child { border-top: 0; }
+        .claim-chip { cursor: pointer; }
+        .claim-chip.on { outline: 2px solid rgb(var(--v-theme-primary)); }
+    </style>
+{% endblock %}
+{% block content %}
+    <v-container class="py-6" style="max-width: 1200px;">
+        <div class="mb-4">
+            <h1 class="text-title-large">Add evidence</h1>
+            <p class="text-body-medium text-medium-emphasis mb-0">Set the batch details once, then drop files or paste links. Each item is hashed before anything else touches it.</p>
+        </div>
+        <div class="intake">
+            <v-card aria-labelledby="h-batch">
+                <v-card-title id="h-batch" class="text-title-medium pa-4 pb-2">This batch</v-card-title>
+                <v-card-text class="d-flex flex-column ga-3">
+                    <v-combobox v-model="intake.investigation" :items="cases" label="Case" density="compact" hide-details prepend-inner-icon="ti ti-folder" autofocus></v-combobox>
+                    <v-text-field v-model="intake.origin" label="Origin" placeholder="scanner-01 or channel:telegram/xyz" density="compact" hide-details prepend-inner-icon="ti ti-route"></v-text-field>
+                    <v-combobox v-model="intake.doc_type" :items="docTypes" label="Document type" density="compact" hide-details prepend-inner-icon="ti ti-file-description"></v-combobox>
+                    <v-select v-model="intake.sensitivity" :items="['sensitive', 'ordinary']" label="Sensitivity" density="compact" hide-details prepend-inner-icon="ti ti-eye-off"></v-select>
+                    <v-textarea v-model="intake.note" label="Acquisition note" rows="3" auto-grow density="compact" hide-details dir="auto"></v-textarea>
+                    <v-file-upload v-model="files" multiple density="compact" title="Drop files here" browse-text="Choose files" divider-text="or" icon="ti ti-upload" clearable></v-file-upload>
+                    <v-textarea v-model="links" label="Or paste links, one per line" rows="2" auto-grow density="compact" hide-details prepend-inner-icon="ti ti-link"></v-textarea>
+                    <v-btn color="primary" prepend-icon="ti ti-upload" :disabled="!ready" :loading="uploading" @click="start">${ addLabel }</v-btn>
+                </v-card-text>
+            </v-card>
+            <div class="d-flex flex-column ga-4">
+                <v-card aria-labelledby="h-queue">
+                    <div class="d-flex align-center ga-3 flex-wrap pa-4 pb-2">
+                        <h2 id="h-queue" class="text-title-medium">Processing</h2>
+                        <span class="text-body-small text-medium-emphasis" aria-live="polite">${ finishedCount } of ${ queue.length } finished</span>
+                        <v-progress-linear class="ms-auto" :model-value="overall" color="primary" rounded height="6" style="max-width: 220px;" aria-label="Batch progress"></v-progress-linear>
+                    </div>
+                    <div v-if="!queue.length" class="pa-6 text-body-medium text-medium-emphasis">
+                        <i class="ti ti-inbox me-2" aria-hidden="true"></i>Nothing added yet. Each item will show its stages here.
+                    </div>
+                    <div v-for="q in queue" :key="q.key" class="intake-item" tabindex="0" role="group" :aria-label="q.name">
+                        <div class="d-flex ga-2 align-center flex-wrap">
+                            <i :class="'ti ' + typeIcon(q)" aria-hidden="true"></i>
+                            <strong class="intake-name">${ q.name }</strong>
+                            <span class="font-monospace text-caption text-medium-emphasis">${ q.sha256 ? q.sha256.slice(0, 12) : (q.error ? '' : 'hashing') }</span>
+                            <v-chip v-if="q.duplicate" size="x-small" label prepend-icon="ti ti-copy">Bytes already in the ledger</v-chip>
+                            <span class="ms-auto text-caption text-medium-emphasis">${ q.size }</span>
+                            <v-btn v-if="q.sheet && q.acquisition" size="x-small" variant="outlined" prepend-icon="ti ti-table" @click="openSheet(q)">${ sheetLabel(q) }</v-btn>
+                            <a v-if="q.sha256 && finished(q)" :href="'/evidence/' + q.sha256" class="text-caption">Open</a>
+                        </div>
+                        <v-progress-linear :model-value="progress(q)" :color="problem(q) ? 'error' : 'primary'" height="3" class="mt-2" :aria-label="q.name + ' progress'"></v-progress-linear>
+                        <div class="stages">
+                            <span v-for="s in stages" :key="s.key" class="stage" :class="stateOf(q, s.key)" :aria-label="s.label(q) + ': ' + words[stateOf(q, s.key)]">
+                                <i :class="'ti ' + icons[stateOf(q, s.key)]" aria-hidden="true"></i>${ s.label(q) }
+                            </span>
+                        </div>
+                        <div v-if="q.error" class="text-body-small text-error mt-2 d-flex ga-2 align-center flex-wrap" role="alert">
+                            <span>${ q.error }</span>
+                            <v-btn size="x-small" variant="outlined" color="error" prepend-icon="ti ti-refresh" @click="reupload(q)">Retry</v-btn>
+                        </div>
+                        <div v-for="f in q.failures" :key="f.run" class="text-body-small text-error mt-2 d-flex ga-2 align-center flex-wrap" role="alert">
+                            <span>${ f.message }</span>
+                            <v-btn v-if="f.retryable" size="x-small" variant="outlined" color="error" prepend-icon="ti ti-refresh" @click="retry(q, f)">Retry</v-btn>
+                            <span v-if="f.detail" class="text-caption text-medium-emphasis w-100">${ f.detail }</span>
+                        </div>
+                    </div>
+                    <div v-if="waiting" class="px-4 pb-3 text-caption text-medium-emphasis">Waiting stages continue as soon as a worker picks them up.</div>
+                </v-card>
+                <v-card v-if="sheet" aria-labelledby="h-sheet">
+                    <div class="d-flex align-center ga-2 flex-wrap pa-4 pb-2">
+                        <h2 id="h-sheet" class="text-title-medium">Sheet: ${ sheet.name }</h2>
+                        <span v-if="sheet.data" class="text-body-small text-medium-emphasis">${ sheet.data.table.total } rows, ${ sheet.data.table.header.length } columns</span>
+                        <v-spacer></v-spacer>
+                        <v-btn size="small" variant="text" icon="ti ti-x" aria-label="Close sheet" @click="sheet = null"></v-btn>
+                    </div>
+                    <v-card-text class="pt-0">
+                        <div v-if="sheet.reveal" class="d-flex ga-3 align-center flex-wrap">
+                            <span class="text-body-medium">This sheet is sensitive. Showing it records an access entry on its custody chain.</span>
+                            <v-btn color="primary" prepend-icon="ti ti-eye" :loading="sheet.busy" @click="revealSheet">Show the sheet</v-btn>
+                        </div>
+                        <v-progress-linear v-else-if="!sheet.data" indeterminate color="primary"></v-progress-linear>
+                        <template v-else-if="!sheet.data.version">
+                            <p class="text-body-medium mb-3">Say what each column holds. Remembered choices come from earlier versions of the dataset; suggestions come from the local embedding model and need your confirmation. Nothing is read until you confirm.</p>
+                            <div class="d-flex ga-3 flex-wrap mb-3">
+                                <v-select v-model="sheet.dataset" :items="datasetItems" label="Dataset" density="compact" hide-details style="min-width: 240px; max-width: 320px" prepend-inner-icon="ti ti-stack-2" @update:model-value="loadSheet"></v-select>
+                                <v-text-field v-if="!sheet.dataset" v-model="sheet.datasetName" label="New dataset name" density="compact" hide-details style="min-width: 220px; max-width: 320px" dir="auto"></v-text-field>
+                                <v-select v-model="sheet.key" :items="sheet.data.table.header" label="Row identifier column" density="compact" hide-details style="min-width: 200px; max-width: 280px" prepend-inner-icon="ti ti-key" @update:model-value="setKey"></v-select>
+                            </div>
+                            <v-alert v-if="sheet.data.suggest_error" type="warning" variant="tonal" density="compact" class="mb-3">Suggestions are unavailable (${ sheet.data.suggest_error }). Choose each column by hand.</v-alert>
+                            <sheet-viewer :table="sheet.data.table" :status="diffStatus" :changed="diffChanged" :only="diffOnly" height="460px">
+                                <template #head="{column, header}">
+                                    <div class="map-cell">
+                                        <v-select :model-value="sheet.map[header]" :items="fieldItems" density="compact" variant="outlined" hide-details :aria-label="'Field for ' + header" @update:model-value="v => choose(header, v)"></v-select>
+                                        <span v-if="sheet.confirmed[header]" class="map-note"><i class="ti ti-check" aria-hidden="true"></i>${ sheet.confirmed[header] }</span>
+                                        <span v-else class="map-note todo"><i class="ti ti-sparkles" aria-hidden="true"></i>suggested ${ score(header) }
+                                            <v-btn size="x-small" variant="tonal" :aria-label="'Confirm the field for ' + header" @click="choose(header, sheet.map[header])">Confirm</v-btn></span>
+                                    </div>
+                                </template>
+                            </sheet-viewer>
+                            <div v-if="diff" class="d-flex ga-2 align-center flex-wrap mt-3" role="group" aria-label="Rows by change">
+                                <span class="text-body-medium">${ diff.previous ? 'Against version ' + diff.previous + ':' : 'First version of this dataset:' }</span>
+                                <v-chip v-for="k in ['new', 'changed', 'unchanged', 'missing', 'invalid']" :key="k" size="small" :variant="diffFilter === k ? 'flat' : 'outlined'" :color="{new: 'primary', changed: 'warning', invalid: 'error'}[k]" @click="diffFilter = diffFilter === k ? null : k">${ diff.counts[k] } ${ k }</v-chip>
+                            </div>
+                            <ul v-if="diffFilter === 'missing'" class="ps-5 mt-2 text-body-small">
+                                <li v-for="r in diff.rows.filter(r => r.status === 'missing')" :key="r.key">Row ${ r.previous_row } of the previous version (identifier ${ r.key }) is not in this one. It stays as it was; nothing is retracted.</li>
+                            </ul>
+                            <p v-if="diff && diff.counts.invalid" class="text-body-small text-error mt-2">Rows with a blank or repeated identifier are not read. Fix them in the sheet and add it again.</p>
+                            <div class="d-flex ga-2 mt-3 flex-wrap">
+                                <v-btn variant="outlined" prepend-icon="ti ti-git-compare" :disabled="!mappingReady" :loading="sheet.busy" @click="checkDiff">Check changes</v-btn>
+                                <v-btn color="primary" prepend-icon="ti ti-player-play" :disabled="!mappingReady || !diff || !diff.to_read" :loading="sheet.busy" @click="confirmSheet">Read ${ diff ? diff.to_read : '' } new and changed rows</v-btn>
+                                <span v-if="!mappingReady" class="text-body-small text-medium-emphasis align-self-center">${ unconfirmed } column${ unconfirmed === 1 ? '' : 's' } to confirm${ sheet.key ? '' : ', and choose the row identifier' }</span>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <p class="text-body-medium mb-2">Version ${ sheet.data.version.number } of ${ sheet.data.version.dataset_name }. ${ runWords }</p>
+                            <sheet-viewer :table="sheet.data.table" :claims="flatClaims" :sel="sheet.sel" height="420px" @select="id => sheet.sel = id"></sheet-viewer>
+                            <h3 class="text-title-small mt-4 mb-1">Proposals by row</h3>
+                            <p v-if="!proposals.length" class="text-body-medium text-medium-emphasis">No proposals yet.</p>
+                            <div v-for="r in proposals" :key="r.row" class="sheet-row">
+                                <div class="text-body-small text-medium-emphasis mb-1">Row ${ r.row }</div>
+                                <div class="d-flex ga-1 flex-wrap">
+                                    <v-chip v-for="c in r.claims" :key="c.id" size="small" label class="claim-chip" :class="{on: sheet.sel === c.id}" :variant="c.tier === 'rejected' ? 'outlined' : 'tonal'" :color="c.tier === 'accepted' ? 'success' : c.tier === 'rejected' ? 'error' : undefined" @click="sheet.sel = c.id">
+                                        <strong class="me-1">${ propLabel(c.prop) }</strong><span dir="auto">${ claimText(c) }</span>
+                                    </v-chip>
+                                </div>
+                            </div>
+                            <div class="d-flex ga-2 mt-3">
+                                <v-btn size="small" variant="outlined" prepend-icon="ti ti-file-search" :href="'/evidence/' + sheet.sha">Review on the source page</v-btn>
+                                <v-btn size="small" variant="outlined" prepend-icon="ti ti-checklist" href="/review">Review queue</v-btn>
+                            </div>
+                        </template>
+                    </v-card-text>
+                </v-card>
+                <v-card v-if="summary" aria-labelledby="h-summary">
+                    <v-card-title id="h-summary" class="text-title-medium pa-4 pb-2">What this batch found</v-card-title>
+                    <v-card-text class="pt-0">
+                        <ul class="ps-5">
+                            <li v-for="l in summaryLines" :key="l">${ l }</li>
+                        </ul>
+                    </v-card-text>
+                    <v-card-actions class="px-4 pb-4">
+                        <v-btn size="small" variant="outlined" prepend-icon="ti ti-checklist" href="/review">Review</v-btn>
+                        <v-btn size="small" variant="outlined" prepend-icon="ti ti-files" :href="'/sources?investigation=' + encodeURIComponent(intake.investigation) + '&batch=' + batch">Open these sources</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </div>
+        </div>
+        <v-snackbar v-model="error.show" color="error">${ error.text }</v-snackbar>
+    </v-container>
+{% endblock %}
+
+{% block js %}
+    <script type="module">
+        import {SheetViewer} from '/static/js/components/SheetViewer.js';
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+        const vuetify = createVuetify(config.vuetifyConfig);
+        const CASES = {{ cases | tojson }};
+        const PROPS = {name: 'Name', sex: 'Sex', age: 'Age', occupation: 'Occupation', father_name: "Father's name", mother_name: "Mother's name", birth_date: 'Born', place_of_birth: 'Born in', arrested_at: 'Arrested at', detained_at: 'Detained at', detention_branch: 'Held by branch', transferred_to: 'Transferred to', seen_at: 'Seen at', last_seen: 'Last seen', event: 'Event', located_at: 'Place'};
+        const clock = (ms) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+        const readProgress = (p) => !p ? '' : p.unit === 'ms' ? ` ${clock(p.completed)} of ${clock(p.total)}` : ` ${p.completed} of ${p.total} ${p.unit}`;
+
+        const app = createApp({
+            mixins: [layoutMixin],
+            data() {
+                const stored = storedCase();
+                return {
+                    cases: CASES, files: [], links: '', queue: [], batch: null, uploading: false, timer: null,
+                    summary: null, error: {show: false, text: ''}, sheet: null, diff: null, diffFilter: null, proposals: [], sheetTimer: null,
+                    intake: {investigation: (stored !== 'all' && stored) || CASES[0] || '', origin: '', doc_type: 'unknown', sensitivity: 'sensitive', note: ''},
+                    docTypes: ['detention_register', 'transfer_order', 'witness_statement', 'photo', 'web_post', 'unknown'],
+                    stages: [
+                        {key: 'hashed', label: () => 'hashed'},
+                        {key: 'c2pa', label: (q) => q.stage('c2pa') === 'done' ? 'C2PA checked' : 'C2PA'},
+                        {key: 'read', label: (q) => (q.sheet ? 'rows read' : q.type === 'audio' ? 'transcript read' : 'text read') + (q.stage('read') === 'done' ? '' : readProgress(q.read_progress))},
+                        {key: 'fingerprint', label: () => 'fingerprinted'},
+                        {key: 'embed', label: () => 'embedded'},
+                        {key: 'linked', label: () => 'linked'},
+                    ],
+                    icons: {done: 'ti-check', running: 'ti-loader-2', queued: 'ti-circle-dashed', failed: 'ti-alert-circle', skipped: 'ti-minus'},
+                    words: {done: 'done', running: 'running', queued: 'waiting', failed: 'failed', skipped: 'not run automatically'},
+                };
+            },
+            computed: {
+                entries() { return this.links.split('\n').map(l => l.trim()).filter(Boolean); },
+                ready() { return this.intake.investigation && (this.files.length || this.entries.length); },
+                datasetItems() { return [...(this.sheet?.data?.datasets || []).map(d => ({title: `${d.name} (${d.versions} version${d.versions === 1 ? '' : 's'})`, value: d.id})), {title: 'New dataset', value: null}]; },
+                fieldItems() { return (this.sheet?.data?.fields || []).map(f => ({title: f.label, value: f.key})); },
+                unconfirmed() { return this.sheet?.data ? this.sheet.data.table.header.filter(h => !this.sheet.confirmed[h]).length : 0; },
+                mappingReady() { const s = this.sheet; return !!s?.data && !!s.key && s.map[s.key] === 'key' && !this.unconfirmed && !!(s.dataset || s.datasetName.trim()); },
+                diffStatus() { return Object.fromEntries((this.diff?.rows || []).filter(r => r.row).map(r => [r.row, r.status])); },
+                diffChanged() { return Object.fromEntries((this.diff?.rows || []).filter(r => r.changed?.length).map(r => [r.row, r.changed])); },
+                diffOnly() { return this.diffFilter && this.diffFilter !== 'missing' ? this.diff.rows.filter(r => r.status === this.diffFilter && r.row).map(r => r.row) : null; },
+                flatClaims() { return this.proposals.flatMap(r => r.claims).map(c => ({...c, label: PROPS[c.prop] || c.prop})); },
+                runWords() {
+                    const v = this.sheet.data.version, run = v.run, n = v.counts.new + v.counts.changed;
+                    // No run with rows to read means the server could not queue one; say so.
+                    if (!run && n) return `${n} new and changed row${n === 1 ? ' was' : 's were'} not read: ${this.sheet.notRead || 'no model is configured for the route this sheet is allowed'}.`;
+                    if (!run) return `Nothing to read: ${v.counts.unchanged} unchanged rows were skipped.`;
+                    return {queued: `${n} rows wait for the reader.`, running: `Reading ${n} rows.`, failed: `Reading did not finish: ${run.error || ''}`, done: `Read ${n} rows; ${v.counts.unchanged} unchanged rows were skipped. Every proposal below is unconfirmed until a person reviews it.`}[run.status];
+                },
+                addLabel() { const n = this.files.length + this.entries.length; return `Add ${n || ''} item${n === 1 ? '' : 's'} to ${this.intake.investigation || 'a case'}`.replace('Add  ', 'Add '); },
+                finishedCount() { return this.queue.filter(q => this.finished(q)).length; },
+                overall() { return this.queue.length ? this.queue.reduce((a, q) => a + this.progress(q), 0) / this.queue.length : 0; },
+                waiting() { return this.queue.some(q => q.sha256 && Object.values(q.stages || {}).includes('queued') && !q.failures.length); },
+                summaryLines() {
+                    const s = this.summary, n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
+                    return [
+                        `${n(s.new_items, 'new item', 'new items')} hashed and stored with a custody entry`,
+                        `${n(s.exact_duplicates, 'duplicate', 'duplicates')} of existing items`,
+                        `${n(s.possible_matches, 'possible match', 'possible matches')} to existing items, for you to review`,
+                        `${n(s.claims, 'new claim', 'new claims')}, all unconfirmed until a person signs`,
+                        `${n(s.findings, 'new finding', 'new findings')} proposed in this case since the batch began`,
+                        s.failed ? `${n(s.failed, 'item needs', 'items need')} a retry` : 'no failures',
+                    ];
+                },
+            },
+            beforeUnmount() { clearTimeout(this.timer); clearTimeout(this.sheetTimer); },
+            methods: {
+                // Shell contract: a new batch goes to the switcher's case.
+                useCase(v) { if (v && !this.batch) this.intake.investigation = v; },
+                fail(e) { this.error = {show: true, text: e.response?.data?.message || e.message}; },
+                kind(mime) { return /^image/.test(mime) ? 'image' : /pdf/.test(mime) ? 'pdf' : /^audio/.test(mime) ? 'audio' : /^video/.test(mime) ? 'video' : /^text/.test(mime) ? 'text' : 'file'; },
+                typeIcon(q) { return {image: 'ti-photo', pdf: 'ti-file-type-pdf', audio: 'ti-headphones', video: 'ti-video', text: 'ti-file-text', link: 'ti-link'}[q.type] || 'ti-file'; },
+                size(n) { return n > 1e6 ? (n / 1e6).toFixed(1) + ' MB' : (n / 1e3).toFixed(1) + ' KB'; },
+                // The server owns stage states; before it answers, only upload is known.
+                stateOf(q, key) {
+                    if (q.error) return key === 'hashed' ? 'failed' : 'queued';
+                    if (!q.stages) return key === 'hashed' ? 'running' : 'queued';
+                    return q.stages[key];
+                },
+                finished(q) { return !!q.stages && !q.pending; },
+                problem(q) { return !!q.error || q.failures.length > 0; },
+                progress(q) {
+                    if (!q.stages) return 0;
+                    return this.stages.filter(s => ['done', 'skipped'].includes(q.stages[s.key])).length / this.stages.length * 100;
+                },
+                item(name, type, size, extra) {
+                    const q = {key: crypto.randomUUID(), name, type, size: this.size(size || 0), sha256: '', stages: null, pending: true, duplicate: false, failures: [], error: '', acquisition: null, ...extra};
+                    q.stage = (k) => q.stages?.[k];
+                    return q;
+                },
+                async start() {
+                    if (!this.batch || this.summary) { this.batch = crypto.randomUUID(); this.queue = []; this.summary = null; }
+                    const added = [
+                        ...this.files.map(f => this.item(f.name, this.kind(f.type), f.size, {file: f})),
+                        ...this.entries.map(u => this.item(u, 'link', 0, {url: u})),
+                    ];
+                    this.queue.push(...added);
+                    this.files = []; this.links = '';
+                    this.uploading = true;
+                    for (const q of this.queue.filter(x => !x.acquisition && !x.error)) await this.send(q);
+                    this.uploading = false;
+                    this.poll();
+                },
+                async send(q) {
+                    q.error = '';
+                    // Items in the live list are Vue proxies: look up by key after each await.
+                    const i = this.intake, origin = i.origin.trim(), m = origin.match(/^(device|channel):(.*)$/);
+                    try {
+                        let data;
+                        if (q.url) {
+                            ({data} = await axios.post('/ingest/url', {item: {url: q.url, investigation: i.investigation, batch: this.batch, note: i.note, doc_type: i.doc_type, sensitivity: i.sensitivity}}));
+                        } else {
+                            const form = new FormData();
+                            form.append('file', q.file);
+                            form.append('batch', this.batch);
+                            form.append('investigation', i.investigation);
+                            form.append('origin_kind', m ? m[1] : 'device');
+                            form.append('origin', m ? m[2] : origin);
+                            for (const k of ['doc_type', 'sensitivity', 'note']) if (i[k]) form.append(k, i[k]);
+                            ({data} = await axios.post('/ingest/file', form));
+                            data = data.items[0];
+                        }
+                        q.acquisition = data.acquisition_id;
+                        q.sha256 = data.sha256;
+                        q.duplicate = !data.new_blob;
+                    } catch (e) {
+                        q.error = e.response?.data?.message || 'The upload did not finish. Check the connection and retry.';
+                    }
+                },
+                async reupload(q) {
+                    this.uploading = true;
+                    await this.send(q);
+                    this.uploading = false;
+                    this.poll();
+                },
+                async retry(q, f) {
+                    try {
+                        await axios.post(`/ingest/run/${f.run}/retry`);
+                        this.summary = null;
+                        q.failures = q.failures.filter(x => x.run !== f.run);
+                        q.pending = true;
+                        this.poll();
+                    } catch (e) { this.fail(e); }
+                },
+                sheetLabel(q) { return this.sheet?.acq === q.acquisition ? 'Sheet open' : 'Prepare sheet'; },
+                propLabel(p) { return PROPS[p] || p; },
+                claimText(c) {
+                    const v = c.value || {}, parts = [v.text ?? 'erased'];
+                    if (v.norm != null) parts.push(`(${v.norm})`);
+                    if (v.kind) parts.push(`(${v.kind})`);
+                    if (c.from) parts.push(c.from === c.to ? c.from : `${c.from} to ${c.to}`);
+                    else if (v.date_text) parts.push('undated');
+                    if ('place' in c) parts.push(c.place ? `place: ${c.place.name}` : c.candidates ? `place open, ${c.candidates} candidate${c.candidates === 1 ? '' : 's'}` : 'place open, not in the gazetteer');
+                    if (c.tier === 'rejected') parts.push(`rejected: ${c.reason}`);
+                    return parts.join(' ');
+                },
+                score(h) { const c = this.sheet.data.columns.find(x => x.header === h), s = c?.suggestions?.[0]; return s && s.field === this.sheet.map[h] ? s.score.toFixed(2) : ''; },
+                openSheet(q) {
+                    clearTimeout(this.sheetTimer);
+                    this.sheet = {acq: q.acquisition, sha: q.sha256, name: q.name, data: null, reveal: false, busy: false, dataset: null, datasetName: q.name.replace(/\.[^.]+$/, ''), key: null, map: {}, confirmed: {}, sel: null, notRead: ''};
+                    this.diff = null; this.diffFilter = null; this.proposals = [];
+                    this.loadSheet();
+                },
+                async loadSheet() {
+                    const s = this.sheet;
+                    this.diff = null; this.diffFilter = null;
+                    try {
+                        const {data} = await axios.get(`/api/sheets/${s.acq}/preview`, {params: s.dataset ? {dataset: s.dataset} : {}});
+                        s.reveal = false; s.data = data;
+                        if (data.version) return this.loadProposals();
+                        s.map = {}; s.confirmed = {};
+                        for (const c of data.columns) {
+                            s.map[c.header] = c.remembered || c.suggestions[0]?.field || 'ignore';
+                            if (c.remembered) s.confirmed[c.header] = 'remembered';
+                        }
+                        const d = data.datasets.find(x => x.id === s.dataset);
+                        s.key = d && data.table.header.includes(d.key_column) ? d.key_column : (data.columns.find(c => s.map[c.header] === 'key')?.header || null);
+                    } catch (e) {
+                        if (e.response?.data?.reason === 'reveal_required') s.reveal = true; else this.fail(e);
+                    }
+                },
+                async revealSheet() {
+                    this.sheet.busy = true;
+                    try { await axios.post(`/api/evidence/${this.sheet.sha}/reveal`, {item: {}}); await this.loadSheet(); } catch (e) { this.fail(e); }
+                    this.sheet.busy = false;
+                },
+                choose(header, field) {
+                    const s = this.sheet;
+                    s.map[header] = field; s.confirmed[header] = 'confirmed';
+                    if (field === 'key') s.key = header;
+                    this.diff = null;
+                },
+                setKey(header) { this.choose(header, 'key'); },
+                sheetItem() { const s = this.sheet; return {item: {dataset: s.dataset, dataset_name: s.datasetName, key_column: s.key, mapping: s.map, sheet: s.data.table.sheet}}; },
+                async checkDiff() {
+                    this.sheet.busy = true;
+                    try { this.diff = (await axios.post(`/api/sheets/${this.sheet.acq}/diff`, this.sheetItem())).data; this.diffFilter = null; } catch (e) { this.fail(e); }
+                    this.sheet.busy = false;
+                },
+                async confirmSheet() {
+                    this.sheet.busy = true;
+                    try { const {data} = await axios.post(`/api/sheets/${this.sheet.acq}/confirm`, this.sheetItem()); this.sheet.notRead = data.reason; this.summary = null; this.poll(); await this.loadSheet(); } catch (e) { this.fail(e); }
+                    this.sheet.busy = false;
+                },
+                async loadProposals() {
+                    clearTimeout(this.sheetTimer);
+                    const s = this.sheet;
+                    if (!s) return;
+                    try {
+                        const {data} = await axios.get(`/api/sheets/${s.acq}/proposals`);
+                        this.proposals = data.rows;
+                        s.data.version = data.version;
+                        if (['queued', 'running'].includes(data.version.run?.status)) this.sheetTimer = setTimeout(() => this.loadProposals(), 2000);
+                    } catch (e) { this.fail(e); }
+                },
+                async poll() {
+                    clearTimeout(this.timer);
+                    if (!this.batch || this.uploading) return;
+                    try {
+                        const {data} = await axios.get(`/ingest/batch/${this.batch}`);
+                        for (const s of data.items) {
+                            const q = this.queue.find(x => x.acquisition === s.acquisition);
+                            if (q) Object.assign(q, {stages: s.stages, pending: s.pending, failures: s.failures, duplicate: s.duplicate, sha256: s.sha256, read_progress: s.read_progress, sheet: s.sheet});
+                        }
+                        const open = this.queue.some(q => !q.error && (!q.acquisition || q.pending));
+                        this.summary = data.done && !open ? data.summary : null;
+                        if (open) this.timer = setTimeout(() => this.poll(), 1500);
+                    } catch (e) { this.fail(e); this.timer = setTimeout(() => this.poll(), 5000); }
+                },
+            },
+            delimiters: config.delimiters
+        });
+
+        app.component('sheet-viewer', SheetViewer);
+        registerStkComponents(app);
+        app.use(vuetify).mount('#app');
+    </script>
+{% endblock %}

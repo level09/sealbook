@@ -1,0 +1,25 @@
+{
+  "type": "images",
+  "query": {
+    "original": "\"Lina Najjar\""
+  },
+  "results": [
+    {
+      "type": "image_result",
+      "title": "Damaged building",
+      "url": "https://news.example.org/2013/07/families-ask",
+      "source": "news.example.org",
+      "page_fetched": "2013-07-21T09:00:00Z",
+      "thumbnail": {
+        "src": "https://imgs.search.brave.com/img-thumb-1"
+      },
+      "properties": {
+        "url": "https://news.example.org/media/photo.jpg",
+        "placeholder": "https://imgs.search.brave.com/ph"
+      },
+      "meta_url": {
+        "hostname": "news.example.org"
+      }
+    }
+  ]
+}

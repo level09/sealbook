@@ -1,0 +1,187 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.sr { max-width: 1100px; }
+.sr-panel { background: var(--panel, #fff); border: 1px solid var(--line, #e4e4e0); border-radius: 6px; margin-bottom: 16px; }
+.sr-panel > header { display: flex; gap: 12px; align-items: baseline; padding: 10px 14px; border-bottom: 1px solid var(--line, #e4e4e0); }
+.sr-panel > header h2 { font-size: 15px; font-weight: 600; margin: 0; }
+.sr-muted { color: var(--ink-3, #62656a); }
+.sr-hit { display: grid; grid-template-columns: 26px 1fr auto; gap: 2px 10px; padding: 9px 14px; border-top: 1px solid var(--line, #e4e4e0); text-decoration: none; color: inherit; outline: none; }
+.sr-hit:first-child { border-top: 0; }
+.sr-hit:hover, .sr-hit.active { background: var(--raise, #fafaf8); }
+.sr-hit.active { box-shadow: inset 3px 0 0 var(--ink, #18191b); }
+[dir="rtl"] .sr-hit.active { box-shadow: inset -3px 0 0 var(--ink, #18191b); }
+.sr-hit .ti { font-size: 18px; line-height: 22px; }
+.sr-hit.lead .ti { color: var(--agent, #5a46c8); }
+.sr-snip { font-size: 14px; line-height: 1.7; color: var(--ink-2, #44464a); white-space: pre-line; overflow-wrap: anywhere; }
+.sr-snip mark { background: rgba(255, 214, 0, .45); color: inherit; border-radius: 2px; }
+.sr-why { font-size: 12px; color: var(--ink-3, #62656a); }
+.sr-thumb { width: 120px; border-radius: 3px; display: block; margin-top: 4px; }
+.sr-lead-label { color: var(--agent, #5a46c8); font-size: 12px; white-space: nowrap; }
+</style>
+{% endblock %}
+{% block content %}
+<v-container class="py-6 sr">
+  <h1 class="text-headline-small mb-1">Search</h1>
+  <p class="text-body-medium sr-muted mb-4">Exact identifiers, names in every recorded spelling and words first. Leads by meaning follow; they are places to look, not matches.</p>
+  <form class="d-flex flex-wrap mb-3" style="gap:12px" @submit.prevent="go">
+    <v-text-field ref="box" v-model="q" label="Name, place, hash, phrase or question" prepend-inner-icon="ti ti-search" dir="auto" hide-details density="comfortable" style="min-width:280px;flex:3"></v-text-field>
+    <v-select :model-value="investigation" :items="cases" item-title="title" item-value="value" label="Case" hide-details density="comfortable" style="min-width:180px;flex:1" @update:model-value="v => switchCase(v ?? 'all')"></v-select>
+    <v-btn type="submit" color="primary" prepend-icon="ti ti-search" :loading="busy" :disabled="!q.trim()" height="48">Search</v-btn>
+  </form>
+  <v-chip-group v-if="result" v-model="shownTypes" multiple column class="mb-3" aria-label="Filter by type">
+    <v-chip v-for="t in types" :key="t" :value="t" :class="groupRole(t)" filter variant="outlined" :disabled="!total(t)">${ label[t] } ${ total(t) }</v-chip>
+  </v-chip-group>
+  <v-alert v-if="error" type="error" variant="tonal" class="mb-4" closable @click:close="error=''">${ error }</v-alert>
+  <v-alert v-if="result && result.semantic.status === 'failed'" type="warning" variant="tonal" class="mb-4" icon="ti ti-plug-off">Leads by meaning are unavailable: ${ result.semantic.message }. Exact results below are complete for the indexed evidence.</v-alert>
+  <v-skeleton-loader v-if="busy && !result" type="list-item-two-line@4"></v-skeleton-loader>
+  <template v-if="result">
+    <p class="text-caption sr-muted mb-3">for <bdi dir="auto"><strong>${ result.query }</strong></bdi> in ${ result.filter.investigation || 'all cases' } · ${ result.ms } ms<span v-if="result.capped"> · showing the first results per type</span></p>
+    <section class="sr-panel" aria-labelledby="h-exact">
+      <header><h2 id="h-exact">Exact identifiers, names and words</h2><span class="sr-muted text-caption">${ exact.length } shown</span></header>
+      <div>
+        <a v-for="h in exact" :key="h.type + h.id" :href="h.link || undefined" class="sr-hit" :class="{active: rows[cursor] === h}" :data-row="rows.indexOf(h)" @mouseenter="cursor = rows.indexOf(h)">
+          <i :class="[icon(h), ent(h)]" :aria-label="h.type"></i>
+          <span>
+            <strong><bdi dir="auto">${ h.title || (h.masked ? 'Value hidden until the source is revealed' : h.type) }</bdi></strong>
+            <template v-if="h.alt && h.alt.length"> · <bdi v-for="(a, i) in h.alt" :key="i" class="sr-muted" dir="auto">${ i ? ' · ' : '' }${ a }</bdi></template>
+            <span v-if="h.subtitle" class="sr-muted text-caption" dir="auto"> · ${ h.subtitle }</span>
+            <div v-if="h.snippet" class="sr-snip" dir="auto"><template v-for="(p, i) in parts(h.snippet)" :key="i"><mark v-if="p.mark">${ p.text }</mark><template v-else>${ p.text }</template></template></div>
+            <media-thumb v-if="h.sha256 && h.type !== 'passage'" :locked="!!h.masked" :sha="h.sha256" :kind="{frame: 'video', page_image: 'pdf', page: 'pdf', image: 'image', audio: 'audio'}[h.kind]" :file="h.title" :link="false" :caption="false" :width="120" :height="68" class="mt-1" style="display: flex"></media-thumb>
+            <div v-else-if="h.masked" class="sr-why"><i class="ti ti-eye-off"></i> ${ h.type === 'person' ? 'Name hidden: it comes from a sensitive source. Open the person to reveal it (logged).' : 'Text hidden until you reveal this source (logged)' }</div>
+            <div class="sr-why" dir="auto">${ why(h) }${ where(h) }</div>
+          </span>
+          <v-chip size="small" variant="outlined">${ kindLabel(h) }</v-chip>
+        </a>
+        <v-empty-state v-if="!exact.length" icon="ti ti-search-off" :title="'No exact identifier, name or words for ' + result.query" text="Leads by meaning are below. No result does not establish that evidence is absent."></v-empty-state>
+      </div>
+    </section>
+    <section class="sr-panel" aria-labelledby="h-leads">
+      <header><h2 id="h-leads">Leads by meaning</h2><span class="sr-muted text-caption">passages, scans, frames, audio windows and profiles near the query or the exact hits. Leads, not matches.</span></header>
+      <div>
+        <a v-for="h in leads" :key="h.type + h.id" :href="h.link || undefined" class="sr-hit lead" :class="{active: rows[cursor] === h}" @mouseenter="cursor = rows.indexOf(h)">
+          <i :class="icon(h)" :aria-label="'Lead: ' + h.type"></i>
+          <span>
+            <strong><bdi dir="auto">${ h.title }</bdi></strong>
+            <span v-if="h.subtitle" class="sr-muted text-caption" dir="auto"> · ${ h.subtitle }</span>
+            <img v-if="h.thumb" :src="h.thumb" class="sr-thumb" :alt="'Preview of ' + h.title">
+            <media-thumb v-else-if="h.sha256 && h.type !== 'passage'" :locked="!!h.masked" :sha="h.sha256" :kind="{frame: 'video', page_image: 'pdf', page: 'pdf', image: 'image', audio: 'audio'}[h.kind]" :file="h.title" :link="false" :caption="false" :width="120" :height="68" class="mt-1" style="display: flex"></media-thumb>
+            <div v-if="h.snippet" class="sr-snip" dir="auto">${ h.snippet.text }</div>
+            <div v-else-if="h.masked && h.type !== 'person'" class="sr-why"><i class="ti ti-eye-off"></i> Hidden until you reveal this source (logged)</div>
+            <div class="sr-why" dir="auto">${ why(h) }${ where(h) }</div>
+          </span>
+          <span class="sr-lead-label" :title="'Cosine similarity in the embedding space. Not a probability.'"><i class="ti ti-robot"></i> lead<span v-if="score(h) !== null">&nbsp;${ score(h).toFixed(2) }</span></span>
+        </a>
+        <v-empty-state v-if="!leads.length" icon="ti ti-robot-off" title="No leads" :text="result.semantic.status === 'ok' ? 'Nothing near this query in the embedded evidence.' : 'Semantic search is off.'"></v-empty-state>
+      </div>
+    </section>
+    <p class="text-caption sr-muted"><kbd>j</kbd>/<kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>/</kbd> search</p>
+  </template>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="application/json" id="search-boot">{{ boot|tojson|safe }}</script>
+<script>
+const {createApp} = Vue;
+const boot = JSON.parse(document.getElementById('search-boot').textContent);
+const LABEL = {people: 'People', places: 'Places', sources: 'Sources', passages: 'Passages', media: 'Media', claims: 'Claims', findings: 'Findings', incidents: 'Incidents'};
+const WHY = {
+  sha256: h => 'SHA-256 starts with ' + h.why.matched,
+  file_name: h => 'file name or origin contains ' + h.why.matched,
+  literal: () => 'exact words', normalized: () => 'same words ignoring diacritics, hamza and letter forms',
+  words: () => 'all words, in any order', name_variant: h => 'recorded spelling ' + h.why.matched,
+  place_name: h => 'gazetteer name ' + h.why.matched, keyword: () => 'name in a recorded spelling',
+  claim_value: h => 'claim value matches ' + h.why.matched, involves: () => 'involves a matched person or place',
+  name: h => 'gazetteer name ' + h.why.matched, name_prefix: h => 'gazetteer name starts with the query: ' + h.why.matched,
+  name_part: h => 'gazetteer name contains the query: ' + h.why.matched,
+  spelling: h => 'similar spelling in another script: ' + h.why.matched,
+  semantic: () => 'near the query by meaning', near_match: () => 'near an exact hit by meaning',
+};
+const app = createApp({
+  mixins: [layoutMixin], delimiters: config.delimiters,
+  data() {
+    const params = new URLSearchParams(location.search);
+    // A link's ?case= wins; otherwise the top bar's switcher.
+    const stored = storedCase();
+    return {q: params.get('q') || '', investigation: params.get('case') || (stored !== 'all' && stored) || null, types: boot.types, label: LABEL,
+      shownTypes: [...boot.types], cases: [{title: 'All cases', value: null}, ...boot.investigations.map(value => ({title: value, value}))],
+      result: null, busy: false, error: '', cursor: 0};
+  },
+  computed: {
+    items() {
+      if (!this.result) return [];
+      return this.types.filter(t => this.shownTypes.includes(t) && this.result.groups[t]).flatMap(t => this.result.groups[t].items.map(i => ({...i, group: t})));
+    },
+    exact() { return this.items.filter(i => i.exact); },
+    leads() { return this.items.filter(i => !i.exact).sort((a, b) => (this.score(b) ?? 0) - (this.score(a) ?? 0)); },
+    rows() { return [...this.exact, ...this.leads]; },
+  },
+  watch: {investigation: {handler(v) { this.caseSel = v; }, immediate: true}},
+  methods: {
+    useCase(v) { this.investigation = v; this.go(); },
+    total(t) { return this.result?.groups[t]?.total || 0; },
+    // Entity hue on the glyph; claims stay ink, everything from a file is a source.
+    ent: h => h.type === 'claim' ? '' : 'r-ink is-' + ({person: 'person', place: 'place', incident: 'incident', finding: 'finding'}[h.type] || 'source'),
+    groupRole: t => t === 'claims' ? '' : 'r-dot is-' + ({people: 'person', places: 'place', incidents: 'incident', findings: 'finding'}[t] || 'source'),
+    icon(h) {
+      if (h.type === 'media') return {frame: 'ti ti-movie', audio: 'ti ti-wave-sine', image: 'ti ti-photo', page_image: 'ti ti-file-text'}[h.kind] || 'ti ti-photo';
+      return {person: 'ti ti-user', place: 'ti ti-map-pin', source: 'ti ti-file', passage: 'ti ti-align-left', claim: 'ti ti-quote', finding: 'ti ti-bulb', incident: 'ti ti-alert-triangle'}[h.type] || 'ti ti-point';
+    },
+    kindLabel(h) { return h.type === 'media' || h.type === 'passage' ? (h.kind || h.type).replace('_', ' ') : h.type === 'claim' ? h.prop.replace(/_/g, ' ') : h.type; },
+    score(h) { return h.why.score ?? h.why.near?.score ?? null; },
+    why(h) { return (h.why.signals || []).filter(s => WHY[s]).map(s => WHY[s](h)).filter((v, i, a) => a.indexOf(v) === i).join(' · '); },
+    where(h) {
+      const l = h.location || {}, out = [];
+      if (l.page) out.push('page ' + l.page);
+      // A frame is a moment, not a span.
+      if (Array.isArray(l.ms)) out.push(l.ms[1] - l.ms[0] < 1000 ? 'at ' + this.clock(l.ms[0]) : this.clock(l.ms[0]) + ' to ' + this.clock(l.ms[1]));
+      if (h.span && h.span.start !== undefined && h.type === 'passage') out.push('characters ' + h.span.start + ' to ' + h.span.end);
+      if (h.also && h.also.length) out.push(h.also.length + ' more in this source');
+      if (h.type === 'place' && h.claims) out.push(h.claims + (h.claims === 1 ? ' linked claim' : ' linked claims'));
+      if (h.tier) out.push(h.tier);
+      return out.length ? ' · ' + out.join(', ') : '';
+    },
+    clock(ms) { const s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); },
+    parts(snippet) {
+      const out = [], text = snippet.text; let at = 0;
+      for (const [a, b] of snippet.highlights) { out.push({text: text.slice(at, a)}, {text: text.slice(a, b), mark: true}); at = b; }
+      out.push({text: text.slice(at)});
+      return out.filter(p => p.text);
+    },
+    go() {
+      if (!this.q.trim()) return;
+      const params = new URLSearchParams({q: this.q.trim()});
+      if (this.investigation) params.set('case', this.investigation);
+      history.replaceState(null, '', '/search?' + params);
+      this.search();
+    },
+    async search() {
+      this.busy = true; this.error = '';
+      try {
+        this.result = (await axios.post('/api/search', {item: {query: this.q.trim(), filter: {investigation: this.investigation, time: null}}})).data;
+        this.cursor = 0;
+      } catch (err) { this.error = err.response?.data?.message || err.response?.data?.error || err.message; }
+      finally { this.busy = false; }
+    },
+    key(e) {
+      if (e.target.closest('input, textarea, select, [contenteditable]')) { if (e.key === 'Escape') e.target.blur(); return; }
+      if (e.key === '/') { e.preventDefault(); this.$refs.box.focus(); return; }
+      if (!this.rows.length) return;
+      if (e.key === 'j') this.cursor = Math.min(this.cursor + 1, this.rows.length - 1);
+      else if (e.key === 'k') this.cursor = Math.max(this.cursor - 1, 0);
+      else if (e.key === 'Enter' && this.rows[this.cursor]?.link) { location.href = this.rows[this.cursor].link; return; }
+      else return;
+      e.preventDefault();
+      this.$nextTick(() => document.querySelector('.sr-hit.active')?.scrollIntoView({block: 'nearest'}));
+    },
+  },
+  mounted() { window.addEventListener('keydown', this.key); if (this.q.trim()) this.search(); },
+  unmounted() { window.removeEventListener('keydown', this.key); },
+});
+import('/static/js/components/media.js').then(({registerMediaViewers}) => {
+  registerMediaViewers(app);
+  registerStkComponents(app);
+  app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+});
+</script>
+{% endblock %}

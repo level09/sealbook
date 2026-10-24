@@ -1,0 +1,7590 @@
+{
+ "generated_at": "2026-10-24T08:52:37+00:00",
+ "files": [
+  {
+   "id": "register",
+   "name": "register_page.png",
+   "kind": "image",
+   "bytes": 1378757,
+   "sha256": "44677237a0ff077c680b96d340251c2f785d79353072385a49b68f51ebe36d0d",
+   "md5": "67421348ca7d2dc73766859400760148",
+   "acquired": {
+    "by": "analyst-1",
+    "origin": "device:scanner-01"
+   },
+   "c2pa": {
+    "state": "absent",
+    "note": "The file carries no C2PA manifest."
+   },
+   "doc_type": "detention_register",
+   "media": "media/register_page.png",
+   "size": [
+    1600,
+    1085
+   ],
+   "text": {
+    "lang": "ar",
+    "dir": "rtl",
+    "source": "transcript of the register supplied with the case",
+    "content": "سجل الموقوفين اليومي\nالفرع 999\nالتاريخ: 2013-05-03\n\n1. الاسم: يوسف خالد العلي | اسم الأب: خالد | اسم الأم: فاطمة | المواليد: 1991 | مكان التوقيف: حرستا | تاريخ التوقيف: 2013-05-02\n2. الاسم: يوسف خالد العلي | اسم الأب: خالد | اسم الأم: سعاد | المواليد: 1985\n"
+   },
+   "claims": [
+    {
+     "prop": "name",
+     "person": "P1",
+     "value": "يوسف خالد العلي",
+     "where": {
+      "page": 1,
+      "bbox": [
+       1109,
+       233,
+       1371,
+       316
+      ]
+     },
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "father_name",
+     "person": "P1",
+     "value": "خالد",
+     "where": {
+      "page": 1,
+      "bbox": [
+       972,
+       239,
+       1074,
+       315
+      ]
+     },
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "mother_name",
+     "person": "P1",
+     "value": "فاطمة",
+     "where": {
+      "page": 1,
+      "bbox": [
+       841,
+       239,
+       950,
+       317
+      ]
+     },
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "birth_date",
+     "person": "P1",
+     "value": "1991",
+     "where": {
+      "page": 1,
+      "bbox": [
+       684,
+       245,
+       811,
+       320
+      ]
+     },
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "arrested_at",
+     "person": "P1",
+     "value": "حرستا",
+     "where": {
+      "page": 1,
+      "bbox": [
+       351,
+       251,
+       464,
+       326
+      ]
+     },
+     "valid": "2013-05-02",
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "detention_branch",
+     "person": "P1",
+     "value": "الفرع 999",
+     "where": {
+      "page": 1,
+      "bbox": [
+       1320,
+       46,
+       1523,
+       128
+      ]
+     },
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "name",
+     "person": "P2",
+     "value": "يوسف خالد العلي",
+     "where": {
+      "page": 1,
+      "bbox": [
+       1112,
+       326,
+       1374,
+       410
+      ]
+     },
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "mother_name",
+     "person": "P2",
+     "value": "سعاد",
+     "where": {
+      "page": 1,
+      "bbox": [
+       843,
+       341,
+       949,
+       417
+      ]
+     },
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "birth_date",
+     "person": "P2",
+     "value": "1985",
+     "where": {
+      "page": 1,
+      "bbox": [
+       691,
+       341,
+       819,
+       418
+      ]
+     },
+     "tier": "unconfirmed"
+    }
+   ]
+  },
+  {
+   "id": "transfer",
+   "name": "transfer_order.pdf",
+   "kind": "pdf",
+   "bytes": 46589,
+   "sha256": "94057a75131819c3b5dc0fdd099895e523b49a139651925b51f72b3499fa88c2",
+   "md5": "3ac935d422697f8e3c5f7bdf4bc0772e",
+   "acquired": {
+    "by": "importer",
+    "origin": "channel:partner-a/batch-7"
+   },
+   "c2pa": {
+    "state": "absent",
+    "note": "The file carries no C2PA manifest."
+   },
+   "doc_type": "transfer_order",
+   "media": "media/transfer_order.png",
+   "text": {
+    "lang": "ar",
+    "dir": "rtl",
+    "source": "pypdf PdfReader(...).pages[0].extract_text(), page 1 only, default mode",
+    "content": "999 الفرع\nقسم الديوان\nن/ 4471 أمر نقل رقم\n17-09-2013 : التاريخ\n، والدته فاطمة14-03-1991  يوسف خالد علي، تولد: الموقوف\n999  الفرع: الجهة الموقوف لديها\n17-09-2013 ينقل الموقوف المذكور أعلاه إلى سجن ك المركزي بتاريخ\nيسلم مع أماناته وملفه إلى إدارة السجن أصولا.\nديوان\n2013/9/17\n وارد"
+   },
+   "claims": [
+    {
+     "prop": "name",
+     "person": "P1",
+     "value": "يوسف خالد علي",
+     "where": {
+      "page": 1,
+      "chars": [
+       89,
+       102
+      ]
+     },
+     "extracted_as": "يوسف خالد علي",
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "birth_date",
+     "person": "P1",
+     "value": "1991-03-14",
+     "where": {
+      "page": 1,
+      "chars": [
+       77,
+       87
+      ]
+     },
+     "extracted_as": "14-03-1991",
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "transferred_to",
+     "person": "P1",
+     "value": "سجن ك المركزي",
+     "where": {
+      "page": 1,
+      "chars": [
+       192,
+       205
+      ]
+     },
+     "valid": "2013-09-17",
+     "extracted_as": "سجن ك المركزي",
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "detention_branch",
+     "person": "P1",
+     "value": "الفرع 999",
+     "where": {
+      "page": 1,
+      "chars": [
+       0,
+       9
+      ]
+     },
+     "extracted_as": "999 الفرع",
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "detained_at",
+     "person": "P1",
+     "value": "الفرع 999",
+     "valid": "2013-10-01",
+     "where": {
+      "page": 1
+     },
+     "proposed_by": "case-assistant (on behalf of analyst-1)",
+     "tier": "unconfirmed"
+    }
+   ]
+  },
+  {
+   "id": "witness",
+   "name": "witness_clip.ogg",
+   "kind": "audio",
+   "bytes": 92770,
+   "sha256": "0cc14d528b8a62794337df7f6ec300951704350674e4efbf99d2b90069b6ca3a",
+   "md5": "4a0e4b6a97b271fe482c950f74a12d2b",
+   "acquired": {
+    "by": "analyst-1",
+    "origin": "device:recorder-03"
+   },
+   "c2pa": {
+    "state": "not_applicable",
+    "note": "c2patool does not read this file type."
+   },
+   "doc_type": "witness_statement",
+   "media": "media/witness_clip_wave.png",
+   "audio": "media/witness_clip.ogg",
+   "duration_ms": 33100,
+   "text": {
+    "lang": "ar",
+    "dir": "rtl",
+    "source": "transcript supplied with the file",
+    "segments": [
+     {
+      "text": "اسمي سامر، أنا من دوما.",
+      "ms": [
+       0,
+       2950
+      ]
+     },
+     {
+      "text": "اعتقلوني بربيع الألفين وتلتعش، وضلّيت محجوز كم شهر.",
+      "ms": [
+       3550,
+       9850
+      ]
+     },
+     {
+      "text": "بشهر تموز من سنة الألفين وتلتعش، شفت يوسف خالد العلي بالفرع تسعمية وتسعة وتسعين.",
+      "ms": [
+       10450,
+       19600
+      ]
+     },
+     {
+      "text": "قلّي إنّو اعتقلوه على حاجز بحرستا، وإنّو أهلو ما بيعرفوا وينو.",
+      "ms": [
+       20200,
+       27300
+      ]
+     },
+     {
+      "text": "أنا مستعد إشهد باللي شفتو قدّام أي جهة.",
+      "ms": [
+       27900,
+       33100
+      ]
+     }
+    ],
+    "content": "اسمي سامر، أنا من دوما. اعتقلوني بربيع الألفين وتلتعش، وضلّيت محجوز كم شهر. بشهر تموز من سنة الألفين وتلتعش، شفت يوسف خالد العلي بالفرع تسعمية وتسعة وتسعين. قلّي إنّو اعتقلوه على حاجز بحرستا، وإنّو أهلو ما بيعرفوا وينو. أنا مستعد إشهد باللي شفتو قدّام أي جهة."
+   },
+   "transcript_note": "the script the synthetic clip was spoken from; the speech chapter shows what local speech to text heard",
+   "claims": [
+    {
+     "prop": "seen_at",
+     "person": "P1",
+     "value": "الفرع 999",
+     "where": {
+      "ms": [
+       10450,
+       19600
+      ]
+     },
+     "valid": "2013-07",
+     "spoken_as": "بالفرع تسعمية وتسعة وتسعين",
+     "tier": "unconfirmed"
+    }
+   ]
+  },
+  {
+   "id": "photo",
+   "name": "photo_damaged_building.jpg",
+   "kind": "image",
+   "bytes": 465094,
+   "sha256": "378e2910f85b205efe169ebe70804552f7ccc3e52ae326bd155766a96dbd781c",
+   "md5": "ec758d890785694b4faf8cef0da65e9e",
+   "acquired": {
+    "by": "analyst-1",
+    "origin": "device:camera-c2pa-01"
+   },
+   "c2pa": {
+    "state": "untrusted",
+    "note": "The manifest signature is valid, but the signer (C2PA Test Signing Cert) is not on a trust list."
+   },
+   "doc_type": "photo",
+   "media": "media/photo_damaged_building.jpg",
+   "claims": [],
+   "credit": {
+    "title": "Destruction in Homs (8).jpg",
+    "author": "Bo yaser",
+    "description": "Destruction in the Bab Dreeb area of Homs, Syria (2012).",
+    "credit": "Own work",
+    "licence": "CC BY-SA 3.0",
+    "licence_url": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Destruction_in_Homs_(8).jpg",
+    "date": "2012-04-05",
+    "sha1": "6feb240d7f549645381c7dc4b34fd7b941a1e982"
+   }
+  },
+  {
+   "id": "post",
+   "name": "missing_post.html",
+   "kind": "html",
+   "bytes": 609,
+   "sha256": "8efce22cdfd8cbe02b09629bf24b2abbf53b0784bf3b404afa771eeead557506",
+   "md5": "492b4a1914e5b01a3e92114474d0ce81",
+   "acquired": {
+    "by": "analyst-1",
+    "origin": "url:http://127.0.0.1/synthetic/missing-post"
+   },
+   "c2pa": {
+    "state": "not_applicable",
+    "note": "c2patool does not read this file type."
+   },
+   "doc_type": "web_post",
+   "media": "media/missing_post.html",
+   "text": {
+    "lang": "ar",
+    "dir": "rtl",
+    "source": "Playwright document.body.innerText of the file loaded in Chromium",
+    "content": "مفقود: Yousef Khaled Al-Ali\n\nشوهد يوسف آخر مرة في دوما يوم 2013-05-02 عند خروجه من البيت صباحا.\n\nعمره 22 عاما، طويل القامة، يرتدي نظارة طبية.\n\nمن لديه أي معلومة يرجى التواصل مع العائلة عبر هذه الصفحة."
+   },
+   "changed_on_recheck": {
+    "v1": "عمره 22 عاما، طويل القامة، يرتدي نظارة طبية.",
+    "v2": "عمره 22 عاما، طويل القامة، وكان يرتدي سترة زرقاء."
+   },
+   "claims": [
+    {
+     "prop": "name",
+     "person": "P1",
+     "value": "Yousef Khaled Al-Ali",
+     "where": {
+      "chars": [
+       7,
+       27
+      ]
+     },
+     "tier": "unconfirmed"
+    },
+    {
+     "prop": "last_seen",
+     "person": "P1",
+     "value": "دوما",
+     "where": {
+      "chars": [
+       50,
+       54
+      ]
+     },
+     "valid": "2013-05-02",
+     "tier": "unconfirmed"
+    }
+   ]
+  }
+ ],
+ "derived": [
+  {
+   "id": "street_crop",
+   "from": "street",
+   "how": "cropped 8% per side and re-encoded at JPEG quality 70",
+   "media": "media/street_crop.jpg",
+   "derived": true,
+   "bytes": 105608,
+   "sha256": "4efc7220ff80164494b48d733c100ff9f8ff314c03b5294eea77f0a272f2cc92",
+   "md5": "45ccdab901e6dfe9222b0040f3d456e9"
+  },
+  {
+   "id": "street_crop3",
+   "from": "street",
+   "how": "cropped 3% per side and re-encoded at JPEG quality 70",
+   "media": "media/street_crop3.jpg",
+   "derived": true,
+   "bytes": 125316,
+   "sha256": "f75eeea861c3b9fb23200cf4cd95e9d20556c2f0761d85687424a4ad8cc58153",
+   "md5": "c1fc0b0b29e7742609b140e799a3d16f"
+  },
+  {
+   "id": "street_q90",
+   "from": "street",
+   "how": "re-encoded at JPEG quality 90",
+   "media": "media/street_q90.jpg",
+   "derived": true,
+   "bytes": 249469,
+   "sha256": "eb0e6384cec5ec5b46296c1df1292dc095fa8de003c5c550ba060f4253d7d7fb",
+   "md5": "ee9e053185654714e60a223e4eb75d29"
+  },
+  {
+   "id": "street_q50",
+   "from": "street",
+   "how": "re-encoded at JPEG quality 50",
+   "media": "media/street_q50.jpg",
+   "derived": true,
+   "bytes": 100979,
+   "sha256": "fcbe02dc97f84cec6db6fd602f79931983773656ca17bf126fd0dd0fb7d9165d",
+   "md5": "ae8ff511feb8ceb66d83166a55dbda47"
+  },
+  {
+   "id": "street_q25",
+   "from": "street",
+   "how": "re-encoded at JPEG quality 25",
+   "media": "media/street_q25.jpg",
+   "derived": true,
+   "bytes": 67195,
+   "sha256": "ea093ca18f788d7727d4aa84385cdeea0090716e1b6121d3e612ee627e2b9bf1",
+   "md5": "3ef2a0d477c59a93553efab2433df2c2"
+  },
+  {
+   "id": "street_half",
+   "from": "street",
+   "how": "resized to half width, JPEG quality 75",
+   "media": "media/street_half.jpg",
+   "derived": true,
+   "bytes": 44262,
+   "sha256": "f129a972a234a0cfdabce0793b191e01bcb6ff1223339ac0ba54d0d795da3bb2",
+   "md5": "2269811c922510a5ab2ace611093292b"
+  },
+  {
+   "id": "witness_excerpt",
+   "from": "witness",
+   "how": "cut 10450-19600 ms and re-encoded as Opus at 24 kbit/s",
+   "media": "media/witness_excerpt.ogg",
+   "derived": true,
+   "wave": "media/witness_excerpt_wave.png",
+   "bytes": 27684,
+   "sha256": "8f619caea6fb4ceb67160014bd07cdd986668041a05dc6c2afde3d8cf9c5f54c",
+   "md5": "3f4858db346a1cbe2d2e0acdd83d3fcb"
+  }
+ ],
+ "people": [
+  {
+   "id": "P1",
+   "label": "يوسف خالد العلي",
+   "spellings": [
+    "يوسف خالد العلي",
+    "Yousef Khaled Al-Ali",
+    "Yusuf Khalid al Ali",
+    "يوسف خالد علي"
+   ],
+   "twin_of": "P2",
+   "father_name": "خالد",
+   "mother_name": "فاطمة",
+   "birth_date": "1991-03-14",
+   "place_of_birth": "دوما",
+   "note": "missing person (the subject of the request)"
+  },
+  {
+   "id": "P2",
+   "label": "يوسف خالد العلي",
+   "spellings": [
+    "يوسف خالد العلي"
+   ],
+   "twin_of": "P1",
+   "father_name": "خالد",
+   "mother_name": "سعاد",
+   "birth_date": "1985-11-02",
+   "place_of_birth": "حمص",
+   "note": "exact-name twin: must never merge with P1"
+  }
+ ],
+ "duplicates": [
+  {
+   "a": "street",
+   "b": "street_crop",
+   "method": "pdq",
+   "distance": 118,
+   "of": 256,
+   "offset_ms": null,
+   "quality": [
+    100,
+    100
+   ],
+   "verdict": "proposed",
+   "derived": true
+  },
+  {
+   "a": "street",
+   "b": "street_crop3",
+   "method": "pdq",
+   "distance": 60,
+   "of": 256,
+   "offset_ms": null,
+   "quality": [
+    100,
+    100
+   ],
+   "verdict": "proposed",
+   "derived": true
+  },
+  {
+   "a": "street",
+   "b": "street_q90",
+   "method": "pdq",
+   "distance": 4,
+   "of": 256,
+   "offset_ms": null,
+   "quality": [
+    100,
+    100
+   ],
+   "verdict": "proposed",
+   "derived": true
+  },
+  {
+   "a": "street",
+   "b": "street_q50",
+   "method": "pdq",
+   "distance": 4,
+   "of": 256,
+   "offset_ms": null,
+   "quality": [
+    100,
+    100
+   ],
+   "verdict": "proposed",
+   "derived": true
+  },
+  {
+   "a": "street",
+   "b": "street_q25",
+   "method": "pdq",
+   "distance": 6,
+   "of": 256,
+   "offset_ms": null,
+   "quality": [
+    100,
+    100
+   ],
+   "verdict": "proposed",
+   "derived": true
+  },
+  {
+   "a": "street",
+   "b": "street_half",
+   "method": "pdq",
+   "distance": 12,
+   "of": 256,
+   "offset_ms": null,
+   "quality": [
+    100,
+    100
+   ],
+   "verdict": "proposed",
+   "derived": true
+  },
+  {
+   "a": "witness",
+   "b": "witness_excerpt",
+   "method": "audio",
+   "distance": null,
+   "of": null,
+   "offset_ms": 10432,
+   "cut_at_ms": 10450,
+   "aligned_landmarks": 11,
+   "shared_landmarks": 16,
+   "verdict": "proposed",
+   "derived": true
+  }
+ ],
+ "photos": {
+  "street": {
+   "id": "street",
+   "name": "Immeuble bombardé à Alep.jpg",
+   "credit": {
+    "title": "Immeuble bombardé à Alep.jpg",
+    "author": "Cagibi54",
+    "description": "Après les bombardements russes",
+    "credit": "Own work",
+    "licence": "CC BY-SA 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Immeuble_bombard%C3%A9_%C3%A0_Alep.jpg",
+    "date": "2019-10-06 16:15:28",
+    "sha1": "308eade72d1c2dbe8413fd2e0eefb7ad6a2b00af"
+   },
+   "media": "media/street_photo.jpg"
+  },
+  "souk": {
+   "id": "souk",
+   "name": "Le souk d'Alep bombardé.jpg",
+   "credit": {
+    "title": "Le souk d'Alep bombardé.jpg",
+    "author": "Cagibi54",
+    "description": "Dans les ruines du souk d'Alep",
+    "credit": "Own work",
+    "licence": "CC BY-SA 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Le_souk_d%27Alep_bombard%C3%A9.jpg",
+    "date": "2019-10-06 16:52:04",
+    "sha1": "01334ac0423ec4826682a212236c2286b43549ec"
+   }
+  },
+  "checkpoint": {
+   "id": "checkpoint",
+   "name": "A Syrian Arab Army checkpoint abandoned due to a massive rebel offensive, December 2024.png",
+   "credit": {
+    "title": "A Syrian Arab Army checkpoint abandoned due to a massive rebel offensive, December 2024.png",
+    "author": "Unknown author",
+    "description": "A Syrian Arab Army checkpoint abandoned due to a massive rebel offensive and capturing of Aleppo, December 2024. Damaged and torn portraits of Hafez and Bashar al-Assad are visible",
+    "credit": "https://www.voanews.com/a/syria-s-civil-war-intensifies-as-rebels-take-major-city-in-lightning-offensive-/7884273.html",
+    "licence": "Public domain",
+    "licence_url": "https://commons.wikimedia.org/wiki/File:A_Syrian_Arab_Army_checkpoint_abandoned_due_to_a_massive_rebel_offensive,_December_2024.png",
+    "source": "https://commons.wikimedia.org/wiki/File:A_Syrian_Arab_Army_checkpoint_abandoned_due_to_a_massive_rebel_offensive,_December_2024.png",
+    "date": "2024-12-02",
+    "sha1": "50f557b861b344ee3c73b7a18ebe6cc9cab50242"
+   }
+  }
+ },
+ "search": {
+  "model": "embeddinggemma-2",
+  "runtime": "Ollama 0.40.5",
+  "dimensions": 768,
+  "items": {
+   "text": 37,
+   "image": 3,
+   "audio": 4
+  },
+  "note": "Retrieval on this synthetic set only; not identity or factual accuracy.",
+  "credits": [
+   {
+    "title": "A Syrian Arab Army checkpoint abandoned due to a massive rebel offensive, December 2024.png",
+    "author": "Unknown author",
+    "description": "A Syrian Arab Army checkpoint abandoned due to a massive rebel offensive and capturing of Aleppo, December 2024. Damaged and torn portraits of Hafez and Bashar al-Assad are visible",
+    "credit": "https://www.voanews.com/a/syria-s-civil-war-intensifies-as-rebels-take-major-city-in-lightning-offensive-/7884273.html",
+    "licence": "Public domain",
+    "licence_url": "https://commons.wikimedia.org/wiki/File:A_Syrian_Arab_Army_checkpoint_abandoned_due_to_a_massive_rebel_offensive,_December_2024.png",
+    "source": "https://commons.wikimedia.org/wiki/File:A_Syrian_Arab_Army_checkpoint_abandoned_due_to_a_massive_rebel_offensive,_December_2024.png",
+    "date": "2024-12-02",
+    "sha1": "50f557b861b344ee3c73b7a18ebe6cc9cab50242",
+    "file": "aleppo_checkpoint.png"
+   },
+   {
+    "title": "Le souk d'Alep bombardé.jpg",
+    "author": "Cagibi54",
+    "description": "Dans les ruines du souk d'Alep",
+    "credit": "Own work",
+    "licence": "CC BY-SA 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Le_souk_d%27Alep_bombard%C3%A9.jpg",
+    "date": "2019-10-06 16:52:04",
+    "sha1": "01334ac0423ec4826682a212236c2286b43549ec",
+    "file": "aleppo_souk.jpg"
+   }
+  ],
+  "summary": {
+   "n": 32,
+   "recall_at_1": 0.812,
+   "recall_at_5": 0.938,
+   "mrr": 0.861,
+   "location_hit_rate": 0.812,
+   "by_type": {
+    "cross": {
+     "n": 8,
+     "recall_at_1": 1.0,
+     "recall_at_5": 1.0,
+     "mrr": 1.0,
+     "location_hit_rate": 1.0
+    },
+    "dialect": {
+     "n": 6,
+     "recall_at_1": 1.0,
+     "recall_at_5": 1.0,
+     "mrr": 1.0,
+     "location_hit_rate": 1.0
+    },
+    "msa": {
+     "n": 7,
+     "recall_at_1": 1.0,
+     "recall_at_5": 1.0,
+     "mrr": 1.0,
+     "location_hit_rate": 1.0
+    },
+    "text_to_audio": {
+     "n": 5,
+     "recall_at_1": 0.6,
+     "recall_at_5": 0.8,
+     "mrr": 0.718,
+     "location_hit_rate": 0.6
+    },
+    "text_to_image": {
+     "n": 4,
+     "recall_at_1": 0.5,
+     "recall_at_5": 0.75,
+     "mrr": 0.625,
+     "location_hit_rate": 0.5
+    },
+    "text_to_scan": {
+     "n": 2,
+     "recall_at_1": 0.0,
+     "recall_at_5": 1.0,
+     "mrr": 0.225,
+     "location_hit_rate": 0.0
+    }
+   },
+   "negative": {
+    "n": 4,
+    "top_score_max": 0.6713,
+    "top_score_mean": 0.6489,
+    "positive_top_score_mean": 0.7985
+   },
+   "query_latency": {
+    "n": 36,
+    "median_ms": 17.1,
+    "max_ms": 24.0
+   }
+  },
+  "queries": [
+   {
+    "id": "q01",
+    "type": "msa",
+    "text": "ما سعر الطماطم في السوق؟",
+    "results": [
+     {
+      "file": "ar_market.txt",
+      "score": 0.8393,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        58,
+        88
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "ar_market.txt",
+      "media": null,
+      "text": "بلغ سعر كيلو الطماطم ٣٥٠ ليرة."
+     }
+    ]
+   },
+   {
+    "id": "q02",
+    "type": "msa",
+    "text": "انقطاع المياه عن الحي",
+    "results": [
+     {
+      "file": "ar_water.txt",
+      "score": 0.8478,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        43
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "ar_water.txt",
+      "media": null,
+      "text": "انقطعت المياه عن حي النهضة لمدة ثلاثة أيام."
+     }
+    ]
+   },
+   {
+    "id": "q03",
+    "type": "msa",
+    "text": "عيادة متنقلة في القرية",
+    "results": [
+     {
+      "file": "ar_clinic.txt",
+      "score": 0.8647,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        42
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "ar_clinic.txt",
+      "media": null,
+      "text": "افتتحت عيادة متنقلة في قرية الوادي الأخضر."
+     }
+    ]
+   },
+   {
+    "id": "q04",
+    "type": "msa",
+    "text": "إغلاق الطريق السريع بسبب الثلج",
+    "results": [
+     {
+      "file": "ar_snow.txt",
+      "score": 0.9221,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        45
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "ar_snow.txt",
+      "media": null,
+      "text": "أغلق الطريق السريع بين المدينتين بسبب الثلوج."
+     }
+    ]
+   },
+   {
+    "id": "q05",
+    "type": "msa",
+    "text": "بداية العام الدراسي في أيلول",
+    "results": [
+     {
+      "file": "ar_school.txt",
+      "score": 0.7403,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        72
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "ar_school.txt",
+      "media": null,
+      "text": "يَبْدَأُ العَامُ الدِّرَاسِيُّ فِي الأُسْبُوعِ الأَوَّلِ مِنْ أَيْلُولَ."
+     }
+    ]
+   },
+   {
+    "id": "q06",
+    "type": "msa",
+    "text": "كم مريضا تعالج العيادة كل يوم",
+    "results": [
+     {
+      "file": "ar_clinic.txt",
+      "score": 0.915,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        43,
+        72
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "ar_clinic.txt",
+      "media": null,
+      "text": "تعالج العيادة ٤٠ مريضا يوميا."
+     }
+    ]
+   },
+   {
+    "id": "q07",
+    "type": "msa",
+    "text": "تأخر وصول البريد إلى المركز الثقافي",
+    "results": [
+     {
+      "file": "ar_post.txt",
+      "score": 0.906,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        46
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "ar_post.txt",
+      "media": null,
+      "text": "وصل البريد إلى المركز الثقافي متأخرا ٢٠ دقيقة."
+     }
+    ]
+   },
+   {
+    "id": "q08",
+    "type": "dialect",
+    "text": "ليش تأخر الباص",
+    "results": [
+     {
+      "file": "sy_bus.txt",
+      "score": 0.8978,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        36
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "sy_bus.txt",
+      "media": null,
+      "text": "الباص تأخر ساعة ونص وما حدا عرف ليش."
+     }
+    ]
+   },
+   {
+    "id": "q09",
+    "type": "dialect",
+    "text": "ما في خبز بالفرن والطابور طويل",
+    "results": [
+     {
+      "file": "sy_bakery.txt",
+      "score": 0.8213,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        20,
+        54
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "sy_bakery.txt",
+      "media": null,
+      "text": "الخبز مو متوفر والطابور طويل كتير."
+     }
+    ]
+   },
+   {
+    "id": "q10",
+    "type": "dialect",
+    "text": "ستي عم تعمل كبة",
+    "results": [
+     {
+      "file": "sy_kibbeh.txt",
+      "score": 0.8853,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        26
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "sy_kibbeh.txt",
+      "media": null,
+      "text": "ستي عم تحضّر كبة بالصينية."
+     }
+    ]
+   },
+   {
+    "id": "q11",
+    "type": "dialect",
+    "text": "نتيجة مباراة حارتنا بالملعب",
+    "results": [
+     {
+      "file": "sy_football.txt",
+      "score": 0.8398,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        52
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "sy_football.txt",
+      "media": null,
+      "text": "مبارح لعبوا ع الملعب الترابي وغلب فريق حارتنا ٣ - ١."
+     }
+    ]
+   },
+   {
+    "id": "q12",
+    "type": "dialect",
+    "text": "الكهربا مقطوعة وعم نشحن الموبايل",
+    "results": [
+     {
+      "file": "sy_power.txt",
+      "score": 0.7827,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        32,
+        64
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "sy_power.txt",
+      "media": null,
+      "text": "هلق عم نشحن التلفون عند الجيران."
+     }
+    ]
+   },
+   {
+    "id": "q13",
+    "type": "dialect",
+    "text": "السواق قال المازوت خلص",
+    "results": [
+     {
+      "file": "sy_bus.txt",
+      "score": 0.9554,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        37,
+        63
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "sy_bus.txt",
+      "media": null,
+      "text": "السواق قال إن المازوت خلص."
+     }
+    ]
+   },
+   {
+    "id": "q14",
+    "type": "cross",
+    "text": "bread shortage and a long queue at the bakery",
+    "results": [
+     {
+      "file": "sy_bakery.txt",
+      "score": 0.7361,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        20,
+        54
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "sy_bakery.txt",
+      "media": null,
+      "text": "الخبز مو متوفر والطابور طويل كتير."
+     }
+    ]
+   },
+   {
+    "id": "q15",
+    "type": "cross",
+    "text": "water outage in the neighbourhood for three days",
+    "results": [
+     {
+      "file": "ar_water.txt",
+      "score": 0.8047,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        43
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "ar_water.txt",
+      "media": null,
+      "text": "انقطعت المياه عن حي النهضة لمدة ثلاثة أيام."
+     }
+    ]
+   },
+   {
+    "id": "q16",
+    "type": "cross",
+    "text": "mobile clinic in a village",
+    "results": [
+     {
+      "file": "ar_clinic.txt",
+      "score": 0.8059,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        42
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "ar_clinic.txt",
+      "media": null,
+      "text": "افتتحت عيادة متنقلة في قرية الوادي الأخضر."
+     }
+    ]
+   },
+   {
+    "id": "q17",
+    "type": "cross",
+    "text": "grandmother making kibbeh",
+    "results": [
+     {
+      "file": "sy_kibbeh.txt",
+      "score": 0.7436,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        26
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "sy_kibbeh.txt",
+      "media": null,
+      "text": "ستي عم تحضّر كبة بالصينية."
+     }
+    ]
+   },
+   {
+    "id": "q18",
+    "type": "cross",
+    "text": "shu fi bil forn el yom",
+    "results": [
+     {
+      "file": "sy_bakery.txt",
+      "score": 0.7669,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        19
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "sy_bakery.txt",
+      "media": null,
+      "text": "شو في بالفرن اليوم؟"
+     }
+    ]
+   },
+   {
+    "id": "q19",
+    "type": "cross",
+    "text": "مكتبة المدينة تفتح أبوابها بعد إصلاح السقف",
+    "results": [
+     {
+      "file": "en_library.txt",
+      "score": 0.867,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        56
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "en_library.txt",
+      "media": null,
+      "text": "The city library reopened on Monday after a roof repair."
+     }
+    ]
+   },
+   {
+    "id": "q20",
+    "type": "cross",
+    "text": "ferry schedule at the harbor",
+    "results": [
+     {
+      "file": "en_ferry.txt",
+      "score": 0.8426,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        56
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "en_ferry.txt",
+      "media": null,
+      "text": "The harbor ferry leaves at 6:40 and returns before noon."
+     }
+    ]
+   },
+   {
+    "id": "q21",
+    "type": "cross",
+    "text": "كمية المطر التي سجلتها محطة الطقس",
+    "results": [
+     {
+      "file": "en_weather.txt",
+      "score": 0.8088,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "chars": [
+        0,
+        63
+       ]
+      }
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "en_weather.txt",
+      "media": null,
+      "text": "A weather station on the hill recorded 12 mm of rain overnight."
+     }
+    ]
+   },
+   {
+    "id": "q22",
+    "type": "text_to_image",
+    "text": "حاجز على الطريق وكتل إسمنتية بألوان العلم وصورة ممزقة",
+    "results": [
+     {
+      "file": "ar_snow.txt",
+      "score": 0.7167,
+      "rank": 1,
+      "hit": false
+     }
+    ],
+    "relevant_rank": 3,
+    "location_hit": false,
+    "expected": [
+     {
+      "file": "aleppo_checkpoint.png",
+      "media": "media/ret_aleppo_checkpoint.jpg",
+      "text": "abandoned checkpoint, concrete barriers"
+     }
+    ]
+   },
+   {
+    "id": "q23",
+    "type": "text_to_image",
+    "text": "a roadside checkpoint with concrete barriers painted in flag colours and a torn portrait",
+    "results": [
+     {
+      "file": "aleppo_checkpoint.png",
+      "score": 0.7453,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "whole": true
+      },
+      "media": "media/ret_aleppo_checkpoint.jpg"
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "aleppo_checkpoint.png",
+      "media": "media/ret_aleppo_checkpoint.jpg",
+      "text": "abandoned checkpoint, concrete barriers"
+     }
+    ]
+   },
+   {
+    "id": "q24",
+    "type": "text_to_image",
+    "text": "سوق مسقوف مدمر وأنقاض في الممر وأقواس منهارة",
+    "results": [
+     {
+      "file": "ar_market.txt",
+      "score": 0.7433,
+      "rank": 1,
+      "hit": false
+     }
+    ],
+    "relevant_rank": 6,
+    "location_hit": false,
+    "expected": [
+     {
+      "file": "aleppo_souk.jpg",
+      "media": "media/ret_aleppo_souk.jpg",
+      "text": "ruined covered market lane"
+     }
+    ]
+   },
+   {
+    "id": "q25",
+    "type": "text_to_image",
+    "text": "a ruined covered market lane with rubble and collapsed arches",
+    "results": [
+     {
+      "file": "aleppo_souk.jpg",
+      "score": 0.7328,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "whole": true
+      },
+      "media": "media/ret_aleppo_souk.jpg"
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "aleppo_souk.jpg",
+      "media": "media/ret_aleppo_souk.jpg",
+      "text": "ruined covered market lane"
+     }
+    ]
+   },
+   {
+    "id": "q26",
+    "type": "text_to_scan",
+    "text": "عدد الأسر المسجلة مئتان واثنتا عشرة أسرة",
+    "results": [
+     {
+      "file": "ar_post.txt",
+      "score": 0.7423,
+      "rank": 1,
+      "hit": false
+     }
+    ],
+    "relevant_rank": 4,
+    "location_hit": false,
+    "expected": [
+     {
+      "file": "scan_page.png",
+      "media": "media/ret_scan_page.png",
+      "text": "عدد الأسر المسجلة مئتان واثنتا عشرة أسرة"
+     }
+    ]
+   },
+   {
+    "id": "q27",
+    "type": "text_to_scan",
+    "text": "تم تسليم مفاتيح المخزن إلى أبي سليم",
+    "results": [
+     {
+      "file": "ar_post.txt",
+      "score": 0.7047,
+      "rank": 1,
+      "hit": false
+     }
+    ],
+    "relevant_rank": 5,
+    "location_hit": false,
+    "expected": [
+     {
+      "file": "scan_page.png",
+      "media": "media/ret_scan_page.png",
+      "text": "تم تسليم مفاتيح المخزن إلى أبي سليم"
+     }
+    ]
+   },
+   {
+    "id": "q28",
+    "type": "text_to_audio",
+    "text": "موعد انطلاق الحافلة من المحطة صباحا",
+    "results": [
+     {
+      "file": "en_ferry.txt",
+      "score": 0.7352,
+      "rank": 1,
+      "hit": false
+     }
+    ],
+    "relevant_rank": 11,
+    "location_hit": false,
+    "expected": [
+     {
+      "file": "speech.wav",
+      "media": "media/ret_speech_wave.png",
+      "text": "رح ننطلق من كراج الباصات الساعة سبعة الصبح."
+     }
+    ]
+   },
+   {
+    "id": "q29",
+    "type": "text_to_audio",
+    "text": "ماذا نحضر معنا لأن الجو بارد قرب البحر",
+    "results": [
+     {
+      "file": "speech_excerpt.wav",
+      "score": 0.7271,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "ms": [
+        1500,
+        8550
+       ]
+      },
+      "media": "media/ret_speech_excerpt_wave.png"
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "speech.wav",
+      "media": "media/ret_speech_wave.png",
+      "text": "جيبوا معكن جاكيت خفيف لأنو الجو برد جنب البحر."
+     },
+     {
+      "file": "speech_excerpt.wav",
+      "media": "media/ret_speech_excerpt_wave.png",
+      "text": "جيبوا معكن جاكيت خفيف لأنو الجو برد جنب البحر."
+     }
+    ]
+   },
+   {
+    "id": "q30",
+    "type": "text_to_audio",
+    "text": "شراء الزيتون والجبنة من قرية صغيرة",
+    "results": [
+     {
+      "file": "speech.wav",
+      "score": 0.7481,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "ms": [
+        23650,
+        30850
+       ]
+      },
+      "media": "media/ret_speech_wave.png"
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "speech.wav",
+      "media": "media/ret_speech_wave.png",
+      "text": "رح نوقف بضيعة صغيرة لنشتري زيتون وجبنة بلدية."
+     },
+     {
+      "file": "speech_excerpt.wav",
+      "media": "media/ret_speech_excerpt_wave.png",
+      "text": "رح نوقف بضيعة صغيرة لنشتري زيتون وجبنة بلدية."
+     }
+    ]
+   },
+   {
+    "id": "q31",
+    "type": "text_to_audio",
+    "text": "visiting the old castle after lunch and walking on the beach",
+    "results": [
+     {
+      "file": "ar_market.txt",
+      "score": 0.6908,
+      "rank": 1,
+      "hit": false
+     }
+    ],
+    "relevant_rank": 2,
+    "location_hit": false,
+    "expected": [
+     {
+      "file": "speech.wav",
+      "media": "media/ret_speech_wave.png",
+      "text": "بعد الغدا رح نزور القلعة القديمة وبعدين نتمشى عالبحر."
+     },
+     {
+      "file": "speech_excerpt.wav",
+      "media": "media/ret_speech_excerpt_wave.png",
+      "text": "بعد الغدا رح نزور القلعة القديمة وبعدين نتمشى عالبحر."
+     }
+    ]
+   },
+   {
+    "id": "q32",
+    "type": "text_to_audio",
+    "text": "a steady electronic beep tone",
+    "results": [
+     {
+      "file": "tone.wav",
+      "score": 0.673,
+      "rank": 1,
+      "hit": true,
+      "location": {
+       "ms": [
+        0,
+        5000
+       ]
+      },
+      "media": "media/ret_tone_wave.png"
+     }
+    ],
+    "relevant_rank": 1,
+    "location_hit": true,
+    "expected": [
+     {
+      "file": "tone.wav",
+      "media": "media/ret_tone_wave.png",
+      "text": "non-speech tone"
+     }
+    ]
+   },
+   {
+    "id": "q33",
+    "type": "negative",
+    "text": "جدول مباريات كأس العالم للأندية",
+    "results": [
+     {
+      "file": "sy_football.txt",
+      "score": 0.6605,
+      "rank": 1,
+      "hit": false
+     }
+    ]
+   },
+   {
+    "id": "q34",
+    "type": "negative",
+    "text": "recipe for a chocolate cake with hazelnuts",
+    "results": [
+     {
+      "file": "sy_bakery.txt",
+      "score": 0.6571,
+      "rank": 1,
+      "hit": false
+     }
+    ]
+   },
+   {
+    "id": "q35",
+    "type": "negative",
+    "text": "التعرفة الجمركية على استيراد السيارات",
+    "results": [
+     {
+      "file": "sy_power.txt",
+      "score": 0.6713,
+      "rank": 1,
+      "hit": false
+     }
+    ]
+   },
+   {
+    "id": "q36",
+    "type": "negative",
+    "text": "deadline for quarterly tax filing",
+    "results": [
+     {
+      "file": "ar_snow.txt",
+      "score": 0.6068,
+      "rank": 1,
+      "hit": false
+     }
+    ]
+   }
+  ]
+ },
+ "video": {
+  "display_note": "The emblems in the 2015 clip's top-left corner are blurred on this page. Fingerprints, hashes and search were measured on the unaltered files.",
+  "clips": [
+   {
+    "id": "jdeideh_2015",
+    "media": "media/jdeideh_2015.mp4",
+    "poster": "media/jdeideh_2015.jpg",
+    "poster_s": 5,
+    "duration_ms": 19779,
+    "place": "Jdeideh quarter, Aleppo",
+    "credit": {
+     "title": "Jdeideh Jdayde Aleppo Avril 2015.webm",
+     "author": "Jdeideh Jdayde",
+     "description": "Syrian rebel offensive begins against government defensive lines in the Jdayde (Jdeideh) district of Aleppo in April 2016.   As a result of undermining, buildings around Al Hatab Square (Sahat al-Hatab) suffer heavy damage.",
+     "credit": "YouTube: https://www.youtube.com/watch?v=f4tk4lDMFj0 – View/save archived versions on archive.org\nSource video is in the public domain and also \nYT  Licence:  Creative Commons Attribution licence (reuse allowed) \n\nAttribution 3.0 Unported",
+     "licence": "CC BY 3.0",
+     "licence_url": "https://creativecommons.org/licenses/by/3.0",
+     "source": "https://commons.wikimedia.org/wiki/File:Jdeideh_Jdayde_Aleppo_Avril_2015.webm",
+     "date": "2015-04-30",
+     "sha1": "0d360c1270569f16338b6e914807bef1186b580c"
+    },
+    "frames_ms": [
+     3,
+     1004,
+     2005,
+     3006,
+     4007,
+     5008,
+     6009,
+     7010,
+     8011,
+     9012,
+     10013,
+     11014,
+     12015,
+     13016,
+     14017,
+     15018,
+     16019,
+     17020,
+     18021,
+     19022
+    ],
+    "sprite": "media/jdeideh_2015_strip.jpg",
+    "audio_status": "present",
+    "bytes": 3775204,
+    "sha256": "05f78b0fdb9d9cc38b2d24b67a2a475aa30b69369a6506dea93209188b4f69a4",
+    "md5": "3b18e0111afa7ca02a3aa735f139e7a7"
+   },
+   {
+    "id": "jdeideh_2017",
+    "media": "media/jdeideh_2017.mp4",
+    "poster": "media/jdeideh_2017.jpg",
+    "poster_s": 14,
+    "duration_ms": 20540,
+    "place": "Jdeideh quarter, Aleppo",
+    "credit": {
+     "title": "Jdeideh Alep - Waqf complexes of Ibshir Pasha and Bahram Pasha - Sept 2017.webm",
+     "author": "Ortho2017",
+     "description": "Waqf complexes of Ibshir Pasha and Bahram Pasha In the Jdayde section of Aleppo as surveyed in Sept 2017",
+     "credit": "Own work",
+     "licence": "CC BY-SA 4.0",
+     "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+     "source": "https://commons.wikimedia.org/wiki/File:Jdeideh_Alep_-_Waqf_complexes_of_Ibshir_Pasha_and_Bahram_Pasha_-_Sept_2017.webm",
+     "date": "2017-09-13",
+     "sha1": "1a54147c4f628ef52ffec80a3e7b1f030849ade7"
+    },
+    "frames_ms": [
+     0,
+     1000,
+     2000,
+     3000,
+     4000,
+     5000,
+     6000,
+     7000,
+     8000,
+     9000,
+     10000,
+     11000,
+     12000,
+     13000,
+     14000,
+     15000,
+     16000,
+     17000,
+     18000,
+     19000,
+     20000
+    ],
+    "sprite": "media/jdeideh_2017_strip.jpg",
+    "audio_status": "no_landmarks",
+    "bytes": 5066961,
+    "sha256": "72bd6fe232c922a7ee2b756dcf9cd8a91d35b00c66dcc9cb96124b751a3f30e8",
+    "md5": "f6418957f6c01abe07635bd8c2917c58"
+   }
+  ],
+  "copies": [
+   {
+    "id": "v_lowrate",
+    "from": "jdeideh_2015",
+    "how": "re-encoded at 120 kbit/s and 320 pixels wide",
+    "media": "media/v_lowrate.mp4",
+    "derived": true,
+    "frames_ms": [
+     0,
+     1001,
+     2002,
+     3003,
+     4004,
+     5005,
+     6006,
+     7007,
+     8008,
+     9009,
+     10010,
+     11011,
+     12012,
+     13013,
+     14014,
+     15015,
+     16016,
+     17017,
+     18018,
+     19019
+    ],
+    "sprite": "media/v_lowrate_strip.jpg",
+    "picture": {
+     "query_coverage": [
+      20,
+      20
+     ],
+     "candidate_coverage": [
+      20,
+      20
+     ],
+     "query_ms": [
+      0,
+      19019
+     ],
+     "candidate_ms": [
+      3,
+      19022
+     ],
+     "max_distance": 20,
+     "sample_pairs": [
+      [
+       0,
+       3
+      ],
+      [
+       1001,
+       1004
+      ],
+      [
+       2002,
+       2005
+      ],
+      [
+       3003,
+       3006
+      ],
+      [
+       4004,
+       4007
+      ],
+      [
+       5005,
+       5008
+      ],
+      [
+       6006,
+       6009
+      ],
+      [
+       7007,
+       7010
+      ],
+      [
+       8008,
+       8011
+      ],
+      [
+       9009,
+       9012
+      ],
+      [
+       10010,
+       10013
+      ],
+      [
+       11011,
+       11014
+      ],
+      [
+       12012,
+       12015
+      ],
+      [
+       13013,
+       13016
+      ],
+      [
+       14014,
+       14017
+      ],
+      [
+       15015,
+       15018
+      ],
+      [
+       16016,
+       16019
+      ],
+      [
+       17017,
+       17020
+      ],
+      [
+       18018,
+       18021
+      ],
+      [
+       19019,
+       19022
+      ]
+     ],
+     "offset_ms": 3
+    },
+    "sound": {
+     "offset_ms": 0,
+     "aligned_landmarks": 171,
+     "shared_landmarks": 196,
+     "concentration": [
+      171,
+      196
+     ]
+    },
+    "bytes": 416159,
+    "sha256": "830a91f379e6d4a41140174d1b1ab4d9891255f5a9c5d53e43c388d5674875fb",
+    "md5": "e53cebc2dda4aab05e33186b46e7cc38"
+   },
+   {
+    "id": "v_trim",
+    "from": "jdeideh_2015",
+    "how": "trimmed to start 4 seconds in",
+    "media": "media/v_trim.mp4",
+    "derived": true,
+    "frames_ms": [
+     0,
+     1001,
+     2002,
+     3003,
+     4004,
+     5005,
+     6006,
+     7007,
+     8008,
+     9009,
+     10010,
+     11011,
+     12012,
+     13013,
+     14014,
+     15015
+    ],
+    "sprite": "media/v_trim_strip.jpg",
+    "picture": {
+     "query_coverage": [
+      16,
+      16
+     ],
+     "candidate_coverage": [
+      16,
+      20
+     ],
+     "query_ms": [
+      0,
+      15015
+     ],
+     "candidate_ms": [
+      4007,
+      19022
+     ],
+     "max_distance": 30,
+     "sample_pairs": [
+      [
+       0,
+       4007
+      ],
+      [
+       1001,
+       4007
+      ],
+      [
+       1001,
+       5008
+      ],
+      [
+       2002,
+       6009
+      ],
+      [
+       3003,
+       7010
+      ],
+      [
+       4004,
+       8011
+      ],
+      [
+       5005,
+       9012
+      ],
+      [
+       6006,
+       10013
+      ],
+      [
+       7007,
+       11014
+      ],
+      [
+       8008,
+       12015
+      ],
+      [
+       9009,
+       13016
+      ],
+      [
+       10010,
+       14017
+      ],
+      [
+       11011,
+       15018
+      ],
+      [
+       12012,
+       16019
+      ],
+      [
+       13013,
+       17020
+      ],
+      [
+       14014,
+       18021
+      ],
+      [
+       15015,
+       19022
+      ]
+     ],
+     "offset_ms": 4007
+    },
+    "sound": {
+     "offset_ms": 3968,
+     "aligned_landmarks": 19,
+     "shared_landmarks": 45,
+     "concentration": [
+      19,
+      45
+     ]
+    },
+    "bytes": 563866,
+    "sha256": "d1d50789d64c0bebf0fae09255c811ee61ad5e1cbf8b24d22eeb9a5619178f0f",
+    "md5": "92a67e0ce607eeda6e7669807092a622"
+   },
+   {
+    "id": "v_logo",
+    "from": "jdeideh_2015",
+    "how": "a solid logo block burned into the lower right corner",
+    "media": "media/v_logo.mp4",
+    "derived": true,
+    "frames_ms": [
+     0,
+     1001,
+     2002,
+     3003,
+     4004,
+     5005,
+     6006,
+     7007,
+     8008,
+     9009,
+     10010,
+     11011,
+     12012,
+     13013,
+     14014,
+     15015,
+     16016,
+     17017,
+     18018,
+     19019
+    ],
+    "sprite": "media/v_logo_strip.jpg",
+    "picture": {
+     "query_coverage": [
+      11,
+      20
+     ],
+     "candidate_coverage": [
+      11,
+      20
+     ],
+     "query_ms": [
+      0,
+      13013
+     ],
+     "candidate_ms": [
+      3,
+      13016
+     ],
+     "max_distance": 30,
+     "sample_pairs": [
+      [
+       0,
+       3
+      ],
+      [
+       3003,
+       3006
+      ],
+      [
+       4004,
+       4007
+      ],
+      [
+       6006,
+       6009
+      ],
+      [
+       7007,
+       7010
+      ],
+      [
+       8008,
+       8011
+      ],
+      [
+       9009,
+       9012
+      ],
+      [
+       10010,
+       10013
+      ],
+      [
+       11011,
+       11014
+      ],
+      [
+       12012,
+       12015
+      ],
+      [
+       13013,
+       13016
+      ]
+     ],
+     "offset_ms": 3
+    },
+    "sound": {
+     "offset_ms": 0,
+     "aligned_landmarks": 171,
+     "shared_landmarks": 196,
+     "concentration": [
+      171,
+      196
+     ]
+    },
+    "bytes": 688732,
+    "sha256": "6da43f29d4fa9cade97ee1a02ce7099cd7e112d660e2a7a47482e4cf4ad1c5e3",
+    "md5": "e17bc27063413b6db62d0112c7f998d4"
+   },
+   {
+    "id": "v_crop",
+    "from": "jdeideh_2015",
+    "how": "cropped to the central 75% of the picture",
+    "media": "media/v_crop.mp4",
+    "derived": true,
+    "frames_ms": [
+     0,
+     1001,
+     2002,
+     3003,
+     4004,
+     5005,
+     6006,
+     7007,
+     8008,
+     9009,
+     10010,
+     11011,
+     12012,
+     13013,
+     14014,
+     15015,
+     16016,
+     17017,
+     18018,
+     19019
+    ],
+    "sprite": "media/v_crop_strip.jpg",
+    "picture": null,
+    "sound": {
+     "offset_ms": 0,
+     "aligned_landmarks": 171,
+     "shared_landmarks": 196,
+     "concentration": [
+      171,
+      196
+     ]
+    },
+    "bytes": 467351,
+    "sha256": "43aae0006780cf409740f70abe02b335e3b7f9dba3950111527744692fafd2f8",
+    "md5": "c188454718ca7eb36b520bcac8f5f691"
+   },
+   {
+    "id": "v_mirror",
+    "from": "jdeideh_2015",
+    "how": "mirrored left to right",
+    "media": "media/v_mirror.mp4",
+    "derived": true,
+    "frames_ms": [
+     0,
+     1001,
+     2002,
+     3003,
+     4004,
+     5005,
+     6006,
+     7007,
+     8008,
+     9009,
+     10010,
+     11011,
+     12012,
+     13013,
+     14014,
+     15015,
+     16016,
+     17017,
+     18018,
+     19019
+    ],
+    "sprite": "media/v_mirror_strip.jpg",
+    "picture": null,
+    "sound": {
+     "offset_ms": 0,
+     "aligned_landmarks": 171,
+     "shared_landmarks": 196,
+     "concentration": [
+      171,
+      196
+     ]
+    },
+    "bytes": 695030,
+    "sha256": "92e0ba50fb442b7398fd7fcb59e06598e7b5236c359ef81146888c93a912f700",
+    "md5": "d0febffdb5be362c2900cb6ebd0abaac"
+   }
+  ],
+  "threshold": {
+   "distance": 31,
+   "of": 256,
+   "quality": 50
+  },
+  "places": [
+   {
+    "date": "2015-04-30",
+    "place": "Jdeideh quarter, Aleppo",
+    "clip": "jdeideh_2015",
+    "poster": "media/jdeideh_2015.jpg"
+   },
+   {
+    "date": "2017-09-13",
+    "place": "Jdeideh quarter, Aleppo",
+    "clip": "jdeideh_2017",
+    "poster": "media/jdeideh_2017.jpg"
+   }
+  ],
+  "search": {
+   "model": "embeddinggemma-2",
+   "runtime": "Ollama 0.40.5",
+   "frames": 14,
+   "every_s": 3,
+   "queries": [
+    {
+     "text": "explosion over the old city rooftops",
+     "lang": "en",
+     "results": [
+      {
+       "clip": "jdeideh_2015",
+       "ms": 6009,
+       "score": 0.776
+      },
+      {
+       "clip": "jdeideh_2015",
+       "ms": 3006,
+       "score": 0.776
+      },
+      {
+       "clip": "jdeideh_2015",
+       "ms": 9012,
+       "score": 0.77
+      }
+     ]
+    },
+    {
+     "text": "a cloud of dust over the houses",
+     "lang": "en",
+     "results": [
+      {
+       "clip": "jdeideh_2015",
+       "ms": 15018,
+       "score": 0.786
+      },
+      {
+       "clip": "jdeideh_2015",
+       "ms": 12015,
+       "score": 0.786
+      },
+      {
+       "clip": "jdeideh_2015",
+       "ms": 18021,
+       "score": 0.771
+      }
+     ]
+    },
+    {
+     "text": "ruined stone domes",
+     "lang": "en",
+     "results": [
+      {
+       "clip": "jdeideh_2017",
+       "ms": 15000,
+       "score": 0.74
+      },
+      {
+       "clip": "jdeideh_2017",
+       "ms": 18000,
+       "score": 0.729
+      },
+      {
+       "clip": "jdeideh_2017",
+       "ms": 12000,
+       "score": 0.718
+      }
+     ]
+    },
+    {
+     "text": "دمار في الحي القديم",
+     "lang": "ar",
+     "results": [
+      {
+       "clip": "jdeideh_2015",
+       "ms": 3,
+       "score": 0.703
+      },
+      {
+       "clip": "jdeideh_2015",
+       "ms": 15018,
+       "score": 0.677
+      },
+      {
+       "clip": "jdeideh_2015",
+       "ms": 3006,
+       "score": 0.676
+      }
+     ]
+    },
+    {
+     "text": "انفجار فوق أسطح المدينة",
+     "lang": "ar",
+     "results": [
+      {
+       "clip": "jdeideh_2015",
+       "ms": 3,
+       "score": 0.734
+      },
+      {
+       "clip": "jdeideh_2015",
+       "ms": 3006,
+       "score": 0.733
+      },
+      {
+       "clip": "jdeideh_2015",
+       "ms": 6009,
+       "score": 0.731
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "connections": {
+  "case": "case-demo-02",
+  "findings": [
+   {
+    "kind": "shared_presence",
+    "label": "Shared presence",
+    "reason": "4 people held at Branch 999 in July 2013",
+    "why": "3 sources, overlapping 31 days",
+    "band": "strong",
+    "month": "2013-07",
+    "window": [
+     "2013-07-01",
+     "2013-07-31"
+    ],
+    "features": {
+     "days": 31,
+     "overlap": "1.00",
+     "sources": 3
+    },
+    "places": [
+     "Branch 999"
+    ],
+    "people": 4,
+    "members": [
+     {
+      "name": "باسل نادر",
+      "file": "roster",
+      "derived": false,
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "when": "2013-07",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "قائمة نزلاء المهجع 4\n",
+       "span": "الفرع 999",
+       "after": "\nالشهر: تموز 2013\n\n1. يوسف خالد العلي\n2. باسل نادر\n3. فادي ك…"
+      },
+      "span": {
+       "end": 30,
+       "start": 21
+      }
+     },
+     {
+      "name": "يوسف خالد العلي",
+      "file": "witness_clip.ogg",
+      "derived": true,
+      "prop": "seen_at",
+      "value": "الفرع 999",
+      "when": "2013-07",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "…م شهر.\nبشهر تموز من سنة الألفين وتلتعش، شفت يوسف خالد العلي ",
+       "span": "بالفرع تسعمية وتسعة وتسعين",
+       "after": ".\nقلّي إنّو اعتقلوه على حاجز بحرستا، وإنّو أهلو ما بيعرفوا و…"
+      },
+      "span": {
+       "end": 155,
+       "start": 129
+      }
+     },
+     {
+      "name": "Salim Haddad",
+      "file": "release",
+      "derived": false,
+      "prop": "detained_at",
+      "value": "Branch 999",
+      "when": "2013-07",
+      "tier": "accepted",
+      "sensitive": false,
+      "excerpt": {
+       "before": "…, published 4 October 2013\nSalim Haddad says he was held at ",
+       "span": "Branch 999",
+       "after": " throughout July 2013, in dormitory 4.\nHe names three cellma…"
+      },
+      "span": {
+       "end": 114,
+       "start": 104
+      }
+     },
+     {
+      "name": "يوسف خالد العلي",
+      "file": "roster",
+      "derived": false,
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "when": "2013-07",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "قائمة نزلاء المهجع 4\n",
+       "span": "الفرع 999",
+       "after": "\nالشهر: تموز 2013\n\n1. يوسف خالد العلي\n2. باسل نادر\n3. فادي ك…"
+      },
+      "span": {
+       "end": 30,
+       "start": 21
+      }
+     },
+     {
+      "name": "فادي كرم",
+      "file": "roster",
+      "derived": false,
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "when": "2013-07",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "قائمة نزلاء المهجع 4\n",
+       "span": "الفرع 999",
+       "after": "\nالشهر: تموز 2013\n\n1. يوسف خالد العلي\n2. باسل نادر\n3. فادي ك…"
+      },
+      "span": {
+       "end": 30,
+       "start": 21
+      }
+     }
+    ]
+   },
+   {
+    "kind": "candidate_incident",
+    "label": "Candidate incident",
+    "reason": "4 people held at Branch 999 in July 2013",
+    "why": "4 people from 3 sources within 31 days",
+    "band": "strong",
+    "month": "2013-07",
+    "window": [
+     "2013-07-01",
+     "2013-07-31"
+    ],
+    "features": {
+     "people": 4,
+     "window": 14,
+     "sources": 3,
+     "span_days": 31
+    },
+    "places": [
+     "Branch 999"
+    ],
+    "people": 4,
+    "members": [
+     {
+      "name": "باسل نادر",
+      "file": "roster",
+      "derived": false,
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "when": "2013-07",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "قائمة نزلاء المهجع 4\n",
+       "span": "الفرع 999",
+       "after": "\nالشهر: تموز 2013\n\n1. يوسف خالد العلي\n2. باسل نادر\n3. فادي ك…"
+      },
+      "span": {
+       "end": 30,
+       "start": 21
+      }
+     },
+     {
+      "name": "يوسف خالد العلي",
+      "file": "witness_clip.ogg",
+      "derived": true,
+      "prop": "seen_at",
+      "value": "الفرع 999",
+      "when": "2013-07",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "…م شهر.\nبشهر تموز من سنة الألفين وتلتعش، شفت يوسف خالد العلي ",
+       "span": "بالفرع تسعمية وتسعة وتسعين",
+       "after": ".\nقلّي إنّو اعتقلوه على حاجز بحرستا، وإنّو أهلو ما بيعرفوا و…"
+      },
+      "span": {
+       "end": 155,
+       "start": 129
+      }
+     },
+     {
+      "name": "Salim Haddad",
+      "file": "release",
+      "derived": false,
+      "prop": "detained_at",
+      "value": "Branch 999",
+      "when": "2013-07",
+      "tier": "accepted",
+      "sensitive": false,
+      "excerpt": {
+       "before": "…, published 4 October 2013\nSalim Haddad says he was held at ",
+       "span": "Branch 999",
+       "after": " throughout July 2013, in dormitory 4.\nHe names three cellma…"
+      },
+      "span": {
+       "end": 114,
+       "start": 104
+      }
+     },
+     {
+      "name": "يوسف خالد العلي",
+      "file": "roster",
+      "derived": false,
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "when": "2013-07",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "قائمة نزلاء المهجع 4\n",
+       "span": "الفرع 999",
+       "after": "\nالشهر: تموز 2013\n\n1. يوسف خالد العلي\n2. باسل نادر\n3. فادي ك…"
+      },
+      "span": {
+       "end": 30,
+       "start": 21
+      }
+     },
+     {
+      "name": "فادي كرم",
+      "file": "roster",
+      "derived": false,
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "when": "2013-07",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "قائمة نزلاء المهجع 4\n",
+       "span": "الفرع 999",
+       "after": "\nالشهر: تموز 2013\n\n1. يوسف خالد العلي\n2. باسل نادر\n3. فادي ك…"
+      },
+      "span": {
+       "end": 30,
+       "start": 21
+      }
+     }
+    ]
+   },
+   {
+    "kind": "shared_presence",
+    "label": "Shared presence",
+    "reason": "3 people held at Branch 999 in March 2014",
+    "why": "2 sources, overlapping 1 days",
+    "band": "weak",
+    "month": "2014-03",
+    "window": [
+     "2014-03-01",
+     "2014-03-31"
+    ],
+    "features": {
+     "days": 1,
+     "overlap": "0.03",
+     "sources": 2
+    },
+    "places": [
+     "Branch 999"
+    ],
+    "people": 3,
+    "members": [
+     {
+      "name": "Rania Haddad",
+      "file": "messy_people.csv",
+      "derived": false,
+      "prop": "last_seen",
+      "value": "Branch 999",
+      "when": "2014-03-15",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "No.,الشخص / p",
+       "span": "erson,ما ح",
+       "after": "دث / what happened,المكان,التاريخ,مصدر المعلومة\n1,سامر خليل …"
+      },
+      "span": {
+       "end": 23,
+       "row": 3,
+       "sheet": 1,
+       "start": 13,
+       "column": 3
+      }
+     },
+     {
+      "name": "ريم",
+      "file": "testimony",
+      "derived": false,
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "when": "2014-03",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "[00:00] الشاهدة: اسمي ريم.\n[00:05] كنت موقوفة ب",
+       "span": "الفرع 999",
+       "after": " بشهر آذار 2014، ولينا النجار كانت معنا بالمهجع.\n[00:19] بعد…"
+      },
+      "span": {
+       "end": 56,
+       "start": 47
+      }
+     },
+     {
+      "name": "لينا عمر النجار",
+      "file": "testimony",
+      "derived": false,
+      "prop": "seen_at",
+      "value": "الفرع 999",
+      "when": "2014-03",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "[00:00] الشاهدة: اسمي ريم.\n[00:05] كنت موقوفة ب",
+       "span": "الفرع 999",
+       "after": " بشهر آذار 2014، ولينا النجار كانت معنا بالمهجع.\n[00:19] بعد…"
+      },
+      "span": {
+       "end": 56,
+       "start": 47
+      }
+     }
+    ]
+   },
+   {
+    "kind": "shared_presence",
+    "label": "Shared presence",
+    "reason": "Both held at Branch 999 in September 2013",
+    "why": "2 sources, overlapping 1 days",
+    "band": "weak",
+    "month": "2013-09",
+    "window": [
+     "2013-09-01",
+     "2013-09-30"
+    ],
+    "features": {
+     "days": 1,
+     "overlap": "0.03",
+     "sources": 2
+    },
+    "places": [
+     "Branch 999"
+    ],
+    "people": 2,
+    "members": [
+     {
+      "name": "يوسف خالد علي",
+      "file": "transfer_order.pdf",
+      "derived": true,
+      "prop": "detained_at",
+      "value": "الفرع 999",
+      "when": "2013-09-17",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "…اريخ\n، والدته فاطمة14-03-1991  يوسف خالد علي، تولد: الموقوف\n",
+       "span": "999  الفرع",
+       "after": ": الجهة الموقوف لديها\n17-09-2013 ينقل الموقوف المذكور أعلاه …"
+      },
+      "span": {
+       "end": 128,
+       "start": 118
+      }
+     },
+     {
+      "name": "Bassel Nader",
+      "file": "messy_people_v2.csv",
+      "derived": false,
+      "prop": "detained_at",
+      "value": "Branch 999",
+      "when": "2013-09",
+      "tier": "accepted",
+      "sensitive": true,
+      "excerpt": {
+       "before": "No.,الشخص / ",
+       "span": "person,ما ",
+       "after": "حدث / what happened,المكان,التاريخ,مصدر المعلومة\n1,سامر خليل…"
+      },
+      "span": {
+       "end": 22,
+       "row": 17,
+       "sheet": 1,
+       "start": 12,
+       "column": 3
+      }
+     }
+    ]
+   }
+  ],
+  "incidents": [
+   "Women held at Branch 999, March 2014"
+  ],
+  "gestures": [
+   {
+    "rows": [
+     {
+      "hash": "7aae40fa509c8360edf2021130f26c8d6cc0bb2ccaeed2cce117d7500b2af451",
+      "prop": "incident",
+      "what": "Women held at Branch 999, March 2014",
+      "valid": [
+       null,
+       null
+      ]
+     },
+     {
+      "hash": "6b445f28baef3d2f8708ba9a6e975997b5a4280c44e19921c09dba0c6561c0ba",
+      "prop": "occurred_at",
+      "what": "Branch 999",
+      "valid": [
+       "2014-03-01",
+       "2014-03-31"
+      ]
+     },
+     {
+      "hash": "9c75c8abd4c43e001d7a8146d825b0ac3a2d7703dc14708475de2d95babfa65a",
+      "prop": "involved",
+      "what": "لينا عمر النجار",
+      "valid": [
+       null,
+       null
+      ],
+      "role": "victim"
+     },
+     {
+      "hash": "089ce767b877fd7f68c465652708fa6fd86ba5e96a029e8242f1188df3c8263e",
+      "prop": "involved",
+      "what": "ريم",
+      "valid": [
+       null,
+       null
+      ],
+      "role": "witness"
+     },
+     {
+      "hash": "7df13b9f6a793bb67bf3d3c500318622779e69e6a60d30ecf98a14793c7ebe70",
+      "prop": "supported_by",
+      "what": "one accepted member claim",
+      "valid": [
+       null,
+       null
+      ]
+     },
+     {
+      "hash": "dd535090369250f083fe9a2dc31305587c51bc79227fd80332287f0d51ed8e9e",
+      "prop": "supported_by",
+      "what": "one accepted member claim",
+      "valid": [
+       null,
+       null
+      ]
+     },
+     {
+      "hash": "57f33e9018c6a801d6e16ef7701e3d195ac9c10e386edf39f89f8d21b852345a",
+      "prop": "review",
+      "what": "accept",
+      "valid": [
+       null,
+       null
+      ]
+     }
+    ],
+    "batch": [
+     "7aae40fa509c8360edf2021130f26c8d6cc0bb2ccaeed2cce117d7500b2af451",
+     "6b445f28baef3d2f8708ba9a6e975997b5a4280c44e19921c09dba0c6561c0ba",
+     "9c75c8abd4c43e001d7a8146d825b0ac3a2d7703dc14708475de2d95babfa65a",
+     "089ce767b877fd7f68c465652708fa6fd86ba5e96a029e8242f1188df3c8263e",
+     "7df13b9f6a793bb67bf3d3c500318622779e69e6a60d30ecf98a14793c7ebe70",
+     "dd535090369250f083fe9a2dc31305587c51bc79227fd80332287f0d51ed8e9e",
+     "57f33e9018c6a801d6e16ef7701e3d195ac9c10e386edf39f89f8d21b852345a"
+    ],
+    "verified_offline": true,
+    "sig": {
+     "challenge": "f25d8643f5a8da581c80c4b76fc644a6c8635476e834c5d5c878557f2bf88819",
+     "client_data_json": "eyJ0eXBlIjogIndlYmF1dGhuLmdldCIsICJjaGFsbGVuZ2UiOiAiOGwyR1FfV28ybGdjZ01TM2I4WkVwc2hqVkhib05NWFZ5SGhWZnl2NGlCayIsICJvcmlnaW4iOiAiaHR0cDovL2xvY2FsaG9zdCJ9",
+     "authenticator_data": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAA",
+     "signature": "cAR_-L77S_nPSWfxqsWsGQpU0qlky7-UY6ZzIxAwdfNS9aAjfGwZ5iPsnDBt2lYZKs2TwF9CG-B58yJUtRLFAw",
+     "public_key": "pAEBAycgBiFYIBcTM3qQXbi-wNL5fNLnGpsEkEc-V5rR3nRgUxKljk7l",
+     "rp_id": "localhost",
+     "origin": "http://localhost",
+     "demo": true
+    }
+   },
+   {
+    "rows": [
+     {
+      "hash": "d3ddfc42cf16d392dcf2b20c02c9fe8697047b5a61da1971ea76b69036df7cb3",
+      "prop": "review",
+      "what": "reject: Both records are Yousef Khaled Al-Ali, read from the appeal and from its recapture. One man recorded twice, not two people together; propose a same-person link instead.",
+      "valid": [
+       null,
+       null
+      ]
+     }
+    ],
+    "batch": [
+     "d3ddfc42cf16d392dcf2b20c02c9fe8697047b5a61da1971ea76b69036df7cb3"
+    ],
+    "verified_offline": true,
+    "sig": {
+     "challenge": "70326a1748bf4e99606a3fc7cee8a07a77c60b871527eb43b6f0d3ab476b1a1b",
+     "client_data_json": "eyJ0eXBlIjogIndlYmF1dGhuLmdldCIsICJjaGFsbGVuZ2UiOiAiY0RKcUYwaV9UcGxnYWpfSHp1aWdlbmZHQzRjVkotdER0dkRUcTBkckdocyIsICJvcmlnaW4iOiAiaHR0cDovL2xvY2FsaG9zdCJ9",
+     "authenticator_data": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAA",
+     "signature": "JMdJFHzQxiXnr_R488QT8sQ-uziXCqZsHWofk3PK9kGyQ0hrKloB0DHp0HRlQOsG07eM8hCInvDcgKpPpWrHBQ",
+     "public_key": "pAEBAycgBiFYIBcTM3qQXbi-wNL5fNLnGpsEkEc-V5rR3nRgUxKljk7l",
+     "rp_id": "localhost",
+     "origin": "http://localhost",
+     "demo": true
+    }
+   }
+  ],
+  "gesture_domain": "sealbook-gesture-v1\n",
+  "per_kind": 20,
+  "reveals": 7,
+  "access_records": 12
+ },
+ "story": {
+  "title": "Yousef Khaled Al-Ali",
+  "rows": [
+   {
+    "key": "person:2c4aaac5-1d52-5a82-af2e-2c1881bbf308",
+    "label": "Yousef Khaled Al-Ali",
+    "named": true,
+    "steps": [
+     {
+      "date": "2013-05-02",
+      "places": [
+       "حرستا",
+       "دوما"
+      ],
+      "ids": [
+       "4d3d4955-95c6-43ae-b344-1b4d3c42c3bc",
+       "88936509-08c6-4321-bce9-44846cb30077"
+      ],
+      "fork": true,
+      "gap_days": null
+     },
+     {
+      "date": "2013-07-01",
+      "places": [
+       "الفرع 999"
+      ],
+      "ids": [
+       "33cf1736-8f3f-49dc-8ad8-efac8b3d1513",
+       "550b63ef-581f-4ad9-bb44-0410556f2e3f"
+      ],
+      "fork": false,
+      "gap_days": 60
+     },
+     {
+      "date": "2013-09-17",
+      "places": [
+       "الفرع 999",
+       "سجن ك المركزي"
+      ],
+      "ids": [
+       "a19f424d-c5dd-440d-af2e-b02d3f0467df",
+       "c892cde2-9227-4b75-94b0-abde2cc86f75"
+      ],
+      "fork": false,
+      "gap_days": 78
+     }
+    ],
+    "gaps": [
+     {
+      "from": "2013-05-02",
+      "to": "2013-07-01",
+      "days": 60
+     },
+     {
+      "from": "2013-07-31",
+      "to": "2013-09-17",
+      "days": 48
+     }
+    ]
+   }
+  ],
+  "points": [
+   {
+    "id": "88936509-08c6-4321-bce9-44846cb30077",
+    "prop": "last_seen",
+    "place": "دوما",
+    "place_id": "36d6e5d0-4885-4642-ac75-2cf3cfcece6b",
+    "from": "2013-05-02",
+    "to": "2013-05-02",
+    "tier": "accepted",
+    "sensitive": false,
+    "file": "missing_post_v2.html",
+    "en": "Douma"
+   },
+   {
+    "id": "4d3d4955-95c6-43ae-b344-1b4d3c42c3bc",
+    "prop": "arrested_at",
+    "place": "حرستا",
+    "place_id": "92fea468-b419-40c3-9578-659377d83df5",
+    "from": "2013-05-02",
+    "to": "2013-05-02",
+    "tier": "accepted",
+    "sensitive": true,
+    "file": "register_page.png",
+    "en": "Harasta"
+   },
+   {
+    "id": "550b63ef-581f-4ad9-bb44-0410556f2e3f",
+    "prop": "detained_at",
+    "place": "الفرع 999",
+    "place_id": "cb883448-fe21-409e-9adc-87fee885573f",
+    "from": "2013-07-01",
+    "to": "2013-07-31",
+    "tier": "accepted",
+    "sensitive": true,
+    "file": "roster",
+    "en": "Branch 999"
+   },
+   {
+    "id": "33cf1736-8f3f-49dc-8ad8-efac8b3d1513",
+    "prop": "seen_at",
+    "place": "الفرع 999",
+    "place_id": "cb883448-fe21-409e-9adc-87fee885573f",
+    "from": "2013-07-01",
+    "to": "2013-07-31",
+    "tier": "accepted",
+    "sensitive": true,
+    "file": "witness_clip.ogg",
+    "en": "Branch 999"
+   },
+   {
+    "id": "c892cde2-9227-4b75-94b0-abde2cc86f75",
+    "prop": "detained_at",
+    "place": "الفرع 999",
+    "place_id": "cb883448-fe21-409e-9adc-87fee885573f",
+    "from": "2013-09-17",
+    "to": "2013-09-17",
+    "tier": "accepted",
+    "sensitive": true,
+    "file": "transfer_order.pdf",
+    "en": "Branch 999"
+   },
+   {
+    "id": "a19f424d-c5dd-440d-af2e-b02d3f0467df",
+    "prop": "transferred_to",
+    "place": "سجن ك المركزي",
+    "place_id": "91fbcff2-9e70-4c46-96eb-fae838feae0b",
+    "from": "2013-09-17",
+    "to": "2013-09-17",
+    "tier": "accepted",
+    "sensitive": true,
+    "file": "transfer_order.pdf",
+    "en": "Central Prison K"
+   }
+  ],
+  "pending": [
+   {
+    "kind": "shared_presence",
+    "label": "Shared presence",
+    "reason": "4 people held at Branch 999 in July 2013",
+    "band": "strong",
+    "window": [
+     "2013-07-01",
+     "2013-07-31"
+    ]
+   },
+   {
+    "kind": "candidate_incident",
+    "label": "Candidate incident",
+    "reason": "4 people held at Branch 999 in July 2013",
+    "band": "strong",
+    "window": [
+     "2013-07-01",
+     "2013-07-31"
+    ]
+   },
+   {
+    "kind": "shared_presence",
+    "label": "Shared presence",
+    "reason": "Both held at Branch 999 in September 2013",
+    "band": "weak",
+    "window": [
+     "2013-09-01",
+     "2013-09-30"
+    ]
+   }
+  ],
+  "incidents": [],
+  "places": {
+   "91fbcff2-9e70-4c46-96eb-fae838feae0b": {
+    "ar": "سجن ك المركزي",
+    "en": "Central Prison K",
+    "kind": "facility",
+    "lonlat": [
+     36.6,
+     34.95
+    ],
+    "precision_m": 250,
+    "geo_source": "analyst",
+    "source": "person",
+    "geonames_id": null,
+    "admin2": null
+   },
+   "cb883448-fe21-409e-9adc-87fee885573f": {
+    "ar": "الفرع 999",
+    "en": "Branch 999",
+    "kind": "facility",
+    "lonlat": [
+     36.292,
+     33.513
+    ],
+    "precision_m": 250,
+    "geo_source": "analyst",
+    "source": "person",
+    "geonames_id": null,
+    "admin2": null
+   },
+   "92fea468-b419-40c3-9578-659377d83df5": {
+    "ar": "حرستا",
+    "en": "Harasta",
+    "kind": "populated",
+    "lonlat": [
+     36.365,
+     33.558
+    ],
+    "precision_m": 3000,
+    "geo_source": "geonames",
+    "source": "geonames",
+    "geonames_id": 9900032,
+    "admin2": null
+   },
+   "36d6e5d0-4885-4642-ac75-2cf3cfcece6b": {
+    "ar": "دوما",
+    "en": "Douma",
+    "kind": "populated",
+    "lonlat": [
+     36.402,
+     33.572
+    ],
+    "precision_m": 3000,
+    "geo_source": "geonames",
+    "source": "geonames",
+    "geonames_id": 9900033,
+    "admin2": null
+   }
+  },
+  "map": {
+   "box": [
+    36.172,
+    33.393,
+    36.72,
+    35.07
+   ],
+   "areas": [
+    {
+     "name": "Al-Qusayr",
+     "name_ar": "القصير",
+     "pcode": "SY0402",
+     "rings": [
+      [
+       [
+        36.5104,
+        34.6733
+       ],
+       [
+        36.5228,
+        34.6518
+       ],
+       [
+        36.5083,
+        34.6511
+       ],
+       [
+        36.5081,
+        34.6279
+       ],
+       [
+        36.4931,
+        34.6431
+       ],
+       [
+        36.4856,
+        34.6318
+       ],
+       [
+        36.4556,
+        34.6426
+       ],
+       [
+        36.4546,
+        34.5906
+       ],
+       [
+        36.4064,
+        34.607
+       ],
+       [
+        36.4161,
+        34.5599
+       ],
+       [
+        36.3291,
+        34.517
+       ],
+       [
+        36.3408,
+        34.4992
+       ],
+       [
+        36.4486,
+        34.5064
+       ],
+       [
+        36.4629,
+        34.4643
+       ],
+       [
+        36.5522,
+        34.4219
+       ],
+       [
+        36.553,
+        34.3963
+       ],
+       [
+        36.5301,
+        34.3721
+       ],
+       [
+        36.5472,
+        34.3488
+       ],
+       [
+        36.5819,
+        34.4006
+       ],
+       [
+        36.5867,
+        34.4454
+       ],
+       [
+        36.6709,
+        34.4821
+       ],
+       [
+        36.69,
+        34.527
+       ],
+       [
+        36.7254,
+        34.533
+       ],
+       [
+        36.747,
+        34.5694
+       ],
+       [
+        36.786,
+        34.571
+       ],
+       [
+        36.7837,
+        34.5944
+       ],
+       [
+        36.7046,
+        34.6344
+       ],
+       [
+        36.6867,
+        34.5993
+       ],
+       [
+        36.6477,
+        34.626
+       ],
+       [
+        36.5943,
+        34.6255
+       ],
+       [
+        36.5971,
+        34.6427
+       ],
+       [
+        36.6198,
+        34.6513
+       ],
+       [
+        36.6135,
+        34.6688
+       ],
+       [
+        36.5434,
+        34.6458
+       ],
+       [
+        36.5367,
+        34.6654
+       ],
+       [
+        36.5252,
+        34.6564
+       ],
+       [
+        36.5104,
+        34.6733
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Al Qutayfah",
+     "name_ar": "القطيفة",
+     "pcode": "SY0303",
+     "rings": [
+      [
+       [
+        37.0092,
+        33.94
+       ],
+       [
+        37.0187,
+        34.0209
+       ],
+       [
+        36.9968,
+        34.0209
+       ],
+       [
+        36.9349,
+        34.0024
+       ],
+       [
+        36.8518,
+        33.9249
+       ],
+       [
+        36.6877,
+        33.8438
+       ],
+       [
+        36.6717,
+        33.9118
+       ],
+       [
+        36.6331,
+        33.885
+       ],
+       [
+        36.4982,
+        33.8683
+       ],
+       [
+        36.4657,
+        33.7593
+       ],
+       [
+        36.5078,
+        33.7215
+       ],
+       [
+        36.5284,
+        33.6447
+       ],
+       [
+        36.5778,
+        33.6113
+       ],
+       [
+        36.6338,
+        33.6134
+       ],
+       [
+        36.6476,
+        33.6449
+       ],
+       [
+        36.6908,
+        33.6644
+       ],
+       [
+        36.7231,
+        33.6554
+       ],
+       [
+        36.8369,
+        33.6788
+       ],
+       [
+        37.0949,
+        33.7952
+       ],
+       [
+        37.2957,
+        33.9316
+       ],
+       [
+        37.0092,
+        33.94
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "An Nabk",
+     "name_ar": "النبك",
+     "pcode": "SY0306",
+     "rings": [
+      [
+       [
+        36.7961,
+        34.2256
+       ],
+       [
+        36.7943,
+        34.2415
+       ],
+       [
+        36.6005,
+        34.2226
+       ],
+       [
+        36.6252,
+        34.2012
+       ],
+       [
+        36.5129,
+        34.0946
+       ],
+       [
+        36.505,
+        34.0557
+       ],
+       [
+        36.5184,
+        34.0453
+       ],
+       [
+        36.5005,
+        34.0481
+       ],
+       [
+        36.5196,
+        34.0359
+       ],
+       [
+        36.6927,
+        33.9834
+       ],
+       [
+        36.6707,
+        33.8973
+       ],
+       [
+        36.6877,
+        33.8438
+       ],
+       [
+        36.8518,
+        33.9249
+       ],
+       [
+        36.9349,
+        34.0024
+       ],
+       [
+        36.9968,
+        34.0209
+       ],
+       [
+        36.9513,
+        34.0497
+       ],
+       [
+        37.0058,
+        34.0896
+       ],
+       [
+        36.9433,
+        34.1323
+       ],
+       [
+        36.9007,
+        34.1857
+       ],
+       [
+        36.8562,
+        34.1879
+       ],
+       [
+        36.7961,
+        34.2256
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Ar-Rastan",
+     "name_ar": "الرستن",
+     "pcode": "SY0404",
+     "rings": [
+      [
+       [
+        36.9193,
+        34.9693
+       ],
+       [
+        36.8498,
+        34.9705
+       ],
+       [
+        36.738,
+        34.9313
+       ],
+       [
+        36.7202,
+        34.9462
+       ],
+       [
+        36.6545,
+        34.9044
+       ],
+       [
+        36.6025,
+        34.9037
+       ],
+       [
+        36.5969,
+        34.9272
+       ],
+       [
+        36.5907,
+        34.9086
+       ],
+       [
+        36.6953,
+        34.8166
+       ],
+       [
+        36.7259,
+        34.8312
+       ],
+       [
+        36.8166,
+        34.8323
+       ],
+       [
+        36.8457,
+        34.8805
+       ],
+       [
+        36.8414,
+        34.8996
+       ],
+       [
+        36.8978,
+        34.9084
+       ],
+       [
+        36.9042,
+        34.9323
+       ],
+       [
+        36.9271,
+        34.9005
+       ],
+       [
+        36.9616,
+        34.9087
+       ],
+       [
+        36.9705,
+        34.9274
+       ],
+       [
+        36.9193,
+        34.9693
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "At Tall",
+     "name_ar": "التل",
+     "pcode": "SY0304",
+     "rings": [
+      [
+       [
+        36.3673,
+        33.8183
+       ],
+       [
+        36.2787,
+        33.8455
+       ],
+       [
+        36.2791,
+        33.7918
+       ],
+       [
+        36.2546,
+        33.7642
+       ],
+       [
+        36.2584,
+        33.7326
+       ],
+       [
+        36.2358,
+        33.7166
+       ],
+       [
+        36.2463,
+        33.6766
+       ],
+       [
+        36.2253,
+        33.6553
+       ],
+       [
+        36.2729,
+        33.5558
+       ],
+       [
+        36.3214,
+        33.5718
+       ],
+       [
+        36.3401,
+        33.5591
+       ],
+       [
+        36.3594,
+        33.5865
+       ],
+       [
+        36.4318,
+        33.6019
+       ],
+       [
+        36.4258,
+        33.6595
+       ],
+       [
+        36.5121,
+        33.6695
+       ],
+       [
+        36.5152,
+        33.6843
+       ],
+       [
+        36.5078,
+        33.7215
+       ],
+       [
+        36.4657,
+        33.7593
+       ],
+       [
+        36.48,
+        33.8247
+       ],
+       [
+        36.3907,
+        33.8407
+       ],
+       [
+        36.3673,
+        33.8183
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Az-Zabdani",
+     "name_ar": "الزبداني",
+     "pcode": "SY0307",
+     "rings": [
+      [
+       [
+        36.2148,
+        33.8272
+       ],
+       [
+        36.1565,
+        33.8537
+       ],
+       [
+        36.107,
+        33.8215
+       ],
+       [
+        36.0692,
+        33.8203
+       ],
+       [
+        36.0308,
+        33.7653
+       ],
+       [
+        36.0148,
+        33.7688
+       ],
+       [
+        35.9715,
+        33.7083
+       ],
+       [
+        35.9695,
+        33.6801
+       ],
+       [
+        35.9331,
+        33.6428
+       ],
+       [
+        35.9788,
+        33.6368
+       ],
+       [
+        36.054,
+        33.5917
+       ],
+       [
+        36.0544,
+        33.5665
+       ],
+       [
+        36.1122,
+        33.5496
+       ],
+       [
+        36.2032,
+        33.5786
+       ],
+       [
+        36.1858,
+        33.5942
+       ],
+       [
+        36.1947,
+        33.6094
+       ],
+       [
+        36.2492,
+        33.6261
+       ],
+       [
+        36.2253,
+        33.6553
+       ],
+       [
+        36.2463,
+        33.6766
+       ],
+       [
+        36.2358,
+        33.7166
+       ],
+       [
+        36.2584,
+        33.7326
+       ],
+       [
+        36.2546,
+        33.7642
+       ],
+       [
+        36.2791,
+        33.7918
+       ],
+       [
+        36.2787,
+        33.8455
+       ],
+       [
+        36.2453,
+        33.8535
+       ],
+       [
+        36.2148,
+        33.8272
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Damascus",
+     "name_ar": "دمشق",
+     "pcode": "SY0100",
+     "rings": [
+      [
+       [
+        36.3559,
+        33.5567
+       ],
+       [
+        36.2804,
+        33.5636
+       ],
+       [
+        36.204,
+        33.5339
+       ],
+       [
+        36.207,
+        33.4693
+       ],
+       [
+        36.2433,
+        33.48
+       ],
+       [
+        36.2789,
+        33.4758
+       ],
+       [
+        36.2828,
+        33.4586
+       ],
+       [
+        36.3137,
+        33.4619
+       ],
+       [
+        36.3559,
+        33.5567
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Darayya",
+     "name_ar": "داريا",
+     "pcode": "SY0309",
+     "rings": [
+      [
+       [
+        36.199,
+        33.516
+       ],
+       [
+        36.1842,
+        33.5214
+       ],
+       [
+        36.1583,
+        33.4926
+       ],
+       [
+        36.2106,
+        33.4403
+       ],
+       [
+        36.1956,
+        33.418
+       ],
+       [
+        36.2064,
+        33.3895
+       ],
+       [
+        36.2926,
+        33.4024
+       ],
+       [
+        36.273,
+        33.4386
+       ],
+       [
+        36.3072,
+        33.4452
+       ],
+       [
+        36.3101,
+        33.4618
+       ],
+       [
+        36.2828,
+        33.4586
+       ],
+       [
+        36.2789,
+        33.4758
+       ],
+       [
+        36.2433,
+        33.48
+       ],
+       [
+        36.207,
+        33.4693
+       ],
+       [
+        36.199,
+        33.516
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Duma",
+     "name_ar": "دوما",
+     "pcode": "SY0302",
+     "rings": [
+      [
+       [
+        37.611,
+        33.9235
+       ],
+       [
+        37.6017,
+        33.9808
+       ],
+       [
+        37.5518,
+        33.9875
+       ],
+       [
+        37.2957,
+        33.9316
+       ],
+       [
+        37.0949,
+        33.7952
+       ],
+       [
+        36.8369,
+        33.6788
+       ],
+       [
+        36.7231,
+        33.6554
+       ],
+       [
+        36.6908,
+        33.6644
+       ],
+       [
+        36.6476,
+        33.6449
+       ],
+       [
+        36.6338,
+        33.6134
+       ],
+       [
+        36.5778,
+        33.6113
+       ],
+       [
+        36.5121,
+        33.6695
+       ],
+       [
+        36.4341,
+        33.6634
+       ],
+       [
+        36.4318,
+        33.6019
+       ],
+       [
+        36.3594,
+        33.5865
+       ],
+       [
+        36.3401,
+        33.5591
+       ],
+       [
+        36.411,
+        33.5446
+       ],
+       [
+        36.4473,
+        33.5054
+       ],
+       [
+        36.4181,
+        33.4914
+       ],
+       [
+        36.4539,
+        33.4746
+       ],
+       [
+        36.4604,
+        33.4306
+       ],
+       [
+        36.4212,
+        33.42
+       ],
+       [
+        36.4148,
+        33.3889
+       ],
+       [
+        36.4424,
+        33.325
+       ],
+       [
+        36.4941,
+        33.2838
+       ],
+       [
+        36.5147,
+        33.2967
+       ],
+       [
+        36.5358,
+        33.2805
+       ],
+       [
+        36.5723,
+        33.1827
+       ],
+       [
+        36.7079,
+        33.1941
+       ],
+       [
+        36.8849,
+        33.0565
+       ],
+       [
+        37.0368,
+        33.0489
+       ],
+       [
+        37.2767,
+        32.9953
+       ],
+       [
+        37.2872,
+        32.9066
+       ],
+       [
+        37.4643,
+        32.664
+       ],
+       [
+        38.7925,
+        33.3747
+       ],
+       [
+        39.1253,
+        33.5315
+       ],
+       [
+        38.9334,
+        33.7597
+       ],
+       [
+        37.7042,
+        33.9019
+       ],
+       [
+        37.611,
+        33.9235
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Homs",
+     "name_ar": "مركز حمص",
+     "pcode": "SY0401",
+     "rings": [
+      [
+       [
+        36.5239,
+        34.9543
+       ],
+       [
+        36.4606,
+        34.92
+       ],
+       [
+        36.4665,
+        34.8823
+       ],
+       [
+        36.3993,
+        34.8574
+       ],
+       [
+        36.3657,
+        34.875
+       ],
+       [
+        36.3427,
+        34.8568
+       ],
+       [
+        36.3305,
+        34.8896
+       ],
+       [
+        36.2976,
+        34.918
+       ],
+       [
+        36.2671,
+        34.8735
+       ],
+       [
+        36.2888,
+        34.8634
+       ],
+       [
+        36.3259,
+        34.8808
+       ],
+       [
+        36.3151,
+        34.8642
+       ],
+       [
+        36.3289,
+        34.8468
+       ],
+       [
+        36.3734,
+        34.8457
+       ],
+       [
+        36.3546,
+        34.8183
+       ],
+       [
+        36.378,
+        34.7848
+       ],
+       [
+        36.3643,
+        34.7666
+       ],
+       [
+        36.3834,
+        34.7669
+       ],
+       [
+        36.3944,
+        34.7339
+       ],
+       [
+        36.4347,
+        34.7491
+       ],
+       [
+        36.4473,
+        34.7093
+       ],
+       [
+        36.467,
+        34.6991
+       ],
+       [
+        36.4368,
+        34.6751
+       ],
+       [
+        36.4443,
+        34.6281
+       ],
+       [
+        36.46,
+        34.6442
+       ],
+       [
+        36.5081,
+        34.6279
+       ],
+       [
+        36.5083,
+        34.6511
+       ],
+       [
+        36.5228,
+        34.6527
+       ],
+       [
+        36.5071,
+        34.6744
+       ],
+       [
+        36.5252,
+        34.6564
+       ],
+       [
+        36.5367,
+        34.6654
+       ],
+       [
+        36.5434,
+        34.6458
+       ],
+       [
+        36.6101,
+        34.6697
+       ],
+       [
+        36.6199,
+        34.6515
+       ],
+       [
+        36.597,
+        34.6425
+       ],
+       [
+        36.5999,
+        34.6231
+       ],
+       [
+        36.6477,
+        34.626
+       ],
+       [
+        36.6867,
+        34.5993
+       ],
+       [
+        36.7046,
+        34.6344
+       ],
+       [
+        36.782,
+        34.598
+       ],
+       [
+        36.786,
+        34.571
+       ],
+       [
+        36.747,
+        34.5694
+       ],
+       [
+        36.7254,
+        34.533
+       ],
+       [
+        36.69,
+        34.527
+       ],
+       [
+        36.6709,
+        34.4821
+       ],
+       [
+        36.5867,
+        34.4454
+       ],
+       [
+        36.5819,
+        34.4006
+       ],
+       [
+        36.5472,
+        34.3488
+       ],
+       [
+        36.5633,
+        34.3158
+       ],
+       [
+        36.6021,
+        34.3023
+       ],
+       [
+        36.5749,
+        34.2767
+       ],
+       [
+        36.5886,
+        34.2262
+       ],
+       [
+        36.7943,
+        34.2415
+       ],
+       [
+        36.7933,
+        34.2262
+       ],
+       [
+        36.8198,
+        34.2218
+       ],
+       [
+        36.8562,
+        34.1879
+       ],
+       [
+        36.9007,
+        34.1857
+       ],
+       [
+        36.9433,
+        34.1323
+       ],
+       [
+        37.0058,
+        34.0896
+       ],
+       [
+        36.9513,
+        34.0497
+       ],
+       [
+        37.0187,
+        34.0209
+       ],
+       [
+        37.0092,
+        33.94
+       ],
+       [
+        37.2957,
+        33.9316
+       ],
+       [
+        37.5518,
+        33.9875
+       ],
+       [
+        37.6106,
+        33.9698
+       ],
+       [
+        37.7519,
+        33.9709
+       ],
+       [
+        37.665,
+        34.4142
+       ],
+       [
+        37.6726,
+        34.4751
+       ],
+       [
+        37.7186,
+        34.474
+       ],
+       [
+        37.7479,
+        34.4962
+       ],
+       [
+        37.702,
+        34.5156
+       ],
+       [
+        37.6948,
+        34.5572
+       ],
+       [
+        37.6434,
+        34.5498
+       ],
+       [
+        37.4003,
+        34.6428
+       ],
+       [
+        37.4065,
+        34.661
+       ],
+       [
+        37.4541,
+        34.6608
+       ],
+       [
+        37.4287,
+        34.6908
+       ],
+       [
+        37.3345,
+        34.6879
+       ],
+       [
+        37.2749,
+        34.6634
+       ],
+       [
+        37.2309,
+        34.6662
+       ],
+       [
+        37.2187,
+        34.6443
+       ],
+       [
+        37.1869,
+        34.6403
+       ],
+       [
+        37.1673,
+        34.6527
+       ],
+       [
+        37.1873,
+        34.6861
+       ],
+       [
+        37.1555,
+        34.7064
+       ],
+       [
+        37.1011,
+        34.6901
+       ],
+       [
+        37.0914,
+        34.6684
+       ],
+       [
+        36.9764,
+        34.6625
+       ],
+       [
+        36.964,
+        34.7469
+       ],
+       [
+        37.0098,
+        34.77
+       ],
+       [
+        36.9737,
+        34.8389
+       ],
+       [
+        36.9937,
+        34.867
+       ],
+       [
+        36.9702,
+        34.8834
+       ],
+       [
+        36.9708,
+        34.9254
+       ],
+       [
+        36.9271,
+        34.9005
+       ],
+       [
+        36.9042,
+        34.9323
+       ],
+       [
+        36.8978,
+        34.9084
+       ],
+       [
+        36.8414,
+        34.8996
+       ],
+       [
+        36.8457,
+        34.8805
+       ],
+       [
+        36.8166,
+        34.8323
+       ],
+       [
+        36.7259,
+        34.8312
+       ],
+       [
+        36.6953,
+        34.8166
+       ],
+       [
+        36.68,
+        34.8432
+       ],
+       [
+        36.6451,
+        34.8507
+       ],
+       [
+        36.5944,
+        34.9004
+       ],
+       [
+        36.5899,
+        34.9249
+       ],
+       [
+        36.5568,
+        34.8925
+       ],
+       [
+        36.5403,
+        34.9234
+       ],
+       [
+        36.5179,
+        34.9234
+       ],
+       [
+        36.5359,
+        34.9407
+       ],
+       [
+        36.5239,
+        34.9543
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Qatana",
+     "name_ar": "قطنا",
+     "pcode": "SY0308",
+     "rings": [
+      [
+       [
+        36.1876,
+        33.5151
+       ],
+       [
+        36.1705,
+        33.5686
+       ],
+       [
+        36.1398,
+        33.5499
+       ],
+       [
+        36.0544,
+        33.5665
+       ],
+       [
+        36.0276,
+        33.54
+       ],
+       [
+        35.9515,
+        33.5259
+       ],
+       [
+        35.9381,
+        33.5142
+       ],
+       [
+        35.9474,
+        33.4705
+       ],
+       [
+        35.8206,
+        33.3898
+       ],
+       [
+        35.8155,
+        33.358
+       ],
+       [
+        35.883,
+        33.2993
+       ],
+       [
+        35.8652,
+        33.281
+       ],
+       [
+        35.8855,
+        33.2542
+       ],
+       [
+        35.9201,
+        33.2666
+       ],
+       [
+        35.9639,
+        33.2592
+       ],
+       [
+        35.9602,
+        33.2034
+       ],
+       [
+        35.9945,
+        33.1991
+       ],
+       [
+        35.9895,
+        33.1588
+       ],
+       [
+        36.0701,
+        33.1613
+       ],
+       [
+        36.0849,
+        33.1962
+       ],
+       [
+        36.1447,
+        33.1917
+       ],
+       [
+        36.1658,
+        33.2138
+       ],
+       [
+        36.1461,
+        33.2678
+       ],
+       [
+        36.1684,
+        33.2946
+       ],
+       [
+        36.1057,
+        33.3325
+       ],
+       [
+        36.1313,
+        33.3528
+       ],
+       [
+        36.1257,
+        33.3732
+       ],
+       [
+        36.1555,
+        33.3764
+       ],
+       [
+        36.1652,
+        33.4029
+       ],
+       [
+        36.1967,
+        33.3868
+       ],
+       [
+        36.2098,
+        33.395
+       ],
+       [
+        36.1956,
+        33.418
+       ],
+       [
+        36.2106,
+        33.4403
+       ],
+       [
+        36.1583,
+        33.4926
+       ],
+       [
+        36.1876,
+        33.5151
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Rural Damascus",
+     "name_ar": "مركز ريف دمشق",
+     "pcode": "SY0301",
+     "rings": [
+      [
+       [
+        36.411,
+        33.5446
+       ],
+       [
+        36.3534,
+        33.5466
+       ],
+       [
+        36.3072,
+        33.4452
+       ],
+       [
+        36.275,
+        33.4453
+       ],
+       [
+        36.2926,
+        33.4024
+       ],
+       [
+        36.2202,
+        33.3823
+       ],
+       [
+        36.1652,
+        33.4029
+       ],
+       [
+        36.1555,
+        33.3764
+       ],
+       [
+        36.1257,
+        33.3732
+       ],
+       [
+        36.1313,
+        33.3528
+       ],
+       [
+        36.1057,
+        33.3325
+       ],
+       [
+        36.1684,
+        33.2946
+       ],
+       [
+        36.1461,
+        33.2678
+       ],
+       [
+        36.1658,
+        33.2138
+       ],
+       [
+        36.2087,
+        33.2099
+       ],
+       [
+        36.236,
+        33.2735
+       ],
+       [
+        36.3683,
+        33.1839
+       ],
+       [
+        36.3977,
+        33.1936
+       ],
+       [
+        36.3933,
+        33.2173
+       ],
+       [
+        36.4496,
+        33.268
+       ],
+       [
+        36.4941,
+        33.2838
+       ],
+       [
+        36.4385,
+        33.3286
+       ],
+       [
+        36.4148,
+        33.3889
+       ],
+       [
+        36.4212,
+        33.42
+       ],
+       [
+        36.4604,
+        33.4306
+       ],
+       [
+        36.4539,
+        33.4746
+       ],
+       [
+        36.4181,
+        33.4914
+       ],
+       [
+        36.4473,
+        33.5054
+       ],
+       [
+        36.411,
+        33.5446
+       ]
+      ],
+      [
+       [
+        36.2506,
+        33.6216
+       ],
+       [
+        36.1863,
+        33.5997
+       ],
+       [
+        36.2047,
+        33.5814
+       ],
+       [
+        36.1705,
+        33.5686
+       ],
+       [
+        36.1923,
+        33.5463
+       ],
+       [
+        36.1842,
+        33.5214
+       ],
+       [
+        36.2729,
+        33.5558
+       ],
+       [
+        36.2506,
+        33.6216
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Tall Kalakh",
+     "name_ar": "تلكلخ",
+     "pcode": "SY0403",
+     "rings": [
+      [
+       [
+        36.3289,
+        34.8468
+       ],
+       [
+        36.3151,
+        34.8642
+       ],
+       [
+        36.2693,
+        34.8073
+       ],
+       [
+        36.145,
+        34.7346
+       ],
+       [
+        36.1477,
+        34.7
+       ],
+       [
+        36.1272,
+        34.6899
+       ],
+       [
+        36.1173,
+        34.638
+       ],
+       [
+        36.289,
+        34.63
+       ],
+       [
+        36.3225,
+        34.6848
+       ],
+       [
+        36.344,
+        34.6795
+       ],
+       [
+        36.3845,
+        34.6311
+       ],
+       [
+        36.427,
+        34.6155
+       ],
+       [
+        36.4443,
+        34.6281
+       ],
+       [
+        36.4368,
+        34.6751
+       ],
+       [
+        36.4653,
+        34.7036
+       ],
+       [
+        36.4473,
+        34.7093
+       ],
+       [
+        36.4347,
+        34.7491
+       ],
+       [
+        36.3944,
+        34.7339
+       ],
+       [
+        36.3834,
+        34.7669
+       ],
+       [
+        36.3643,
+        34.7666
+       ],
+       [
+        36.378,
+        34.7848
+       ],
+       [
+        36.3546,
+        34.8183
+       ],
+       [
+        36.3734,
+        34.8457
+       ],
+       [
+        36.3289,
+        34.8468
+       ]
+      ]
+     ]
+    },
+    {
+     "name": "Yabroud",
+     "name_ar": "يبرود",
+     "pcode": "SY0305",
+     "rings": [
+      [
+       [
+        36.4809,
+        34.0387
+       ],
+       [
+        36.4019,
+        34.041
+       ],
+       [
+        36.4062,
+        34.0275
+       ],
+       [
+        36.3286,
+        33.9699
+       ],
+       [
+        36.2833,
+        33.9033
+       ],
+       [
+        36.3252,
+        33.8756
+       ],
+       [
+        36.3663,
+        33.8721
+       ],
+       [
+        36.3907,
+        33.8407
+       ],
+       [
+        36.48,
+        33.8247
+       ],
+       [
+        36.4982,
+        33.8683
+       ],
+       [
+        36.6331,
+        33.885
+       ],
+       [
+        36.6717,
+        33.9118
+       ],
+       [
+        36.6927,
+        33.9834
+       ],
+       [
+        36.5005,
+        34.0481
+       ],
+       [
+        36.496,
+        34.027
+       ],
+       [
+        36.4889,
+        34.0489
+       ],
+       [
+        36.4809,
+        34.0387
+       ]
+      ]
+     ]
+    }
+   ],
+   "boundaries": "OCHA COD-AB Syria admin 2 (v02, valid on 2020-12-17), simplified test subset; Creative Commons Attribution 3.0 IGO (CC BY 3.0 IGO)"
+  },
+  "attribution": "GeoNames (CC BY 4.0)"
+ },
+ "sheet": {
+  "file": "messy_people.csv",
+  "dataset": "Family intake",
+  "header": [
+   "No.",
+   "الشخص / person",
+   "ما حدث / what happened",
+   "المكان",
+   "التاريخ",
+   "مصدر المعلومة"
+  ],
+  "rows": [
+   [
+    "1",
+    "سامر خليل النجار - ذكر - 29 سنة - نجار",
+    "اعتقل على حاجز قرب حرستا ونقل إلى الفرع 999",
+    "حرستا",
+    "2013-05-12",
+    "اتصال هاتفي"
+   ],
+   [
+    "2",
+    "Rania Haddad (female), teacher, 41",
+    "Last seen at Branch 999 visiting room",
+    "Branch 999",
+    "15/3/2014",
+    "family"
+   ],
+   [
+    "3",
+    "يوسف عمر الحلبي ١٧ سنة طالب",
+    "قتل بقصف على السوق",
+    "دوما",
+    "اذار 2013",
+    ""
+   ],
+   [
+    "4",
+    "Khaled M. - male - about thirty",
+    "Detained at Central Prison K, released later",
+    "Central Prison K",
+    "2015",
+    "neighbour"
+   ],
+   [
+    "5",
+    "ام سليم حوالي ستين سنة ربة منزل",
+    "نزحت من بابا عمرو مع أحفادها",
+    "بابا عمرو",
+    "شباط 2012",
+    ""
+   ],
+   [
+    "6",
+    "Nour al-Din Sabbagh, 35, pharmacist",
+    "Missing since he was stopped at a checkpoint",
+    "Zabadani",
+    "unknown",
+    ""
+   ],
+   [
+    "7",
+    "ليلى فؤاد العلي (أنثى) ممرضة",
+    "شوهدت في سجن ك المركزي آخر مرة",
+    "سجن ك المركزي",
+    "٢٠١٤/٠٧/٠٣",
+    ""
+   ],
+   [
+    "8",
+    "Omar Taha engineer male 52",
+    "Arrested from his home",
+    "Douma",
+    "July 2013",
+    ""
+   ],
+   [
+    "9",
+    "محمد (لم يذكر اسمه الكامل) عامل بناء",
+    "اختفى بعد مداهمة منزله",
+    "جرمانا",
+    "تشرين الأول 2012",
+    ""
+   ],
+   [
+    "10",
+    "Huda S. - female - 23",
+    "Wounded by sniper fire near the bakery",
+    "Homs",
+    "2012-02-20",
+    ""
+   ],
+   [
+    "11",
+    "عبد الله ياسين الكردي ذكر 44 سائق تكسي",
+    "انشق عن الجيش ويعيش لاجئا الآن",
+    "الباب",
+    "2012",
+    ""
+   ],
+   [
+    "12",
+    "Salma Darwish, 19, student",
+    "Detained at Branch 999 for two months",
+    "الفرع 999",
+    "5/2013",
+    ""
+   ],
+   [
+    "13",
+    "طارق نبيل حداد - ٣٨ - محامي",
+    "نقل من الفرع 999 إلى سجن ك المركزي",
+    "دمشق",
+    "١٢/١١/٢٠١٣",
+    ""
+   ],
+   [
+    "14",
+    "Faten (no surname given), nurse",
+    "Seen alive in a hospital",
+    "Aleppo",
+    "around 2016",
+    ""
+   ],
+   [
+    "15",
+    "حسن أديب قاسم ذكر 60 مزارع",
+    "مفقود",
+    "",
+    "",
+    ""
+   ]
+  ],
+  "mapping": {
+   "No.": "key",
+   "المكان": "place",
+   "التاريخ": "date",
+   "الشخص / person": "person",
+   "مصدر المعلومة": "ignore",
+   "ما حدث / what happened": "event"
+  },
+  "key_column": "No.",
+  "versions": [
+   {
+    "number": 1,
+    "file": "messy_people.csv",
+    "diff": {
+     "new": 15,
+     "changed": 0,
+     "invalid": 0,
+     "missing": 0,
+     "unchanged": 0
+    }
+   },
+   {
+    "number": 2,
+    "file": "messy_people_v2.csv",
+    "diff": {
+     "new": 2,
+     "changed": 3,
+     "invalid": 3,
+     "missing": 1,
+     "unchanged": 10
+    }
+   }
+  ],
+  "claims": [
+   {
+    "row": 2,
+    "column": 2,
+    "chars": [
+     0,
+     16
+    ],
+    "prop": "name",
+    "text": "سامر خليل النجار",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 2,
+    "column": 2,
+    "chars": [
+     19,
+     22
+    ],
+    "prop": "sex",
+    "text": "ذكر",
+    "norm": "male",
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 2,
+    "column": 2,
+    "chars": [
+     25,
+     31
+    ],
+    "prop": "age",
+    "text": "29 سنة",
+    "norm": 29,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 2,
+    "column": 3,
+    "chars": [
+     19,
+     24
+    ],
+    "prop": "arrested_at",
+    "text": "حرستا",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     "2013-05-12",
+     "2013-05-12"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 2,
+    "column": 3,
+    "chars": [
+     34,
+     43
+    ],
+    "prop": "transferred_to",
+    "text": "الفرع 999",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     "2013-05-12",
+     "2013-05-12"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 3,
+    "column": 2,
+    "chars": [
+     0,
+     12
+    ],
+    "prop": "name",
+    "text": "Rania Haddad",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "accepted"
+   },
+   {
+    "row": 3,
+    "column": 2,
+    "chars": [
+     14,
+     20
+    ],
+    "prop": "sex",
+    "text": "female",
+    "norm": "female",
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 3,
+    "column": 2,
+    "chars": [
+     23,
+     30
+    ],
+    "prop": "occupation",
+    "text": "teacher",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 3,
+    "column": 2,
+    "chars": [
+     32,
+     34
+    ],
+    "prop": "age",
+    "text": "41",
+    "norm": 41,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 3,
+    "column": 3,
+    "chars": [
+     13,
+     23
+    ],
+    "prop": "last_seen",
+    "text": "Branch 999",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     "2014-03-15",
+     "2014-03-15"
+    ],
+    "tier": "accepted"
+   },
+   {
+    "row": 4,
+    "column": 2,
+    "chars": [
+     0,
+     15
+    ],
+    "prop": "name",
+    "text": "يوسف عمر الحلبي",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 4,
+    "column": 2,
+    "chars": [
+     16,
+     22
+    ],
+    "prop": "age",
+    "text": "١٧ سنة",
+    "norm": 17,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 4,
+    "column": 2,
+    "chars": [
+     23,
+     27
+    ],
+    "prop": "occupation",
+    "text": "طالب",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 4,
+    "column": 3,
+    "chars": null,
+    "prop": "event",
+    "text": "قتل بقصف على السوق",
+    "norm": null,
+    "kind": "killed",
+    "valid": [
+     "2013-03-01",
+     "2013-03-31"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 5,
+    "column": 2,
+    "chars": [
+     0,
+     9
+    ],
+    "prop": "name",
+    "text": "Khaled M.",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 5,
+    "column": 2,
+    "chars": [
+     12,
+     16
+    ],
+    "prop": "sex",
+    "text": "male",
+    "norm": "male",
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 5,
+    "column": 2,
+    "chars": [
+     19,
+     31
+    ],
+    "prop": "age",
+    "text": "about thirty",
+    "norm": 30,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 5,
+    "column": 3,
+    "chars": [
+     12,
+     28
+    ],
+    "prop": "detained_at",
+    "text": "Central Prison K",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     "2015-01-01",
+     "2015-12-31"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 5,
+    "column": 3,
+    "chars": [
+     30,
+     44
+    ],
+    "prop": "event",
+    "text": "released later",
+    "norm": null,
+    "kind": "released",
+    "valid": [
+     "2015-01-01",
+     "2015-12-31"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 6,
+    "column": 2,
+    "chars": [
+     0,
+     7
+    ],
+    "prop": "name",
+    "text": "ام سليم",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 6,
+    "column": 2,
+    "chars": [
+     8,
+     22
+    ],
+    "prop": "age",
+    "text": "حوالي ستين سنة",
+    "norm": 60,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 6,
+    "column": 2,
+    "chars": [
+     23,
+     31
+    ],
+    "prop": "occupation",
+    "text": "ربة منزل",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 6,
+    "column": 3,
+    "chars": null,
+    "prop": "event",
+    "text": "نزحت من بابا عمرو مع أحفادها",
+    "norm": null,
+    "kind": "displaced",
+    "valid": [
+     "2012-02-01",
+     "2012-02-29"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 7,
+    "column": 2,
+    "chars": [
+     0,
+     19
+    ],
+    "prop": "name",
+    "text": "Nour al-Din Sabbagh",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 7,
+    "column": 2,
+    "chars": [
+     21,
+     23
+    ],
+    "prop": "age",
+    "text": "35",
+    "norm": 35,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 7,
+    "column": 2,
+    "chars": [
+     25,
+     35
+    ],
+    "prop": "occupation",
+    "text": "pharmacist",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 7,
+    "column": 3,
+    "chars": null,
+    "prop": "event",
+    "text": "Missing since he was stopped at a checkpoint",
+    "norm": null,
+    "kind": "missing",
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 8,
+    "column": 2,
+    "chars": [
+     0,
+     15
+    ],
+    "prop": "name",
+    "text": "ليلى فؤاد العلي",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 8,
+    "column": 2,
+    "chars": [
+     17,
+     21
+    ],
+    "prop": "sex",
+    "text": "أنثى",
+    "norm": "female",
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 8,
+    "column": 2,
+    "chars": [
+     23,
+     28
+    ],
+    "prop": "occupation",
+    "text": "ممرضة",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 8,
+    "column": 3,
+    "chars": [
+     9,
+     22
+    ],
+    "prop": "last_seen",
+    "text": "سجن ك المركزي",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     "2014-07-03",
+     "2014-07-03"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 9,
+    "column": 2,
+    "chars": [
+     0,
+     9
+    ],
+    "prop": "name",
+    "text": "Omar Taha",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 9,
+    "column": 2,
+    "chars": [
+     10,
+     18
+    ],
+    "prop": "occupation",
+    "text": "engineer",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 9,
+    "column": 2,
+    "chars": [
+     19,
+     23
+    ],
+    "prop": "sex",
+    "text": "male",
+    "norm": "male",
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 9,
+    "column": 2,
+    "chars": [
+     24,
+     26
+    ],
+    "prop": "age",
+    "text": "52",
+    "norm": 52,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 9,
+    "column": 4,
+    "chars": null,
+    "prop": "arrested_at",
+    "text": "Douma",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     "2013-07-01",
+     "2013-07-31"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 10,
+    "column": 2,
+    "chars": [
+     0,
+     4
+    ],
+    "prop": "name",
+    "text": "محمد",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 10,
+    "column": 2,
+    "chars": [
+     27,
+     36
+    ],
+    "prop": "occupation",
+    "text": "عامل بناء",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 10,
+    "column": 3,
+    "chars": null,
+    "prop": "event",
+    "text": "اختفى بعد مداهمة منزله",
+    "norm": null,
+    "kind": "missing",
+    "valid": [
+     "2012-10-01",
+     "2012-10-31"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 11,
+    "column": 2,
+    "chars": [
+     0,
+     7
+    ],
+    "prop": "name",
+    "text": "Huda S.",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 11,
+    "column": 2,
+    "chars": [
+     10,
+     16
+    ],
+    "prop": "sex",
+    "text": "female",
+    "norm": "female",
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 11,
+    "column": 2,
+    "chars": [
+     19,
+     21
+    ],
+    "prop": "age",
+    "text": "23",
+    "norm": 23,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 11,
+    "column": 3,
+    "chars": null,
+    "prop": "event",
+    "text": "Wounded by sniper fire near the bakery",
+    "norm": null,
+    "kind": "wounded",
+    "valid": [
+     "2012-02-20",
+     "2012-02-20"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 12,
+    "column": 2,
+    "chars": [
+     0,
+     21
+    ],
+    "prop": "name",
+    "text": "عبد الله ياسين الكردي",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 12,
+    "column": 2,
+    "chars": [
+     22,
+     25
+    ],
+    "prop": "sex",
+    "text": "ذكر",
+    "norm": "male",
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 12,
+    "column": 2,
+    "chars": [
+     26,
+     28
+    ],
+    "prop": "age",
+    "text": "44",
+    "norm": 44,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 12,
+    "column": 2,
+    "chars": [
+     29,
+     38
+    ],
+    "prop": "occupation",
+    "text": "سائق تكسي",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 12,
+    "column": 3,
+    "chars": [
+     0,
+     13
+    ],
+    "prop": "event",
+    "text": "انشق عن الجيش",
+    "norm": null,
+    "kind": "defected",
+    "valid": [
+     "2012-01-01",
+     "2012-12-31"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 13,
+    "column": 2,
+    "chars": [
+     0,
+     13
+    ],
+    "prop": "name",
+    "text": "Salma Darwish",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 13,
+    "column": 2,
+    "chars": [
+     15,
+     17
+    ],
+    "prop": "age",
+    "text": "19",
+    "norm": 19,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 13,
+    "column": 2,
+    "chars": [
+     19,
+     26
+    ],
+    "prop": "occupation",
+    "text": "student",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 13,
+    "column": 3,
+    "chars": [
+     12,
+     22
+    ],
+    "prop": "detained_at",
+    "text": "Branch 999",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     "2013-05-01",
+     "2013-05-31"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 14,
+    "column": 2,
+    "chars": [
+     0,
+     14
+    ],
+    "prop": "name",
+    "text": "طارق نبيل حداد",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 14,
+    "column": 2,
+    "chars": [
+     17,
+     19
+    ],
+    "prop": "age",
+    "text": "٣٨",
+    "norm": 38,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 14,
+    "column": 2,
+    "chars": [
+     22,
+     27
+    ],
+    "prop": "occupation",
+    "text": "محامي",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 14,
+    "column": 3,
+    "chars": [
+     21,
+     34
+    ],
+    "prop": "transferred_to",
+    "text": "سجن ك المركزي",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     "2013-11-12",
+     "2013-11-12"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 15,
+    "column": 2,
+    "chars": [
+     0,
+     5
+    ],
+    "prop": "name",
+    "text": "Faten",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 15,
+    "column": 2,
+    "chars": [
+     26,
+     31
+    ],
+    "prop": "occupation",
+    "text": "nurse",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 15,
+    "column": 4,
+    "chars": null,
+    "prop": "seen_at",
+    "text": "Aleppo",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     "2016-01-01",
+     "2016-12-31"
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 16,
+    "column": 2,
+    "chars": [
+     0,
+     13
+    ],
+    "prop": "name",
+    "text": "حسن أديب قاسم",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 16,
+    "column": 2,
+    "chars": [
+     14,
+     17
+    ],
+    "prop": "sex",
+    "text": "ذكر",
+    "norm": "male",
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 16,
+    "column": 2,
+    "chars": [
+     18,
+     20
+    ],
+    "prop": "age",
+    "text": "60",
+    "norm": 60,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 16,
+    "column": 2,
+    "chars": [
+     21,
+     26
+    ],
+    "prop": "occupation",
+    "text": "مزارع",
+    "norm": null,
+    "kind": null,
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   },
+   {
+    "row": 16,
+    "column": 3,
+    "chars": null,
+    "prop": "event",
+    "text": "مفقود",
+    "norm": null,
+    "kind": "missing",
+    "valid": [
+     null,
+     null
+    ],
+    "tier": "unconfirmed"
+   }
+  ],
+  "fixed_output": true,
+  "measured": "Measured once on messy_people.csv with local gemma4 12B (acceptance/eval_sheet.py): name 15/15, sex 8/8 with none inferred, age 12/12, occupation 13/13, event kind 8/8 plus 1 wrong event, date 13/13, place quoted 11/14; position props 11 supported and 5 unsupported (mostly seen_at from the place column); column suggestions top-1 right for 4 of 6 columns."
+ },
+ "grouped_search": {
+  "queries": [
+   {
+    "query": "Branch 999",
+    "ms": 85,
+    "semantic": "off",
+    "groups": {
+     "places": {
+      "total": 1,
+      "exact": 1,
+      "items": [
+       {
+        "title": "الفرع 999",
+        "alt": [
+         "Branch 999"
+        ],
+        "subtitle": "facility",
+        "exact": true,
+        "signals": [
+         "name"
+        ],
+        "matched": "Branch 999",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       }
+      ]
+     },
+     "passages": {
+      "total": 7,
+      "exact": 7,
+      "items": [
+       {
+        "title": "note",
+        "alt": null,
+        "subtitle": "report",
+        "exact": true,
+        "signals": [
+         "literal",
+         "words"
+        ],
+        "matched": null,
+        "masked": false,
+        "snippet": {
+         "text": "…he Jdeideh quarter on 11 February 2014.\nHer family reports that she was held at Branch 999.\nMohammed Ahmad Al-Khatib, born 1994, was detained in Aleppo in early February …",
+         "highlights": [
+          [
+           81,
+           91
+          ]
+         ]
+        },
+        "location": null
+       },
+       {
+        "title": "messy_people.csv",
+        "alt": null,
+        "subtitle": "intake_sheet",
+        "exact": true,
+        "signals": [
+         "literal",
+         "place_name",
+         "words"
+        ],
+        "matched": "الفرع 999",
+        "masked": false,
+        "snippet": {
+         "text": "…رستا,2013-05-12,اتصال هاتفي\n2,\"Rania Haddad (female), teacher, 41\",Last seen at Branch 999 visiting room,Branch 999,15/3/2014,family\n3,يوسف عمر الحلبي ١٧ سنة طالب,قتل بقص…",
+         "highlights": [
+          [
+           81,
+           91
+          ]
+         ]
+        },
+        "location": null
+       },
+       {
+        "title": "release",
+        "alt": null,
+        "subtitle": "report",
+        "exact": true,
+        "signals": [
+         "literal",
+         "words"
+        ],
+        "matched": null,
+        "masked": false,
+        "snippet": {
+         "text": "…detainee (synthetic), published 4 October 2013\nSalim Haddad says he was held at Branch 999 throughout July 2013, in dormitory 4.\nHe names three cellmates: Yousef Khaled A…",
+         "highlights": [
+          [
+           81,
+           91
+          ]
+         ]
+        },
+        "location": null
+       },
+       {
+        "title": "messy_people_v2.csv",
+        "alt": null,
+        "subtitle": "intake_sheet",
+        "exact": true,
+        "signals": [
+         "literal",
+         "place_name",
+         "words"
+        ],
+        "matched": "الفرع 999",
+        "masked": false,
+        "snippet": {
+         "text": "…رستا,2013-05-12,اتصال هاتفي\n2,\"Rania Haddad (female), teacher, 41\",Last seen at Branch 999 visiting room,Branch 999,15/3/2015,family\n3,يوسف عمر الحلبي ١٧ سنة طالب,قتل بقص…",
+         "highlights": [
+          [
+           81,
+           91
+          ]
+         ]
+        },
+        "location": null
+       }
+      ]
+     },
+     "claims": {
+      "total": 18,
+      "exact": 18,
+      "items": [
+       {
+        "title": "Branch 999",
+        "alt": null,
+        "subtitle": "messy_people_v2.csv",
+        "exact": true,
+        "signals": [
+         "claim_value"
+        ],
+        "matched": "Branch 999",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "Branch 999",
+        "alt": null,
+        "subtitle": "messy_people_v2.csv",
+        "exact": true,
+        "signals": [
+         "claim_value"
+        ],
+        "matched": "Branch 999",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "Branch 999",
+        "alt": null,
+        "subtitle": "messy_people.csv",
+        "exact": true,
+        "signals": [
+         "claim_value"
+        ],
+        "matched": "Branch 999",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "Branch 999",
+        "alt": null,
+        "subtitle": "messy_people.csv",
+        "exact": true,
+        "signals": [
+         "claim_value"
+        ],
+        "matched": "Branch 999",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       }
+      ]
+     },
+     "findings": {
+      "total": 5,
+      "exact": 5,
+      "items": [
+       {
+        "title": "candidate incident",
+        "alt": null,
+        "subtitle": "2014-03",
+        "exact": true,
+        "signals": [
+         "involves"
+        ],
+        "matched": [
+         "place:cb883448-fe21-409e-9adc-87fee885573f"
+        ],
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "candidate incident",
+        "alt": null,
+        "subtitle": "2013-07",
+        "exact": true,
+        "signals": [
+         "involves"
+        ],
+        "matched": [
+         "place:cb883448-fe21-409e-9adc-87fee885573f"
+        ],
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "shared presence",
+        "alt": null,
+        "subtitle": "2013-09",
+        "exact": true,
+        "signals": [
+         "involves"
+        ],
+        "matched": [
+         "place:cb883448-fe21-409e-9adc-87fee885573f"
+        ],
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "shared presence",
+        "alt": null,
+        "subtitle": "2014-03",
+        "exact": true,
+        "signals": [
+         "involves"
+        ],
+        "matched": [
+         "place:cb883448-fe21-409e-9adc-87fee885573f"
+        ],
+        "masked": false,
+        "snippet": null,
+        "location": null
+       }
+      ]
+     }
+    }
+   },
+   {
+    "query": "يوسف خالد العلي",
+    "ms": 92,
+    "semantic": "off",
+    "groups": {
+     "people": {
+      "total": 3,
+      "exact": 3,
+      "items": [
+       {
+        "title": "Yousef Khaled Al-Ali",
+        "alt": [
+         "Yousef Khaled Al-Ali"
+        ],
+        "subtitle": "19 facts from 6 documents",
+        "exact": true,
+        "signals": [
+         "keyword"
+        ],
+        "matched": null,
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "Yousef Khaled Al-Ali",
+        "alt": [
+         "Yousef Khaled Al-Ali"
+        ],
+        "subtitle": "16 facts from 5 documents",
+        "exact": true,
+        "signals": [
+         "keyword"
+        ],
+        "matched": null,
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "Person e144b8cf",
+        "alt": [],
+        "subtitle": "4 facts from 1 documents",
+        "exact": true,
+        "signals": [
+         "keyword"
+        ],
+        "matched": null,
+        "masked": true,
+        "snippet": null,
+        "location": null
+       }
+      ]
+     },
+     "passages": {
+      "total": 6,
+      "exact": 6,
+      "items": [
+       {
+        "title": "roster",
+        "alt": null,
+        "subtitle": "detention_register",
+        "exact": true,
+        "signals": [
+         "literal",
+         "words"
+        ],
+        "matched": null,
+        "masked": false,
+        "snippet": {
+         "text": "قائمة نزلاء المهجع 4\nالفرع 999\nالشهر: تموز 2013\n\n1. يوسف خالد العلي\n2. باسل نادر\n3. فادي كرم\n",
+         "highlights": [
+          [
+           52,
+           67
+          ]
+         ]
+        },
+        "location": null
+       },
+       {
+        "title": "witness_clip.ogg",
+        "alt": null,
+        "subtitle": "witness_statement",
+        "exact": true,
+        "signals": [
+         "literal",
+         "words"
+        ],
+        "matched": null,
+        "masked": false,
+        "snippet": {
+         "text": "بشهر تموز من سنة الألفين وتلتعش، شفت يوسف خالد العلي بالفرع تسعمية وتسعة وتسعين.",
+         "highlights": [
+          [
+           37,
+           52
+          ]
+         ]
+        },
+        "location": {
+         "ms": [
+          10450,
+          19600
+         ]
+        }
+       },
+       {
+        "title": "transfer_order.pdf",
+        "alt": null,
+        "subtitle": "transfer_order, 2013-09-17",
+        "exact": true,
+        "signals": [
+         "name_variant"
+        ],
+        "matched": "يوسف خالد علي",
+        "masked": false,
+        "snippet": {
+         "text": "…\nقسم الديوان\nن/ 4471 أمر نقل رقم\n17-09-2013 : التاريخ\n، والدته فاطمة14-03-1991  يوسف خالد علي، تولد: الموقوف\n999  الفرع: الجهة الموقوف لديها\n17-09-2013 ينقل الموقوف المذكور …",
+         "highlights": [
+          [
+           81,
+           94
+          ]
+         ]
+        },
+        "location": {
+         "bbox": [
+          0,
+          0,
+          596,
+          843
+         ],
+         "page": 1
+        }
+       },
+       {
+        "title": "missing_post_v2.html",
+        "alt": null,
+        "subtitle": "web_post",
+        "exact": true,
+        "signals": [
+         "name_variant"
+        ],
+        "matched": "Yousef Khaled Al-Ali",
+        "masked": false,
+        "snippet": {
+         "text": "…           \n                                                             مفقود: Yousef Khaled Al-Ali        \n                                                                       …",
+         "highlights": [
+          [
+           81,
+           101
+          ]
+         ]
+        },
+        "location": null
+       }
+      ]
+     },
+     "claims": {
+      "total": 8,
+      "exact": 8,
+      "items": [
+       {
+        "title": "Yousef Khaled Al-Ali",
+        "alt": null,
+        "subtitle": "release",
+        "exact": true,
+        "signals": [
+         "claim_value"
+        ],
+        "matched": "Yousef Khaled Al-Ali",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": null,
+        "alt": null,
+        "subtitle": "roster",
+        "exact": true,
+        "signals": [
+         "claim_value"
+        ],
+        "matched": "يوسف خالد العلي",
+        "masked": true,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "Yousef Khaled Al-Ali",
+        "alt": null,
+        "subtitle": "post_v2",
+        "exact": true,
+        "signals": [
+         "claim_value"
+        ],
+        "matched": "Yousef Khaled Al-Ali",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": null,
+        "alt": null,
+        "subtitle": "72b5e86dc74b",
+        "exact": true,
+        "signals": [
+         "claim_value"
+        ],
+        "matched": "يوسف خالد علي",
+        "masked": true,
+        "snippet": null,
+        "location": null
+       }
+      ]
+     },
+     "findings": {
+      "total": 3,
+      "exact": 3,
+      "items": [
+       {
+        "title": "candidate incident",
+        "alt": null,
+        "subtitle": "2013-07",
+        "exact": true,
+        "signals": [
+         "involves"
+        ],
+        "matched": [
+         "person:2c4aaac5-1d52-5a82-af2e-2c1881bbf308"
+        ],
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "shared presence",
+        "alt": null,
+        "subtitle": "2013-09",
+        "exact": true,
+        "signals": [
+         "involves"
+        ],
+        "matched": [
+         "person:2c4aaac5-1d52-5a82-af2e-2c1881bbf308"
+        ],
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "shared presence",
+        "alt": null,
+        "subtitle": "2013-07",
+        "exact": true,
+        "signals": [
+         "involves"
+        ],
+        "matched": [
+         "person:2c4aaac5-1d52-5a82-af2e-2c1881bbf308"
+        ],
+        "masked": false,
+        "snippet": null,
+        "location": null
+       }
+      ]
+     }
+    }
+   },
+   {
+    "query": "Harasta",
+    "ms": 78,
+    "semantic": "off",
+    "groups": {
+     "places": {
+      "total": 3,
+      "exact": 1,
+      "items": [
+       {
+        "title": "حرستا",
+        "alt": [
+         "Harasta"
+        ],
+        "subtitle": "populated",
+        "exact": true,
+        "signals": [
+         "name"
+        ],
+        "matched": "Harasta",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "منطقة حرستا",
+        "alt": [
+         "Harasta District"
+        ],
+        "subtitle": "district",
+        "exact": false,
+        "signals": [
+         "name_prefix"
+        ],
+        "matched": "Harasta District",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "ناحية حرستا",
+        "alt": [
+         "Harasta Subdistrict"
+        ],
+        "subtitle": "subdistrict",
+        "exact": false,
+        "signals": [
+         "name_prefix"
+        ],
+        "matched": "Harasta Subdistrict",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       }
+      ]
+     },
+     "passages": {
+      "total": 3,
+      "exact": 3,
+      "items": [
+       {
+        "title": "messy_people_v2.csv",
+        "alt": null,
+        "subtitle": "intake_sheet",
+        "exact": true,
+        "signals": [
+         "literal",
+         "place_name"
+        ],
+        "matched": "حرستا",
+        "masked": false,
+        "snippet": {
+         "text": "…انية,قتلت في قصف على حي بابا عمرو,بابا عمرو,٢٠١٢,\n,Unnamed man about 40,Seen at Harasta checkpoint,Harasta,2014,no number on the form\n",
+         "highlights": [
+          [
+           81,
+           88
+          ]
+         ]
+        },
+        "location": null
+       },
+       {
+        "title": "messy_people.csv",
+        "alt": null,
+        "subtitle": "intake_sheet",
+        "exact": true,
+        "signals": [
+         "place_name"
+        ],
+        "matched": "حرستا",
+        "masked": false,
+        "snippet": {
+         "text": "…تاريخ,مصدر المعلومة\n1,سامر خليل النجار - ذكر - 29 سنة - نجار,اعتقل على حاجز قرب حرستا ونقل إلى الفرع 999,حرستا,2013-05-12,اتصال هاتفي\n2,\"Rania Haddad (female), teach…",
+         "highlights": [
+          [
+           81,
+           86
+          ]
+         ]
+        },
+        "location": null
+       },
+       {
+        "title": "witness_clip.ogg",
+        "alt": null,
+        "subtitle": "witness_statement",
+        "exact": true,
+        "signals": [
+         "place_name"
+        ],
+        "matched": "حرستا",
+        "masked": false,
+        "snippet": {
+         "text": "قلّي إنّو اعتقلوه على حاجز بحرستا، وإنّو أهلو ما بيعرفوا وينو.",
+         "highlights": [
+          [
+           28,
+           33
+          ]
+         ]
+        },
+        "location": {
+         "ms": [
+          20200,
+          27300
+         ]
+        }
+       }
+      ]
+     },
+     "claims": {
+      "total": 2,
+      "exact": 2,
+      "items": [
+       {
+        "title": "حرستا",
+        "alt": null,
+        "subtitle": "messy_people.csv",
+        "exact": true,
+        "signals": [
+         "claim_value"
+        ],
+        "matched": "حرستا",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       },
+       {
+        "title": "حرستا",
+        "alt": null,
+        "subtitle": "register",
+        "exact": true,
+        "signals": [
+         "claim_value"
+        ],
+        "matched": "حرستا",
+        "masked": false,
+        "snippet": null,
+        "location": null
+       }
+      ]
+     }
+    }
+   },
+   {
+    "query": "تسعمية",
+    "ms": 63,
+    "semantic": "off",
+    "groups": {
+     "passages": {
+      "total": 1,
+      "exact": 1,
+      "items": [
+       {
+        "title": "witness_clip.ogg",
+        "alt": null,
+        "subtitle": "witness_statement",
+        "exact": true,
+        "signals": [
+         "literal"
+        ],
+        "matched": null,
+        "masked": false,
+        "snippet": {
+         "text": "بشهر تموز من سنة الألفين وتلتعش، شفت يوسف خالد العلي بالفرع تسعمية وتسعة وتسعين.",
+         "highlights": [
+          [
+           60,
+           66
+          ]
+         ]
+        },
+        "location": {
+         "ms": [
+          10450,
+          19600
+         ]
+        }
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "battery": {
+   "scored": 34,
+   "hit_at_1": 0.94,
+   "hit_at_3": 1.0,
+   "missed": 0,
+   "p50_ms": 364,
+   "p95_ms": 872,
+   "date": "2026-10-24",
+   "setup": "Apple M2, 16 GB, Ollama 0.40.5"
+  },
+  "gold": {
+   "recall_at_1": 0.81,
+   "recall_at_5": 0.94,
+   "queries": 32
+  }
+ },
+ "speech": {
+  "file": "witness_clip.ogg",
+  "audio": "media/witness_clip.ogg",
+  "duration_ms": 33706,
+  "model": {
+   "model": "large-v3-turbo",
+   "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
+   "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
+   "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
+   "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3"
+  },
+  "device": {
+   "device": "cpu",
+   "compute_type": "int8"
+  },
+  "hardware": "Apple M2",
+  "language": {
+   "language": "ar",
+   "detected": "ar",
+   "probability": "0.998"
+  },
+  "segments": [
+   {
+    "ms": [
+     0,
+     8540
+    ],
+    "text": "اسمي سامر انا من دومة اعتقلوني بربيع الالفين وتلتعش وضليت محجوز كم شهر",
+    "words": [
+     {
+      "w": "اسمي",
+      "ms": [
+       0,
+       440
+      ]
+     },
+     {
+      "w": "سامر",
+      "ms": [
+       440,
+       1020
+      ]
+     },
+     {
+      "w": "انا",
+      "ms": [
+       1020,
+       1760
+      ]
+     },
+     {
+      "w": "من",
+      "ms": [
+       1760,
+       2000
+      ]
+     },
+     {
+      "w": "دومة",
+      "ms": [
+       2000,
+       2520
+      ]
+     },
+     {
+      "w": "اعتقلوني",
+      "ms": [
+       2520,
+       4300
+      ]
+     },
+     {
+      "w": "بربيع",
+      "ms": [
+       4300,
+       4820
+      ]
+     },
+     {
+      "w": "الالفين",
+      "ms": [
+       4820,
+       5380
+      ]
+     },
+     {
+      "w": "وتلتعش",
+      "ms": [
+       5380,
+       6140
+      ]
+     },
+     {
+      "w": "وضليت",
+      "ms": [
+       6140,
+       7280
+      ]
+     },
+     {
+      "w": "محجوز",
+      "ms": [
+       7280,
+       7880
+      ]
+     },
+     {
+      "w": "كم",
+      "ms": [
+       7880,
+       8160
+      ]
+     },
+     {
+      "w": "شهر",
+      "ms": [
+       8160,
+       8540
+      ]
+     }
+    ]
+   },
+   {
+    "ms": [
+     9940,
+     18120
+    ],
+    "text": "بشهر تموز من سنة الالفين وتلتعش شفت يوسف خالد العلي بالفرع تسعمية وتسع وتسعين",
+    "words": [
+     {
+      "w": "بشهر",
+      "ms": [
+       9940,
+       11060
+      ]
+     },
+     {
+      "w": "تموز",
+      "ms": [
+       11060,
+       11720
+      ]
+     },
+     {
+      "w": "من",
+      "ms": [
+       11720,
+       12020
+      ]
+     },
+     {
+      "w": "سنة",
+      "ms": [
+       12020,
+       12420
+      ]
+     },
+     {
+      "w": "الالفين",
+      "ms": [
+       12420,
+       12900
+      ]
+     },
+     {
+      "w": "وتلتعش",
+      "ms": [
+       12900,
+       13620
+      ]
+     },
+     {
+      "w": "شفت",
+      "ms": [
+       13620,
+       14540
+      ]
+     },
+     {
+      "w": "يوسف",
+      "ms": [
+       14540,
+       14960
+      ]
+     },
+     {
+      "w": "خالد",
+      "ms": [
+       14960,
+       15360
+      ]
+     },
+     {
+      "w": "العلي",
+      "ms": [
+       15360,
+       15740
+      ]
+     },
+     {
+      "w": "بالفرع",
+      "ms": [
+       15740,
+       16640
+      ]
+     },
+     {
+      "w": "تسعمية",
+      "ms": [
+       16640,
+       17240
+      ]
+     },
+     {
+      "w": "وتسع",
+      "ms": [
+       17240,
+       17600
+      ]
+     },
+     {
+      "w": "وتسعين",
+      "ms": [
+       17600,
+       18120
+      ]
+     }
+    ]
+   },
+   {
+    "ms": [
+     19370,
+     26590
+    ],
+    "text": "كلي انه اعتقلوه على حاجز بحرسته وانه اهله ما بيعرفوا وينه",
+    "words": [
+     {
+      "w": "كلي",
+      "ms": [
+       19370,
+       20570
+      ]
+     },
+     {
+      "w": "انه",
+      "ms": [
+       20570,
+       21130
+      ]
+     },
+     {
+      "w": "اعتقلوه",
+      "ms": [
+       21130,
+       21910
+      ]
+     },
+     {
+      "w": "على",
+      "ms": [
+       21910,
+       22130
+      ]
+     },
+     {
+      "w": "حاجز",
+      "ms": [
+       22130,
+       22650
+      ]
+     },
+     {
+      "w": "بحرسته",
+      "ms": [
+       22650,
+       23330
+      ]
+     },
+     {
+      "w": "وانه",
+      "ms": [
+       23330,
+       24490
+      ]
+     },
+     {
+      "w": "اهله",
+      "ms": [
+       24490,
+       24930
+      ]
+     },
+     {
+      "w": "ما",
+      "ms": [
+       24930,
+       25550
+      ]
+     },
+     {
+      "w": "بيعرفوا",
+      "ms": [
+       25550,
+       26250
+      ]
+     },
+     {
+      "w": "وينه",
+      "ms": [
+       26250,
+       26590
+      ]
+     }
+    ]
+   },
+   {
+    "ms": [
+     26590,
+     32610
+    ],
+    "text": "انا مستعد اشهد باللي شفته جدام اي جهة",
+    "words": [
+     {
+      "w": "انا",
+      "ms": [
+       26590,
+       28250
+      ]
+     },
+     {
+      "w": "مستعد",
+      "ms": [
+       28250,
+       29230
+      ]
+     },
+     {
+      "w": "اشهد",
+      "ms": [
+       29230,
+       29830
+      ]
+     },
+     {
+      "w": "باللي",
+      "ms": [
+       29830,
+       30190
+      ]
+     },
+     {
+      "w": "شفته",
+      "ms": [
+       30190,
+       30670
+      ]
+     },
+     {
+      "w": "جدام",
+      "ms": [
+       30670,
+       31690
+      ]
+     },
+     {
+      "w": "اي",
+      "ms": [
+       31690,
+       32130
+      ]
+     },
+     {
+      "w": "جهة",
+      "ms": [
+       32130,
+       32610
+      ]
+     }
+    ]
+   }
+  ],
+  "script": [
+   {
+    "ms": [
+     0,
+     2950
+    ],
+    "text": "اسمي سامر، أنا من دوما."
+   },
+   {
+    "ms": [
+     3550,
+     9850
+    ],
+    "text": "اعتقلوني بربيع الألفين وتلتعش، وضلّيت محجوز كم شهر."
+   },
+   {
+    "ms": [
+     10450,
+     19600
+    ],
+    "text": "بشهر تموز من سنة الألفين وتلتعش، شفت يوسف خالد العلي بالفرع تسعمية وتسعة وتسعين."
+   },
+   {
+    "ms": [
+     20200,
+     27300
+    ],
+    "text": "قلّي إنّو اعتقلوه على حاجز بحرستا، وإنّو أهلو ما بيعرفوا وينو."
+   },
+   {
+    "ms": [
+     27900,
+     33100
+    ],
+    "text": "أنا مستعد إشهد باللي شفتو قدّام أي جهة."
+   }
+  ],
+  "wer": 0.217,
+  "words": 46,
+  "decode_s": 33.0,
+  "rtf": 0.98,
+  "language_s": 19.5,
+  "seen_at": {
+   "ms": [
+    10450,
+    19600
+   ],
+   "spoken_as": "بالفرع تسعمية وتسعة وتسعين"
+  }
+ },
+ "status": {
+  "areas": [
+   {
+    "area": "Custody",
+    "does": "SHA-256/MD5 intake, acquisitions, signed statements, sealed runs and chain verification",
+    "limits": "Physical blob encryption and erasure remain incomplete"
+   },
+   {
+    "area": "Trust",
+    "does": "Pure gate, rebuildable tiers, signed human acceptance/rejection/undo",
+    "limits": "Similarity never grants factual acceptance"
+   },
+   {
+    "area": "Integrity",
+    "does": "Merkle batches, OTS/TSA receipt paths, partner root copies, offline package verifier",
+    "limits": "External service paths do not prove a configured or certified deployment"
+   },
+   {
+    "area": "Intake",
+    "does": "/ingest page: batch case, origin, note and sensitivity set once; files and links; per-item stage progress read from run states (`GET /ingest/batch/<id>`); plain-words failures with Retry (`POST /ingest/run/<id>/retry`); batch summary. Files/URLs, C2PA verification, URL recheck, image OCR, text extraction, page-located PDF text indexing and local audio/video transcription; `read_progress` per item for long reads",
+    "limits": "No automatic scanned-PDF OCR"
+   },
+   {
+    "area": "People",
+    "does": "Arabic/cross-script candidates, draft/factual tracks, identity proposals, watchlists and source-backed actor embeddings",
+    "limits": "Embeddings do not merge identities"
+   },
+   {
+    "area": "Located search",
+    "does": "Original text offsets, Arabic passage normalization, exact identifier priority, PDF page preview and match labels",
+    "limits": "Candidate limits are bounded; no Arabic retrieval gold-set evaluation"
+   },
+   {
+    "area": "Semantic search",
+    "does": "One 768-dimensional EmbeddingGemma 2 space for text passages, actor profiles, images, PDF pages, video frames and audio windows; source-linked artifacts and signed recipe/reference provenance",
+    "limits": "Runs on local Ollama; measured only on the synthetic retrieval set, where scans rank weakest"
+   },
+   {
+    "area": "Index health",
+    "does": "Bounded text/PDF/media continuation jobs, acquisition pagination, current-generation coverage and reference-vector drift refusal",
+    "limits": "Text chunk planning still reads the full source; coverage lists at most 100 sources"
+   },
+   {
+    "area": "Transcription",
+    "does": "`transcribe` tool: faster-whisper 1.2.1 with Whisper large-v3-turbo in the worker process, local route only (sensitive recordings qualify), queued for new audio and video by ingest and by `stk enrich`. VAD, word timestamps, language detection with Arabic when confidence is below 0.5. Each speech segment is a derived text blob located by `{\"ms\": [start, end]}`, indexed and embedded like page text; the full transcript is a derived blob that extraction reads when a model is configured. Runs read windows of `SPEECH_CHUNK_SECONDS` and continue from the last kept segment; a run also stops before its lease ends. Model revision, weights hash, runtime, device, compute type, language and probability are in the run and its output. No speech and no audio track seal as done with a note; a missing model or ffmpeg fails in plain words with Retry",
+    "limits": "Measured only on one 33 s synthetic Damascene clip (WER 0.22 after folding, dialect spelling normalised toward MSA); CPU only on Apple silicon; extracted claims span transcript characters, not ms"
+   },
+   {
+    "area": "Deduplication",
+    "does": "Image PDQ, timestamped video PDQ plus audio landmarks, audio offset alignment",
+    "limits": "Fingerprint decoding remains per file with a duration bound; thresholds are not calibrated probabilities"
+   },
+   {
+    "area": "Sheets",
+    "does": "CSV (UTF-8) and XLSX through /ingest: stored and hashed like any file, never read automatically. A person picks or names a dataset, the row identifier column and a field for every column (remembered per dataset; unfamiliar columns get top-3 EmbeddingGemma 2 suggestions from header plus 5 samples, each needing a click), checks the diff against the latest available version (new, changed, unchanged, missing, invalid for blank or repeated identifiers; only mapped columns count), then confirms. `extract_sheet` (same route policy as `extract`, one row per local call, thinking off on the local route) proposes name, sex, age, occupation, position and `event` claims (killed, missing, displaced, released, wounded, defected) pinned to cell spans; dates come from a deterministic table (Arabic and English month names, Eastern Arabic digits, day first) as full intervals, \"unknown\" undated; places go through `places.resolve`, unresolved stay open. `GET /api/sheets/<acq>/preview|proposals`, `POST .../diff|confirm`, `GET /api/evidence/<sha>/sheet` (sensitive sheets need the logged reveal). Measured once on `messy_people.csv` with local gemma4 12B (`acceptance/eval_sheet.py`): name 15/15, sex 8/8 with none inferred, age 12/12, occupation 13/13, event kind 8/8 plus 1 wrong event, date 13/13, place quoted 11/14; position props 11 supported and 5 unsupported (mostly `seen_at` from the place column); column suggestions top-1 right for 4 of 6 columns",
+    "limits": "Header must be row 1 with distinct names; 20,000 rows and 200 columns per sheet; one dataset version per sheet blob; /ingest reopens only sheets added on that page, so an earlier version's stored diff counts are not shown anywhere; a changed row is read again in full, so its unchanged facts are proposed again against the new version; missing rows retract nothing; slow on a laptop (about 40 s per row)"
+   },
+   {
+    "area": "Thumbnails",
+    "does": "`thumbnail` tool (local, queued for every image, video, audio and PDF source, and by `stk enrich`): WebP 480 and 160 square tile with orientation applied and metadata stripped; video poster from the sharpest non-dark of four sampled frames plus a 12-frame strip with timestamps; PDF first page plus up to 50 small page renders; audio waveform PNGs and peaks JSON. Runs seal tool version and parameters. `GET /api/evidence/<sha>/thumb?size=160|480[&page=N]`, `/strip`, `/peaks`, `/thumbs` (analyst only; sensitive sources 403 `reveal_required` until revealed in the session; erased 404; `private, no-cache` with ETag)",
+    "limits": "Thumbnails are not logged as views; derivatives are linked by run manifest, not signed `derived_from`, so erasure hides them by source availability but leaves the bytes on disk; a source needs a rebuild run to change sizes"
+   },
+   {
+    "area": "Findings",
+    "does": "`stk discover --investigation X` queues a sealed run that proposes signed shared-presence and candidate-incident findings from accepted or corroborated, dated, place-resolved claims; shared presence also joins two places whose centroids lie within the larger of their two precisions (`ST_DWithin`), and its reason names the distance and both precisions (\"Both held 1.2 km apart, at Branch 999 and Al Jadida, in July 2013 (places known to within 250 m and 1 km)\"), with each member's own place in the finding; keys salted with a stored deployment salt over kind, investigation, people, places and month suppress open, accepted and rejected sets, and each kind keeps at most `FINDINGS_PER_KIND` (20) open per investigation, the rest deferred by rank",
+    "limits": "Same event in other words, same person and cross-media findings are not built; a place without a precision (admin areas) never joins by distance; candidate incidents still need one place"
+   },
+   {
+    "area": "Places",
+    "does": "PostGIS 3 (`20261026_postgis`): `place.geom` (point, line or polygon, SRID 4326) with generated `centroid` (geography), `lon` and `lat`, GiST indexes; `precision_m`, `geo_source` (geonames, cod-ab, geoboundaries, analyst, exif, c2pa, derived) and `geo_statement_id`; a `place_kind` ladder table (admin kinds per country and level, settlement and facility kinds, each with a default precision); `place_name` with `kind`, `valid_from`, `valid_to` and `source`. `stk places boundaries <COD-AB GeoJSON zip>` imports OCHA COD-AB boundary sets (versioned, licence and attribution stored) and sets every place's `admin1_id` and `admin2_id` by point in polygon; name resolution scopes by that governorate when a place is inside one, else by the gazetteer's",
+    "limits": "Names valid over time are stored, not yet used by resolution; facilities have no page or story lens and no operator statements; analyst-set geometry is not yet signed (person-created places carry no statement); the newest boundary set is used for every date"
+   },
+   {
+    "area": "Maps",
+    "does": "`GET /api/map/tiles/<z>/<x>/<y>.mvt?investigation=&from=&to=&tier=&lens=&ref=` and its TileJSON (`/api/map/tiles.json`, boundary credit): layers `points` (server clusters of 5 x 5 cells per tile below zoom 11, ids of the first 200 members), `sequences` (from zoom 8), `uncertainty` (from 8), `footprints` (from 10) and `admin`. Claims are the visible ones (value kept, source available, current, in the filter, own or document date) resolved by a set-based SQL twin of `resolve.resolved`, which the resolution tests check against the Python path. A model per reader and query is kept in process for 30 s while the chain head, or the map-relevant statement and acquisition counts, stay the same; responses are `private, no-store`. The monitor draws points and sequences from the tiles; both maps draw boundaries, uncertainty and footprints. Measured on 100,000 synthetic claims at 2,000 places (`python -m stk.maps.scale`, throwaway database, local laptop): model build p50 1.17 s, p95 1.20 s; warm tiles p50 39 ms, p95 69 ms (z5 p95 145 ms)",
+    "limits": "One process only (memory cache); the first map view after a map-relevant write waits for a model build; low zoom tiles carry up to 200 ids per cluster; sequences are per raw subject, not per identity cluster; no heat layer and no unresolved-names list in the tiles (both maps keep theirs from JSON)"
+   },
+   {
+    "area": "Basemap",
+    "does": "`stk basemap` extracts a Protomaps PMTiles basemap (OpenStreetMap, ODbL) with the `pmtiles` CLI into `instance/basemap/syria.pmtiles` (default bbox 34.9,32.0,42.6,37.6 to zoom 14: 217 MB from build 20261023), with a sidecar of build, bbox, size and sha256. The app serves it by range requests (`/api/map/basemap.pmtiles`, signed-in readers, `private, max-age=86400`); the monitor, story and evidence maps draw earth, water, land use, roads, buildings and boundaries from it with OpenStreetMap credit, and keep the Natural Earth outlines when it is absent",
+    "limits": "No labels (no glyph server); refreshing it is a manual rerun"
+   },
+   {
+    "area": "Evidence location",
+    "does": "`photographed_at` and `filmed_at` props on a blob: point geometry as decimal strings, `precision_m`, `method` (exif, c2pa, analyst), optional `bearing` and `landmarks`. The local `geotag` tool, queued at intake for images and video, reads EXIF GPS (with stated error and image direction), a video container's ISO 6709 tag and the C2PA `stds.exif` assertion, and writes unconfirmed agent proposals, never finer than 50 m. `GET /api/map/evidence/<sha>/locations`; `EvidenceLocation` component draws point, circle and bearing on the offline basemap",
+    "limits": "No analyst geolocation form yet; a human-signed location is accepted on signing like any human statement, so analyst geolocation needs a review path before it is built; location of segments within a video is not read"
+   },
+   {
+    "area": "Discover",
+    "does": "`/discover`: open findings strongest first, a reason sentence (\"Both held at Branch 999 in July 2013\"), a strength band (never a probability) and each member's claim with its span; a finding with any member erased or unavailable is not shown; opening one writes an access record, which ends \"new since you last looked\" for that analyst. Accept is a checklist (members, roles default unspecified, new incident title or an existing incident) signed by one passkey assertion over all its statement hashes (`POST /api/review/findings/options`, then `/api/review/commit`): incident, place and window, involved, supported by and the review, each with one gesture id, and the key moves to accepted. Reject is signed the same way and keeps the reason. `POST /api/review/undo` retracts a whole gesture or chosen statements and reopens the finding. Ask a colleague uses review requests; bulk assign uses `finding:<key>` subjects. Any review of a finding statement, by either path, moves its key",
+    "limits": "Excerpts and names from a sensitive source show only after a logged reveal on the evidence page; a candidate finding has no \"open as story\" link (the story view takes accepted incidents and shows pending findings as bands)"
+   },
+   {
+    "area": "Stories",
+    "does": "`/stories?lens=person|group|incident|place|filter&ref=&investigation=&from=&to=` and `GET /api/stories` (`stk/stories`): rows of people with tier textures, gaps labelled \"N days, no evidence\" when longer than 30 days, position forks, accepted incidents as outlined bands and pending findings the reader may fully see as hatched bands that open their member checklist and link to Discover; a MapLibre map of resolved places numbered in time order joined by sequence lines (not routes), unresolved names listed under it with GeoNames and Natural Earth attribution; one scrubber with play drives both; an evidence strip with thumbnails, the selected point's statement and its excerpt (segment link, page link for scans). Erased or masked values never become points; every read writes one access record per person row. Save keeps the query only (`saved_story`, per user); Package creates a brief with one cited sentence per row from accepted or corroborated points. The person page shows the same timeline compact with an Open story link",
+    "limits": "Pending findings come from `findings.queue`, so a story inherits its all-members-visible rule; the evidence page has no deep link for a whole-item span (`?segment` needs an indexed text segment); every story read logs one access per row, which grows the ledger quickly for a large filter lens; no time-window picker in the UI (URL only)"
+   },
+   {
+    "area": "Sources",
+    "does": "`/sources` and `GET /api/sources`: one row per acquired blob, server paged (per_page up to the platform cap of 100), sort on every column, filters for type, C2PA, sensitivity, open findings, assignee, collector, acquisition dates, free text and intake batch; claims, findings, C2PA, run state and assignment are SQL aggregates, page-only unless a sort or filter needs them; bulk assign through `/api/assignments/bulk`, request review of the selection's open proposals (`POST /api/sources/review`, dry-run count first, at most 200, one notification), workload strip, thumbnails in the table and grid from `/api/evidence/<sha>/thumb` with sensitive media hatched until a logged reveal. `python -m stk.sources.scale` seeds synthetic sources into a throwaway database; at 20,000 sources every measured page took 83 to 264 ms of query time",
+    "limits": "Add to story is still a disabled button whose tooltip says Stories is not built; stories open from a person, group, incident, place or filter lens instead; a session keeps only the last 8 reveal grants"
+   },
+   {
+    "area": "Review",
+    "does": "`/review` is the decision workspace (Inbox is for conversation). Chips: Asked of me (requests to me and open statement assignments to me), Sent by me, All open (unconfirmed claims by use) and Findings, due first. Each row is the claim as a sentence (person, prop, value, date), its source thumbnail, file and place in it (region on page, page, second, cell, characters), the proposer (person, agent or run) and who asked whom, when and the due date, with its tier texture; `GET /api/review/queue?box=mine|sent|open` builds a page in a fixed number of queries. The pane (`GET /api/review/claim/<id>`, `GET /api/review/request/<id>` for `?request=` links, `?statement=` selects too) shows the evidence at the span: image crop with the box plus the image viewer, PDF page with the line found, audio and video at the second, sheet cell, text with the span marked; the checks in plain words, run provenance and evidence kinds, other claims on the same person (identity cluster) and prop with agree or differ, the thread with a reply and Open in Inbox. Same-person proposals compare both people field by field from their basis statements, shown as cards. Accept (a), Reject with reason (r), Correct (e, a superseding proposal sent to a colleague) and Ask (s); decisions show the rows the passkey signs (`rows` in the staging reply) before the prompt; Undo after a decision or later from My decision. j, k, Enter and x (select, then bulk assign). A person without a passkey gets 409 `no_passkey` with a setup link that returns to the page (`/wan-register?next=`) from every staging route, after the request is authorised",
+    "limits": "Analyst/admin access model remains; no investigation ACL; live delivery is process-local. Values stay masked by the server rule until the source is revealed. When a decision rests on sensitive sources (its own, an identity proposal's basis, the other recording, the corrected claim), the pane names them and one action, Show the sensitive values for this decision (`POST /api/review/claim/<id>/reveal`), runs the evidence page's logged reveal once per hidden source; Accept and Reject stay disabled until then. Masked list rows read \"Name from a sensitive source\" unless another readable spelling exists (`people.names`). A session keeps only the last 8 reveal grants, so a decision resting on more than 8 sensitive sources cannot be unblinded in one session. Correct is not a decision: the original stays pending until the correction is signed. The Findings chip accepts with every member and unspecified roles; changing members or roles stays in Discover. Agents record no reasoning yet, so the pane says so. Audio claims point at transcript characters, so their second comes from the transcript timeline"
+   },
+   {
+    "area": "Inbox",
+    "does": "`/inbox` (rail and mobile bar): one list, newest first, of review requests asked of the analyst or sent by them, threads they are in (replies, @mentions), open work assigned to them with due or overdue, decisions on their requests and finished intake, with filter chips and unread state from stored notifications (selecting an item marks its notifications read through `POST /api/notifications/read`). The right pane shows the thread: the claim as a sentence, its source thumbnail and span, the request, comments with authors and times, a reply box with @mention suggestions, and Decide in Review (`/review?request=`) for the reviewer; decisions stay in Review. Keys j, k, Enter, c and r; single pane with back on mobile. Notifications about requests, replies, mentions and decisions link to `/inbox?item=request:<id>`; Desk mentions and replies open `/inbox?item=note:<id>`. No new endpoint: the page merges `/api/notifications`, `/api/collaboration/requests` (both boxes) and the assignments in `/api/desk/needs`",
+    "limits": "Reads the newest 100 notifications and 100 requests per box in the browser; a server inbox query is needed past that. Same-person claims show no names (naming them would need a logged person read). Assigned-work notifications from bulk assignment show as their own rows next to the assignments. Mentions notify only the thread's people and admins, though suggestions list every analyst"
+   },
+   {
+    "area": "Source support",
+    "does": "Accepted same-recording links collapse origins; corrections remove old support; undo reprojects and refreshes actors",
+    "limits": "Contains/related links do not collapse whole recordings"
+   },
+   {
+    "area": "Evidence page",
+    "does": "`/evidence/<sha>` per source: image, PDF (pdf.js), audio, video and sheet viewers (cells with each claim marked, `GET /api/evidence/<sha>/sheet`), claims with tier textures, copies, relations, metadata and custody, thread drawer, passkey decisions, side by side; sensitive items ask once, others show with a logged view",
+    "limits": "Strength bands uncalibrated; no incidents listed"
+   },
+   {
+    "area": "Privacy",
+    "does": "Logged reveals of sensitive sources, logged views of all others, and byte verification for source/PDF/media previews; erasure removes search projections and blocks derived artifacts, including shared parents",
+    "limits": "This is access exclusion, not physical deletion of stored bytes"
+   },
+   {
+    "area": "Packages",
+    "does": "Factual cited briefs, audience redaction, two attesters, C2PA cover and offline verification",
+    "limits": "Media relationships cannot yet be exported as cited facts"
+   },
+   {
+    "area": "Demo case",
+    "does": "`stk demo-seed --full` on a fresh database, then the worker, fills every page: Desk changes, requests, a mention and due and overdue assignments; stored notifications for the owner, analyst-2 and analyst-3; claims on an image box, PDF page text, transcript lines with times and sheet cells; planted copies; a sheet dataset with two confirmed versions and its diff; a real discovery run with four open findings, one accepted candidate incident (signed as one gesture) and one rejected shared presence with its reason; a person story with a fork and gaps, an incident band and a Branch 999 place story. Both demo cases are queued for indexing at seed time. `stk demo-seed --more` adds `case-demo-03` to `case-demo-06` (siege, displacement, detention, market shelling: 9 to 16 sources each, multiple spellings, dated placed claims, accepted, rejected and open proposals, assignments across analyst-2 to analyst-5) and `--scale N` adds N claim-free synthetic filler sources to `case-scale-demo` (chained, no runs queued). Walkthrough: [demo.md](demo.md)",
+    "limits": "The witness clip transcript and the two sheet extractions are fixed output (served model `sealbook-demo-fixed-output`, a `demo` note in the run inputs), not model runs; human decisions are signed by a demo software passkey; no package is built, since that needs anchor receipts; the extra cases use text stand-ins and photographs only (no scans, PDFs, audio or sheets), and fillers have no bytes, so their previews are empty"
+   }
+  ],
+  "measured": [
+   "Analyst search battery: hit at 1 0.94, hit at 3 1.00, 0 missed, p50 / p95 364 / 872 ms.",
+   "Grouped search: p50 441 ms, p95 616 ms.",
+   "Retrieval gold set: recall@1 0.81, recall@5 0.94 over 32 positive queries.",
+   "Speech to text, 33.7 s synthetic witness clip: WER 0.217 (10 of 46 words) after folding diacritics, punctuation, alef, ya and ta marbuta.",
+   "Speech to text speed, Apple M2 CPU: 16.8 s decoding in the worker (RTF 0.50).",
+   "Map tiles: on 100,000 synthetic claims at 2,000 places (python -m stk.maps.scale, throwaway database, local laptop): model build p50 1.17 s, p95 1.20 s; warm tiles p50 39 ms, p95 69 ms (z5 p95 145 ms).",
+   "Sources table: at 20,000 sources every measured page took 83 to 264 ms of query time.",
+   "Sheet extraction: on messy_people.csv with local gemma4 12B (acceptance/eval_sheet.py): name 15/15, sex 8/8 with none inferred, age 12/12, occupation 13/13, event kind 8/8 plus 1 wrong event, date 13/13, place quoted 11/14; position props 11 supported and 5 unsupported (mostly seen_at from the place column); column suggestions top-1 right for 4 of 6 columns.",
+   "Full unit suite: 344 run, 342 passed, 2 skipped.",
+   "The full suite includes 11 located-search checks: original Arabic offsets, identifier candidate limits, PDF page location and logged preview, progressive indexing, ignored-media refusal, same-alias drift, current-revision coverage, signed run provenance and erasure.",
+   "Synthetic case: 20 steps run, 19 passed, 1 skipped.",
+   "Read-only integration/search reviews completed; reported findings were corrected and rechecked."
+  ],
+  "planned": [
+   "Incident/event profiles.",
+   "Structured scan navigation.",
+   "Source-backed pre-review analysis.",
+   "Text repair.",
+   "Relationship export with two-source closure.",
+   "Investigation access control.",
+   "Encrypted blob storage and complete physical erasure.",
+   "Durable multi-process notifications and pending review state.",
+   "Web research and capture (design, not built): An analyst looking at a person, place or incident should be able to ask the open web for more, see what exists (pages, images, videos) next to what the case already holds, and bring a find in as evidence with one action, captured with full provenance and processed like any other intake.",
+   "Descriptions and titles: Authored, cited, versioned title and description statements with AI drafts as proposals, review, diffs and search.",
+   "Labels with observed and alleged basis: A versioned bilingual vocabulary and a span-pinned label statement.",
+   "Typed relations with stated certainty: Family, command, membership and document relations between subjects, pinned to evidence, with human certainty kept separate from machine scores."
+  ],
+  "updated": "2026-10-23"
+ }
+}

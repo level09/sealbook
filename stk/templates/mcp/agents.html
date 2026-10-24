@@ -1,0 +1,47 @@
+{% extends 'layout.html' %}
+{% block content %}
+    <v-container class="py-6">
+        <v-card>
+            <v-card-title class="pa-6 pb-2">Connected agents</v-card-title>
+            <v-card-subtitle class="px-6">
+                Agents act on your behalf with the scopes you approved, never beyond your role.
+                Disconnecting one stops it on its next call.
+            </v-card-subtitle>
+            <v-card-text class="pa-6">
+                <p v-if="!rows.length" class="text-medium-emphasis">No agents are connected.</p>
+                <v-list v-else>
+                    <v-list-item v-for="row in rows" :key="row.id" :title="row.name"
+                                 :subtitle="row.client_id + ' · ' + row.scopes.join(', ') + ' · since ' + new Date(row.connected).toLocaleString()">
+                        <template v-slot:append>
+                            <form method="post" :action="'/agents/' + row.id + '/revoke'">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <v-btn type="submit" variant="text" color="error">Disconnect</v-btn>
+                            </form>
+                        </template>
+                    </v-list-item>
+                </v-list>
+            </v-card-text>
+        </v-card>
+    </v-container>
+{% endblock %}
+
+{% block js %}
+    {# Agent names come from client metadata: pass them as data, never as template source. #}
+    <script type="application/json" id="agents-data">{{ rows|tojson|safe }}</script>
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+        const vuetify = createVuetify(config.vuetifyConfig);
+
+        const app = createApp({
+            mixins: [layoutMixin],
+            data() {
+                return {rows: JSON.parse(document.getElementById('agents-data').textContent)};
+            },
+            delimiters: config.delimiters
+        });
+
+        registerStkComponents(app);
+        app.use(vuetify).mount('#app');
+    </script>
+{% endblock %}

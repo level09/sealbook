@@ -1,0 +1,222 @@
+"""The `capture` worker tool: one picked search result into the case. Cloudflare
+renders the page once (HTML and full-page screenshot), the result's own image or the
+page's media are fetched, a video page goes to yt-dlp, and each file enters normal
+intake (hash, C2PA, reading, fingerprints, embeddings, geotag, thumbnails) as its own
+acquisition by the analyst. The sealed run's output is a manifest naming every file
+and how it was obtained. Nothing on another page is visited."""
+
+from __future__ import annotations
+
+import asyncio
+import mimetypes
+import tempfile
+import uuid
+from datetime import UTC, datetime
+from pathlib import PurePosixPath
+from urllib.parse import urlsplit
+
+import orjson
+
+from stk import blobs, netguard
+from stk.blobs import chunked
+from stk.ingest import service as ingest
+from stk.ledger.contracts import Refused
+from stk.research import cloudflare, service, video
+from stk.settings import Config
+
+MEDIA = ("image/", "video/", "audio/")
+
+
+class TooLarge(Exception):
+    pass
+
+
+async def _capped(resp, limit):
+    size = 0
+    async for chunk in resp.aiter_bytes():
+        size += len(chunk)
+        if size > limit:
+            raise TooLarge(f"larger than {limit} bytes")
+        yield chunk
+
+
+def _mime(header: str, url: str) -> str:
+    mime = header.split(";")[0].strip().lower()
+    if mime in ("", "application/octet-stream", "binary/octet-stream"):
+        mime = mimetypes.guess_type(urlsplit(url).path)[0] or mime
+    return mime
+
+
+def _name(url: str, fallback: str) -> str:
+    return PurePosixPath(urlsplit(url).path).name or fallback
+
+
+async def capture(c) -> str:
+    i = c.run.inputs
+    if reason := await service.refusal(c.s, i["investigation"]):
+        raise Refused(reason)
+    page = i["page"]
+    await netguard.pin(page)  # refuse a page that resolves to a private address
+    collector = uuid.UUID(i["analyst"])
+    captured_at = datetime.now(UTC).isoformat()
+    method = {
+        "provider": i["provider"],
+        "renderer": {"name": "cloudflare-browser-rendering", "endpoint": "snapshot"},
+        "yt_dlp": video.VERSION if i["kind"] == "videos" else None,
+    }
+    common = {
+        "investigation": i["investigation"],
+        "batch": i["batch"],
+        "final_url": page,
+    }
+
+    def context(role: str, **extra) -> dict:
+        return common | {
+            "capture": orjson.loads(
+                orjson.dumps(
+                    {
+                        "run": str(c.run.id),
+                        "role": role,
+                        "page": page,
+                        "title": i.get("title"),
+                        "found_at": i["found_at"],
+                        "captured_at": captured_at,
+                        "query_access": i["query_access"],
+                        "method": method,
+                    }
+                    | extra
+                )
+            )
+        }
+
+    async def take(data_or_chunks, mime, origin, role, filename, **extra):
+        chunks = (
+            chunked(data_or_chunks)
+            if isinstance(data_or_chunks, bytes)
+            else data_or_chunks
+        )
+        out = await ingest.ingest(
+            c.s,
+            chunks,
+            blob_dir=Config.BLOB_DIR,
+            mime=mime,
+            origin=origin,
+            collector_id=collector,
+            doc_type=i["doc_type"],
+            sensitivity=i["sensitivity"],
+            context=context(role, **extra) | {"filename": filename},
+        )
+        files.append(
+            {
+                "role": role,
+                "sha256": out["sha256"],
+                "mime": mime,
+                "origin": origin,
+                "acquisition": out["acquisition_id"],
+                "new_blob": out["new_blob"],
+            }
+            | extra
+        )
+
+    snap = await cloudflare.snapshot(page, c.transport)
+    method["renderer"] |= {"browser_ms": snap.browser_ms}
+    await c.emit("rendered", html_chars=len(snap.html), screenshot=len(snap.screenshot))
+    found, password = cloudflare.read(snap.html, page)
+    if password:
+        raise Refused(
+            "This page asks for a login. Sealbook does not capture pages behind a "
+            "login; open it yourself and add what you may lawfully keep through Add "
+            "evidence."
+        )
+    files: list[dict] = []
+    domain = i.get("domain") or urlsplit(page).hostname
+    await take(
+        snap.html.encode(),
+        "text/html; charset=utf-8",
+        f"url:{page}",
+        "page",
+        f"{domain} page.html",
+    )
+    await take(
+        snap.screenshot, "image/png", f"url:{page}", "screenshot", f"{domain} page.png"
+    )
+
+    skipped = []
+    if i["kind"] == "videos":
+        with tempfile.TemporaryDirectory(prefix="sealbook-capture-") as tmp:
+            try:
+                path, info = await video.download(
+                    page, tmp, Config.RESEARCH_MEDIA_MAX_BYTES
+                )
+            except video.LoginRequired as exc:
+                raise Refused(
+                    "This video needs an account to watch. Sealbook does not log in "
+                    "to capture it."
+                ) from exc
+            mime = mimetypes.guess_type(path.name)[0] or "video/mp4"
+
+            async def read_file():
+                with path.open("rb") as f:
+                    while chunk := await asyncio.to_thread(f.read, blobs.CHUNK):
+                        yield chunk
+
+            await take(read_file(), mime, f"url:{page}", "video", path.name, video=info)
+        await c.emit("video_downloaded", files=1)
+
+    wanted = (
+        [{"url": i["media_url"], "kind": "image", "tag": "result"}]
+        if i.get("media_url")
+        else []
+    )
+    wanted += [m for m in found if m["url"] != i.get("media_url")]
+    wanted = wanted[: Config.RESEARCH_MEDIA_PER_PAGE]
+    for m in wanted:
+        primary = m["tag"] == "result"
+        try:
+            url = ingest.normalise_url(m["url"])
+            async with netguard.stream(url, timeout=60, transport=c.transport) as (
+                resp,
+                final,
+            ):
+                resp.raise_for_status()
+                mime = _mime(resp.headers.get("content-type", ""), final)
+                if not mime.startswith(MEDIA):
+                    raise ValueError(f"not media ({mime or 'no type'})")
+                await take(
+                    _capped(resp, Config.RESEARCH_MEDIA_MAX_BYTES),
+                    mime,
+                    f"url:{url}",
+                    "media",
+                    _name(url, f"{domain} media"),
+                    media_url=url,
+                    found_by=m["tag"],
+                )
+        except ingest.C2paError:
+            raise
+        except Exception as exc:
+            if primary:
+                raise
+            skipped.append({"url": m["url"], "reason": f"{type(exc).__name__}: {exc}"})
+            await c.emit("media_skipped", drop_reason=str(exc)[:200])
+    await c.emit("captured", files=len(files), skipped=len(skipped))
+    manifest = await blobs.put(
+        c.s,
+        orjson.dumps(
+            {
+                "tool": "capture",
+                "page": page,
+                "captured_at": captured_at,
+                "method": method,
+                "query_access": i["query_access"],
+                "files": files,
+                "media_on_page": found,
+                "skipped": skipped,
+            }
+        ),
+        "application/json",
+        Config.BLOB_DIR,
+    )
+    c.run.raw_output_ref = manifest.sha256
+    c.run.endpoint = snap.endpoint
+    c.run.provider_served = "cloudflare"
+    return manifest.sha256

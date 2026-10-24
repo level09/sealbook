@@ -1,0 +1,26 @@
+{
+  "type": "videos",
+  "query": {
+    "original": "\"Lina Najjar\""
+  },
+  "results": [
+    {
+      "type": "video_result",
+      "title": "Checkpoint footage",
+      "url": "https://video.example.net/watch/abc123",
+      "description": "Footage said to show the checkpoint",
+      "age": "2 years ago",
+      "page_age": "2015-03-02T00:00:00",
+      "video": {
+        "duration": "00:12",
+        "creator": "uploader"
+      },
+      "meta_url": {
+        "hostname": "video.example.net"
+      },
+      "thumbnail": {
+        "src": "https://imgs.search.brave.com/vid-thumb-1"
+      }
+    }
+  ]
+}

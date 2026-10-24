@@ -1,0 +1,62 @@
+/* Entity pages (places, incidents): one layout, see templates/entity/base.html. */
+.en-page { max-width: 1480px; }
+.en-crumbs { font-size: 12.5px; color: var(--ink-3); margin-bottom: 6px; }
+.en-crumbs a { color: inherit; text-underline-offset: 2px; }
+.en-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: start; margin-bottom: 14px; }
+.en-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.en-title h1 { font-size: 20px; font-weight: 650; letter-spacing: -.02em; line-height: 1.3; margin: 0; }
+.en-title .alt { font-size: 15px; font-weight: 500; color: var(--ink-2); }
+.en-names { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: 12.5px; color: var(--ink-2); }
+.en-names .k { color: var(--ink-3); }
+.en-facts { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 10px 0 0; font-variant-numeric: tabular-nums; }
+.en-facts > div { display: flex; gap: 6px; align-items: baseline; }
+.en-facts dt { color: var(--ink-3); }
+.en-facts dd { margin: 0; color: var(--ink); }
+.en-acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.en-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 12px; align-items: start; }
+.en-main, .en-side { display: grid; gap: 12px; min-width: 0; }
+.en-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.en-panel > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); min-height: 42px; flex-wrap: wrap; }
+.en-panel > header h2 { font-size: 14px; font-weight: 650; margin: 0; }
+.en-panel > header .act { margin-inline-start: auto; }
+.en-body { padding: 10px 12px; }
+.en-muted { color: var(--ink-3); }
+.en-map { height: 260px; background: var(--raise); }
+.en-dl { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 5px 10px; margin: 0; font-size: 12.5px; }
+.en-dl dt { color: var(--ink-3); }
+.en-dl dd { margin: 0; overflow-wrap: anywhere; }
+.en-group + .en-group { border-top: 1px solid var(--line); }
+.en-group > h3 { display: flex; align-items: baseline; gap: 6px; font-size: 12px; font-weight: 650; color: var(--ink-2); margin: 0; padding: 8px 12px 2px; }
+.en-group > h3 .ti { font-size: 14px; }
+.en-rel { display: grid; grid-template-columns: minmax(160px, 260px) minmax(0, 1fr) 92px; gap: 4px 12px; align-items: center; padding: 6px 12px; color: var(--ink); text-decoration: none; min-height: 36px; }
+a.en-rel:hover { background: var(--wash); }
+a.en-rel:focus-visible { outline-offset: -2px; }
+.en-rel .n { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 550; }
+.en-rel .n > bdi, .en-rel .n > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.en-rel .why { color: var(--ink-2); font-size: 12.5px; min-width: 0; }
+.en-rel > .r-chip { justify-self: end; }
+.en-rel .ti { font-size: 15px; }
+.en-roles { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.en-empty { padding: 4px 12px 10px; color: var(--ink-3); font-size: 12.5px; }
+.en-table td, .en-table th { font-variant-numeric: tabular-nums; }
+.en-table tbody tr { cursor: pointer; }
+.en-table .mv-thumb { margin: 4px 0; }
+.en-hist { list-style: none; margin: 0; padding: 0; }
+.en-hist > li { padding: 8px 0; border-top: 1px solid var(--line); }
+.en-hist .g { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; }
+.en-hist ul { list-style: none; margin: 4px 0 0; padding: 0; font-size: 12.5px; color: var(--ink-2); }
+.en-hist ul li { padding: 1px 0; }
+.en-hist .gone { text-decoration: line-through; color: var(--ink-3); }
+.en-sp { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; font-size: 12.5px; }
+.en-sp + .en-sp { border-top: 1px solid var(--line); }
+@media (max-width: 1100px) {
+  .en-grid { grid-template-columns: 1fr; }
+  .en-side { order: -1; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+}
+@media (max-width: 700px) {
+  .en-head { grid-template-columns: 1fr; }
+  .en-acts { justify-content: flex-start; }
+  .en-rel { grid-template-columns: minmax(0, 1fr) auto; }
+  .en-rel .why { grid-column: 1 / -1; grid-row: 2; }
+  .en-side { grid-template-columns: 1fr; }
+}

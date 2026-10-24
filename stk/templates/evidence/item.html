@@ -1,0 +1,199 @@
+{% extends "layout.html" %}
+{% block css %}<link rel="stylesheet" href="{{ asset('css/evidence.css') }}">{% endblock %}
+{% block content %}
+<div class="evp">
+  <v-alert v-if="error" type="error" variant="tonal" class="mb-3">${ error }<template #append><v-btn variant="outlined" size="small" prepend-icon="ti ti-refresh" @click="load">Retry</v-btn></template></v-alert>
+  <template v-if="!it && !error">
+    <v-skeleton-loader type="heading" class="mb-3" max-width="420"></v-skeleton-loader>
+    <div class="ev"><v-skeleton-loader type="image, paragraph"></v-skeleton-loader><v-skeleton-loader type="list-item-three-line@4"></v-skeleton-loader><v-skeleton-loader type="list-item-two-line@4"></v-skeleton-loader></div>
+  </template>
+  <template v-if="it">
+    <nav class="ev-crumbs" aria-label="Breadcrumb"><span>${ it.investigation }</span> / <a href="/evidence">Evidence</a> / <span>${ it.file }</span></nav>
+    <div class="ev-head">
+      <h1><v-icon :icon="ICON[it.kind]" size="20" class="me-1"></v-icon>${ DOC[it.doc_type] || it.doc_type || 'Source' } <span class="muted font-weight-medium">${ it.file }</span></h1>
+      <p class="mono muted" :title="it.sha256">${ short(it.sha256) }</p>
+      <v-chip v-if="it.sensitive" color="sensitive" variant="outlined" size="small" prepend-icon="ti ti-eye-off">sensitive</v-chip>
+      <div class="ms-auto d-flex ga-2 flex-wrap">
+        <v-btn variant="outlined" size="small" prepend-icon="ti ti-message" @click="drawer = !drawer; if (drawer && !threadId && it.threads[0]) openThread(it.threads[0])">Thread and history <v-kbd class="ms-2">t</v-kbd></v-btn>
+      </div>
+    </div>
+
+    <div class="ev" :class="{side: other}">
+      <section class="ev-panel ev-stick" aria-label="Preview">
+        <evidence-viewer ref="viewer" :item="it" :claims="claims" :marks="marks" :sel="sel" :focus="focusMs" :page="pdfPage" :read="read" :read-error="readError" :hl="hl" :highlight="excerpt?.match || ''" @select="pick" @revealed="revealed" @retry-read="loadRead"></evidence-viewer>
+        <div v-if="connections.length" class="ev-conn">
+          <h3 class="mb-2 muted">Connections, open side by side</h3>
+          <v-slide-group show-arrows>
+            <v-slide-group-item v-for="c in connections" :key="c.key">
+              <v-card class="ev-thumb" border :href="c.href">
+                <media-thumb :locked="!c.o.revealed" :sha="c.o.sha256" :kind="c.o.kind" :file="c.o.file" :link="false" :caption="false" :width="114"></media-thumb>
+                <div class="k"><i class="ti ti-robot" aria-hidden="true"></i> ${ c.kind }</div><div class="n">${ c.o.file }</div>
+              </v-card>
+            </v-slide-group-item>
+          </v-slide-group>
+        </div>
+      </section>
+
+      <section v-if="other" class="ev-panel" aria-label="Side by side">
+        <header><strong>${ DOC[other.doc_type] || other.kind }</strong><span class="muted">${ other.file }</span><v-spacer></v-spacer>
+          <v-btn size="small" variant="text" :href="'/evidence/' + other.sha256" prepend-icon="ti ti-external-link">Open</v-btn>
+          <v-btn size="small" variant="text" :href="'/evidence/' + it.sha256" prepend-icon="ti ti-x">Close</v-btn></header>
+        <evidence-viewer :item="other" :claims="otherClaims" :marks="otherMarks" :focus="otherAt" :read="otherRead" :read-error="otherReadError" @revealed="revealed" @retry-read="loadOtherRead"></evidence-viewer>
+        <p v-if="otherCopy" class="ev-note pa-3">${ otherCopy.kind }: ${ otherCopy.why }. Here ${ ms(otherCopy.here[0]) }, there ${ ms(otherCopy.there[0]) }.</p>
+      </section>
+      <section v-else class="ev-panel" aria-labelledby="ev-h-claims">
+        <header><h2 id="ev-h-claims">Claims</h2><span class="muted">${ claims.length } from this source</span>
+          <span class="ev-legend"><span class="tier-accepted by-person"><span class="ev-sw"></span> accepted</span><span class="tier-corroborated by-person"><span class="ev-sw"></span> corroborated</span><span class="tier-unconfirmed by-agent"><span class="ev-sw"></span> unconfirmed</span></span></header>
+        <div v-if="claims.length" role="listbox" aria-label="Claims, j and k to move">
+          <template v-for="g in groups" :key="g.subject">
+            <div class="ev-grp"><bdi dir="auto">${ g.name }</bdi><span class="muted mono ms-auto">${ g.subject.startsWith('person:') ? short(g.subject.slice(7)) : '' }</span></div>
+            <div v-for="c in g.claims" :key="c.id" class="ev-row ev-claim" role="option" :aria-selected="sel === c.id" :class="['tier-' + c.tier, c.actor.agent ? 'by-agent' : 'by-person', {sel: sel === c.id}]" tabindex="-1" :data-row="'claims:' + ordered.indexOf(c)" @click="pick(c.id)" @dblclick="openSpan(c)">
+              <span class="ev-sw" aria-hidden="true"></span><span class="lbl">${ prop(c.prop) }</span>
+              <span class="val"><bdi v-if="c.value" dir="auto">${ c.value }</bdi><span v-else-if="c.erased" class="muted">erased</span><span v-else class="muted"><i class="ti ti-eye-off" aria-hidden="true"></i> masked, show the sensitive item to read</span></span>
+              <span><v-chip v-if="threadFor(c)" size="x-small" prepend-icon="ti ti-message" @click.stop="openThread(threadFor(c))">${ threadFor(c).comments + 1 }</v-chip></span>
+              <span class="meta">${ c.tier }, <span :class="{agent: c.actor.agent}"><i v-if="c.actor.agent" class="ti ti-robot" aria-hidden="true"></i> ${ c.actor.label }</span><template v-if="c.span">, ${ spanLabel(c.span) }</template><template v-if="c.evidence?.length">, ${ c.evidence.join(', ').replace(/_/g, ' ') }</template></span>
+              <span v-if="sel === c.id" class="acts d-flex ga-1 flex-wrap mt-1">
+                <v-btn v-if="c.span" size="x-small" variant="outlined" prepend-icon="ti ti-focus-2" @click.stop="openSpan(c)">Show in source <v-kbd class="ms-1">Enter</v-kbd></v-btn>
+                <template v-if="canDecide(c)"><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-check" :loading="busy" @click.stop="decide(c, 'accept')">Accept <v-kbd class="ms-1">a</v-kbd></v-btn><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-x" :loading="busy" @click.stop="decide(c, 'reject')">Reject <v-kbd class="ms-1">r</v-kbd></v-btn></template>
+                <v-btn v-if="threadFor(c) || c.tier === 'unconfirmed'" size="x-small" variant="outlined" prepend-icon="ti ti-message-question" @click.stop="askAbout(c)">${ threadFor(c) ? 'Comment' : 'Ask a colleague' } <v-kbd class="ms-1">c</v-kbd></v-btn>
+              </span>
+            </div>
+          </template>
+        </div>
+        <v-empty-state v-else icon="ti ti-file-search" title="No claims extracted yet" :text="'The extractor reads ' + (it.kind === 'audio' ? 'transcripts' : it.kind === 'video' ? 'speech and on-screen text' : 'text') + ' once the model service has processed this source.'">
+          <template #actions><v-btn variant="outlined" prepend-icon="ti ti-refresh" @click="queue">Queue processing</v-btn></template>
+        </v-empty-state>
+      </section>
+
+      <section class="ev-panel ev-intel" aria-labelledby="ev-h-intel">
+        <header><h2 id="ev-h-intel">Intelligence</h2><span class="muted">What agents read and propose, in violet. Nothing here is fact until a person signs.</span><v-btn size="small" variant="text" prepend-icon="ti ti-world-search" class="ms-auto" @click="research = true">Research the web</v-btn></header>
+        <v-tabs v-model="tab" density="compact" grow color="primary">
+          <v-tab value="read">Read <span class="ms-1 muted">${ pins.length }</span></v-tab>
+          <v-tab value="dups">Copies <span class="ms-1 muted">${ it.copies.length }</span></v-tab>
+          <v-tab value="rel">Relations <span class="ms-1 muted">${ relations.length }</span></v-tab>
+          <v-tab value="meta">Metadata</v-tab>
+        </v-tabs>
+        <v-divider></v-divider>
+        <v-tabs-window v-model="tab">
+          <v-tabs-window-item value="read"><div class="pa-3">
+            <div v-if="excerpt" class="mb-3"><p class="ev-note mb-1">Opened at ${ boot.segment.location.page ? 'page ' + boot.segment.location.page + ', ' : '' }characters ${ excerpt.span.start } to ${ excerpt.span.end }, extracted text, verify against the original</p><div class="ev-tx" dir="auto">${ excerpt.before }<mark class="hit">${ excerpt.match }</mark>${ excerpt.after }</div></div>
+            <p v-if="!it.revealed" class="ev-note">Show the sensitive item to read the text taken from it. Its values stay masked until then.</p>
+            <template v-else-if="it.kind === 'image'"><p class="ev-note mb-2">Values were read per region of the image; the full text layer is not stored for images. Select a value to see its box.</p></template>
+            <template v-else-if="it.kind === 'pdf'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text layer, page ${ p.location.page }</p><div class="ev-tx" dir="auto">${ p.text }</div></div></template><p v-else class="ev-note">No text layer was read from this PDF.</p></template>
+            <template v-else-if="it.kind === 'audio'"><p v-if="!read?.passages.some(p => p.location.ms)" class="ev-note">No transcript yet. Speech to text runs locally once the recording is read; until then it is indexed by sound landmarks and meaning only.</p><div v-else class="ev-tx" dir="auto"><div v-for="p in read.passages.filter(p => p.location.ms)" :key="p.text_blob"><a href="#" class="mono" @click.prevent="focusMs = p.location.ms[0]">${ ms(p.location.ms[0]) }</a> ${ p.text }</div></div></template>
+            <template v-else-if="it.kind === 'video'"><p class="ev-note mb-2">${ it.segments.filter(s => s.kind === 'frame').length } frames and ${ it.segments.filter(s => s.kind === 'audio').length } audio windows were embedded for search. No speech or on-screen text was read.</p>
+              <div class="d-flex flex-wrap ga-1"><v-chip v-for="s in it.segments.filter(s => s.kind === 'frame')" :key="s.id" color="agent" variant="outlined" size="small" @click="focusMs = s.location.ms[0]">frame ${ ms(s.location.ms[0]) }</v-chip></div></template>
+            <p v-else-if="it.kind === 'sheet'" class="ev-note">Each claim is marked on the cell it was read from. Rows and columns are numbered as the file shows them.</p>
+            <p v-else class="ev-note">The text is shown in the preview with claim spans marked.</p>
+            <div v-if="pins.length" class="d-flex flex-wrap ga-1 mt-2" aria-label="Detected people, places and dates">
+              <v-chip v-for="c in pins" :key="c.id" color="agent" variant="tonal" size="small" :title="spanLabel(c.span)" @click="openSpan(c)">${ prop(c.prop) }:&nbsp;<bdi dir="auto">${ c.value }</bdi></v-chip>
+            </div>
+          </div></v-tabs-window-item>
+          <v-tabs-window-item value="dups">
+            <div v-for="(d, i) in it.copies" :key="d.id" class="ev-row ev-rel" :class="{sel: cursor.list === 'copies' && cursor.i === i}" tabindex="-1" :data-row="'copies:' + i" @click="focusRow('copies', i)">
+              <div class="d-flex ga-2 align-center"><media-thumb :locked="!doc(d.other).revealed" :sha="d.other" :kind="doc(d.other).kind" :file="doc(d.other).file" :caption="false" :width="72" :height="44"></media-thumb><div><strong>${ d.kind }</strong> <a :href="'/evidence/' + d.other">${ doc(d.other).file }</a> <v-chip size="x-small" color="agent" variant="tonal">${ d.tier }</v-chip>
+                <div class="why">${ d.why }. Here ${ ms(d.here[0]) }, there ${ ms(d.there[0]) }${ d.there[1] > d.there[0] ? ' to ' + ms(d.there[1]) : '' }.</div></div>
+                <span class="ms-auto text-no-wrap" :class="d.strength === 'strong' ? 'font-weight-bold' : 'muted'">${ d.strength }</span></div>
+              <div class="d-flex ga-1 mt-1 flex-wrap">
+                <template v-if="canDecide(d)"><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-check" @click.stop="decide(d, 'accept')">Confirm</v-btn><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-x" @click.stop="decide(d, 'reject')">Reject</v-btn></template>
+                <v-btn v-if="threadFor(d) || d.tier === 'unconfirmed'" size="x-small" variant="outlined" prepend-icon="ti ti-message-question" @click.stop="askAbout(d)">${ threadFor(d) ? 'Thread' : 'Ask a colleague' }</v-btn>
+                <v-btn size="x-small" variant="outlined" prepend-icon="ti ti-layout-columns" :href="side(d)">Side by side</v-btn></div>
+            </div>
+            <v-empty-state v-if="!it.copies.length" icon="ti ti-fingerprint" title="No copies found" :text="it.fingerprint ? 'No picture or sound match, fingerprinted with ' + it.fingerprint.algorithm + '.' : 'Not fingerprinted yet.'"></v-empty-state>
+          </v-tabs-window-item>
+          <v-tabs-window-item value="rel">
+            <div v-for="(r, i) in relations" :key="r.id" class="ev-row ev-rel" :class="{sel: cursor.list === 'rel' && cursor.i === i}" tabindex="-1" :data-row="'rel:' + i" @click="focusRow('rel', i)">
+              <div class="d-flex ga-2"><media-thumb v-if="r.other" :locked="!doc(r.other).revealed" :sha="r.other" :kind="doc(r.other).kind" :file="doc(r.other).file" :caption="false" :width="72" :height="44"></media-thumb><div><strong>${ r.kind }</strong> <a v-if="r.other" :href="'/evidence/' + r.other">${ doc(r.other).file }</a><v-chip v-if="r.tier" size="x-small" color="agent" variant="tonal" class="ms-1">${ r.tier }</v-chip>
+                <div class="why" dir="auto"><template v-if="r.kind === 'Same person?'">${ nameOf(r.here) } here and person ${ short(r.theirs.slice(7)) } there, </template><template v-if="r.at_place">${ r.at_place }: </template>${ r.why }</div></div>
+                <span class="ms-auto text-no-wrap" :class="['strong', 'close'].includes(r.strength) ? 'font-weight-bold' : 'muted'">${ r.strength }</span></div>
+              <div v-if="r.other || r.statement" class="d-flex ga-1 mt-1 flex-wrap">
+                <template v-if="canDecide(r)"><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-check" @click.stop="decide(r, 'accept')">Confirm</v-btn><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-x" @click.stop="decide(r, 'reject')">Reject</v-btn></template>
+                <v-btn v-if="r.statement && (threadFor(r) || r.tier === 'unconfirmed')" size="x-small" variant="outlined" prepend-icon="ti ti-message-question" @click.stop="askAbout(r)">${ threadFor(r) ? 'Thread' : 'Ask a colleague' }</v-btn>
+                <v-btn v-if="r.other && r.other !== it.sha256" size="x-small" variant="outlined" prepend-icon="ti ti-layout-columns" :href="side(r)">Side by side</v-btn></div>
+            </div>
+            <v-empty-state v-if="!relations.length" icon="ti ti-affiliate" title="No relations yet" text="Same person proposals, places resolved here and nearest items by meaning appear once this source is indexed."></v-empty-state>
+          </v-tabs-window-item>
+          <v-tabs-window-item value="meta">
+            <dl class="ev-kv">
+              <template v-for="a in it.acquisitions.slice(0, 1)" :key="a.id"><dt>Acquired</dt><dd>${ a.at.slice(0, 16).replace('T', ' ') } UTC by ${ a.collector?.name || 'unknown' }</dd></template>
+              <dt>Origin</dt><dd class="mono"><div v-for="o in it.origins" :key="o">${ o }</div></dd>
+              <dt>Type</dt><dd>${ DOC[it.doc_type] || it.doc_type || 'not set' }, ${ it.sensitive ? 'sensitive' : 'ordinary' }</dd>
+              <dt>File</dt><dd>${ it.mime }, ${ (it.size / 1024).toFixed(1) } KB</dd>
+              <template v-for="k in ['note', 'excerpt_of', 'licence', 'author', 'credit', 'attribution', 'date_original']" :key="k"><template v-if="it.context[k]"><dt>${ k.replace('_', ' ') }</dt><dd dir="auto">${ it.context[k] }</dd></template></template>
+              <dt>SHA-256</dt><dd class="mono">${ it.sha256 }</dd>
+              <dt>MD5</dt><dd class="mono">${ it.md5 }</dd>
+              <dt>C2PA</dt><dd><template v-if="!it.c2pa">not checked</template><template v-else-if="c2pa === 'absent'"><i class="ti ti-shield-off" aria-hidden="true"></i> No content credentials in the file</template>
+                <template v-else><v-chip size="small" :color="it.c2pa.codes?.length ? 'warning' : 'success'" variant="outlined" prepend-icon="ti ti-shield-check">${ c2pa }</v-chip> ${ it.c2pa.issuer || '' } <span class="muted">${ (it.c2pa.codes || []).join(', ') }</span></template></dd>
+              <template v-if="it.fingerprint"><dt>Fingerprint</dt><dd class="mono">${ it.fingerprint.algorithm }, artifact ${ short(it.fingerprint.artifact) }</dd></template>
+              <template v-if="it.liveness"><dt>Link check</dt><dd>${ it.liveness.display } <span class="muted">${ it.liveness.recorded_at.slice(0, 10) }</span></dd></template>
+            </dl>
+            <evidence-location :sha="it.sha256"></evidence-location>
+            <h3 class="px-3 pb-1">Custody chain</h3>
+            <v-timeline side="end" density="compact" align="start" truncate-line="both" class="px-3 pb-3">
+              <v-timeline-item v-for="s in custody" :key="s.id" :dot-color="s.agent ? 'agent' : 'primary'" size="x-small">
+                <div><strong>${ s.title }</strong> <span v-if="s.detail" class="mono">${ s.detail }</span> by <span :class="{agent: s.agent}">${ s.who }</span></div>
+                <div class="text-caption muted">${ s.at.slice(0, 16).replace('T', ' ') } UTC</div>
+              </v-timeline-item>
+            </v-timeline>
+          </v-tabs-window-item>
+        </v-tabs-window>
+      </section>
+    </div>
+
+    <v-navigation-drawer v-model="drawer" location="right" temporary width="400" class="ev-drawer" aria-label="Thread and history">
+      <v-toolbar density="compact" color="surface" border="b"><v-toolbar-title class="text-body-1 font-weight-bold">Thread and history</v-toolbar-title><v-btn icon="ti ti-x" variant="text" aria-label="Close" @click="drawer = false"></v-btn></v-toolbar>
+      <div class="pa-3">
+        <v-select v-if="it.threads.length" :model-value="threadId" :items="it.threads.map(t => ({title: aboutLabel(t.about) + (t.visible ? '' : ' (private)'), value: t.id}))" density="compact" hide-details label="Thread" @update:model-value="id => openThread(it.threads.find(t => t.id === id))"></v-select>
+        <v-empty-state v-else icon="ti ti-messages" title="No threads on this source" text="Select a pending claim and press c to ask a colleague."></v-empty-state>
+        <v-skeleton-loader v-if="threadBusy && !thread" type="list-item-three-line@2"></v-skeleton-loader>
+        <p v-else-if="threadId && !thread" class="ev-note mt-3">This thread is private to its sender, reviewer and admins.</p>
+        <template v-if="thread">
+          <p class="mt-3 mb-1"><strong>${ thread.sender.name }</strong> asked: <span dir="auto">${ thread.reason }</span></p>
+          <p class="ev-note mb-2">About ${ prop(thread.proposal.prop) }<template v-if="thread.proposal.display">: <bdi dir="auto">${ thread.proposal.display }</bdi></template>, ${ thread.proposal.tier }</p>
+          <div v-for="m in thread.comments" :key="m.id" class="py-2" style="border-top:1px solid var(--e-line, #e4e4e0)"><strong>${ m.author }</strong> <span class="ev-note">${ m.at.slice(0, 16).replace('T', ' ') }</span><div dir="auto">${ m.text }</div></div>
+          <v-textarea id="ev-comment" v-model="comment" label="Comment, @name to mention" rows="2" auto-grow hide-details class="mt-2"></v-textarea>
+          <div class="d-flex ga-2 mt-2 flex-wrap">
+            <v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-send" :disabled="!comment.trim()" :loading="threadBusy" @click="sendComment">Comment</v-btn>
+            <template v-if="thread.can_review && ['unconfirmed', 'corroborated'].includes(thread.proposal.tier)"><v-btn size="small" variant="outlined" prepend-icon="ti ti-check" @click="decide({...thread.proposal, can_review: true, statement: thread.proposal.id, kind: thread.proposal.prop === 'media_match' ? 'Copy' : undefined}, 'accept')">Accept</v-btn><v-btn size="small" variant="outlined" prepend-icon="ti ti-x" @click="decide({...thread.proposal, can_review: true, statement: thread.proposal.id}, 'reject')">Reject</v-btn></template>
+          </div>
+        </template>
+        <h3 class="mt-5 mb-2">History</h3>
+        <v-timeline v-if="it.history.length" side="end" density="compact" align="start" truncate-line="both">
+          <v-timeline-item v-for="h in it.history" :key="h.id" :dot-color="h.actor.agent ? 'agent' : 'primary'" size="x-small">
+            <div><strong>${ h.prop === 'review' ? h.display + 'ed' : prop(h.prop) }</strong> ${ aboutLabel(h.subject.slice(10)) } by ${ h.actor.label }</div>
+            <div class="text-caption muted">${ h.recorded_at.slice(0, 16).replace('T', ' ') } UTC</div>
+          </v-timeline-item>
+        </v-timeline>
+        <p v-else class="ev-note">No decisions on this source yet.</p>
+      </div>
+    </v-navigation-drawer>
+
+    <research-drawer v-model="research" :scope="'blob:' + it.sha256" :case="it.investigation" :cases="caseList"></research-drawer>
+    <v-dialog v-model="ask.open" max-width="440">
+      <v-card title="Ask a colleague">
+        <v-card-text>
+          <p class="ev-note mb-3">${ aboutLabel(ask.statement) }</p>
+          <v-select v-model="ask.reviewer" :items="analysts" item-title="name" item-value="id" label="Reviewer" class="mb-2"></v-select>
+          <v-textarea v-model="ask.reason" label="What should they check?" rows="3" auto-grow></v-textarea>
+        </v-card-text>
+        <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="ask.open = false">Cancel</v-btn><v-btn color="primary" variant="flat" :disabled="!ask.reviewer || !ask.reason.trim()" :loading="ask.busy" @click="sendAsk">Send request</v-btn></v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="relate.open" max-width="420">
+      <v-card title="Confirm the match">
+        <v-card-text><p class="ev-note mb-2">Say how the two sources relate. Your passkey signs the decision.</p>
+          <v-radio-group v-model="relate.value" hide-details><v-radio value="same_recording" label="Same recording"></v-radio><v-radio value="contains" label="This source contains the other"></v-radio><v-radio value="contained_in" label="This source is contained in the other"></v-radio><v-radio value="related" label="Related, not the same"></v-radio></v-radio-group></v-card-text>
+        <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="relate.open = false">Cancel</v-btn><v-btn color="primary" variant="flat" :loading="busy" @click="decide(relate.row, 'accept', relate.value)">Sign with passkey</v-btn></v-card-actions>
+      </v-card>
+    </v-dialog>
+  </template>
+  <v-snackbar v-model="snack.show" timeout="3600">${ snack.text }</v-snackbar>
+</div>
+{% endblock %}
+{% block js %}
+<script type="application/json" id="evidence-item-boot">{{ boot|tojson|safe }}</script>
+<script type="module">
+import {mount} from '/static/js/evidence-page.js';
+window.app = mount(JSON.parse(document.getElementById('evidence-item-boot').textContent));
+</script>
+{% endblock %}

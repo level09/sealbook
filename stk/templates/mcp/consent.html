@@ -1,0 +1,70 @@
+{% extends 'layout.html' %}
+{% block content %}
+    <v-container class="py-6" style="max-width: 680px;">
+        <v-card>
+            <template v-if="page.error">
+                <v-card-title class="pa-6 pb-2">Agent access refused</v-card-title>
+                <v-card-text class="px-6">${ page.error }</v-card-text>
+            </template>
+            <template v-else>
+                <v-card-title class="pa-6 pb-2">Connect an agent</v-card-title>
+                <v-card-text class="px-6">
+                    <p class="mb-4"><strong>${ page.client_name }</strong> asks to act on your behalf.</p>
+                    <v-list density="compact" class="mb-4">
+                        <v-list-item title="Client" :subtitle="page.client_id"></v-list-item>
+                        <v-list-item title="Returns to" :subtitle="page.redirect_host"></v-list-item>
+                    </v-list>
+                    <v-alert v-if="page.loopback" type="warning" variant="tonal" class="mb-4">
+                        This client runs on a computer at localhost. Any program there can use this name.
+                        Approve only if you started this connection yourself just now.
+                    </v-alert>
+                    <p class="mb-2">It asks to:</p>
+                    <v-list density="compact" class="mb-4">
+                        <v-list-item v-for="s in page.scopes" :key="s.name" :title="s.name" :subtitle="s.description"></v-list-item>
+                    </v-list>
+                    <p class="text-medium-emphasis">
+                        It acts as its own agent on your behalf, never as you, and never with more than your role
+                        allows. It cannot accept, delete or export anything. You can disconnect it any time under
+                        Connected Agents.
+                    </p>
+                </v-card-text>
+                <v-card-actions class="pa-6 pt-0">
+                    <form method="post" action="{{ url_for('mcp.consent') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="nonce" value="{{ nonce }}">
+                        <input type="hidden" name="decision" value="deny">
+                        <v-btn type="submit" variant="text">Deny</v-btn>
+                    </form>
+                    <v-spacer></v-spacer>
+                    <form method="post" action="{{ url_for('mcp.consent') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="nonce" value="{{ nonce }}">
+                        <input type="hidden" name="decision" value="approve">
+                        <v-btn type="submit" color="primary" variant="flat">Approve</v-btn>
+                    </form>
+                </v-card-actions>
+            </template>
+        </v-card>
+    </v-container>
+{% endblock %}
+
+{% block js %}
+    {# Client metadata is attacker-controlled: it reaches Vue as data, never as template source. #}
+    <script type="application/json" id="consent-data">{{ page|tojson|safe }}</script>
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+        const vuetify = createVuetify(config.vuetifyConfig);
+
+        const app = createApp({
+            mixins: [layoutMixin],
+            data() {
+                return {page: JSON.parse(document.getElementById('consent-data').textContent)};
+            },
+            delimiters: config.delimiters
+        });
+
+        registerStkComponents(app);
+        app.use(vuetify).mount('#app');
+    </script>
+{% endblock %}

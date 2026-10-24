@@ -1,0 +1,32 @@
+9900001	Damascus Governorate	Damascus Governorate	Dimashq,دمشق,محافظة دمشق	33.5138	36.2765	A	ADM1	SY		01				0			Asia/Damascus	2026-01-01
+9900002	Rif Dimashq Governorate	Rif Dimashq Governorate	Rif Dimashq,ريف دمشق,محافظة ريف دمشق	33.6	36.5	A	ADM1	SY		02				0			Asia/Damascus	2026-01-01
+9900003	Homs Governorate	Homs Governorate	محافظة حمص,حمص	34.733	36.717	A	ADM1	SY		03				0			Asia/Damascus	2026-01-01
+9900004	Aleppo Governorate	Aleppo Governorate	محافظة حلب,حلب	36.202	37.134	A	ADM1	SY		04				0			Asia/Damascus	2026-01-01
+9900011	Douma District	Douma District	منطقة دوما	33.572	36.402	A	ADM2	SY		02	0201			0			Asia/Damascus	2026-01-01
+9900012	Harasta District	Harasta District	منطقة حرستا	33.558	36.365	A	ADM2	SY		02	0202			0			Asia/Damascus	2026-01-01
+9900013	Homs District	Homs District	منطقة حمص	34.733	36.717	A	ADM2	SY		03	0301			0			Asia/Damascus	2026-01-01
+9900014	Aleppo District	Aleppo District	منطقة حلب	36.202	37.134	A	ADM2	SY		04	0401			0			Asia/Damascus	2026-01-01
+9900015	Zabadani District	Zabadani District	منطقة الزبداني	33.724	36.099	A	ADM2	SY		02	0203			0			Asia/Damascus	2026-01-01
+9900016	Tadmur District	Tadmur District	منطقة تدمر	34.55	38.27	A	ADM2	SY		03	0302			0			Asia/Damascus	2026-01-01
+9900021	Harasta Subdistrict	Harasta Subdistrict	ناحية حرستا	33.558	36.365	A	ADM3	SY		02	0202	020201		0			Asia/Damascus	2026-01-01
+9900022	Douma Subdistrict	Douma Subdistrict	ناحية دوما	33.572	36.402	A	ADM3	SY		02	0201	020101		0			Asia/Damascus	2026-01-01
+9900031	Damascus	Damascus	Dimashq,دمشق	33.5138	36.2765	P	PPLC	SY		01				1700000			Asia/Damascus	2026-01-01
+9900032	Harasta	Harasta	حرستا	33.558	36.365	P	PPL	SY		02	0202	020201		120000			Asia/Damascus	2026-01-01
+9900033	Douma	Douma	دوما	33.572	36.402	P	PPLA2	SY		02	0201	020101		110000			Asia/Damascus	2026-01-01
+9900034	Jaramana	Jaramana	جرمانا	33.492	36.349	P	PPL	SY		02	0201			100000			Asia/Damascus	2026-01-01
+9900035	Zabadani	Zabadani	الزبداني	33.724	36.099	P	PPL	SY		02	0203			30000			Asia/Damascus	2026-01-01
+9900036	Homs	Homs	حمص	34.733	36.717	P	PPLA	SY		03	0301			650000			Asia/Damascus	2026-01-01
+9900037	Tadmur	Tadmur	تدمر	34.55	38.27	P	PPL	SY		03	0302			50000			Asia/Damascus	2026-01-01
+9900038	Al Qusayr	Al Qusayr	القصير	34.51	36.58	P	PPL	SY		03	0301			40000			Asia/Damascus	2026-01-01
+9900039	Ar Rastan	Ar Rastan	الرستن	34.92	36.73	P	PPL	SY		03	0301			50000			Asia/Damascus	2026-01-01
+9900040	Talbiseh	Talbiseh	تلبيسة	34.83	36.74	P	PPL	SY		03	0301			45000			Asia/Damascus	2026-01-01
+9900041	Aleppo	Aleppo	Halab,حلب	36.202	37.134	P	PPLA	SY		04	0401			1900000			Asia/Damascus	2026-01-01
+9900042	Manbij	Manbij	منبج	36.528	37.955	P	PPL	SY		04	0401			100000			Asia/Damascus	2026-01-01
+9900043	Azaz	Azaz	اعزاز	36.587	37.045	P	PPL	SY		04	0401			30000			Asia/Damascus	2026-01-01
+9900044	Al Bab	Al Bab	الباب	36.37	37.516	P	PPL	SY		04	0401			60000			Asia/Damascus	2026-01-01
+9900051	Al Jadida Quarter	Al Jadida Quarter	حي الجديدة,الجديدة	36.205	37.155	P	PPLX	SY		04	0401			0			Asia/Damascus	2026-01-01
+9900052	Al Jadida	Al Jadida	الجديدة	33.51	36.3	P	PPLX	SY		01				0			Asia/Damascus	2026-01-01
+9900053	Old City Quarter	Old City Quarter	المدينة القديمة	33.511	36.306	P	PPLX	SY		01				0			Asia/Damascus	2026-01-01
+9900054	Baba Amr	Baba Amr	بابا عمرو	34.72	36.69	P	PPLX	SY		03	0301			0			Asia/Damascus	2026-01-01
+	Branch 999	Branch 999	الفرع 999	33.513	36.292	S	FAC	SY		01				0			Asia/Damascus	2026-01-01
+	Central Prison K	Central Prison K	سجن ك المركزي	34.95	36.6	S	FAC	SY		03				0			Asia/Damascus	2026-01-01

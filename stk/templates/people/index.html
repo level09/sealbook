@@ -1,0 +1,97 @@
+{% extends 'layout.html' %}
+{% block content %}
+    <v-container class="py-6" style="max-width: 860px;">
+        <v-card>
+            <v-card-title class="pa-6 pb-2">People</v-card-title>
+            <v-card-text class="pa-6">
+                <form class="d-flex" style="gap: 12px;" @submit.prevent="search">
+                    <v-text-field v-model="q" label="Name, in any spelling or script" density="comfortable"
+                                  hide-details autofocus dir="auto"></v-text-field>
+                    <v-btn type="submit" color="primary" :loading="busy" :disabled="!q.trim()">Search</v-btn>
+                </form>
+                <div class="text-caption text-medium-emphasis mt-2">
+                    Matches are proposals: two people with the same name stay two people until someone links them.
+                </div>
+            </v-card-text>
+            <v-divider></v-divider>
+            <div class="px-6 pt-4 text-caption text-medium-emphasis">
+                ${ caption } in ${ caseSel || 'all investigations' }
+            </div>
+            <v-list>
+                <v-list-item v-if="!shown.length">${ empty }</v-list-item>
+                <v-list-item v-for="h in shown" :key="h.person" :href="'/people/' + h.person">
+                    <template #prepend><i class="ti ti-user me-3"></i></template>
+                    <v-list-item-title>
+                        <bdi v-if="h.name" dir="auto">${ h.name }</bdi>
+                        <span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> Unnamed person</span>
+                        <span class="font-monospace text-medium-emphasis ms-2">${ h.person.slice(0, 8) }</span>
+                        <span v-if="h.statements" class="text-medium-emphasis">, ${ h.statements.length } matching name${ h.statements.length === 1 ? '' : 's' }</span>
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                        ${ h.facts || 0 } facts from ${ h.documents || 0 } document${ h.documents === 1 ? '' : 's' }
+                        across ${ h.members } mention${ h.members === 1 ? '' : 's' }
+                        <span v-if="h.from"> . ${ h.from }${ h.to && h.to !== h.from ? ' to ' + h.to : '' }</span>
+                    </v-list-item-subtitle>
+                </v-list-item>
+            </v-list>
+        </v-card>
+        <v-snackbar v-model="error.show" color="error">${ error.text }</v-snackbar>
+    </v-container>
+{% endblock %}
+
+{% block js %}
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+        const vuetify = createVuetify(config.vuetifyConfig);
+
+        const app = createApp({
+            mixins: [layoutMixin],
+            data() {
+                return {q: new URLSearchParams(location.search).get('q') || '', asked: '', items: null, busy: false,
+                        everyone: [], error: {show: false, text: ''}};
+            },
+            computed: {
+                shown() { return this.items === null ? this.everyone : this.items; },
+                caption() {
+                    return this.items === null
+                        ? 'Everyone on record (' + this.everyone.length + ')'
+                        : 'Matches for "' + this.asked + '"';
+                },
+                empty() {
+                    return this.items === null ? 'No people on record yet.' : 'No person matches "' + this.asked + '".';
+                },
+            },
+            async mounted() {
+                await this.loadAll();
+                if (this.q) this.search();
+            },
+            methods: {
+                // Shell contract: follow the top bar's investigation switcher.
+                useCase() { this.items = null; this.loadAll().then(() => this.q.trim() && this.search()); },
+                async loadAll() {
+                    try {
+                        this.everyone = (await axios.get('/api/people', {params: {investigation: this.caseSel || undefined}})).data.items;
+                    } catch (e) { this.error = {show: true, text: e.response?.data?.message || e.message}; }
+                },
+                async search() {
+                    const q = this.q.trim();
+                    if (!q) return;
+                    this.busy = true;
+                    try {
+                        const {data} = await axios.get('/api/people/search', {params: {q, investigation: this.caseSel || undefined}});
+                        this.items = data.items;
+                        this.asked = q;
+                        history.replaceState(null, '', `?q=${encodeURIComponent(q)}`);
+                    } catch (e) {
+                        this.error = {show: true, text: e.response?.data?.message || e.message};
+                    } finally { this.busy = false; }
+                },
+            },
+            delimiters: config.delimiters
+        });
+
+        registerStkComponents(app);
+        app.use(vuetify).mount('#app');
+    </script>
+{% endblock %}
