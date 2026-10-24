@@ -45,6 +45,37 @@ uv run stk new <module>            # Scaffold + migrate, ends at a URL you can o
 uv run python -m unittest discover -s tests
 ```
 
+### Reading the screens (`acceptance/check_sense.py`)
+
+`stk smoke` and `acceptance.check_workflow` prove pages render and flows work. They
+do not read the words. Run the sense check after any UI or display text change,
+alongside `check_workflow`, against a server on a copy of the demo database:
+
+```bash
+createdb sealbook_sense_check && pg_dump sealbook | psql -q sealbook_sense_check
+SQLALCHEMY_DATABASE_URI=postgresql+asyncpg:///sealbook_sense_check \
+  STK_ENABLE_AGENT_LOGIN=1 uv run stk run --port 5023
+uv run python -m acceptance.check_sense --base http://localhost:5023
+dropdb sealbook_sense_check   # after stopping that server
+```
+
+It logs in as `admin@example.com`, opens every analyst page of `case-demo-02` at
+desktop and phone width (Desk, Inbox, Discover, Review, Sources, People and five
+person pages, Places and three place pages, incidents, Stories, Watching, Packages,
+the monitor, one evidence page per source type with its Read, Copies and Relations
+tabs and sensitive items shown, and Arabic, English and hash searches), and runs
+text rules over what is visible: raw hex ids and uuids, snake_case tokens, storage
+words (`<prop> values`, `<tool> run`, model ids, built from `Prop`, the worker's
+`TOOLS` and the seeds), raw scores, a row repeated 3+ times in one list, "1
+<plural>", stray separators, empty labels, and `undefined`, `null`, `NaN`,
+`[object Object]`. It prints page, rule, snippet and count, writes
+`instance/check_sense.json` with each page's text, and exits 1 on any finding.
+
+Fix the screen, not the check. `acceptance/sense_allow.json` holds only content
+that is meant to be there (a digest shown as a hash statement's value), each entry
+with a rule, page and match pattern and a reason. Rule changes come with a case in
+`tests/test_check_sense.py`, which tests the rules on plain text without a browser.
+
 ### Database Migrations (Alembic)
 
 ```bash

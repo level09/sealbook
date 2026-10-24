@@ -516,3 +516,17 @@ covers in the text it was read from (`span_blob`).
   unrevealed sensitive source answered 403. Every table of tiles carries `revealed`.
 - Map place labels sat 10 px right of the point, under the 28 px cluster badge. They
   start 20 px out now.
+
+## Renders without errors is not reads well (2026-10-24)
+
+- Every page passed `stk smoke` and `check_workflow` while an analyst reading the
+  screens found "Person a464e7a6", "read 2 located at values", "extract run
+  (qwen3-vl-4b-sy-demo)", "cosine distance 0.216", "Names match" forty times, "1
+  facts" and "family . 2 sentences". Those checks assert that a page loads, a flow
+  completes and nothing throws; none of them reads the words. `acceptance/check_sense.py`
+  now crawls the demo case at two widths and flags these classes in visible text,
+  with the rules tested on plain strings. Run it after any UI change. Its first run
+  after the display text sweep still found seed file stems shown as file names
+  ("Photo, checkpoint_forward"), storage words on the monitor feed ("geotag run",
+  "statements_written"), "overlapping 1 days", repeated activity rows on a place
+  page and "family . 2 sentences" on Packages.
