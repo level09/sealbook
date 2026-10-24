@@ -620,3 +620,37 @@ covers in the text it was read from (`span_blob`).
   The commit silently reverted 3cbf813's extraction prompt; it was restored in the
   next commit. Build a patched blob from HEAD in the same command that commits it,
   and diff the commit against its parent for lines you did not write.
+
+## Add evidence and case records (2026-10-24)
+
+- The sheet column preview first posted its file to `/api/sheets/peek` and got 400
+  "Expected a JSON object": `stk/security.py` requires a JSON body on every `/api/`
+  POST. Multipart routes live under `/ingest/` (`/ingest/file`, `/ingest/sheet/peek`).
+- A Vue text interpolation `${ {web: 'pages'}[tab] }` broke the whole page with
+  "Unexpected token ')'": the `${ }` delimiters end at the first `}`. Never put an
+  object literal inside an interpolation; use a method or a ternary.
+- The dev server's reloader watches Python files only, so an edited Jinja template
+  kept serving the old copy (and the old syntax error). Touch a `.py` file or restart
+  after template edits before trusting a screenshot.
+- The embedding server was busy with another worktree's runs and the preview's
+  suggestion call waited two minutes before httpx gave up with `ReadTimeout`, which
+  is not an `OSError`, so the page saw a 500. Interactive calls to a local model get
+  their own short wait (20 s) and catch `httpx.HTTPError`; mapping by hand still works.
+- An unsuggested column defaulted to "Do not read" and was labelled "suggested",
+  which said the model chose it. A column with no suggestion stays empty and says
+  "choose what it holds".
+- Reading "waiting for a model" from the settings at status time contradicted the
+  item once a model was set up: nothing had been queued and nothing queues it later.
+  The row now says it arrived before a model could take it.
+- Once batches had to name a case, `acceptance.test_v0` started queueing the linker
+  and the intake brief (they need a case) against its fake model, which cannot answer
+  their schema. The scenario now pins `AGENT_MODEL` off, as lessons above say for
+  every env-driven switch. Its step 14 (one duplicate candidate for P1) fails on
+  master 644e8d7 too; it is not from this change.
+- `ReviewTest` builds the app before patching `Config.BLOB_DIR`, so `/ingest/file`
+  wrote to the real `instance/blobs` while the sheet service read the test directory
+  ("No file is stored"). Tests that upload set `app.config["BLOB_DIR"]` to the
+  patched value.
+- A sensitive sheet uploaded on the page could not be confirmed (403
+  `reveal_required`), though the person had just looked at its columns. The page now
+  records the logged reveal first, as the evidence page does, then confirms.

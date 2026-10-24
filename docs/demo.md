@@ -80,7 +80,17 @@ request there. Use j and k to move, r or c to reply.
 
 ## Bring evidence in
 
-Open `/ingest` and add any file to see the per-item stages. Then open `/sources`
+Open Add evidence (`/ingest`). The case comes from the switcher; change it from the
+case button, or make one with New case (type `case-demo-2` to see the close-name
+warning point at case-demo-02). Drop a few files: each shows its fingerprint at
+once, a suggested document type (the sparkle icon; your pick shows a person icon)
+and Sensitive by default. Drop `register_page.png` from `acceptance/data` to see
+the duplicate: after Add it names the source it repeats, when and from where, and
+stores nothing new. A spreadsheet with title rows above its header (any XLSX with
+a heading line) shows where the header was found and a column preview to confirm.
+Search the web proposes queries from case-demo-02's ordinary names; nothing is sent
+until you pick one. With no model set up for a sensitive item, its row says it is
+waiting for a model and why. Then open `/sources`
 for what is already in the case: photos, scans, the transfer order PDF, three
 recordings, two video clips, web posts, text documents and the two intake sheets.
 Filter by assignee to see the workload strip: the owner, analyst-2 and analyst-3
@@ -94,7 +104,7 @@ diff against version 1 found changed rows (two dates and one place), a row gone,
 two new rows, a repeated identifier and a row without one. Only new and changed
 rows were read, so version 2 has proposals for those rows alone. To watch the
 mapping and diff steps live, edit one cell of `acceptance/data/messy_people_v2.csv`
-in a copy and add it in `/ingest` with Prepare sheet.
+in a copy and add it in `/ingest`; the remembered dataset is picked from its columns.
 
 ## See it
 
