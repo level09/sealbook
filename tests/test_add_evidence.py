@@ -342,7 +342,8 @@ class IntakeTest(unittest.IsolatedAsyncioTestCase):
         )
         self.assertIn("no model allowed for this item", found["open.txt"]["waiting"])
         # Nothing queues it later on its own, so a model set up since then is said.
-        later = (await self.status(client))["held.txt"]["waiting"]
+        with mock.patch.object(Config, "RUN_MODELS", {"local": "m/l"}):
+            later = (await self.status(client))["held.txt"]["waiting"]
         self.assertIn("A model is set up now", later)
         with mock.patch.object(Config, "RUN_MODELS", {"local": "m/l"}):
             await self.upload(client, b"first in line", name="one.txt", batch="b2")
