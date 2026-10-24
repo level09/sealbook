@@ -61,8 +61,7 @@ async def page():
 
 @bp_stories.get("/api/stories")
 async def story():
-    """Every story read is an access statement per person row, listing the points it
-    showed: the same record a person page view leaves."""
+    """Every story read is an access statement per person row (see `shown`)."""
     db, args = g.db_session, request.args
     try:
         found = await data.story(
@@ -72,6 +71,14 @@ async def story():
         abort(400, description=str(exc))
     except LookupError as exc:
         abort(404, description=str(exc))
+    await shown(db, found)
+    return _json(found)
+
+
+async def shown(db, found: dict) -> None:
+    """Lock points on unrevealed sensitive sources and write one access statement
+    per person row, listing the points it showed: the record a person page view
+    leaves. Commits."""
     for p in found["points"]:
         # Sensitive and not revealed in this session: the client must not ask for it.
         p["locked"] = p.pop("sensitive_source", False) and not granted(p["source"])
@@ -82,7 +89,6 @@ async def story():
         view = {"person": row["key"].removeprefix("person:"), "track": row}
         await people.log_view(db, view, who.id)
     await db.commit()
-    return _json(found)
 
 
 @bp_stories.get("/api/stories/saved")

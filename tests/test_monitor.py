@@ -273,8 +273,13 @@ class MonitorTest(unittest.IsolatedAsyncioTestCase):
             analyst = (
                 await s.execute(select(Role).where(Role.name == "analyst"))
             ).scalar_one()
+            admin = await s.scalar(select(Role).where(Role.name == "admin"))
+            if admin is None:
+                admin = Role(name="admin")
+                s.add(admin)
             for email, roles in (
                 ("analyst@example.com", [analyst]),
+                ("admin@example.com", [analyst, admin]),
                 ("nobody@example.com", []),
             ):
                 user = User(
@@ -365,17 +370,22 @@ class MonitorTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login", response.headers["Location"])
 
-    async def test_page_renders_for_analyst_only(self):
+    async def test_runs_page_renders_for_admins_only(self):
         async with self.app.test_client() as client:
-            await self.login(client)
-            response = await client.get("/monitor")
+            await self.login(client, "admin@example.com")
+            response = await client.get("/monitor/runs")
             self.assertEqual(response.status_code, 200)
             body = await response.get_data(as_text=True)
             self.assertIn('id="monitor-boot"', body)
             self.assertIn("case-a", body)
         async with self.app.test_client() as client:
+            await self.login(client)
+            self.assertEqual((await client.get("/monitor/runs")).status_code, 403)
+            response = await client.get("/monitor")
+            self.assertTrue(response.headers["Location"].endswith("/case-map"))
+        async with self.app.test_client() as client:
             await self.login(client, "nobody@example.com")
-            self.assertEqual((await client.get("/monitor")).status_code, 403)
+            self.assertEqual((await client.get("/case-map")).status_code, 403)
 
     async def test_stream_pushes_matching_events_only(self):
         async with self.app.test_client() as client:
@@ -622,7 +632,7 @@ class MonitorTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(row["doc"]["sha256"], scan)
 
     async def csrf(self, client):
-        page = await (await client.get("/monitor")).get_data(as_text=True)
+        page = await (await client.get("/case-map")).get_data(as_text=True)
         return re.search(r'name="csrf-token" content="([^"]+)"', page).group(1)
 
 

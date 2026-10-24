@@ -395,6 +395,49 @@ SCENARIOS = [
         ],
     },
     {
+        "id": "who-was-where",
+        "area": "connect",
+        "title": "See who was where, when, across a whole case",
+        "who": "You need everyone in the case at once: who was held with whom, "
+        "where they went, and how two people connect.",
+        "steps": [
+            "Open Case map. Each row is a person, each segment a claim at a place, "
+            "solid when accepted, outlined when corroborated, hatched when "
+            "unconfirmed.",
+            "Bands mark two or more people at one place at the same time. Pick one "
+            "to see who was there, where each came from, where each went and where "
+            "the record stops, every line with its source.",
+            "Hatching marks silences of more than 30 days and the stretch after the "
+            "last account of someone held. Two records a same-person proposal may "
+            "join read possibly two people.",
+            "Move the time slider or press Play. The map sizes each place by the "
+            "people there in that month, quarter or year, and draws moves as "
+            "arrows. Approximate places are faint areas, never points.",
+            "Ask how two people or places connect. The answer is the shortest chain "
+            "of sourced steps, and a step through a place the two were at months "
+            "apart says it is weak.",
+            "Case news lists what arrived, what agents proposed and what people "
+            "decided, newest first, and updates as work finishes.",
+        ],
+        "ai": [
+            "Nothing new. Bands come from the same rule discovery uses, silences "
+            "from the gap finder's rule, and the news only counts what agents "
+            "already proposed."
+        ],
+        "you": [
+            "Which band or path is worth a finding, a request to a colleague, or "
+            "a decision in Review or Discover."
+        ],
+        "result": "A view of the whole case in time and space, with every line "
+        "traceable to its source.",
+        "links": [
+            {"label": "Case map", "href": "/case-map"},
+            {"label": "Discover the findings behind the bands", "href": "/discover"},
+        ],
+        "needs": "Places show only once someone confirms where a claimed name is. "
+        "Reading the map logs a view per person, as a story does.",
+    },
+    {
         "id": "one-name-two-people",
         "area": "connect",
         "title": "Tell one name from two people",

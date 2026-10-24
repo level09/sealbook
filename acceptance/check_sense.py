@@ -357,7 +357,7 @@ async def crawl_width(browser, base, token_url, case, width):
         "/stories",
         "/watch",
         "/packages",
-        "/monitor",
+        "/case-map",
         "/ingest/",
         "/guide",
         "/agents/",

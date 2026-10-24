@@ -1,4 +1,5 @@
-"""Evidence monitor: one page of live panels that all answer one shared filter."""
+"""Worker telemetry for admins (one page of live panels that all answer one shared
+filter), the shared reads other pages use, and the live stream."""
 
 import uuid
 from datetime import UTC, datetime
@@ -61,8 +62,25 @@ def _filter() -> dict:
         abort(400, description=str(exc))
 
 
+# Deep links into the worker telemetry's side panels.
+PANELS = ("statement", "run", "document", "blob", "principal")
+
+
 @monitor.get("/monitor")
+async def moved():
+    """The analyst's map moved to /case-map; links into a telemetry panel go to the
+    runs page."""
+    if any(k in request.args for k in PANELS):
+        return redirect(url_for("monitor.page", **request.args))
+    return redirect(url_for("casemap.page"))
+
+
+@monitor.get("/monitor/runs")
 async def page():
+    """Worker telemetry: runs, events and documents as the queue sees them. Admins
+    only; analysts read the case on the case map."""
+    if not current_user.has_role("admin"):
+        abort(403)
     f = _filter()
     investigations = await data.investigations(g.db_session)
     if f["investigation"] is None and investigations:
@@ -229,7 +247,7 @@ async def stream():
     if "text/event-stream" not in request.headers.get("Accept", ""):
         # A plain navigation (a person, or `stk smoke`) gets the page, not a stream
         # that never ends.
-        return redirect(url_for("monitor.page"))
+        return redirect(url_for("casemap.page"))
     f = _filter()
     last = request.headers.get("Last-Event-ID") or request.args.get("after")
     try:

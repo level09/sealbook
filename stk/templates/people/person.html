@@ -129,7 +129,7 @@
     <aside v-if="side" class="ppl-side" aria-label="Statement">
         <div class="d-flex align-center mb-2">
             <strong>Statement</strong><span class="bar-spacer"></span>
-            <a href="/monitor" class="me-3">Monitor</a>
+            <a href="/case-map" class="me-3">Case map</a>
             <button @click="side = null" aria-label="Close"><i class="ti ti-x"></i></button>
         </div>
         <div v-if="!side.data" class="muted">${ side.error || 'Loading' }</div>

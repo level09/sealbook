@@ -268,7 +268,7 @@ class WatchTest(unittest.IsolatedAsyncioTestCase):
                 ),
                 1,
             )
-        self.assertIn("/monitor?statement=", page)
+        self.assertIn("/review?statement=", page)
 
         # The twin P2 shares the name but no field; re-running is idempotent.
         async with ext.async_session_factory() as s, s.begin():

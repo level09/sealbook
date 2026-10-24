@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+{% block css %}
+<link rel="stylesheet" href="{{ asset('maplibre/maplibre-gl.css') }}">
+<style>
+.cm-page { max-width: 1640px; }
+.cm-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.cm-head h1 { font-size: 18px; font-weight: 650; letter-spacing: -.02em; margin: 0; }
+.cm-head p { margin: 0; color: var(--ink-3); }
+.cm-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.cm-panel > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); min-height: 42px; flex-wrap: wrap; }
+.cm-panel > header h2 { font-size: 14px; font-weight: 650; margin: 0; }
+.cm-muted { color: var(--ink-3); }
+.cm-ask { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 12px; margin-bottom: 10px; }
+.cm-ask .v-autocomplete { flex: 1 1 220px; max-width: 340px; }
+.cm-time { position: sticky; top: 56px; z-index: 4; display: flex; align-items: center; gap: 10px; padding: 4px 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.cm-time .v-slider { flex: 1 1 260px; min-width: 200px; }
+.cm-time .cm-sum { flex: 1 1 100%; font-size: 12.5px; padding-bottom: 4px; }
+.cm-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 12px; align-items: start; }
+.cm-main { display: grid; gap: 12px; min-width: 0; }
+.cm-side { display: grid; gap: 12px; position: sticky; top: 140px; max-height: calc(100vh - 152px); overflow: auto; }
+.cm-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-inline-start: auto; }
+.cm-tools .v-select { width: 190px; flex: none; }
+.cm-zoom { font: inherit; font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 4px; background: var(--panel); padding: 2px 8px; min-height: 26px; cursor: pointer; }
+.cm-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); padding: 6px 12px; border-top: 1px solid var(--line); }
+.cm-sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; vertical-align: -1px; border: 1.5px solid var(--ink); }
+.cm-sw.acc { background: var(--accepted); border-color: var(--accepted); }
+.cm-sw.cor { border-color: var(--corroborated); }
+.cm-sw.unc { border-style: dashed; background: repeating-linear-gradient(135deg, var(--ink) 0 1.5px, transparent 1.5px 4px); }
+.cm-sw.band { background: var(--new-wash); border-color: var(--new-line); border-width: 1px; }
+.cm-sw.sil { border: 0; background: repeating-linear-gradient(135deg, var(--ink-3) 0 1px, transparent 1px 4px); }
+.cm-sw.end { border: 0; background: repeating-linear-gradient(135deg, var(--conflict-line) 0 1px, transparent 1px 4px); }
+.cm-tl { padding: 6px 12px 8px; overflow: hidden; }
+.cm-band { cursor: pointer; outline: none; }
+.cm-band:focus-visible rect { stroke-width: 2.5; }
+.cm-pt { cursor: pointer; }
+.cm-map { height: 560px; background: var(--raise); }
+.cm-lbl { font: 600 11.5px/1 Inter, system-ui, sans-serif; color: var(--ink); background: none; border: 0; padding: 0; cursor: pointer; white-space: nowrap; text-shadow: 0 0 3px var(--panel), 0 0 3px var(--panel), 0 0 3px var(--panel); }
+.cm-lbl span { display: inline-block; min-width: 16px; padding: 1px 4px; border-radius: 8px; background: var(--ink); color: var(--panel); text-shadow: none; font-size: 10.5px; text-align: center; }
+.cm-lbl.none { color: var(--ink-3); font-weight: 500; }
+.cm-unres { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 12.5px; }
+.cm-sec { padding: 8px 12px; border-top: 1px solid var(--line); }
+.cm-sec:first-of-type { border-top: 0; }
+.cm-sec h3 { font-size: 12.5px; font-weight: 650; margin: 0 0 4px; }
+.cm-line { font-size: 12.5px; padding: 3px 0; }
+.cm-line a { margin-inline-end: 8px; }
+.cm-src { display: block; font-size: 12px; }
+.cm-step { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font-size: 13px; margin-bottom: 8px; }
+.cm-step.weak { border-color: var(--conflict-line); background: var(--conflict-wash); }
+.cm-note { font-size: 12px; color: var(--conflict); margin-top: 4px; }
+.cm-news { list-style: none; margin: 0; padding: 0; }
+.cm-news li { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 13px; }
+.cm-news li:first-child { border-top: 0; }
+.cm-news .who { font-size: 12px; color: var(--ink-3); }
+.cm-news .who.agent { color: var(--agent); }
+.cm-live { font-size: 12px; color: var(--ink-3); margin-inline-start: auto; }
+.cm-live i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong); margin-inline-end: 4px; }
+.cm-live.on i { background: var(--accepted); }
+@media (max-width: 1100px) {
+  .cm-grid { grid-template-columns: 1fr; }
+  .cm-side { position: static; max-height: none; }
+  .cm-map { height: 380px; }
+}
+@media (max-width: 600px) {
+  .cm-time { top: 48px; }
+  .cm-tools .v-select { width: 100%; flex: 1 1 140px; }
+  .cm-ask .v-autocomplete { max-width: 100%; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="cm-page py-4">
+  <div class="cm-head">
+    <h1>Case map</h1><p>${ investigation ? investigation + ', ' : '' }${ subtitle }</p>
+  </div>
+  <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
+  <v-empty-state v-if="!investigation" icon="ti ti-map-2" title="Pick a case" text="The case map shows one case at a time. Choose it in the case switcher at the top."></v-empty-state>
+
+  <template v-if="investigation && v">
+  <form class="cm-panel cm-ask" role="search" aria-label="How two people or places connect" @submit.prevent="findPath">
+    <span class="font-weight-medium">How is</span>
+    <v-autocomplete v-model="ask.from" :items="askItems" density="compact" hide-details clearable aria-label="First person or place" placeholder="a person or place"></v-autocomplete>
+    <span class="font-weight-medium">connected to</span>
+    <v-autocomplete v-model="ask.to" :items="askItems" density="compact" hide-details clearable aria-label="Second person or place" placeholder="a person or place"></v-autocomplete>
+    <v-btn type="submit" color="primary" variant="flat" size="small" :loading="ask.busy" :disabled="!ask.from || !ask.to || ask.from === ask.to">Find</v-btn>
+  </form>
+
+  <div class="cm-panel cm-time" role="group" aria-label="Time">
+    <v-icon-btn :icon="playing ? 'ti ti-player-pause' : 'ti ti-player-play'" variant="text" size="small" :aria-label="playing ? 'Pause' : 'Play'" @click="play"></v-icon-btn>
+    <v-slider :model-value="t" :min="0" :max="days" :step="1" hide-details density="compact" color="primary" aria-label="Time" @update:model-value="slide"></v-slider>
+    <span class="text-no-wrap">${ span === 'all' ? 'Whole case' : fmtDay(isoDay(cursor)) }</span>
+    <v-btn-toggle v-model="span" mandatory density="compact" variant="outlined" divided aria-label="Window">
+      <v-btn value="month" size="small">Month</v-btn><v-btn value="quarter" size="small">Quarter</v-btn><v-btn value="year" size="small">Year</v-btn><v-btn value="all" size="small">All</v-btn>
+    </v-btn-toggle>
+    <div class="cm-sum" aria-live="polite">${ summary }</div>
+  </div>
+
+  <div class="cm-grid">
+    <div class="cm-main">
+      <section class="cm-panel" aria-labelledby="h-tl"><header><h2 id="h-tl">Who was where</h2><span class="cm-muted text-caption">one row per person; bands mark people at one place at once</span>
+        <div class="cm-tools">
+          <v-select v-model="sort" :items="[{title: 'First seen', value: 'first'}, {title: 'First place', value: 'place'}]" density="compact" hide-details aria-label="Order of rows"></v-select>
+          <v-select v-model="placeFilter" :items="placeItems" density="compact" hide-details clearable placeholder="Every place" aria-label="Only people at a place"></v-select>
+        </div></header>
+        <v-empty-state v-if="!points.length" icon="ti ti-timeline" title="No dated claims at a place yet" text="People appear here once a claim puts them at a place on a date."></v-empty-state>
+        <case-timeline v-else :rows="rows" :bands="bandList" :from="isoDay(range[0])" :to="isoDay(range[1])" :win="win" :cursor="cursor" :sel="selected && selected.kind === 'band' ? selected.id : null" :path="pathMark" @band="pickBand" @point="pickPoint"></case-timeline>
+        <div class="cm-legend"><span><i class="cm-sw acc"></i> accepted</span><span><i class="cm-sw cor"></i> corroborated</span><span><i class="cm-sw unc"></i> unconfirmed</span><span><i class="cm-sw band"></i> at one place at once</span><span><i class="cm-sw sil"></i> more than 30 days, no evidence</span><span><i class="cm-sw end"></i> no record after</span></div>
+        <div v-if="v.truncated" class="cm-unres cm-muted">Showing the first 5,000 claims.</div>
+      </section>
+
+      <section class="cm-panel" aria-labelledby="h-map"><header><h2 id="h-map">Movements</h2><span class="cm-muted text-caption">circles sized by people there in the window; arrows are moves between known places, not routes</span></header>
+        <div ref="map" class="cm-map" role="region" aria-label="Map of places and moves"></div>
+        <div class="cm-unres"><strong>Not on the map</strong> <span class="cm-muted">until a person confirms the place:</span>
+          <span v-for="u in v.unresolved" :key="u.place" class="ms-2"><bdi dir="auto">${ u.place }</bdi> <span class="cm-muted">(${ u.count })</span></span><span v-if="!v.unresolved.length" class="cm-muted ms-2">nothing</span>
+          <div class="text-caption cm-muted mt-1">Approximate places are drawn as faint areas at least as wide as their uncertainty. Places from ${ v.attribution }; outlines from Natural Earth.</div></div>
+      </section>
+    </div>
+
+    <aside class="cm-side" ref="side">
+      <section class="cm-panel" aria-labelledby="h-sel" aria-live="polite">
+        <template v-if="ask.answer">
+          <header><h2 id="h-sel"><bdi>${ askLabel(ask.from) }</bdi> to <bdi>${ askLabel(ask.to) }</bdi></h2><v-icon-btn icon="ti ti-x" size="small" variant="text" class="ms-auto" aria-label="Clear the answer" @click="clear"></v-icon-btn></header>
+          <div class="cm-sec">
+            <div v-if="ask.answer.error" class="cm-muted">${ ask.answer.error }</div>
+            <template v-else-if="ask.answer.found">
+              <p class="cm-muted text-caption mb-2">Shortest path, ${ ask.answer.steps.length } step${ ask.answer.steps.length === 1 ? '' : 's' }, each with its sources. A path is a lead to check, not a finding.</p>
+              <div v-for="(s, i) in ask.answer.steps" :key="i" class="cm-step" :class="{weak: s.weak}">
+                <div>${ s.text }</div>
+                <a v-for="src in s.sources" :key="src.href" class="cm-src" :href="src.href">${ src.title }</a>
+                <div v-if="s.weak" class="cm-note"><strong>Weak step.</strong> ${ s.weak }.</div>
+                <div v-if="s.unconfirmed" class="cm-muted text-caption mt-1">Rests on claims nobody has confirmed yet.</div>
+              </div>
+            </template>
+            <div v-else class="cm-muted">No connection within ${ ask.answer.depth } steps through held at, held together, transfers, shared sources, family and same-person proposals.</div>
+          </div>
+        </template>
+        <template v-else-if="panel">
+          <header><h2 id="h-sel">${ panel.title }</h2><v-icon-btn icon="ti ti-x" size="small" variant="text" class="ms-auto" aria-label="Clear the selection" @click="clear"></v-icon-btn></header>
+          <div class="cm-sec"><div class="cm-muted text-caption">${ panel.sub }</div>
+            <div v-if="panel.approximate !== false && panel.approximate !== undefined" class="cm-muted text-caption">Known only to within ${ panel.approximate ? (panel.approximate >= 1000 ? panel.approximate / 1000 + ' km' : panel.approximate + ' m') : 'an area' }; drawn as an area, not a point.</div>
+            <a v-for="id in panel.places" :key="id" :href="'/places/' + id" class="text-caption me-3">Place page: ${ placeName(placeById[id]) }</a>
+            <a v-if="panel.finding" :href="'/discover?f=' + encodeURIComponent(panel.finding)" class="text-caption d-block">Discovery proposed this as a finding: review it in Discover</a></div>
+          <div v-if="panel.there.length" class="cm-sec"><h3>Who was there</h3>
+            <div v-for="l in panel.there" :key="l.key" class="cm-line"><strong><bdi>${ l.name }</bdi></strong>: ${ l.text }<a v-for="s in l.src" :key="s.href" class="cm-src" :href="s.href">${ s.title }</a></div></div>
+          <div v-if="panel.from.length" class="cm-sec"><h3>Arrived from</h3>
+            <div v-for="l in panel.from" :key="l.key" class="cm-line"><strong><bdi>${ l.name }</bdi></strong>: <bdi dir="auto">${ l.text }</bdi><a v-for="s in l.src" :key="s.href" class="cm-src" :href="s.href">${ s.title }</a></div></div>
+          <div v-if="panel.to.length" class="cm-sec"><h3>Left to</h3>
+            <div v-for="l in panel.to" :key="l.key" class="cm-line"><strong><bdi>${ l.name }</bdi></strong>: <bdi dir="auto">${ l.text }</bdi><a v-for="s in l.src" :key="s.href" class="cm-src" :href="s.href">${ s.title }</a></div></div>
+          <div v-if="panel.none.length" class="cm-sec"><h3>No record after</h3>
+            <div v-for="l in panel.none" :key="l.key" class="cm-line"><strong><bdi>${ l.name }</bdi></strong>: ${ l.text }<a v-for="s in l.src" :key="s.href" class="cm-src" :href="s.href">${ s.title }</a></div></div>
+        </template>
+        <template v-else>
+          <header><h2 id="h-sel">Who was there</h2></header>
+          <div class="cm-sec cm-muted">Pick a place on the map or a band on the timeline to see who was there at the same time, where they came from and where they went, each line with its sources.</div>
+        </template>
+      </section>
+
+      <section class="cm-panel" aria-labelledby="h-news"><header><h2 id="h-news">Case news</h2>
+        <span class="cm-live" :class="{on: live}" role="status"><i></i>${ live ? 'live' : 'not live' }</span></header>
+        <div v-if="!news.length" class="cm-sec cm-muted">${ newsBusy ? 'Loading' : 'Nothing has happened in this case yet.' }</div>
+        <ul class="cm-news">
+          <li v-for="(n, i) in news" :key="i"><a :href="n.href" dir="auto">${ n.text }</a>
+            <div class="who" :class="{agent: n.agent}">${ n.who }, ${ ago(n.at) }</div></li>
+        </ul>
+        <div v-if="boot.admin" class="cm-sec text-caption"><a href="/monitor/runs">Worker runs</a> <span class="cm-muted">for admins: every run and event as the queue sees it</span></div>
+      </section>
+    </aside>
+  </div>
+  </template>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="application/json" id="casemap-boot">{{ boot|tojson|safe }}</script>
+<script type="module">
+import {CaseTimeline, caseMapPage} from '/static/js/casemap.js';
+
+const boot = JSON.parse(document.getElementById('casemap-boot').textContent);
+window.app = Vue.createApp(caseMapPage(boot));
+app.component('case-timeline', CaseTimeline);
+registerStkComponents(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

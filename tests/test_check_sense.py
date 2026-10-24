@@ -86,7 +86,7 @@ class RuleTest(unittest.TestCase):
         rules = {f["rule"] for f in check_page(page, allow)}
         self.assertEqual(rules, {"hex-id"})
         page = {"page": "/desk @phone", "text": "Sha256\ndocument\n" + "ab12" * 16}
-        self.assertTrue(check_page(page, allow), "the digest allowance is monitor only")
+        self.assertTrue(check_page(page, allow), "a digest on the Desk is flagged")
 
     def test_one_person_has_one_count_per_scope(self):
         rows = [

@@ -16,7 +16,8 @@ a frontend build. The supported evidence deployment is one process.
 | `stk/collaboration` | Participant-only requests/discussion, stored notifications (titles and links only, then pushed live), work assignment with an append-only event log |
 | `stk/review` | Passkey options and commit, assignment checks, acceptance/rejection/undo |
 | `stk/people`, `stk/watch` | Person projections, identity candidates, erasure and watch subscriptions |
-| `stk/monitor` | Shared filters, masked evidence display, review cards and SSE feed |
+| `stk/monitor` | Shared filters, masked evidence display, review cards, the SSE feed and the admin-only worker telemetry page (`/monitor/runs`) |
+| `stk/casemap` | The case map (`/case-map`): who was where over time and on a map for one case, held-together bands, open ends, the bounded path search and case news. A projection over the story view, discovery's shared presence, the gap finder's rule and the agent reader's case; writes only access records |
 | `stk/packages`, `stk/anchor` | Cited disclosure, attestations, receipts and offline verification |
 | `stk/places` | PostGIS gazetteer: geometry with precision and provenance, kind ladder, dated names, COD-AB boundary sets, point-in-polygon governorate and district, claim-to-place resolution |
 | `stk/entities` | Place and incident pages on one layout: story, relations, paged evidence, threads and signed history, read through the story view's rules; the places index and unresolved names |
@@ -45,9 +46,10 @@ Requests and comments use ledger statements, but their payloads belong only to
 participants and administrators. General monitor reads, reveal APIs and MCP omit
 them. New read surfaces must enforce this boundary too.
 
-The monitor uses SSE. Colleague notices use WebSockets. They serve different
-purposes and both rely on durable database state after reconnect. WebSocket
-delivery is process-local and never carries sensitive evidence text.
+The monitor stream uses SSE; the case map rereads its news when a run event
+arrives on it. Colleague notices use WebSockets. They serve different purposes
+and both rely on durable database state after reconnect. WebSocket delivery
+is process-local and never carries sensitive evidence text.
 
 ## Places and maps
 

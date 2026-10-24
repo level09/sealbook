@@ -16,7 +16,7 @@ const stkNavigation = [
   {title: 'Places', icon: 'ti ti-map-pin', to: '/places', match: '/places'},
   {title: 'Stories', icon: 'ti ti-timeline', to: '/stories', match: '/stories'},
   {title: 'Packages', icon: 'ti ti-package', to: '/packages', match: '/packages'},
-  {title: 'Map and live feed', icon: 'ti ti-map-2', to: '/monitor', match: '/monitor'},
+  {title: 'Case map', icon: 'ti ti-map-2', to: '/case-map', match: '/case-map'},
   {title: 'Agents', icon: 'ti ti-robot-face', to: '/agents/', match: '/agents'},
   {title: 'Guide', icon: 'ti ti-book', to: '/guide', match: '/guide'},
 ];

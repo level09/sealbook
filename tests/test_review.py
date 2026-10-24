@@ -163,7 +163,7 @@ class ReviewTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             (await client.get(f"/_test/login?token={token}")).status_code, 302
         )
-        page = await (await client.get("/monitor")).get_data(as_text=True)
+        page = await (await client.get("/case-map")).get_data(as_text=True)
         csrf = re.search(r'name="csrf-token" content="([^"]+)"', page).group(1)
         client.csrf = {"X-CSRFToken": csrf}
         return client
@@ -784,7 +784,7 @@ class ReviewTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_layout_has_new_nav(self):
         client = await self.client()
-        body = await (await client.get("/monitor")).get_data(as_text=True)
+        body = await (await client.get("/case-map")).get_data(as_text=True)
         self.assertNotIn("My Account", body)
         self.assertNotIn("NAVIGATION", body)
         self.assertIn("/security", body)

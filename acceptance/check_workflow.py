@@ -207,10 +207,11 @@ async def main():
             await page.wait_for_function(
                 "[...document.querySelectorAll('.mv canvas')].some(c => c.width > 0 && c.height > 0)"
             )
-            await page.goto(
-                f"{origin}/monitor?statement={proposal.id}", wait_until="networkidle"
-            )
-            await expect(page.get_by_text("Statement hash", exact=True)).to_be_visible()
+            # Worker telemetry is an admin page now; an analyst reads the case map.
+            await page.goto(f"{origin}/case-map", wait_until="networkidle")
+            await expect(
+                page.get_by_role("heading", name="Case map", exact=True)
+            ).to_be_visible()
             # Add evidence: a case is made on purpose, a file is staged with the
             # browser's fingerprint, added, and the same bytes again point at it.
             case.app.config["BLOB_DIR"] = Config.BLOB_DIR

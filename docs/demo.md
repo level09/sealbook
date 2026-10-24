@@ -276,6 +276,31 @@ Open `/stories` and pick:
 Play runs the scrubber across the timeline and the map together. Save keeps the
 query; Package turns the factual points into a draft brief.
 
+## See the whole case on the case map
+
+Open Case map in the rail (`/case-map`; `/monitor` redirects there) with
+`case-demo-02` selected:
+
+- Who was where: one row per person. Branch 999 in July 2013 is a band, "held
+  together, July 2013", over Yousef Khaled Al-Ali, Salim Haddad, Fadi Karam and
+  Bassel Nader. Pick it: the panel lists each of them there with the roster, the
+  clip or the released detainee's statement, where each came from (Yousef from
+  Douma, the others with no earlier record), who left for Central Prison K on 17
+  September 2013 with the transfer order, and whose record stops after July.
+- The two Yousef Khaled Al-Ali rows, the two Rania Haddad rows and the two محمد أحمد الخطيب
+  rows read "possibly two people": an open same-person proposal
+  joins them and nobody has decided it.
+- Move the slider or press Play: Branch 999 grows and shrinks by the people there
+  that month, the move to Central Prison K is an arrow, and dots ride it only
+  while playing (not with reduced motion). Harasta, Douma, Homs and Aleppo are
+  faint areas, since each is known only to within a few km.
+- Ask how لينا عمر النجار is connected to Yousef Khaled Al-Ali: two steps
+  through Branch 999, the second marked weak, about 5 months apart, a shared place
+  and not a shared cell.
+- Case news lists both intake batches with how many people they name, the linker
+  and intake brief runs, the accepted and rejected findings and claims, newest
+  first. Admins get a link to Worker runs (`/monitor/runs`), the old telemetry.
+
 ## Open a place or an incident
 
 Every place and incident has one page with the same layout: names and key facts on

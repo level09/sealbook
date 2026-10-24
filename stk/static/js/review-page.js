@@ -78,7 +78,7 @@ export function mount(boot) {
     data() {
       const p = new URLSearchParams(location.search);
       return {
-        BOXES, RELATIONSHIPS, box: p.get('box') || 'mine', items: [], counts: {}, findings: [], loaded: false, error: '',
+        BOXES, RELATIONSHIPS, isAdmin: userRoles.includes('admin'), box: p.get('box') || 'mine', items: [], counts: {}, findings: [], loaded: false, error: '',
         selId: p.get('statement'), deep: {statement: p.get('statement'), request: p.get('request')},
         cur: null, curBusy: false, read: null, readError: '', finding: null, picked: [], seq: 0,
         mode: null, reason: '', relationship: null, fix: {text: '', lang: 'ar', reviewer: null, note: ''}, ask: {reviewer: null, text: ''}, title: '',
