@@ -8,6 +8,7 @@ and an answer may only cite handles it was given."""
 
 from __future__ import annotations
 
+import re
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -28,6 +29,7 @@ from sealbook.monitor.data import LOCATED, PERSONAL, Context, display
 from sealbook.people import data as people
 from sealbook.places import normalise, resolve
 from sealbook.runs import routes
+from sealbook.search.arabic import name_keys
 from sealbook.settings import Config
 
 FIXED = "sealbook-demo-fixed-output"
@@ -166,12 +168,21 @@ def place_name(place) -> str:
 
 
 def same_value(prop: str, a: str, b: str) -> bool:
+    if prop in NAMES and bool(ARABIC.search(a)) != bool(ARABIC.search(b)):
+        # Across scripts only consonant keys can compare (خالد, Khaled). Within one
+        # script the text decides, so Hasan and Husayn stay different names.
+        # ponytail: keys drop vowels, so حسن and Husayn match; needs a vowelled key.
+        return name_keys(a) == name_keys(b)
     a, b = normalise(a), normalise(b)
     if a == b:
         return True
     # A year-only entry equals a full date at the coarser precision.
     short, long = sorted((a, b), key=len)
     return prop == Prop.BIRTH_DATE and bool(short) and long.startswith(short + "-")
+
+
+NAMES = {Prop.NAME, Prop.FATHER_NAME, Prop.MOTHER_NAME}
+ARABIC = re.compile(r"[\u0600-\u06ff]")
 
 
 def overlap(a: Claim, b: Claim) -> bool:
@@ -279,6 +290,32 @@ def leaks(text: str, cited: set, case_claims: list[Claim]) -> bool:
 # --- model ----------------------------------------------------------------------
 
 
+def handles(payload) -> list[str]:
+    """Every claim handle one call hands the model."""
+    if isinstance(payload, dict):
+        own = [payload["h"]] if str(payload.get("h", "")).startswith("c") else []
+        return sorted({*own, *(x for v in payload.values() for x in handles(v))})
+    if isinstance(payload, list):
+        return sorted({x for v in payload for x in handles(v)})
+    return []
+
+
+def cite_only(schema, cites: list[str]):
+    """The schema as sent: citation lists may hold only this call's handles, so a
+    model that honours strict output cannot cite text ("c3: born 1979") or a claim
+    it was not given. Answers are still validated against the plain schema, so a
+    provider that ignores the enum loses single items, not the whole answer."""
+    if not cites or not isinstance(schema, dict):
+        return schema
+    out = {
+        k: cite_only(v, cites) if isinstance(v, dict) else v for k, v in schema.items()
+    }
+    for key in ("claims", "basis"):
+        if key in out.get("properties", {}):
+            out["properties"][key] = {"type": "array", "items": {"enum": cites}}
+    return out
+
+
 async def ask(c, name: str, system: str, payload: dict, schema: dict, fixed) -> dict:
     """One structured call on the run's route, or the fixed answer when the run asked
     for the demo model. Returns {"answer", "valid", "seconds", tokens}; an answer
@@ -291,7 +328,11 @@ async def ask(c, name: str, system: str, payload: dict, schema: dict, fixed) -> 
         ],
         "response_format": {
             "type": "json_schema",
-            "json_schema": {"name": name, "strict": True, "schema": schema},
+            "json_schema": {
+                "name": name,
+                "strict": True,
+                "schema": cite_only(schema, handles(payload)),
+            },
         },
         "temperature": 0,
         # Thinking models spend the context (and minutes) deliberating on any route;
