@@ -70,7 +70,7 @@
                     this._typing = setTimeout(async () => {
                         try {
                             const {data} = await axios.get('/api/people/search', {params: {q, investigation: this.caseSel || undefined}});
-                            this.found = data.items.map(i => ({person: 'person:' + i.person, label: (i.name || 'Unnamed person') + (i.hint ? ', ' + i.hint : '')}));
+                            this.found = data.items.map(i => ({person: 'person:' + i.person, label: [i.name || 'Unnamed person', i.from && (i.to && i.to !== i.from ? `${i.from} to ${i.to}` : i.from), i.hint].filter(Boolean).join(', ')}));
                         } catch (e) { this.fail(e); }
                     }, 250);
                 },

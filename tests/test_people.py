@@ -248,6 +248,17 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(set(here), set(everyone))
         self.assertEqual((other, found), ({}, []))
 
+    async def test_the_roster_counts_what_the_person_page_lists(self):
+        async with ext.async_session_factory() as s:
+            everyone = await data.roster(s)
+            for person, row in everyone.items():
+                page = await data.person(s, uuid.UUID(person))
+                facts = [r for rs in page["facts"].values() for r in rs]
+                docs = {r["doc"]["sha256"] for r in facts if r["doc"]}
+                self.assertEqual(
+                    (row["facts"], row["documents"]), (len(facts), len(docs)), person
+                )
+
     async def test_same_named_people_are_told_apart_by_a_fact_before_the_id(self):
         root, twin, ghost = self.root, self.case["P2"], str(uuid.uuid4())
         rows = [
@@ -258,17 +269,19 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
         ]
         async with ext.async_session_factory() as s:
             told = await data.hints(s, rows)
-        # The third has its own dates. The twins share a case, a date and their
-        # first source, so only the id is left. A name nobody shares needs no hint.
-        self.assertEqual(told[ghost], "dated 2014-05-01 to 2014-06-01")
-        self.assertEqual(
-            (told[root], told[twin]), (f"record {root[:8]}", f"record {twin[:8]}")
-        )
-        self.assertEqual(len(told), 3)
+        # Every list shows the dates, so the third already reads differently and
+        # needs no hint. The twins share a case and their first source, so only the
+        # id is left. A name nobody shares needs no hint.
+        self.assertEqual(told, {root: f"record {root[:8]}", twin: f"record {twin[:8]}"})
         rows[1]["from"] = "2013-02-01"
         async with ext.async_session_factory() as s:
-            told = await data.hints(s, rows)
-        self.assertEqual(told[twin], "dated 2013-02-01")
+            self.assertEqual(await data.hints(s, rows), {})
+        # Filtered to their own case, the case tells nothing; a case is named only
+        # when it is another one.
+        rows[1]["from"] = "2013-01-01"
+        async with ext.async_session_factory() as s:
+            told = await data.hints(s, rows, self.case["investigation"])
+        self.assertNotIn(self.case["investigation"], " ".join(told.values()))
 
     async def test_a_label_is_the_best_name_the_reader_may_see(self):
         async with ext.async_session_factory() as s:

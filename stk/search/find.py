@@ -141,7 +141,8 @@ async def _people(db, query, f, embedding, named, ctx_for):
         doc = ctx.doc(st.span_blob) if st.span_blob else None
         masked = doc is None or doc["sensitive"]
         names[st.subject].append((str(st.id) in matching, masked, data.display(value)))
-    summary = {r["person"]: r for r in named}
+    # The counts and dates the People list shows for this case, so both agree.
+    summary = await people_data.roster(db, f["investigation"])
     items = []
     for row in found:
         person = row["subject"].removeprefix("person:")
@@ -151,6 +152,15 @@ async def _people(db, query, f, embedding, named, ctx_for):
             if not masked and n
         ]
         info = summary.get(person, {})
+        dates = info.get("from") and (
+            f"{info['from']} to {info['to']}"
+            if info.get("to") and info["to"] != info["from"]
+            else info["from"]
+        )
+        counts = info.get("facts") and (
+            f"{_count(info['facts'], 'fact')} from "
+            f"{_count(info['documents'], 'document')}"
+        )
         items.append(
             {
                 "type": "person",
@@ -158,16 +168,24 @@ async def _people(db, query, f, embedding, named, ctx_for):
                 "title": shown[0] if shown else "Hidden person (sensitive source)",
                 "alt": [n for n in dict.fromkeys(shown) if n != shown[0]][:4],
                 "masked": not shown,
-                "subtitle": f"{_count(info['facts'], 'fact')} from "
-                f"{_count(info['documents'], 'document')}"
-                if info.get("facts")
-                else None,
+                "subtitle": ", ".join(filter(None, [counts, dates])) or None,
                 "exact": "keyword" in row["signals"],
                 "why": {"signals": row["signals"]}
                 | ({"score": row["score"]} if "score" in row else {}),
                 "link": f"/people/{person}",
             }
         )
+    # Two records under one name stay two; say what sets them apart, as People does.
+    rows = [
+        {"person": p, "name": i["title"]}
+        | {k: summary.get(p, {}).get(k) for k in ("from", "to")}
+        for i in items
+        if (p := i["id"].removeprefix("person:"))
+    ]
+    told = await people_data.hints(db, rows, f["investigation"])
+    for i, r in zip(items, rows, strict=True):
+        if hint := told.get(r["person"]):
+            i["subtitle"] = ", ".join(filter(None, [i["subtitle"], hint]))
     return items
 
 

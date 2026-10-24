@@ -172,13 +172,16 @@ async def search(
     ]
 
 
-async def hints(session: AsyncSession, items: list[dict]) -> dict[str, str]:
-    """For people listed under one shown name, the first fact that sets each apart
-    from the others: their case, their dated range, their first source. The id is
-    the last resort. `items` are roster rows with "person", "name", "from" and "to"."""
+async def hints(
+    session: AsyncSession, items: list[dict], investigation: str | None = None
+) -> dict[str, str]:
+    """For people whose rows read the same (one name, one dated range, both shown
+    on every list), the first fact that sets each apart: another case they appear
+    in than the one the list is filtered to, then their first source. The id is the
+    last resort. `items` are roster rows with "person", "name", "from" and "to"."""
     same: dict = {}
     for i in items:
-        same.setdefault(i["name"], []).append(i)
+        same.setdefault((i["name"], i.get("from"), i.get("to")), []).append(i)
     clash = [g for g in same.values() if len(g) > 1]
     if not clash:
         return {}
@@ -213,15 +216,10 @@ async def hints(session: AsyncSession, items: list[dict]) -> dict[str, str]:
             a.context.get("investigation")
             for _, sha in seen.get(i["person"], ())
             for a in ctx.acqs.get(sha, ())
-        } - {None}
-        return f"in {', '.join(sorted(found))}" if found else None
-
-    def dated(i):
-        if not i.get("from"):
+        } - {None, investigation}
+        if not found:
             return None
-        return f"dated {i['from']}" + (
-            f" to {i['to']}" if i.get("to") and i["to"] != i["from"] else ""
-        )
+        return f"{'also ' if investigation else ''}in {', '.join(sorted(found))}"
 
     def first(i):
         found = sorted(seen.get(i["person"], ()))
@@ -229,7 +227,7 @@ async def hints(session: AsyncSession, items: list[dict]) -> dict[str, str]:
 
     out = {}
     for g in clash:
-        for tell in (case, dated, first):
+        for tell in (case, first):
             told = {i["person"]: tell(i) for i in g if i["person"] not in out}
             count = Counter(told.values())
             out |= {p: t for p, t in told.items() if t and count[t] == 1}
@@ -246,7 +244,8 @@ async def roster(
 ) -> dict[str, dict]:
     """Every person with facts on record, by canonical id: how much is known, from
     how many documents, over which dates. No values, so nothing needs masking.
-    With an investigation, only facts whose source belongs to it count."""
+    With an investigation, only facts whose source belongs to it count. A fact is
+    what the person page lists: current, not rejected, no identity links."""
     groups, _ = await identity(session)
     rows = await session.execute(
         select(
@@ -259,8 +258,9 @@ async def roster(
         .join(StatementTier, StatementTier.statement_id == Statement.id)
         .where(
             Statement.subject.startswith("person:"),
-            Statement.prop.not_in(META),
+            Statement.prop.not_in(HIDDEN),
             StatementTier.tier != Tier.REJECTED,
+            current_clause(),
             statement_clause({"investigation": investigation, "time": None}),
         )
         .group_by(Statement.subject)

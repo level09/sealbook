@@ -57,7 +57,9 @@ async def search():
 
 
 async def _told_apart(items: list[dict]) -> list[dict]:
-    hint = await data.hints(g.db_session, items)
+    hint = await data.hints(
+        g.db_session, items, request.args.get("investigation") or None
+    )
     return [i | {"hint": hint.get(i["person"])} for i in items]
 
 
