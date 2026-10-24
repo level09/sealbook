@@ -353,5 +353,8 @@ class DeskTest(unittest.IsolatedAsyncioTestCase):
         # Acquired after I left is new; before, not.
         self.assertTrue(rows[self.photo_sha]["new"])
         self.assertFalse(rows[self.list_sha]["new"])
+        # A sensitive tile is locked until a reveal, so the client never asks for it.
+        for r in rows.values():
+            self.assertEqual(r["revealed"], not r["sensitive"])
         everything = await self.get(c, "recent")
         self.assertEqual(everything["total"], 3)

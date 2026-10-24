@@ -432,3 +432,11 @@ covers in the text it was read from (`span_blob`).
   evening a task due today read "due in 1 d", and east of UTC after midnight one
   read overdue a day early. A due date is a calendar day; compare it with the
   viewer's local day (`toLocaleDateString('en-CA')`), never an ISO instant cut short.
+- A sweep reported a sensitive thumbnail 403 on Stories, but the request came from
+  Desk: the sweep left `/desk` for Stories while Desk's recent-evidence tiles were
+  still loading, so the console error landed on the next page. Desk reuses the
+  Sources listing, and the `revealed` flag was set in the Sources view, not the
+  listing, so Desk tiles had no lock. Read the server log for the request's page
+  before trusting where a console error was attributed. The place and incident
+  evidence tables and the media connections on `/evidence` still pass no lock and
+  answer 403 for an unrevealed sensitive source.

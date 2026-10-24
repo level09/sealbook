@@ -6,6 +6,7 @@ from quart_security import current_user
 
 from stk.collaboration.views import guard, no_store
 from stk.desk import data
+from stk.discovery.evidence import granted
 from stk.sources import data as sources
 
 bp = Blueprint("desk", __name__)
@@ -56,4 +57,8 @@ async def findings():
 @bp.get("/api/desk/recent")
 async def recent():
     f = sources.parse(request.args, current_user.id)
-    return output(await data.recent(g.db_session, current_user, f))
+    found = await data.recent(g.db_session, current_user, f)
+    for r in found["items"]:
+        # As on Sources: without a held reveal the tile stays locked and asks nothing.
+        r["revealed"] = granted(r["sha256"]) or not r["sensitive"]
+    return output(found)
