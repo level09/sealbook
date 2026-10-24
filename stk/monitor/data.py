@@ -86,6 +86,16 @@ def _plural(n: int, one: str) -> str:
     return f"{n} {one}{'' if n == 1 else 's'}"
 
 
+RELATION_WORDS = {
+    "family": "Family of another person",
+    "cellmate": "Cellmate of another person",
+    "command": "In a command relation with another person",
+    "contains": "Contains another document",
+    "contained_in": "An excerpt of another document",
+    "related": "Related to another document",
+}
+
+
 def display(value, prop: str | None = None) -> str | None:
     """A statement value in words. Structured values get a label per shape, never
     a dict string or a raw person:, statement: or blob: id."""
@@ -98,6 +108,8 @@ def display(value, prop: str | None = None) -> str | None:
             return str(value[key])
     if "title" in value:
         return display(value["title"])
+    if prop == Prop.RELATION:
+        return RELATION_WORDS.get(value.get("kind"), "Related to another record")
     if "person" in value and prop != Prop.INVOLVED:
         n = len(value.get("basis") or [])
         what = (
@@ -159,7 +171,32 @@ TOOL_WORDS = {
     "c2pa_verify": "content credentials check",
     "url_check": "link check",
     "pdf": "PDF text reading",
+    "ocr": "text recognition",
+    "asr": "AI transcription",
+    "embed_actor": "AI profile embedding",
+    "index": "search indexing",
+    "thumbnail": "thumbnails",
+    "geotag": "camera location reading",
+    "capture": "web capture",
+    "import": "import",
 }
+# Run event stages and drop reasons are storage tokens; read them as words.
+EVENT_WORDS = {
+    "claimed": "started",
+    "review_accept": "accepted in review",
+    "review_reject": "rejected in review",
+    "not_utf8": "not UTF-8 text",
+    "ocr_empty": "no text recognised",
+}
+
+
+def work(tool: str | None) -> str:
+    """A run's work in plain words: "search indexing", never "index run"."""
+    return TOOL_WORDS.get(tool) or (tool or "unknown work").replace("_", " ")
+
+
+def event_words(token: str | None) -> str | None:
+    return token and EVENT_WORDS.get(token, token.replace("_", " "))
 
 
 class Context:
@@ -223,7 +260,7 @@ class Context:
 
     @property
     def files(self) -> dict:
-        return {sha: self.doc(sha)["file"] for sha in self.acqs}
+        return {sha: self.doc(sha)["title"] for sha in self.acqs}
 
     def doc(self, sha: str | None) -> dict:
         acqs = self.acqs.get(sha, [])
@@ -243,6 +280,8 @@ class Context:
             )
             if first
             else (sha or "")[:12],
+            # The name the file arrived under, for display; `file` is a match key.
+            "filename": first.context.get("filename") if first else None,
             "doc_type": first.doc_type if first else None,
             "origins": sorted({a.origin for a in acqs}),
             # No acquisition means no sensitivity was ever set: sensitive by default.
@@ -283,7 +322,7 @@ class Context:
         tool = run.tool if run else None
         return base | {
             "kind": "extractor",
-            "label": TOOL_WORDS.get(tool) or f"{tool or 'unknown'} run",
+            "label": work(tool),
             "detail": run.model_served if run else None,
         }
 
@@ -369,25 +408,47 @@ async def feed_rows(
     else:
         q = q.order_by(RunEvent.id.desc()).limit(limit)
     events = (await db.execute(q)).scalars().all()
-    ctx = await Context.load(db, runs=[e.run_id for e in events])
+    runs = {
+        r.id: r
+        for r in (
+            await db.execute(select(Run).where(Run.id.in_({e.run_id for e in events})))
+        ).scalars()
+    }
+    first = {rid: r.inputs.get("blobs", [None])[0] for rid, r in runs.items()}
+    # Index and embed runs read derived text; name the source it came from.
+    source = (
+        dict(
+            (
+                await db.execute(
+                    select(Blob.sha256, mfilter.source(Blob.sha256)).where(
+                        Blob.sha256.in_({b for b in first.values() if b})
+                    )
+                )
+            ).all()
+        )
+        if any(first.values())
+        else {}
+    )
+    ctx = await Context.load(db, blobs=source.values(), runs=list(runs))
     rows = []
     for e in events:
         run = ctx.runs[e.run_id]
-        inputs = run.inputs.get("blobs", [])
+        sha = first[e.run_id]
         rows.append(
             {
                 "id": e.id,
                 "at": e.at.isoformat(),
-                "stage": e.stage,
+                "stage": event_words(e.stage),
                 "seq": e.seq,
                 "counts": e.counts,
-                "drop_reason": e.drop_reason,
+                "drop_reason": event_words(e.drop_reason),
                 "human_gesture": e.human_gesture,
                 "run_id": str(run.id),
                 "tool": run.tool,
+                "work": work(run.tool),
                 "status": run.status,
                 "actor": ctx.actor(run.principal_id, run.id),
-                "doc": ctx.doc(inputs[0]) if inputs else None,
+                "doc": ctx.doc(source.get(sha, sha)) if sha else None,
             }
         )
     return rows
@@ -901,6 +962,7 @@ async def run_page(db: AsyncSession, rid: uuid.UUID) -> dict | None:
     return {
         "id": str(run.id),
         "tool": run.tool,
+        "work": work(run.tool),
         "actor": ctx.actor(run.principal_id, run.id),
         "principal": ctx.principal(run.principal_id),
         "route": run.route,
@@ -920,9 +982,9 @@ async def run_page(db: AsyncSession, rid: uuid.UUID) -> dict | None:
         "events": [
             {
                 "seq": e.seq,
-                "stage": e.stage,
+                "stage": event_words(e.stage),
                 "counts": e.counts,
-                "drop_reason": e.drop_reason,
+                "drop_reason": event_words(e.drop_reason),
                 "at": e.at.isoformat(),
             }
             for e in events

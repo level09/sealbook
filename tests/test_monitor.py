@@ -222,6 +222,12 @@ class TrackTest(unittest.TestCase):
         [item] = map_layer(rows, {})["unresolved"]
         self.assertEqual(item["count"], 2)
 
+    def test_every_worker_tool_has_words(self):
+        from stk.monitor.data import TOOL_WORDS
+        from stk.runs.worker import TOOLS
+
+        self.assertLessEqual(set(TOOLS), set(TOOL_WORDS))
+
     def test_filter_parse_rejects_bad_input(self):
         self.assertEqual(mfilter.parse(None), mfilter.EMPTY)
         for raw in (
@@ -556,6 +562,62 @@ class MonitorTest(unittest.IsolatedAsyncioTestCase):
             ).get_json()
         self.assertEqual([d["sha256"] for d in panels["documents"]], [scan])
         self.assertEqual({c["doc"]["sha256"] for c in panels["queue"]}, {text})
+
+    async def test_feed_reads_in_words_and_names_the_source(self):
+        """An index run reads derived text; the feed names the scan it came from
+        and says its stage and work in words, never storage tokens."""
+        scan = self.blobs["case-a"]
+        async with ext.async_session_factory() as s, s.begin():
+            text = (
+                await blobs.put(s, "حرستا".encode(), "text/plain", Config.BLOB_DIR)
+            ).sha256
+            await append(
+                s,
+                StatementIn(
+                    subject=f"blob:{text}",
+                    prop=Prop.DERIVED_FROM,
+                    value={"blob": scan},
+                    author_id=self.agent.id,
+                    run_id=self.runs["case-a"],
+                ),
+                sign=lambda h: {
+                    "kind": "ed25519",
+                    "sig": self.key.sign(h.encode()).hex(),
+                },
+            )
+            run = Run(
+                principal_id=self.agent.id,
+                tool="index",
+                inputs={"blobs": [text]},
+                pubkey=self.key.public_key().public_bytes(
+                    Encoding.Raw, PublicFormat.Raw
+                ),
+            )
+            s.add(run)
+            await s.flush()
+            await emit(
+                s,
+                Event(
+                    run_id=run.id,
+                    seq=1,
+                    stage="statements_written",
+                    drop_reason="ocr_empty",
+                ),
+            )
+        async with self.app.test_client() as client:
+            await self.login(client)
+            panels = await (await client.get("/api/monitor/panels")).get_json()
+        [row] = [r for r in panels["feed"] if r["run_id"] == str(run.id)]
+        self.assertEqual(
+            (row["stage"], row["drop_reason"], row["work"], row["actor"]["label"]),
+            (
+                "statements written",
+                "no text recognised",
+                "search indexing",
+                "search indexing",
+            ),
+        )
+        self.assertEqual(row["doc"]["sha256"], scan)
 
     async def csrf(self, client):
         page = await (await client.get("/monitor")).get_data(as_text=True)

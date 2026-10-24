@@ -68,11 +68,13 @@ def _mine(user_id):
 
 async def files(db, shas) -> dict[str, str]:
     """Title per available source; erased sources are left out."""
-    return {sha: title(*rest) for sha, *rest in await _named(db, shas)}
+    return {sha: title(*rest) for sha, *rest, _ in await _named(db, shas)}
 
 
 async def _named(db, shas):
-    """(sha, given title, file name, doc type) per available source."""
+    """(sha, given title, file key, doc type, uploaded file name) per available
+    source. The file key is the importer's handle for matching; only the uploaded
+    file name is something a reader can check."""
     shas = sorted({s for s in shas if s})
     if not shas:
         return []
@@ -85,6 +87,7 @@ async def _named(db, shas):
                 Acquisition.context["filename"].astext,
             ),
             Acquisition.doc_type,
+            Acquisition.context["filename"].astext,
         )
         .join(Blob, Blob.sha256 == Acquisition.blob_sha256)
         .where(Acquisition.blob_sha256.in_(shas), service.available(Blob.sha256))
@@ -484,7 +487,10 @@ async def recent(db, user, f: dict) -> dict:
                 )
             ).all()
         )
-        names = {sha: (title(*rest), rest[1]) for sha, *rest in await _named(db, shas)}
+        names = {
+            sha: (title(*rest), filename)
+            for sha, *rest, filename in await _named(db, shas)
+        }
         for r in out["items"]:
             r["investigation"] = cases.get(r["sha256"])
             r["title"], file = names.get(r["sha256"], (r["title"], None))

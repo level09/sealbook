@@ -10,7 +10,7 @@
   <template v-if="it">
     <nav class="ev-crumbs" aria-label="Breadcrumb"><span>${ it.investigation }</span> / <a href="/evidence">Evidence</a> / <span>${ it.title }</span></nav>
     <div class="ev-head">
-      <h1><v-icon :icon="ICON[it.kind]" size="20" class="me-1"></v-icon>${ it.title } <span class="muted font-weight-medium">${ [DOC[it.doc_type] !== it.title ? DOC[it.doc_type] : null, it.file !== it.title ? it.file : null].filter(Boolean).join(', ') }</span></h1>
+      <h1><v-icon :icon="ICON[it.kind]" size="20" class="me-1"></v-icon>${ it.title } <span class="muted font-weight-medium">${ [DOC[it.doc_type] !== it.title ? DOC[it.doc_type] : null, it.filename !== it.title ? it.filename : null].filter(Boolean).join(', ') }</span></h1>
       <p class="mono muted" :title="it.sha256">${ short(it.sha256) }</p>
       <v-chip v-if="it.sensitive" color="sensitive" variant="outlined" size="small" prepend-icon="ti ti-eye-off">sensitive</v-chip>
       <div class="ms-auto d-flex ga-2 flex-wrap">
@@ -81,7 +81,7 @@
             <template v-else-if="it.kind === 'image'"><p class="ev-note mb-2">Values were read per region of the image; the full text layer is not stored for images. Select a value to see its box.</p></template>
             <template v-else-if="it.kind === 'pdf'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text layer, page ${ p.location.page }</p><div class="ev-tx" dir="auto">${ p.text }</div></div></template><p v-else class="ev-note">No text layer was read from this PDF.</p></template>
             <template v-else-if="it.kind === 'audio'"><p v-if="!read?.passages.some(p => p.location.ms)" class="ev-note">No transcript yet. Speech to text runs locally once the recording is read; until then it is indexed by sound landmarks and meaning only.</p><div v-else class="ev-tx" dir="auto"><div v-for="p in read.passages.filter(p => p.location.ms)" :key="p.text_blob"><a href="#" class="mono" @click.prevent="focusMs = p.location.ms[0]">${ ms(p.location.ms[0]) }</a> ${ p.text }</div></div></template>
-            <template v-else-if="it.kind === 'video'"><p class="ev-note mb-2">${ it.segments.filter(s => s.kind === 'frame').length } frames and ${ it.segments.filter(s => s.kind === 'audio').length } audio windows were embedded for search. No speech or on-screen text was read.</p>
+            <template v-else-if="it.kind === 'video'"><p class="ev-note mb-2">${ plural(it.segments.filter(s => s.kind === 'frame').length, 'frame') } and ${ plural(it.segments.filter(s => s.kind === 'audio').length, 'audio window') } were embedded for search. No speech or on-screen text was read.</p>
               <div class="d-flex flex-wrap ga-1"><v-chip v-for="s in it.segments.filter(s => s.kind === 'frame')" :key="s.id" color="agent" variant="outlined" size="small" @click="focusMs = s.location.ms[0]">frame ${ ms(s.location.ms[0]) }</v-chip></div></template>
             <p v-else-if="it.kind === 'sheet'" class="ev-note">Each claim is marked on the cell it was read from. Rows and columns are numbered as the file shows them.</p>
             <p v-else class="ev-note">The text is shown in the preview with claim spans marked.</p>

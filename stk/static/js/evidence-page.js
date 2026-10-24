@@ -133,7 +133,7 @@ export function mount(boot) {
         try {this.otherRead = (await api.get(`/api/evidence/${this.other.sha256}/read`)).data;} catch (err) {this.otherReadError = message(err);}
       },
       async revealed(item) {
-        this.say(`Showing ${item.file}. Your access is logged to the custody chain`);
+        this.say(`Showing ${item.title}. Your access is logged to the custody chain`);
         if (item.sha256 === this.it.sha256) {this.it.revealed = true; await this.loadRead(); await this.refresh();}
         else {this.other.revealed = true; await this.loadOtherRead();}
       },
@@ -201,7 +201,7 @@ export function mount(boot) {
         catch (err) {this.say(message(err));} finally {this.threadBusy = false;}
       },
       async queue() {
-        try {const runs = (await api.post(`/api/evidence/${this.it.sha256}/analyse`, {item: {}})).data.runs; this.say(`Queued ${runs.length || 'no new'} run${runs.length === 1 ? '' : 's'} for ${this.it.file}`);}
+        try {const runs = (await api.post(`/api/evidence/${this.it.sha256}/analyse`, {item: {}})).data.runs; this.say(`Queued ${runs.length || 'no new'} run${runs.length === 1 ? '' : 's'} for ${this.it.title}`);}
         catch (err) {this.say(message(err));}
       },
       aboutLabel(id) {const c = this.claims.find(x => x.id === id); return c ? `${prop(c.prop)}${c.value ? ': ' + c.value : ''}` : `proposal ${short(id)}`;},

@@ -91,7 +91,7 @@ async def panels():
         if f["time"]
         else everything
     )
-    await _named(db, rows)
+    await _named(db, rows if rows is everything else rows + everything)
     located = [uuid.UUID(r["id"]) for r in rows if r["prop"] in data.LOCATED]
     places = await resolve.resolved(db, located, f["investigation"])
     return _json(
@@ -103,7 +103,7 @@ async def panels():
             "queue": await _named(db, await data.queue_cards(db, f)),
             "map": data.map_layer(rows, places),
             "timeline": [
-                {k: r[k] for k in ("id", "from", "to", "tier", "prop")}
+                {k: r[k] for k in ("id", "from", "to", "tier", "prop", "subject_label")}
                 | {"agent": r["actor"]["agent"]}
                 for r in everything
                 if r["from"]

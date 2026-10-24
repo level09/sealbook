@@ -72,17 +72,17 @@
                 <template #default="{ item }">
                     <div class="feed-row" :class="{fresh: fresh[item.id], dropped: item.drop_reason}">
                         <div class="r1">
-                            <span class="stage">${item.stage}</span><span class="tool">${item.tool}</span>
+                            <span class="stage">${item.stage}</span><span class="tool" v-if="item.actor.kind !== 'extractor'">${item.work}</span>
                             <span class="counts">
                                 <template v-if="item.drop_reason">${item.drop_reason}</template>
-                                <template v-else-if="item.counts.statements"><button class="num" @click.stop="openList({run: item.run_id}, item.tool + ' run statements')">${item.counts.statements}</button> statements</template>
+                                <template v-else-if="item.counts.statements"><button class="num" @click.stop="openList({run: item.run_id}, 'Statements from ' + item.work)">${item.counts.statements}</button> statements</template>
                                 <template v-else>${countsText(item.counts)}</template>
                             </span>
                             <time :datetime="item.at" :title="item.at">${clock(item.at)}</time>
                         </div>
                         <div class="r2">
                             <actor-tag :a="item.actor"></actor-tag>
-                            <span class="doc" v-if="item.doc">${item.doc.file}</span>
+                            <span class="doc" v-if="item.doc">${item.doc.title}</span>
                         </div>
                     </div>
                 </template>
@@ -139,7 +139,7 @@
                         <div class="c1"><span class="prop">${label(item.prop)}</span><span class="subj">${item.subject_label}</span>
                             <span class="when" v-if="item.when">${item.when}</span></div>
                         <div><value-chip :s="item" @open="openStatement"></value-chip></div>
-                        <div class="c3"><actor-tag :a="item.actor"></actor-tag><span v-if="item.doc" class="file">· ${item.doc.file}</span></div>
+                        <div class="c3"><actor-tag :a="item.actor"></actor-tag><span v-if="item.doc" class="file">· ${item.doc.title}</span></div>
                         <div class="c4">
                             <span v-for="inv in item.invariants" :key="inv.name" class="inv" :class="invClass(inv)" :title="inv.note">
                                 <i class="ti" :class="invIcon(inv)" aria-hidden="true"></i>${inv.name}</span>
@@ -166,11 +166,11 @@
                             <div class="doc-row" style="display: flex; gap: 8px; align-items: center">
                                 <media-thumb :sha="item.sha256" :file="item.file" :link="false" :caption="false" :width="44" :height="34"></media-thumb>
                                 <div style="min-width: 0; flex: 1">
-                                <div class="name"><span>${item.file}</span><span v-if="item.sensitive" class="sens">sensitive</span></div>
+                                <div class="name"><span>${item.title}</span><span v-if="item.sensitive" class="sens">sensitive</span></div>
                                 <div class="meta"><span>${label(item.doc_type)}</span><span v-if="item.date">${item.date}</span>
                                     <span class="tiers">
                                         <span v-for="t in ['accepted', 'corroborated', 'unconfirmed']" :key="t" v-show="item.tiers[t]" :title="t">
-                                            <button class="num" @click.stop="openList({blob: item.sha256, tier: t}, t + ' on ' + item.file)">${item.tiers[t]}</button>
+                                            <button class="num" @click.stop="openList({blob: item.sha256, tier: t}, t + ' on ' + item.title)">${item.tiers[t]}</button>
                                             <i class="swatch mini" :class="'t-' + t"></i>
                                         </span>
                                     </span>
@@ -183,7 +183,7 @@
                 <div class="doc-view">
                     <template v-if="doc">
                         <header>
-                            <h3><a :href="'/evidence/' + doc.sha256">${doc.file}</a></h3>
+                            <h3><a :href="'/evidence/' + doc.sha256">${doc.title}</a></h3>
                             <span class="muted">${label(doc.doc_type)}<template v-if="doc.date"> · ${doc.date}</template> · ${doc.origins.join(', ')}</span>
                             <button v-if="doc.text_masked" class="btn" @click="revealDoc(doc.sha256)" title="Revealing is recorded on the chain">Reveal text</button>
                         </header>
@@ -238,7 +238,7 @@
                     </dl>
                     <div class="links">
                         <button class="link-card" v-if="page.data.doc" @click="openBlob(page.data.doc.sha256)">
-                            <i class="ti ti-file-digit"></i><b>Bytes</b><small>${page.data.doc.file} · ${page.data.doc.sha256.slice(0, 16)}</small><i class="ti ti-chevron-right go"></i></button>
+                            <i class="ti ti-file-digit"></i><b>Bytes</b><small>${page.data.doc.title} · ${page.data.doc.sha256.slice(0, 16)}</small><i class="ti ti-chevron-right go"></i></button>
                         <button class="link-card" v-if="page.data.run_id" @click="openRun(page.data.run_id)">
                             <i class="ti ti-cpu"></i><b>Run</b><small>${page.data.actor.label}</small><i class="ti ti-chevron-right go"></i></button>
                         <button class="link-card" @click="openPrincipal(page.data.signer.id)">
@@ -259,7 +259,7 @@
                 </template>
                 <!-- run -->
                 <template v-else-if="page.kind === 'run'">
-                    <h3>${page.data.tool} run</h3>
+                    <h3>Run: ${page.data.work}</h3>
                     <div class="sub"><actor-tag :a="page.data.actor"></actor-tag></div>
                     <dl class="facts">
                         <dt>Status</dt><dd>${page.data.status}<span v-if="page.data.error" class="verify-bad"> · ${page.data.error}</span></dd>
@@ -272,11 +272,11 @@
                         <dt>Output hash</dt><dd class="mono">${page.data.output_hash || 'none'}</dd>
                         <dt>Run key</dt><dd class="mono">${page.data.pubkey ? page.data.pubkey.slice(0, 24) + '…' : 'none'}</dd>
                         <dt>Sealed</dt><dd>${page.data.chain ? 'chain seq ' + page.data.chain.seq : 'not sealed'}</dd>
-                        <dt>Statements</dt><dd><button class="num" @click="openList({run: page.data.id}, page.data.tool + ' run statements')">${page.data.statement_count}</button></dd>
+                        <dt>Statements</dt><dd><button class="num" @click="openList({run: page.data.id}, 'Statements from ' + page.data.work)">${page.data.statement_count}</button></dd>
                     </dl>
                     <div class="section-label">Inputs</div>
                     <div class="links"><button v-for="b in page.data.inputs" :key="b.sha256" class="link-card" @click="openBlob(b.sha256)">
-                        <i class="ti ti-file-digit"></i><b>${b.file}</b><small class="mono">${b.sha256.slice(0, 24)}</small><i class="ti ti-chevron-right go"></i></button></div>
+                        <i class="ti ti-file-digit"></i><b>${b.title}</b><small class="mono">${b.sha256.slice(0, 24)}</small><i class="ti ti-chevron-right go"></i></button></div>
                     <div class="section-label">Events</div>
                     <div v-for="e in page.data.events" :key="e.seq" class="event-row"><span class="muted">${e.seq}</span>
                         <span><b>${e.stage}</b> <span class="muted">${e.drop_reason || countsText(e.counts)}</span></span></div>
@@ -444,7 +444,13 @@ window.app = createApp({
     previewable(mime) { return PREVIEWABLE.test(mime || ''); },
     label(s) { return s ? (s.charAt(0).toUpperCase() + s.slice(1)).replaceAll('_', ' ') : ''; },
     clock(iso) { return new Date(iso).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}); },
-    countsText(c) { return Object.entries(c || {}).map(([k, v]) => `${k.replaceAll('_', ' ')} ${Array.isArray(v) ? v.join('-') : v}`).join(', '); },
+    countsText(c) {
+      // Durations are stored in milliseconds; read them in seconds.
+      const sec = x => `${(x / 1000).toFixed(1).replace(/\.0$/, '')} s`;
+      return Object.entries(c || {}).map(([k, v]) => /(^|_)ms$/.test(k)
+        ? `${k === 'ms' ? 'span' : k.slice(0, -3).replaceAll('_', ' ')} ${Array.isArray(v) ? v.map(sec).join(' to ') : sec(v)}`
+        : `${k.replaceAll('_', ' ')} ${Array.isArray(v) ? v.join('-') : v}`).join(', ');
+    },
     gapText(days) { return days >= 60 ? `${Math.round(days / 30.4)} months, no evidence` : `${days} ${days === 1 ? 'day' : 'days'}, no evidence`; },
     spanText(span) {
       if (!span) return 'none';
@@ -579,7 +585,7 @@ window.app = createApp({
           rejected: {fill: 'none', stroke: negative, strokeOpacity: 0.6},
         }[r.tier];
         return {id: r.id, x, w: Math.max(3, this.tx(ms(r.to) + DAY) - x), y: 8 + lanes.indexOf(r.tier) * 16, style,
-          title: `${this.label(r.prop)}, ${r.tier}${r.agent ? ', agent authored' : ''}: ${r.from === r.to ? r.from : r.from + ' to ' + r.to}`};
+          title: `${this.label(r.prop)}, ${r.subject_label}, ${r.tier}${r.agent ? ', agent authored' : ''}: ${r.from === r.to ? r.from : r.from + ' to ' + r.to}`};
       });
       const lastDay = new Date(last).toISOString().slice(0, 10);
       const gx = this.tx(last + DAY) + 8;
