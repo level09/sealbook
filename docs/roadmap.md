@@ -23,7 +23,7 @@ Product acceptance still needs a named first workflow, an Arabic gold set and a
 timed comparison using [the synthetic acceptance case](../acceptance/data/README.md).
 Local tests do not settle ownership, adoption, model quality or legal readiness.
 
-## Proactive agents (proposed 2026-10-24, not built)
+## Proactive agents (proposed 2026-10-24; intake brief and linker built)
 
 Today agents are pipelines: extraction proposes claims, discovery proposes findings
 from rules and embeddings, speech and thumbnails process media, and outside assistants
@@ -31,9 +31,9 @@ connect through MCP with three tools (read, propose statements, propose identity
 of them notices, plans or suggests on its own. The next layer is agents that work the
 case alongside the analyst, each one a signed run that can only propose.
 
-1. **Intake brief.** After each batch: what arrived, who, where and when, what it links
+1. **Intake brief** (built, see [status.md](status.md)). After each batch: what arrived, who, where and when, what it links
    to, what contradicts, and the suggested next steps.
-2. **Linker.** Reads across sources and proposes same-person, same-place, related-incident
+2. **Linker** (built). Reads across sources and proposes same-person, same-place, related-incident
    and document relations with the passages that justify each, beyond today's rules.
 3. **Standing questions.** An analyst asks once, for example "tell me when anyone is placed
    at Branch 999 after 2014", and the agent watches new evidence and proposes matches.

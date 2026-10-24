@@ -138,6 +138,16 @@ done. Restart running workers after upgrading: a worker keeps the code it starte
 with. `STK_SPEECH_LIVE=1 uv run python -m unittest tests.test_speech` also runs the
 downloaded model on the witness clip and checks word error below 0.35.
 
+## Proactive agents
+
+The intake brief and the linker call `AGENT_MODEL` (default `qwen3.5:9b`) on the
+local route, `ROUTE_LOCAL_BASE_URL`, an OpenAI-compatible server. With Ollama:
+`ollama pull qwen3.5:9b` and `ROUTE_LOCAL_BASE_URL=http://127.0.0.1:11434/v1` for
+the app and the worker. Unset, no agent run is queued and the brief panel names the
+missing setting. Each run's model, seconds and tokens show under its brief and in
+the run's output; a laptop needs about 35 to 50 s for a brief and about 20 s per
+linker candidate.
+
 ## Web research and capture
 
 Built and tested against synthetic recorded responses only; it stays off until the

@@ -27,14 +27,27 @@ embeddings. Pick `case-demo-02` in the case switcher. The colleagues
 `analyst-2@example.com` and `analyst-3@example.com` exist with unshown passwords;
 reset one with `stk reset` to see the case from their side.
 
-Three runs use fixed output instead of a model, so the demo is the same every time:
+Seven runs use fixed output instead of a model, so the demo is the same every time:
 the witness clip transcript (copied from the script the synthetic clip was spoken
-from) and the two sheet extractions (answers written by hand per row). Their runs
+from), the two sheet extractions (answers written by hand per row), and the linker
+and intake brief on each of the two batches (a templated answer over the same
+candidates the model would get). Their runs
 say `sealbook-demo-fixed-output` as the served model and carry a `demo` note in
 their inputs. Every other run is the real tool. Human decisions are signed by a demo
 passkey held by `senior-analyst`, the same signature path a browser passkey uses.
 
 ## Start at the Desk
+
+The top panel is the intake brief for the newest batch you added that you have not
+read: the dormitory roster and the released detainee's statement. It says what
+arrived, who is new to the case and who is known (Yousef Khaled Al-Ali from four
+other sources), where (Branch 999, known) and when (July to 2 August 2013), what the
+batch connects to and up to five next steps, each a link: review the claims read
+from the roster, decide the links the linker proposed, decide the July 2013 shared
+presence. Lines resting on a sensitive source you have not revealed read "A line
+from a sensitive source" with a link to that source; reveal it there and the line
+shows. Mark read, or open it in the Inbox, and the panel goes. The colleague
+`analyst-2` gets the same for the family intake sheets.
 
 Open `/desk`. Since you left lists the colleagues' and agents' work grouped by who
 and what, in plain words ("AI proposed 17 ages from Family intake sheet, version 1",
@@ -148,6 +161,21 @@ read from the appeal and its recapture. A rejected set is never proposed again.
 
 Opening a finding writes an access record; names from sensitive sources stay
 masked until you reveal that source.
+
+## Links the rules miss
+
+The linker read each batch against the case and proposed, for review, what the
+watchlist matcher and discovery do not: the roster and the released detainee's
+statement as related documents (they name the same three men), the four men as
+cellmates (named together, held at Branch 999 in July 2013), and on the sheet batch
+Rania Haddad as involved in "Women held at Branch 999, March 2014" (last seen there
+on 15 March 2014) and the rows that appear in both sheet versions as one person.
+Open Review, All open: each reads as a question ("Cellmates?", "Related documents?",
+"In this incident?"), proposed by "Linker for" the analyst who added the batch, with
+the claims it rests on as cards and the run's reason. Nothing is accepted. Run it
+again from a person page or the evidence Intelligence panel (Find links): what is
+already proposed or decided is not proposed again, and a rejected link returns only
+with a claim the rejection did not see.
 
 ## Decide together
 

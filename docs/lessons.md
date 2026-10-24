@@ -587,3 +587,36 @@ covers in the text it was read from (`span_blob`).
   strength. Every Desk table folds secondary columns into the main cell on phones
   (`hide-m`/`show-m`); a new table has to do the same.
 
+
+## Proactive agents (2026-10-24)
+
+- A whole-case linker call with 11 candidates took longer than the route's 120 s
+  read timeout on a laptop and failed the run. One call per run cannot scale with the
+  case. The linker now asks 4 candidates per call and stops asking before the run's
+  5 minute lease ends; what it did not ask is read again by the next run.
+- The first real brief wrote "claims c2, c7 and c9 indicate..." because the model
+  repeated the handles it was given. Say in the prompt that handles belong only in
+  the citation fields, and drop any sentence whose text still carries one.
+- The sensitive-value check first dropped a true sentence naming Yousef Khaled
+  Al-Ali, because his name is also read from the sensitive register. A value an
+  ordinary source gives too is no secret of the sensitive one; only a value known
+  solely from an uncited sensitive source makes a leak.
+- A shared presence and a candidate incident over the same people, place and month
+  gave two identical connection lines and two next steps. Merge them as the Desk
+  does ("also proposed as").
+- The demo looked like it lacked a link the rules miss for Yousef, but the watchlist
+  matcher had already proposed it; the linker's duplicate check found the open
+  same_as and kept quiet. Check existing proposals before calling a missing link a
+  gap.
+- Another agent's commit carried this work's `display()` branch for `Prop.RELATION`
+  before the prop itself was committed, so HEAD briefly referenced a missing enum
+  member. Committing a whole file with someone else's uncommitted hunks has the same
+  failure as the stale temporary index above; commit shared files by hunk.
+- A test helper named `run` on an `IsolatedAsyncioTestCase` replaced
+  `TestCase.run`, so the database tests silently never ran. Never name a test
+  method `run`.
+- A patched blob for a shared file (`worker.py`, HEAD plus this work's two lines) was
+  built from HEAD before another agent committed to that file, then committed after.
+  The commit silently reverted 3cbf813's extraction prompt; it was restored in the
+  next commit. Build a patched blob from HEAD in the same command that commits it,
+  and diff the commit against its parent for lines you did not write.
