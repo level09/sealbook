@@ -11,6 +11,7 @@ from sqlalchemy import func, select
 
 import stk.app  # noqa: F401  (registers the CLI before the seed module loads)
 import stk.extensions as ext
+from stk.agents import read
 from stk.collaboration import service as collaboration
 from stk.collaboration.models import Assignment, Notification
 from stk.discovery.evidence import transcript_timeline
@@ -233,6 +234,8 @@ class MoreCasesTest(unittest.IsolatedAsyncioTestCase):
         self.enterContext(mock.patch.object(Config, "EMBEDDING_MODEL", None))
         self.enterContext(mock.patch.object(Config, "RUN_MODELS", {}))
         self.enterContext(mock.patch.object(Config, "SPEECH_MODEL", ""))
+        # Intake batches queue the brief and linker; never on a developer's model.
+        self.enterContext(mock.patch.object(Config, "AGENT_MODEL", read.FIXED))
         self.app = _app(self)
 
     async def asyncTearDown(self):
