@@ -213,6 +213,54 @@ async def find_links():
     return _json({"run": str(run.id)}, 202)
 
 
+@bp_agents.get("/gaps")
+async def read_gaps():
+    from stk.agents import gaps
+    from stk.cases import service as cases
+
+    try:
+        case = await cases.require(g.db_session, request.args.get("investigation"))
+    except cases.Unknown:
+        abort(404)
+    return _json(await gaps.show(g.db_session, current_user, case.slug))
+
+
+@bp_agents.post("/gaps")
+async def find_gaps():
+    from stk.agents import gaps
+    from stk.cases import service as cases
+
+    db = g.db_session
+    investigation = (await _item()).get("investigation")
+    if not isinstance(investigation, str) or not investigation.strip():
+        abort(400, description="Choose a case to find gaps.")
+    try:
+        case = await cases.require(db, investigation)
+    except cases.Unknown:
+        abort(404)
+    if missing():
+        return _json(
+            {
+                "reason": "off",
+                "message": "Gap finder needs a local model. Ask an administrator to enable it.",
+            },
+            409,
+        )
+    if any(
+        r.status in ("queued", "running")
+        for r in await gaps.runs(db, case.slug, current_user.id)
+    ):
+        return _json(
+            {"reason": "busy", "message": "Gap finder is reading this case."}, 409
+        )
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    run = await gaps.queue(db, case.slug, current_user.id, Config.AGENT_MODEL)
+    await db.commit()
+    return _json({"run": str(run.id)}, 202)
+
+
 async def _case(db, scope: str) -> str | None:
     if scope.startswith("blob:"):
         sha = scope.removeprefix("blob:")

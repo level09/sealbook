@@ -182,6 +182,8 @@ TOOL_WORDS = {
     "brief": "intake brief",
     "link": "linker",
     "standing": "standing questions",
+    "gaps": "gap finder",
+    "contradictions": "contradiction hunter",
     "import": "import",
 }
 # Run event stages and drop reasons are storage tokens; read them as words.
