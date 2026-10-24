@@ -24,10 +24,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from stk.ledger.contracts import Prop, StatementIn, Tier
 from stk.ledger.models import Payload, Statement, StatementTier
 from stk.ledger.write import append, current_clause, lock_chain
-from stk.monitor.data import LOCATED, META, display, map_layer, statement_rows
+from stk.monitor.data import (
+    LOCATED,
+    META,
+    POSITION,
+    display,
+    map_layer,
+    statement_rows,
+)
 from stk.monitor.filter import statement_clause
 from stk.packages.models import Package, Sentence
-from stk.places import resolve
+from stk.places import normalise, resolve
 from stk.search.arabic import candidates
 
 # Silence between two dated points longer than this is shown as a gap.
@@ -248,37 +255,64 @@ def _overlap(a: dict, b: dict) -> bool:
     return a["from"] <= b["to"] and b["from"] <= a["to"]
 
 
-def _forks(facts: dict, steps: list[dict]) -> list[dict]:
-    """Conflicting values for one prop over overlapping time, and days on which the
-    person stands in two places at once. Shown as forks, never resolved."""
+def _forks(facts: dict, steps: list[dict], places: dict, links: dict) -> list[dict]:
+    """Where sources disagree: different values for one prop over overlapping time,
+    and days on which the person stands in two places at once. Places compare by
+    resolved id and other values by normalised text, so two spellings of one place
+    or name never disagree. Each disagreement is listed once, with every side's
+    value and source; none is ever resolved."""
+    rows = {r["id"]: r for rs in facts.values() for r in rs}
+
+    def side(r):
+        link = links.get(r["id"], {})
+        return {
+            "id": r["id"],
+            "prop": r["prop"],
+            "value": r["display"],
+            "file": link.get("file"),
+            "href": link.get("href"),
+        }
+
+    def key(r):
+        place = places.get(uuid.UUID(r["id"])) if r["prop"] in LOCATED else None
+        return place.id if place else normalise(r["display"])
+
     forks = []
-    for prop, rows in facts.items():
-        dated = [r for r in rows if r["from"] and r["display"] is not None]
+    for s in steps:
+        if not s["fork"]:
+            continue
+        ids = [
+            i
+            for i in s["ids"]
+            if rows[i]["prop"] in POSITION and not rows[i]["inherited"]
+        ]
+        forks.append(
+            {
+                "kind": "position",
+                "prop": "position",
+                "from": s["date"],
+                "to": s["date"],
+                "sides": [side(rows[i]) for i in ids],
+            }
+        )
+    shown = [{x["id"] for x in f["sides"]} for f in forks]
+    for prop, rs in facts.items():
+        dated = [r for r in rs if r["from"] and r["display"] is not None]
         for i, a in enumerate(dated):
             for b in dated[i + 1 :]:
-                if a["display"] != b["display"] and _overlap(a, b):
-                    forks.append(
-                        {
-                            "kind": "value",
-                            "prop": prop,
-                            "from": max(a["from"], b["from"]),
-                            "to": min(a["to"], b["to"]),
-                            "values": [a["display"], b["display"]],
-                            "statements": [a["id"], b["id"]],
-                        }
-                    )
-    forks += [
-        {
-            "kind": "position",
-            "prop": "position",
-            "from": s["date"],
-            "to": s["date"],
-            "values": s["places"],
-            "statements": s["ids"],
-        }
-        for s in steps
-        if s["fork"]
-    ]
+                if key(a) == key(b) or not _overlap(a, b):
+                    continue
+                if any({a["id"], b["id"]} <= ids for ids in shown):
+                    continue
+                forks.append(
+                    {
+                        "kind": "value",
+                        "prop": prop,
+                        "from": max(a["from"], b["from"]),
+                        "to": min(a["to"], b["to"]),
+                        "sides": [side(a), side(b)],
+                    }
+                )
     return forks
 
 
@@ -350,6 +384,9 @@ async def person(session: AsyncSession, ref, projection: str = "draft") -> dict 
     """One person assembled from every statement about any member of its cluster.
     draft: every non-rejected statement, carrying its tier. factual: accepted and
     corroborated only. None when the ledger holds nothing about `ref`."""
+    # Stories builds on people, so its evidence links are imported here.
+    from stk.stories.data import links
+
     if projection not in PROJECTIONS:
         raise ValueError(f"projection must be one of {sorted(PROJECTIONS)}")
     groups, conflicts = await identity(session)
@@ -393,6 +430,8 @@ async def person(session: AsyncSession, ref, projection: str = "draft") -> dict 
             Statement.subject.in_(subjects), Statement.prop == Prop.ERASURE
         )
     )
+    mine = [c for c in conflicts if set(c["join"]) & members]
+    dups = await _duplicates(session, groups, members, await _not_same_pairs(session))
     return {
         "person": canonical.removeprefix("person:"),
         "members": sorted(members),
@@ -401,12 +440,16 @@ async def person(session: AsyncSession, ref, projection: str = "draft") -> dict 
         "track": track,
         "points": layer["points"],
         "places": layer["places"],
-        "forks": _forks(facts, steps),
+        "forks": _forks(facts, steps, places, await links(session, rows)),
         "gaps": gaps,
         "gap_days": GAP_DAYS,
-        "conflicts": [c for c in conflicts if set(c["join"]) & members],
-        "duplicates": await _duplicates(
-            session, groups, members, await _not_same_pairs(session)
+        "conflicts": mine,
+        "duplicates": dups,
+        # Labels for the other persons named above, by the one label rule.
+        "names": await names(
+            session,
+            {x for c in mine for x in c["join"]} | {d["person"] for d in dups},
+            groups,
         ),
         "erasures": [{"id": str(i), "at": at.isoformat()} for i, at in erasures.all()],
     }

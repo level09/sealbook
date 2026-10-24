@@ -28,6 +28,7 @@ from stk.ledger.models import (
 )
 from stk.ledger.write import sig_problem, subject_head
 from stk.monitor import filter as mfilter
+from stk.places import normalise
 from stk.settings import Config
 
 # Personal data: masked by default when the source is sensitive.
@@ -401,9 +402,11 @@ async def investigations(db: AsyncSession) -> list[str]:
 def track(points: list[dict]) -> dict:
     """One subject's located statements as a sequence of dated steps. Pure.
 
-    `points` carry "id", "place", "from" (ISO date), "prop" and "inherited". Points on
-    one date form a step; a step whose position props name different places is a
-    fork. Silences between steps and after the last one are gaps, never smoothed."""
+    `points` carry "id", "place", "place_id", "from" (ISO date), "prop" and
+    "inherited". Points on one date form a step; a step whose position props name
+    different places is a fork. Places compare by resolved id, so two spellings of
+    one place never fork; an unresolved place compares by its normalised text.
+    Silences between steps and after the last one are gaps, never smoothed."""
     steps: dict = {}
     for p in sorted(points, key=lambda p: (p["from"], p["id"])):
         steps.setdefault(p["from"], []).append(p)
@@ -411,7 +414,9 @@ def track(points: list[dict]) -> dict:
     for day, pts in steps.items():
         places = sorted({p["place"] for p in pts})
         positions = {
-            p["place"] for p in pts if p["prop"] in POSITION and not p["inherited"]
+            p["place_id"] or normalise(p["place"])
+            for p in pts
+            if p["prop"] in POSITION and not p["inherited"]
         }
         out.append(
             {
@@ -466,6 +471,7 @@ def map_layer(rows: list[dict], places: dict) -> dict:
             "subject_label": r["subject_label"],
             "prop": r["prop"],
             "place": label,
+            "place_id": str(place.id),
             "lonlat": [float(place.lon), float(place.lat)],
             "from": r["from"],
             "when": r["when"],

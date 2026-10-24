@@ -160,7 +160,7 @@ open proposal at once, and any finding can be assigned with bulk assign.
 Open `/stories` and pick:
 
 - Person, Yousef Khaled Al-Ali (register R1): arrested in Harasta and last seen in
-  Douma on 2 May 2013, shown as a fork that needs a person to resolve; a gap of
+  Douma on 2 May 2013, marked as sources that disagree, left for a person; a gap of
   about two months; Branch 999 in July from the clip and the roster; held there
   and transferred to Central Prison K on 17 September 2013, with a gap before it.
   The map numbers the places in order; the lines are sequence, not routes. Pending

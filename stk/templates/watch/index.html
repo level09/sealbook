@@ -32,7 +32,7 @@
                     <v-list-item-subtitle v-if="p.evidence">
                         Name <span v-bind="cell(p.evidence.name[0])">${ show(p.evidence.name[0]) }</span>
                         matches <span v-bind="cell(p.evidence.name[1])">${ show(p.evidence.name[1]) }</span>;
-                        <span v-for="f in p.evidence.fields" :key="f.prop">${ f.prop } <span v-bind="cell(f)">${ show(f) }</span>; </span>
+                        <span v-for="f in p.evidence.fields" :key="f.prop">${ f.prop.replace(/_/g, ' ') } <span v-bind="cell(f)">${ show(f) }</span>; </span>
                     </v-list-item-subtitle>
                     <v-list-item-subtitle v-else>The evidence for this proposal no longer holds.</v-list-item-subtitle>
                     <template #append>

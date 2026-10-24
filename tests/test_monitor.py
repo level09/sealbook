@@ -54,6 +54,7 @@ class TrackTest(unittest.TestCase):
             return {
                 "id": i,
                 "place": place,
+                "place_id": None,
                 "from": day,
                 "prop": prop,
                 "inherited": inherited,
@@ -84,6 +85,7 @@ class TrackTest(unittest.TestCase):
                 "id": i,
                 "subject": subject,
                 "place": "Branch",
+                "place_id": None,
                 "from": day,
                 "prop": "seen_at",
                 "inherited": False,
@@ -99,6 +101,45 @@ class TrackTest(unittest.TestCase):
         self.assertEqual(set(t), {"P1", "P2"})
         self.assertEqual(t["P1"]["steps"][1]["gap_days"], 78)
         self.assertEqual(len(t["P2"]["steps"]), 1)
+
+    def test_two_spellings_of_one_place_never_fork_on_map_or_story(self):
+        from types import SimpleNamespace
+
+        def row(text):
+            return {
+                "id": str(uuid.uuid4()),
+                "prop": "seen_at",
+                "masked": False,
+                "display": text,
+                "from": "2016-11-17",
+                "when": "2016-11-17",
+                "inherited": False,
+                "tier": "accepted",
+                "subject": "person:x",
+                "subject_label": "x",
+                "actor": {"agent": False},
+            }
+
+        aleppo = SimpleNamespace(id=uuid.uuid4(), lon=37.16, lat=36.2)
+        douma = SimpleNamespace(id=uuid.uuid4(), lon=36.4, lat=33.57)
+        en, ar, other = row("Aleppo"), row("حلب"), row("Douma")
+        places = {uuid.UUID(en["id"]): aleppo, uuid.UUID(ar["id"]): aleppo}
+        # The map's tracks and the Stories rows both come from track().
+        [step] = map_layer([en, ar], places)["tracks"]["person:x"]["steps"]
+        self.assertFalse(step["fork"])
+        layer = map_layer([en, ar, other], places | {uuid.UUID(other["id"]): douma})
+        [step] = layer["tracks"]["person:x"]["steps"]
+        self.assertTrue(step["fork"])
+        story_points = [p | {"subject": "x"} for p in layer["points"][:2]]
+        [step] = tracks(story_points)["x"]["steps"]
+        self.assertFalse(step["fork"])
+        # Unresolved names compare by normalised text: case and spacing never fork.
+        loose = [
+            {"id": i, "place": t, "place_id": None, "from": "2016-11-17"}
+            | {"prop": "seen_at", "inherited": False}
+            for i, t in (("a", "Douma "), ("b", "douma"))
+        ]
+        self.assertFalse(track(loose)["steps"][0]["fork"])
 
     def test_unresolved_stay_visible_on_map(self):
         row = {

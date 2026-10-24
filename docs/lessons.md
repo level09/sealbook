@@ -392,3 +392,18 @@ covers in the text it was read from (`span_blob`).
   with `git commit -- <path>`: a pathspec commit takes the working tree copy. The
   wrangler account cache stayed tracked that way. Untrack with `git rm --cached`,
   commit from the index, then check `git ls-files <path>` is empty.
+
+## Disagreements and display text (2026-10-24)
+
+- The person page flagged "seen at Aleppo" and "seen at حلب" on one day as a fork,
+  then listed the pair twice (as a value and as a position) with raw statement ids.
+  Track steps compared map labels, and labels are per spelling. Compare places by
+  resolved id and other values by `places.normalise`, never by display text; build
+  each disagreement once and name each side by its value and source file. Stories
+  and the map read the same `track()` flag, so the fix lives there, and Stories now
+  draws one marker per resolved place labelled with every spelling.
+- The due date check compared to the UTC date, so an analyst west of UTC in the
+  evening could not pick their own today. "Today" on the server is the earliest
+  date anywhere (UTC minus 12 hours); the client already offers its local date.
+- Desk "Findings waiting" printed place links with no separator. A `v-for` over
+  links needs the same comma rule as the people list next to it.

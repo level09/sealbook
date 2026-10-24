@@ -61,7 +61,7 @@
                                 <template #prepend>
                                     <i :class="draft.statement_ids.includes(st.id) ? 'ti ti-square-check' : 'ti ti-square'" class="mr-3"></i>
                                 </template>
-                                <v-list-item-title>${ st.prop }: ${ st.masked ? 'masked' : st.display }</v-list-item-title>
+                                <v-list-item-title>${ st.prop.replace(/_/g, ' ') }: ${ st.masked ? 'masked' : st.display }</v-list-item-title>
                                 <v-list-item-subtitle>${ st.subject_label } . ${ st.tier }${ st.when ? ' . ' + st.when : '' }</v-list-item-subtitle>
                             </v-list-item>
                         </v-list>

@@ -192,11 +192,12 @@ export const storyPage = boot => ({
     },
     factual() { return this.points.filter(p => p.tier === 'accepted' || p.tier === 'corroborated'); },
     places() {
-      // Numbered in order of first appearance: the sequence the markers show.
+      // Numbered in order of first appearance: the sequence the markers show. One marker
+      // per resolved place, so Aleppo and حلب share it and both spellings label it.
       const out = new Map();
-      for (const p of this.ordered) if (p.lonlat && !out.has(p.place)) out.set(p.place, {n: out.size + 1, place: p.place, lonlat: p.lonlat, points: []});
-      for (const p of this.ordered) if (p.lonlat) out.get(p.place).points.push(p);
-      return [...out.values()];
+      for (const p of this.ordered) if (p.lonlat && !out.has(p.place_id)) out.set(p.place_id, {n: out.size + 1, names: new Set(), lonlat: p.lonlat, points: []});
+      for (const p of this.ordered) if (p.lonlat) { const pl = out.get(p.place_id); pl.names.add(p.place); pl.points.push(p); }
+      return [...out.values()].map(({names, ...pl}) => ({...pl, place: [...names].join(' / ')}));
     },
     forkIds() { return new Set(this.rows.flatMap(r => r.points.filter(p => p.fork).map(p => p.id))); },
     entityHref() { return !this.ref ? null : this.lens === 'place' ? `/places/${this.ref}` : this.lens === 'incident' ? `/incidents/${this.ref.replace('incident:', '')}` : null; },

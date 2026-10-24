@@ -7,6 +7,7 @@ import tempfile
 import unittest
 import uuid
 from datetime import date, datetime
+from types import SimpleNamespace
 from unittest import mock
 
 import orjson
@@ -28,6 +29,7 @@ from stk.migrations import (
     throwaway_database_url,
 )
 from stk.monitor.data import statement_rows
+from stk.monitor.data import track as track_of
 from stk.monitor.seed import seed
 from stk.packages.models import Brief, Package, Sentence
 from stk.people import data
@@ -118,6 +120,60 @@ async def _case(app) -> dict:
     return {k: data.pid(v) if k[0] == "P" else v for k, v in case.items()}
 
 
+class ForksTest(unittest.TestCase):
+    """Disagreements compare resolved places, never display text."""
+
+    def _row(self, prop, text, day="2016-11-17"):
+        return {
+            "id": str(uuid.uuid4()),
+            "prop": prop,
+            "display": text,
+            "from": day,
+            "to": day,
+            "inherited": False,
+        }
+
+    def _forks(self, rows, places):
+        steps = track_of(
+            [
+                r | {"place": r["display"], "place_id": str(places[r["id"]].id)}
+                for r in rows
+            ]
+        )["steps"]
+        facts = {}
+        for r in rows:
+            facts.setdefault(r["prop"], []).append(r)
+        links = {r["id"]: {"file": "list", "href": "/evidence/abc"} for r in rows}
+        places = {uuid.UUID(i): p for i, p in places.items()}
+        return data._forks(facts, steps, places, links)
+
+    def test_two_spellings_of_one_place_do_not_disagree(self):
+        aleppo = SimpleNamespace(id=uuid.uuid4())
+        rows = [self._row("seen_at", "Aleppo"), self._row("seen_at", "حلب")]
+        self.assertEqual(self._forks(rows, {r["id"]: aleppo for r in rows}), [])
+
+    def test_two_places_on_one_day_disagree_once_with_sources(self):
+        a, b = self._row("seen_at", "Aleppo"), self._row("seen_at", "Douma")
+        found = self._forks(
+            [a, b],
+            {
+                a["id"]: SimpleNamespace(id=uuid.uuid4()),
+                b["id"]: SimpleNamespace(id=uuid.uuid4()),
+            },
+        )
+        [f] = found
+        self.assertEqual({x["value"] for x in f["sides"]}, {"Aleppo", "Douma"})
+        self.assertEqual({x["href"] for x in f["sides"]}, {"/evidence/abc"})
+
+    def test_names_compare_normalised(self):
+        rows = [
+            self._row("occupation", "Pharmacist"),
+            self._row("occupation", "pharmacist "),
+        ]
+        facts = {"occupation": rows}
+        self.assertEqual(data._forks(facts, [], {}, {}), [])
+
+
 @unittest.skipUnless(POSTGRES, "people need Postgres (set SQLALCHEMY_DATABASE_URI)")
 class PersonTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
@@ -147,9 +203,14 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
 
             steps = view["track"]["steps"]
             self.assertGreaterEqual(len(steps), 4)
-            kinds = {(f["kind"], f["prop"]) for f in view["forks"]}
-            self.assertIn(("value", "seen_at"), kinds)
-            self.assertIn(("position", "position"), kinds)
+            # Each disagreement once: Harasta and Douma on one day as places, and
+            # P3's unmapped Homs sighting against P1's branch as one seen_at pair.
+            pairs = [frozenset(x["id"] for x in f["sides"]) for f in view["forks"]]
+            self.assertEqual(len(pairs), len(set(pairs)))
+            self.assertIn("position", {f["kind"] for f in view["forks"]})
+            [homs] = [f for f in view["forks"] if f["from"] == "2013-07-10"]
+            self.assertEqual(homs["prop"], "seen_at")
+            self.assertIn("حمص", {x["value"] for x in homs["sides"]})
             self.assertTrue(view["gaps"])
             self.assertTrue(all(g["days"] > data.GAP_DAYS for g in view["gaps"]))
 

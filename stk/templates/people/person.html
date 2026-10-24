@@ -14,6 +14,7 @@
     .ppl-line:hover, .ppl-line:focus-visible { background: var(--wash); }
     .ppl-line .when { min-width: 92px; color: var(--ink-3); font-family: var(--mono); font-size: 12px; }
     .ppl-gap { margin: 4px 0 4px 6px; padding: 4px 8px; border-inline-start: 2px dashed var(--line-strong); color: var(--ink-3); }
+    .ppl-side-row { cursor: default; }
     .ppl-fork { color: var(--fork); font-weight: 600; }
     .ppl-tag { font-size: 11px; padding: 0 6px; border-radius: 8px; border: 1px solid var(--line-strong); color: var(--ink-2); }
     .ppl-side { position: fixed; inset-block: var(--v-layout-top, 64px) 0; inset-inline-end: 0; width: min(420px, 100vw); background: var(--panel); border-inline-start: 1px solid var(--line); padding: 16px; overflow: auto; z-index: 5; }
@@ -29,8 +30,8 @@
     <div class="ppl-head">
         <a href="/people" class="muted"><i class="ti ti-arrow-left"></i> People</a>
         <h1 v-if="title" dir="auto">${ title }</h1>
-        <h1 v-else>Person <span class="mono">${ boot.person.slice(0, 8) }</span></h1>
-        <span v-if="p" class="muted">${ p.members.length } mention${ p.members.length === 1 ? '' : 's' } linked by accepted same_as</span>
+        <h1 v-else>Unnamed person</h1>
+        <span v-if="p" class="muted">${ p.members.length } mention${ p.members.length === 1 ? '' : 's' } linked as one person by accepted decisions</span>
         <span class="bar-spacer"></span>
         <a :href="storyHref" class="ppl-tag"><i class="ti ti-timeline"></i> Open story</a>
         <button class="ppl-tag" @click="research = true"><i class="ti ti-world-search"></i> Research the web</button>
@@ -77,19 +78,23 @@
                     <button v-for="id in s.ids" :key="id" class="ppl-line" @click="open(id)">
                         <span class="when">${ s.date }</span>
                         <span dir="auto">${ point(id) }</span>
-                        <span v-if="s.fork" class="ppl-fork" title="Statements place the person in two places on this day"><i class="ti ti-git-fork"></i> fork</span>
+                        <span v-if="s.fork" class="ppl-fork" title="Sources place the person in two places on this day"><i class="ti ti-alert-triangle"></i> sources disagree</span>
                     </button>
                 </template>
                 <div v-if="p.track.gap_after" class="ppl-gap">Nothing known after ${ p.track.gap_after }</div>
             </div>
             <div class="ppl-card">
-                <h2>Forks</h2>
-                <div v-if="!p.forks.length" class="muted">No conflicting values.</div>
-                <div v-for="f in p.forks" :key="f.statements.join()" class="mb-2">
-                    <div class="ppl-fork"><i class="ti ti-git-fork"></i> ${ f.prop.replace(/_/g, ' ') } ${ f.from }${ f.to !== f.from ? ' to ' + f.to : '' }</div>
-                    <button v-for="(id, j) in f.statements" :key="id" class="ppl-line" @click="open(id)">
-                        <span dir="auto">${ f.values[j] || point(id) }</span><span class="mono muted">${ id.slice(0, 8) }</span>
-                    </button>
+                <h2>Sources disagree</h2>
+                <div class="muted mb-2">Left open for a reviewer. Nothing here picks a side.</div>
+                <div v-if="!p.forks.length" class="muted">No disagreements.</div>
+                <div v-for="f in p.forks" :key="f.sides.map(x => x.id).join()" class="mb-2">
+                    <div class="ppl-fork"><i class="ti ti-alert-triangle"></i> ${ f.kind === 'position' ? 'Two places on one day' : (PROP[f.prop] || f.prop.replace(/_/g, ' ')) }, ${ f.from }${ f.to !== f.from ? ' to ' + f.to : '' }</div>
+                    <div v-for="x in f.sides" :key="x.id" class="ppl-line ppl-side-row">
+                        <span v-if="f.kind === 'position'" class="muted">${ PROP[x.prop] }</span>
+                        <span dir="auto">${ x.value }</span>
+                        <a v-if="x.href" :href="x.href" class="muted" dir="auto">${ x.file }</a>
+                        <span v-else class="muted">no source</span>
+                    </div>
                 </div>
             </div>
             <div class="ppl-card">
@@ -97,19 +102,19 @@
                 <div class="muted mb-2">Proposals with their evidence. Nothing here is merged until a human links them.</div>
                 <div v-if="!p.duplicates.length" class="muted">None.</div>
                 <div v-for="d in p.duplicates" :key="d.person" class="mb-3">
-                    <a :href="'/people/' + d.person" class="mono">person ${ d.person.slice(0, 8) }</a>
+                    <a :href="'/people/' + d.person" dir="auto">${ who(d.person) }</a>
                     <span v-if="d.not_same" class="ppl-tag">marked not the same</span>
-                    <div>Agree: ${ d.agree.join(', ') || 'nothing' } · Differ: ${ d.differ.join(', ') || 'nothing' }</div>
+                    <div>Agree: ${ words(d.agree) || 'nothing' } · Differ: ${ words(d.differ) || 'nothing' }</div>
                     <button v-for="pair in d.names" :key="pair.join()" class="ppl-line" @click="open(pair[1])">
-                        <span>name match</span><span class="mono muted">${ pair[0].slice(0, 8) } and ${ pair[1].slice(0, 8) }</span>
+                        <span>Names match</span><span class="muted">open the matching name</span>
                     </button>
                 </div>
             </div>
             <div class="ppl-card" v-if="p.conflicts.length">
                 <h2>Identity conflicts</h2>
                 <button v-for="c in p.conflicts" :key="c.statement" class="ppl-line" @click="open(c.statement)">
-                    <span class="ppl-fork">same_as refused</span>
-                    <span class="muted">a not_same says ${ c.join.map(x => x.slice(0, 8)).join(' and ') } are different people</span>
+                    <span class="ppl-fork">Same-person link refused</span>
+                    <span class="muted" dir="auto">an accepted decision says ${ c.join.map(who).join(' and ') } are different people</span>
                 </button>
             </div>
         </div>
@@ -123,7 +128,7 @@
         </div>
         <div v-if="!side.data" class="muted">${ side.error || 'Loading' }</div>
         <dl v-else>
-            <dt>Property</dt><dd>${ side.data.prop }</dd>
+            <dt>Property</dt><dd>${ PROP[side.data.prop] || side.data.prop.replace(/_/g, ' ') }</dd>
             <dt>Value</dt>
             <dd dir="auto">${ label(side.data) }
                 <button v-if="side.data.masked && !side.data.erased" class="ppl-tag" @click="reveal">Reveal (logged)</button>
@@ -196,7 +201,9 @@ const app = createApp({
         this.revealed = (await axios.post(`/api/people/${boot.person}/reveal`, {})).data.values;
       } catch (e) { this.error = e.response?.data?.message || e.message; }
     },
-    point(id) { const pt = this.points[id]; return pt ? `${pt.prop.replace(/_/g, ' ')}: ${pt.place}` : id.slice(0, 8); },
+    words(props) { return props.map(x => x.replace(/_/g, ' ')).join(', '); },
+    who(person) { return this.p.names[person] || 'Unnamed person'; },
+    point(id) { const pt = this.points[id]; return pt ? `${PROP[pt.prop] || pt.prop.replace(/_/g, ' ')}: ${pt.place}` : 'unmapped place'; },
     async load() {
       try {
         this.p = (await axios.get(`/api/people/${boot.person}`, {params: {projection: this.projection}})).data;
@@ -235,6 +242,7 @@ const app = createApp({
 
 app.component('story-timeline', StoryTimeline);
 app.component('research-drawer', ResearchDrawer);
+app.config.globalProperties.PROP = PROP;
 registerStkComponents(app);
 app.use(vuetify).mount('#app');
 </script>
