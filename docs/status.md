@@ -38,6 +38,43 @@ not applied either new migration to the working database.
 | Proactive agents | Two sealed runs that read across a case and only propose (`stk/agents`), queued for the batch owner when an intake batch finishes (linker first, then brief) and on demand. Local route only (no acquisition, so the sensitive policy row applies); `AGENT_MODEL` (default `qwen3.5:9b`) on `ROUTE_LOCAL_BASE_URL`; off, with the reason shown, when either is unset. The model sees short handles, never ids, and answers a JSON schema; every answer is validated before anything is stored. **Intake brief** (`brief`): what arrived, who (new or known, linking the person), where (resolved place known or new, or not yet placed), when, counted from the claims; what it connects to (same person in other sources, incidents, open findings) and what disagrees (a single-valued field against an accepted claim, both sides cited), written by the model from candidates; at most five next steps chosen from actions that each open the screen (Review at the first pending claim, the linker's links, a place to confirm, a finding, the colleague assigned a related source, the person page's research drawer). A line without a citation, citing an unknown handle, writing a handle into the text, citing one side of a disagreement, or naming a sensitive value it does not cite is dropped and counted. The brief is the run's stored output (`output_hash`); writing again keeps versions. Readers get it through masking: a line resting on a sensitive source not revealed this session is locked, one resting on a claim since rejected, erased or unavailable is gone; the first unlocked read per version and session writes an access record. Inbox shows it as the "Intake finished" body; the Desk shows the newest unread one on top until its notification is read (`GET /api/agents/brief|briefs`, `POST /api/agents/brief`). **Linker** (`link`): candidates built from the claims, then judged by the model: same person (cross-script or partial name match plus at least one agreeing non-name field; a differing birth date or parent rules it out), person at an incident's place and time (`involved`, role unspecified), two sources naming at least two of the same people (`relation` on the blob: contains, contained_in, related), two people named together and held at one place and time, or sharing a family name and a parent (`relation`: cellmate, family, command). Each proposal carries its basis statements, the model's one-line reason and the passage span, and is signed by the run of "Linker for <person>". Open, accepted or not-same-blocked links are not proposed again; a rejected one only with a basis claim the rejection did not see. At most 12 candidates per kind, 4 per call, and the run stops asking before its lease ends. Find links on person and evidence pages (`POST /api/agents/link`, `GET /api/agents/runs/<id>`). Review shows these as questions with "What it rests on" cards; the reason waits for the reveal of any sensitive basis source. Measured once on case-demo-02 with local `qwen3.5:9b` (Ollama, laptop): brief on the roster batch 34 to 49 s, about 1,500 tokens, schema-valid, no line dropped; linker over the whole case 221 s for 11 candidates, schema-valid, 7 proposed and 4 declined | Candidates are rule-built, so the model never finds a link no rule shape admits (no command candidates are built at all); model reasons can overstate what the basis says (the reviewer sees the basis beside it); one model, one case, no quality evaluation; whole-case linking is slow on a laptop (about 20 s a candidate); the brief's text and the model's raw output are stored blobs, so erasure hides lines by citation but leaves the bytes; sensitive cases never use a cloud route, and no cloud route is wired for ordinary ones |
 | Demo case | `stk demo-seed --full` on a fresh database, then the worker, fills every page: Desk changes, requests, a mention and due and overdue assignments; stored notifications for the owner, analyst-2 and analyst-3; claims on an image box, PDF page text, transcript lines with times and sheet cells; planted copies; a sheet dataset with two confirmed versions and its diff; a real discovery run with four open findings, one accepted candidate incident (signed as one gesture) and one rejected shared presence with its reason; a person story with gaps (last seen in Douma and arrested in Harasta on one day is not a disagreement), an incident band and a Branch 999 place story. Sources carry titles an analyst would use (`context.title`; `file` stays the key the seed and search battery use). The retrieval gold set's news passages and test tone go to `case-search-eval`, not the demo case. Both demo cases are queued for indexing at seed time. The linker and the intake brief run on both batches (the owner's roster and statement, analyst-2's family intake sheets) with the fixed answer. `stk demo-seed --more` adds `case-demo-03` to `case-demo-06` (siege, displacement, detention, market shelling: 9 to 16 sources each, multiple spellings, dated placed claims, accepted, rejected and open proposals, assignments across analyst-2 to analyst-5) and `--scale N` adds N claim-free synthetic filler sources to `case-scale-demo` (chained, no runs queued, assigned only to analysts who are not admins). Walkthrough: [demo.md](demo.md) | The witness clip transcript, the two sheet extractions and the linker and intake brief on both batches are fixed output (served model `sealbook-demo-fixed-output`, a `demo` note in the run inputs), not model runs; human decisions are signed by a demo software passkey; no package is built, since that needs anchor receipts; the extra cases use text stand-ins and photographs only (no scans, PDFs, audio or sheets), and fillers have no bytes, so their previews are empty |
 
+## Contradiction hunter (2026-10-24)
+
+Implemented a manual case report (`contradictions`, `stk/agents/contradictions.py`),
+with a panel under Sources disagree on the person page. It reuses the person
+projection's disagreement builder, the brief's single-valued fields and the
+linker's conflicting fields, and their shared value comparison. Different birth
+date precision alone is not a disagreement. Accepted claims rank first, then
+source count. Up to 24 candidates are read, four per call, within the worker's
+time budget; the report counts deferred work. Each explanation and draft question
+cites at least two sides from one candidate. Invalid citations, handles in prose
+and sensitive values without their citation are dropped and counted. Claim sets
+already reported by a finished run for this case are not reported again.
+
+The run acts for the requesting person, uses the local route and `AGENT_MODEL`,
+and writes only its reading access record to the ledger. Its report is a sealed
+JSON output with a proposed count and a plain reason when empty. The latest report
+is masked for the reader as the intake brief is: a sensitive source needs a reveal;
+rejected, erased, replaced or unavailable claims remove the item. The API starts
+a run (`POST /api/agents/contradictions`), reads the report (`GET` with
+`investigation`), and exposes status only to the requester or an administrator
+(`/api/agents/contradictions/runs/<id>`). A case lock prevents two manual checks
+from being queued together. The panel shows source titles and dates, the
+explanation, and a question with Copy question. It sends no message.
+
+Offline checks cover citation boundaries, leaks, repeat suppression, deterministic
+fixed output, value precision, place identity, ranking, caps and time deferral.
+The existing brief and person disagreement pure tests also pass. The component
+template compiles offline and its start, completion and empty-state flows pass.
+Postgres tests in `tests/test_contradictions.py` cover the fixed run, read-only
+ledger behavior, repeat runs, sensitive reveal, later rejection, and manual API
+guards. These database tests and the browser checks were not run in this sandbox.
+No live model quality is established. Scheduling remains separate work. Stored
+report and raw-output bytes retain the brief's physical-erasure limitation.
+Integration follow-up outside this job's ownership: add the contradiction
+hunter's display label to `stk/monitor/data.py` (`TOOL_WORDS`). Until then,
+`tests.test_monitor.TrackTest.test_every_worker_tool_has_words` fails.
+
 ## Completed verification
 
 - Real OCR and extraction (2026-10-24), on a copy of the demo database with

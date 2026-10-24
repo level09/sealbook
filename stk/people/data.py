@@ -330,7 +330,15 @@ def _overlap(a: dict, b: dict) -> bool:
     return a["from"] <= b["to"] and b["from"] <= a["to"]
 
 
-def _forks(facts: dict, steps: list[dict], places: dict, links: dict) -> list[dict]:
+def disagreements(
+    facts: dict,
+    steps: list[dict],
+    places: dict,
+    links: dict,
+    *,
+    timeless=(),
+    same_value=None,
+) -> list[dict]:
     """Where sources disagree: different values for one prop over overlapping time,
     and days on which the person stands in two places at once. Places compare by
     resolved id and other values by normalised text, so two spellings of one place
@@ -372,10 +380,20 @@ def _forks(facts: dict, steps: list[dict], places: dict, links: dict) -> list[di
         )
     shown = [{x["id"] for x in f["sides"]} for f in forks]
     for prop, rs in facts.items():
-        dated = [r for r in rs if r["from"] and r["display"] is not None]
+        dated = [
+            r
+            for r in rs
+            if (r["from"] or prop in timeless) and r["display"] is not None
+        ]
         for i, a in enumerate(dated):
             for b in dated[i + 1 :]:
-                if key(a) == key(b) or not _overlap(a, b):
+                if key(a) == key(b) or (
+                    prop not in LOCATED
+                    and same_value
+                    and same_value(prop, a["display"], b["display"])
+                ):
+                    continue
+                if a["from"] and b["from"] and not _overlap(a, b):
                     continue
                 if any({a["id"], b["id"]} <= ids for ids in shown):
                     continue
@@ -383,12 +401,18 @@ def _forks(facts: dict, steps: list[dict], places: dict, links: dict) -> list[di
                     {
                         "kind": "value",
                         "prop": prop,
-                        "from": max(a["from"], b["from"]),
-                        "to": min(a["to"], b["to"]),
+                        "from": max(a["from"], b["from"])
+                        if a["from"] and b["from"]
+                        else None,
+                        "to": min(a["to"], b["to"]) if a["to"] and b["to"] else None,
                         "sides": [side(a), side(b)],
                     }
                 )
     return forks
+
+
+def _forks(facts: dict, steps: list[dict], places: dict, links: dict) -> list[dict]:
+    return disagreements(facts, steps, places, links)
 
 
 async def _duplicates(
@@ -552,7 +576,7 @@ async def person(session: AsyncSession, ref, projection: str = "draft") -> dict 
         "track": track,
         "points": layer["points"],
         "places": layer["places"],
-        "forks": _forks(facts, steps, places, linked),
+        "forks": disagreements(facts, steps, places, linked),
         "gaps": gaps,
         "gap_days": GAP_DAYS,
         "conflicts": mine,
