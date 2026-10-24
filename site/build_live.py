@@ -8,6 +8,7 @@ Called by build_data.py. Needs a local Postgres role with CREATEDB.
 import asyncio
 import tempfile
 import time
+import uuid
 from datetime import datetime
 from unittest import mock
 
@@ -36,6 +37,8 @@ def live() -> dict:
         mock.patch.object(Config, "EMBEDDING_MODEL", None),
         mock.patch.object(Config, "RUN_MODELS", {}),
         mock.patch.object(Config, "SPEECH_MODEL", ""),
+        # Research queries are only proposed here; nothing is sent to a provider.
+        mock.patch.object(Config, "BRAVE_API_KEY", ""),
         mock.patch.object(Config, "BLOB_DIR", blob_dir),
     ):
         cfg = build_alembic_config()
@@ -69,7 +72,7 @@ async def _read(app) -> dict:
     from quart_security import hash_password
 
     from stk.monitor.seed import seed
-    from stk.monitor.seed_full import R1, seed_full
+    from stk.monitor.seed_full import L1, R1, seed_full
     from stk.runs.worker import work_once
     from stk.user.models import Role, User
 
@@ -180,8 +183,95 @@ async def _read(app) -> dict:
     async with ext.async_session_factory() as s:
         names = await _names(s)
         versions = await _versions(s)
+        batches = await _batches(s)
+        link_runs = await _link_runs(s)
+
+    # The intake brief for each batch, as its reader sees it after the reveals above.
+    # The register stays unrevealed here, so a line resting on it reads as locked.
+    for b in batches:
+        for sha in b["sources"]:
+            await reveal(sha)
+    briefs = [await get("/api/agents/brief", batch=b["batch"]) for b in batches]
+    async with ext.async_session_factory() as s:
+        for b in briefs:
+            b["cited"] = await _cited(s, b["version"]["id"])
+    linked = [
+        await get(f"/api/review/claim/{w['statement']}") | {"kind": w["kind"]}
+        for r in link_runs
+        for w in r["written"]
+    ]
+
+    # Disagreements and counts as the People list, the person page and search give them.
+    roster = await get("/api/people", investigation=CASE)
+    people = []
+    for row in roster["items"]:
+        page = await get(f"/api/people/{row['person']}")
+        facts = [f for fs in page["facts"].values() for f in fs]
+        people.append(
+            {
+                "row": row,
+                "forks": page["forks"],
+                "page_facts": len(facts),
+                "page_documents": len(
+                    {f["doc"]["sha256"] for f in facts if f.get("doc")}
+                ),
+            }
+        )
+    for p in people[:12]:
+        if not p["row"]["name"]:
+            continue
+        found = await post(
+            "/api/search",
+            {
+                "item": {
+                    "query": p["row"]["name"],
+                    "types": ["people"],
+                    "semantic": False,
+                    "filter": {"investigation": CASE, "time": None},
+                }
+            },
+        )
+        p["search"] = next(
+            (
+                i.get("subtitle")
+                for i in found["groups"]["people"]["items"]
+                if i["id"] == f"person:{p['row']['person']}"
+            ),
+            None,
+        )
+
+    places_table = await get("/api/places/table", investigation=CASE, per_page=50)
+    branch = next(p for p in places_table["items"] if p["name_en"] == "Branch 999")
+    place_page = await get(f"/api/places/{branch['id']}", investigation=CASE)
+    incident_id = incidents[0]["id"].removeprefix("incident:")
+    incident_page = await get(f"/api/incidents/{incident_id}", investigation=CASE)
+
+    research = {
+        "person": L1.removeprefix("person:"),
+        "queries": await post("/api/research/queries", {"item": {"scope": L1}}),
+        "page": await get(f"/api/people/{L1.removeprefix('person:')}"),
+    }
+    # The same case marked sensitive: the guardrail answers before anything is sent.
+    await post(
+        "/api/research/case", {"item": {"investigation": CASE, "sensitive": True}}
+    )
+    research["refused"] = (await get("/api/research/status", investigation=CASE))[
+        "refusal"
+    ]
+    research["refused_queries"] = await post(
+        "/api/research/queries", {"item": {"scope": L1}}
+    )
 
     return {
+        "batches": batches,
+        "briefs": briefs,
+        "link_runs": link_runs,
+        "linked": linked,
+        "people": people,
+        "places_table": places_table,
+        "place_page": place_page,
+        "incident_page": incident_page,
+        "research": research,
         "files": files,
         "queue": queue,
         "findings": findings,
@@ -200,6 +290,86 @@ async def _read(app) -> dict:
         "reveals": finding_reveals,
         "access_records": access_findings,
     }
+
+
+async def _cited(s, run_id: str) -> dict:
+    """Per brief line, the claims it cites: prop and the source it was read from."""
+    from stk.agents.read import read_output
+    from stk.ledger.models import Blob, Run
+    from stk.monitor import filter as mfilter
+
+    run = await s.get(Run, uuid.UUID(run_id))
+    sections = read_output(await s.get(Blob, run.output_hash))["sections"]
+    ids = {
+        uuid.UUID(i) for ls in sections.values() for line in ls for i in line["claims"]
+    }
+    rows = (
+        await s.execute(
+            select(
+                Statement.id,
+                Statement.prop,
+                mfilter.source(mfilter.statement_blob()),
+            ).where(Statement.id.in_(ids))
+        )
+    ).all()
+    shas = {sha for *_, sha in rows}
+    titles = dict(
+        (
+            await s.execute(
+                select(
+                    Acquisition.blob_sha256,
+                    Acquisition.context["title"].astext,
+                ).where(Acquisition.blob_sha256.in_(shas))
+            )
+        ).all()
+    )
+    by = {str(i): {"prop": prop, "source": titles.get(sha)} for i, prop, sha in rows}
+    return {
+        name: [[by.get(i) for i in line["claims"]] for line in ls]
+        for name, ls in sections.items()
+    }
+
+
+async def _batches(s) -> list[dict]:
+    """The case's intake batches, oldest first, with their sources."""
+    rows = await s.execute(
+        select(Acquisition.context["batch"].astext, Acquisition.blob_sha256)
+        .where(
+            Acquisition.context["investigation"].astext == CASE,
+            Acquisition.context["batch"].is_not(None),
+        )
+        .order_by(Acquisition.at)
+    )
+    out: dict[str, set] = {}
+    for batch, sha in rows:
+        out.setdefault(batch, set()).add(sha)
+    return [{"batch": b, "sources": sorted(v)} for b, v in out.items()]
+
+
+async def _link_runs(s) -> list[dict]:
+    from stk.agents import linker
+    from stk.agents.read import read_output
+    from stk.ledger.models import Blob, Run
+
+    runs = (
+        await s.scalars(
+            select(Run).where(Run.tool == linker.TOOL).order_by(Run.created_at)
+        )
+    ).all()
+    out = []
+    for r in runs:
+        o = read_output(await s.get(Blob, r.output_hash))
+        out.append(
+            {
+                "model": r.model_served,
+                "demo": r.inputs.get("demo"),
+                "written": o.get("written", []),
+                "candidates": o.get("candidates"),
+                "already_known": o.get("already_known"),
+                "valid": o.get("valid"),
+            }
+        )
+    return out
 
 
 async def _count_access(s) -> int:
