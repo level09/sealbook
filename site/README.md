@@ -7,6 +7,12 @@ to `/api/invite`, which `worker.js` stores in the D1 (SQLite) database
 `sealbook-invites` (`invites.sql`). It has no captcha, which would load a third-party
 script; a honeypot field and five requests per hour per salted IP hash keep it quiet.
 
+The form asks for an email and an optional note only. The page has a sticky header
+with five chapter links and a Contents popover listing every section; section jumps
+are instant because demos grow as a smooth scroll passes them. The opening shows a
+credited Commons photo turning into its picture fingerprint (`js/hero.js`), and each
+section has a small shape diagram (`js/diagrams.js`).
+
 ## Regenerate data
 
 `build_data.py` rebuilds `data/case.json` and `media/` from the acceptance files,
@@ -30,6 +36,11 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
   documented at the top of the file. Demo scripts call `sealbook.onReady(data => ...)`
   and mount into their `[data-demo]` element.
 - `js/demo-*.js`, `css/demo-*.css`: one script and stylesheet per chapter demo.
+- `js/hero.js`, `css/hero.css`: the opening photo turning into its picture fingerprint. The
+  PDQ value is hardcoded there; recompute it if `media/street_photo.jpg` changes.
+- `js/diagrams.js`, `css/diagrams.css`: an animated diagram above each chapter demo,
+  one `figure[data-diagram]` per section. Values are copied from `data/case.json` by hand,
+  so update them when the case is rebuilt. Outside `.copy`, so the chain does not hash them.
 
 ## Keep it true
 
@@ -64,5 +75,5 @@ Sending needs sealbook.org onboarded once: `npx wrangler@4 email sending enable 
 
 ```sh
 cd site && npx wrangler@4 d1 execute sealbook-invites --remote \
-  --command "SELECT created_at, name, email, organisation, use_case FROM invite ORDER BY id DESC"
+  --command "SELECT created_at, email, use_case FROM invite ORDER BY id DESC"
 ```

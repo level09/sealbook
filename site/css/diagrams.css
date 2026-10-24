@@ -1,0 +1,68 @@
+/* Animated diagrams of each mechanism, shown above the live demos */
+.diagram { margin: 36px 0 0; background: var(--paper-2); border-radius: 10px; padding: 22px 24px 14px; overflow-x: auto; }
+/* ponytail: phones scroll a diagram sideways inside its frame; draw narrow layouts if phone readers complain */
+.diagram svg { display: block; width: 100%; min-width: 560px; height: auto; overflow: visible; }
+.diagram figcaption { position: sticky; left: 0; font: 400 13px/1.5 var(--mono); color: var(--ink-3); margin-top: 12px; min-height: 3em; transition: color .3s; }
+.diagram figcaption.bad { color: var(--broken); }
+.diagram figcaption.good { color: var(--ok); }
+.diagram text { font: 400 11px var(--mono); fill: var(--ink-2); white-space: pre; transition: fill .35s; }
+.diagram text.lbl { font-size: 10px; fill: var(--ink-3); }
+.diagram text.ar { font-family: var(--arabic); font-size: 12px; }
+.diagram text.hd { font: 500 12px var(--sans); fill: var(--ink); }
+.diagram text.v { fill: var(--violet); }
+.diagram text.r { fill: var(--broken); }
+.diagram text.g { fill: var(--ok); }
+.diagram text.strike { text-decoration: line-through; }
+
+.diagram .bx rect { fill: var(--paper); stroke: var(--ink-3); stroke-width: 1; transition: fill .35s, stroke .35s; }
+.diagram .bx.dash rect { stroke: var(--violet); stroke-dasharray: 4 3; }
+.diagram .bx.dash text { fill: var(--violet); }
+.diagram .bx.v rect { stroke: var(--violet); stroke-width: 1.5; }
+.diagram .bx.v text { fill: var(--violet); }
+.diagram .bx.on rect { stroke: var(--violet); fill: var(--violet-wash); }
+.diagram .bx.on text { fill: var(--violet); }
+.diagram .bx.solid rect { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: none; }
+.diagram .bx.solid text { fill: var(--ink); }
+.diagram .bx.ok rect { stroke: var(--ok); stroke-width: 1.5; stroke-dasharray: none; }
+.diagram .bx.ok text { fill: var(--ok); }
+.diagram .bx.bad rect { fill: var(--broken-wash); stroke: var(--broken); stroke-dasharray: none; }
+.diagram .bx.bad text { fill: var(--broken); }
+
+.diagram .ed { fill: none; stroke: var(--rule); stroke-width: 1.5; transition: stroke .35s; }
+.diagram .ed.on { stroke: var(--violet); }
+.diagram .ed.bad { stroke: var(--broken); }
+.diagram .ln { fill: none; stroke: var(--ink-3); stroke-width: 1.5; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; transition: stroke-dashoffset .7s var(--ease), stroke .35s, opacity .1s; }
+.diagram .ln.in { stroke-dashoffset: 0; opacity: 1; }
+.diagram .ln.v { stroke: var(--violet); }
+.diagram .ln.r { stroke: var(--broken); }
+.diagram .f { opacity: 0; transition: opacity .45s; }
+.diagram .f.in { opacity: 1; }
+.diagram .gone, .diagram .f.in.gone { opacity: .15; transition: opacity .6s; }
+.diagram .ring { fill: none; stroke: var(--ink-3); stroke-dasharray: 3 4; }
+.diagram .dot { fill: var(--paper); stroke: var(--ink); stroke-width: 2; transition: fill .35s, stroke .35s; }
+.diagram .dot.v { stroke: var(--violet); }
+.diagram .dot.on { fill: var(--violet); stroke: var(--violet); }
+.diagram .dot.bad { fill: var(--broken); stroke: var(--broken); }
+.diagram .mk { fill: var(--violet); opacity: .7; }
+.diagram .bit { fill: var(--ink-3); opacity: .12; transition: fill .3s, opacity .3s; }
+.diagram .bit.one { opacity: .75; }
+.diagram .bit.bad { fill: var(--broken); opacity: 1; }
+.diagram .frame { fill: var(--paper); stroke: var(--rule); transition: stroke .3s; }
+.diagram .frame.on { stroke: var(--violet); stroke-width: 2; }
+.diagram .frame.bad { stroke: var(--broken); stroke-width: 2; }
+.diagram .slide { transition: transform 1.6s var(--ease); }
+.diagram .bar { fill: var(--ink); transition: width .6s var(--ease); }
+.diagram .bar.v { fill: var(--violet); }
+.diagram .bar.r { fill: var(--broken); }
+.diagram .wv { fill: var(--ink-3); opacity: .35; }
+.diagram .wv.seg { opacity: .6; }
+.diagram .wv.now { fill: var(--violet); opacity: 1; }
+.diagram .playhead { stroke: var(--violet); stroke-width: 2; }
+.diagram .hatch-line { stroke: var(--violet); stroke-width: 1.5; opacity: .5; }
+
+.diagram .lines { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 2px; min-width: 560px; }
+.diagram .lines li { display: grid; grid-template-columns: 84px 1fr; gap: 12px; padding: 6px 10px; border-radius: 6px; font-size: 15px; color: var(--ink-3); transition: background .3s, color .3s; }
+.diagram .lines b { font: 400 13px var(--mono); }
+.diagram .lines li.now { background: var(--violet-wash); color: var(--ink); }
+.diagram .lines li.now b { color: var(--violet); }
+@media (max-width: 600px) { .diagram { padding: 16px 14px 10px; } }

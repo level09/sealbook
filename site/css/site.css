@@ -178,7 +178,7 @@
   --arabic: "IBM Plex Sans Arabic", "IBM Plex Sans", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --ease: cubic-bezier(.16, 1, .3, 1);
-  --gutter: 24px; --spine: 11px;
+  --gutter: 24px; --spine: 11px; --head: 64px;
   color-scheme: light;
 }
 :root[data-theme="dark"] {
@@ -233,7 +233,37 @@ bdi { unicode-bidi: isolate; }
 .solid { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .solid:hover { background: var(--ink-2); border-color: var(--ink-2); }
 
-.top { display: flex; justify-content: space-between; align-items: center; max-width: 1180px; margin: 0 auto; padding: 18px var(--gutter); }
+/* Sticky head: full-width paper so content scrolls under it, aligned to the 1180px column. */
+.top {
+  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 8px;
+  height: var(--head); padding: 0 max(var(--gutter), calc((100% - 1180px) / 2 + var(--gutter)));
+  background: var(--paper); border-bottom: 1px solid transparent; transition: border-color .2s;
+}
+.top.stuck { border-bottom-color: var(--rule); }
+.top .mark { margin-right: auto; text-decoration: none; }
+section[id] { scroll-margin-top: calc(var(--head) + 16px); }
+.chapters { display: flex; gap: 2px; margin-right: 8px; }
+.chapters a { font: 500 14px/1 var(--sans); color: var(--ink-2); text-decoration: none; padding: 9px 12px; border-radius: 999px; transition: color .2s, background .2s; }
+.chapters a:hover { color: var(--ink); background: var(--paper-2); }
+.chapters a[aria-current] { color: var(--ink); background: var(--paper-3); }
+.toc-button svg path { fill: none; stroke-linecap: round; }
+.top:has(.toc:popover-open) .toc-button { background: var(--paper-3); border-color: var(--ink-3); }
+.toc {
+  position: fixed; inset: calc(var(--head) + 4px) max(var(--gutter), calc((100% - 1180px) / 2 + var(--gutter))) auto auto;
+  width: min(380px, calc(100vw - 2 * var(--gutter))); max-height: calc(100dvh - var(--head) - 24px); overflow: auto;
+  margin: 0; padding: 20px 22px; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 12px;
+  box-shadow: 0 12px 32px -8px color-mix(in srgb, var(--ink) 22%, transparent);
+  overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--rule) transparent;
+}
+.toc:popover-open { animation: toc-in .22s var(--ease); }
+@keyframes toc-in { from { opacity: 0; transform: translateY(-6px); } }
+.toc ol { list-style: none; margin: 0; padding: 0; }
+.toc > ol > li + li { margin-top: 14px; }
+.toc-group { display: block; font: 500 12px/1.4 var(--mono); color: var(--ink-3); margin-bottom: 4px; }
+.toc ol ol a { display: block; padding: 6px 10px; margin: 0 -10px; border-radius: 6px; font: 400 17px/1.3 var(--serif); text-decoration: none; }
+.toc ol ol a:hover { background: var(--paper-2); }
+.toc ol ol a[aria-current] { background: var(--paper-3); }
+.toc-invite { display: block; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--rule); font: 500 14px var(--sans); color: var(--violet); }
 .mark { display: inline-flex; align-items: center; gap: 10px; font: 500 22px var(--serif); letter-spacing: -.01em; }
 .mark svg { width: 30px; height: 30px; flex: none; }
 
@@ -370,9 +400,16 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 .proof .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
 .proof .live { font-size: 14px; margin: 12px 0 0; min-height: 1.6em; }
 .proof .live.bad { color: var(--broken); }
-.leaves { display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0 0; padding: 0; list-style: none; }
-.leaves li { width: 16px; height: 16px; border-radius: 3px; background: var(--ink); }
-.leaves li.bad { background: var(--broken); }
+.chain-panel { grid-column: 1 / -1; }
+.leaves { columns: 2; column-gap: 28px; margin: 0; padding: 0; list-style: none; }
+.leaves li { break-inside: avoid; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 4px 8px 4px 22px; border-radius: 6px; position: relative; font-size: 13px; color: var(--ink-2); transition: background .3s, color .3s; }
+.leaves li::before { content: ""; position: absolute; left: 6px; top: 50%; width: 9px; height: 9px; margin-top: -5px; border-radius: 50%; background: var(--ink); }
+.leaves li .mono { font-size: 12px; color: var(--ink-3); }
+.leaves .lt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.leaves li:hover .lh, .leaves li:focus .lh { color: var(--violet); }
+.leaves li.bad { background: var(--broken-wash); color: var(--broken); }
+.leaves li.bad::before { background: var(--broken); }
+.leaves li.bad .mono { color: var(--broken); }
 
 /* Chapter 8 and 9 */
 .lessons { padding-left: 1.2em; display: grid; gap: 10px; margin: 0 0 16px; }
@@ -395,14 +432,18 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 .foot { max-width: 1180px; margin: 0 auto; padding: 24px var(--gutter) 48px; font-size: 13px; color: var(--ink-3); border-top: 1px solid var(--rule); }
 
 @media (max-width: 1000px) {
+  .chapters { display: none; }
   .specimen { position: relative; top: 0; }
   .opening, .proof-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .leaves { columns: 1; }
   .bench-grid { grid-template-columns: minmax(0, 1fr); }
   .tray { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   .status-cols { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 600px) {
-  :root { --gutter: 16px; --spine: 6px; }
+  :root { --gutter: 16px; --spine: 6px; --head: 56px; }
+  .toc-button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .toc-button { padding: 6px 11px; }
   body { font-size: 16px; }
   .link { padding-left: 34px; margin-bottom: 88px; }
   .link::before { width: 13px; height: 13px; top: 6px; }

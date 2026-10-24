@@ -47,6 +47,36 @@
   });
   label();
 
+  // Navigation: the chapter and contents entry of the section under the reading line.
+  const head = document.querySelector(".top");
+  const toc = document.getElementById("toc");
+  const chapters = [...document.querySelectorAll(".chapters a")];
+  const entries = [...toc.querySelectorAll("ol ol a")].map((a) => ({
+    a,
+    section: document.querySelector(a.hash),
+    chapter: chapters[[...toc.querySelectorAll(":scope > ol > li")].indexOf(a.closest("ol").parentElement)],
+  }));
+  let frame = 0;
+  const spy = () => {
+    frame = 0;
+    head.classList.toggle("stuck", scrollY > 4);
+    const line = innerHeight * 0.35;
+    const now = entries.findLast((e) => e.section.getBoundingClientRect().top <= line);
+    for (const e of entries) e.a.toggleAttribute("aria-current", e === now);
+    for (const c of chapters) c.toggleAttribute("aria-current", c === now?.chapter);
+  };
+  addEventListener("scroll", () => { frame ||= requestAnimationFrame(spy); }, { passive: true });
+  // Demos grow as a smooth scroll passes them and push its target away, so jump.
+  head.addEventListener("click", (e) => {
+    const a = e.target.closest("a[href^='#']");
+    if (!a) return;
+    e.preventDefault();
+    toc.hidePopover();
+    document.querySelector(a.hash).scrollIntoView({ behavior: "instant" });
+    history.replaceState(null, "", a.hash);
+  });
+  spy();
+
   // The seal settles once on load.
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
     document.querySelector(".mark animate")?.beginElement();

@@ -1,5 +1,5 @@
 .dd-pics { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; align-items: start; }
-.dd-orig { margin: 0; position: sticky; top: 24px; }
+.dd-orig { margin: 0; position: sticky; top: calc(var(--head) + 24px); }
 .dd-orig img, .dd-copy img { display: block; width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--rule); }
 .dd-orig figcaption { margin-top: 8px; font-size: 14px; color: var(--ink-3); }
 .dd-credit { display: block; margin-top: 6px; font-size: 13px; }
