@@ -39,6 +39,7 @@ from stk.monitor.data import LOCATED, Context
 from stk.places import normalise, resolve
 from stk.research.service import blocked
 from stk.review.findings import month_label
+from stk.settings import Config
 from stk.user.models import User
 
 TOOL = "brief"
@@ -808,7 +809,7 @@ async def queue(db, batch: str, user_id: int, model: str) -> Run:
     run = Run(
         principal_id=agent.id,
         tool=TOOL,
-        route="local",
+        route=Config.AGENT_ROUTE,
         model_requested=model,
         inputs={"batch": batch, "for_user": user_id},
     )

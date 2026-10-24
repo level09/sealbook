@@ -229,8 +229,12 @@ class Config:
     }
 
     # Proactive agents (intake brief, linker) read across a case, sensitive sources
-    # included, so they run on the local route only (ROUTE_LOCAL_BASE_URL, an
-    # OpenAI-compatible server such as Ollama). Empty turns them off.
+    # included, so by default they run on the local route (ROUTE_LOCAL_BASE_URL, an
+    # OpenAI-compatible server such as Ollama). AGENT_ROUTE=cloud-zdr sends them to
+    # OpenRouter instead; the policy table must also allow that route for each agent
+    # tool, so a setting alone never moves case data off the machine. Empty
+    # AGENT_MODEL turns them off.
+    AGENT_ROUTE = os.environ.get("AGENT_ROUTE", "local")
     AGENT_MODEL = os.environ.get("AGENT_MODEL", "qwen3.5:9b")
 
     # Package export signs its cover with c2patool (ES256 cert chain and key, PEM).

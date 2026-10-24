@@ -236,7 +236,7 @@ class ReportTest(unittest.IsolatedAsyncioTestCase):
             run=SimpleNamespace(
                 inputs={"investigation": CASE, "for_user": 1},
                 principal_id=principal,
-                route="local",
+                route=Config.AGENT_ROUTE,
                 model_requested=read.FIXED,
             ),
         )

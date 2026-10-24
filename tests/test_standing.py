@@ -437,7 +437,7 @@ class StandingRunTest(unittest.IsolatedAsyncioTestCase):
             run = Run(
                 principal_id=source_run.principal_id,
                 tool="extract",
-                route="local",
+                route=Config.AGENT_ROUTE,
                 model_requested=read.FIXED,
                 inputs={"acquisition": str(acquisition.id)},
             )

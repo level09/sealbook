@@ -37,6 +37,7 @@ from stk.ledger.queue import LEASE
 from stk.monitor.data import LOCATED
 from stk.places import normalise
 from stk.search.arabic import candidates as name_match
+from stk.settings import Config
 
 TOOL = "link"
 AGENT = "Linker"
@@ -670,7 +671,7 @@ async def queue(db, investigation: str, user_id: int, model: str, focus=None) ->
     run = Run(
         principal_id=agent.id,
         tool=TOOL,
-        route="local",
+        route=Config.AGENT_ROUTE,
         model_requested=model,
         inputs={"investigation": investigation, "for_user": user_id}
         | ({"focus": focus} if focus else {}),

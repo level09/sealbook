@@ -109,7 +109,7 @@ async def queue(db, task, wakes, model=None):
     run = Run(
         principal_id=principal.id,
         tool=KINDS[task.kind][0],
-        route="local",
+        route=Config.AGENT_ROUTE,
         model_requested=model or Config.AGENT_MODEL,
         inputs={
             "investigation": task.investigation,

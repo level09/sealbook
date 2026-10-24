@@ -53,6 +53,8 @@ def _app(test):
             Config, "BLOB_DIR", test.enterContext(tempfile.TemporaryDirectory())
         )
     )
+    # A developer's .env may send agents to a cloud route; tests run on the default.
+    test.enterContext(mock.patch.object(Config, "AGENT_ROUTE", "local"))
     db_url = (
         make_url(url)
         .set(drivername="postgresql+asyncpg")

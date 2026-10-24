@@ -192,6 +192,19 @@ missing setting. Each run's model, seconds and tokens show under its brief and i
 the run's output; a laptop needs about 35 to 50 s for a brief and about 20 s per
 linker candidate.
 
+To run the agents on OpenRouter instead, on a machine that holds only synthetic
+data, set `AGENT_ROUTE=cloud-zdr` and `AGENT_MODEL=qwen/qwen3.5-9b` (with
+`OPENROUTER_API_KEY`), then allow that route per agent tool in the policy table,
+since agent runs have no document and fall under the sensitive row:
+
+```sql
+insert into policy (capability, doc_type, sensitivity, routes, auto_accept)
+select t, '*', '*', array['local', 'cloud-zdr'], false
+from unnest(array['brief', 'link', 'standing', 'contradictions', 'gaps']) t;
+```
+
+Without those rows every agent run fails with "route cloud-zdr not allowed".
+
 ## Web research and capture
 
 Built and tested against synthetic recorded responses only; it stays off until the

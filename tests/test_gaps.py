@@ -231,7 +231,7 @@ class GapToolTest(unittest.IsolatedAsyncioTestCase):
                     "wakes": [],
                 },
                 principal_id="agent",
-                route="local",
+                route=Config.AGENT_ROUTE,
                 model_requested=read.FIXED,
             ),
             s=None,

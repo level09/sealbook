@@ -294,9 +294,9 @@ async def ask(c, name: str, system: str, payload: dict, schema: dict, fixed) -> 
             "json_schema": {"name": name, "strict": True, "schema": schema},
         },
         "temperature": 0,
-        # Local thinking models spend the context deliberating; the answer here is
-        # a short structured judgement over what we hand them.
-        **({"reasoning_effort": "none"} if c.run.route == "local" else {}),
+        # Thinking models spend the context (and minutes) deliberating on any route;
+        # the answer here is a short structured judgement over what we hand them.
+        "reasoning_effort": "none",
     }
     usage = {}
     if c.run.model_requested == FIXED:

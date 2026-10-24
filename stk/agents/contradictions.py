@@ -15,6 +15,7 @@ from stk.ledger.models import Blob, Run
 from stk.ledger.queue import LEASE
 from stk.monitor.data import LOCATED, _apart, map_layer
 from stk.people import data as people
+from stk.settings import Config
 
 TOOL = "contradictions"
 AGENT = "Contradiction hunter"
@@ -253,7 +254,7 @@ async def contradictions(c) -> str:
     await tasks.check_access(c.s, c.run)
     investigation = c.run.inputs["investigation"]
     agent = await read.agent_for(c.s, AGENT, c.run.inputs["for_user"])
-    if agent.id != c.run.principal_id or c.run.route != "local":
+    if agent.id != c.run.principal_id or c.run.route != Config.AGENT_ROUTE:
         raise ValueError(
             "contradictions must act for the named person on the local route"
         )
@@ -344,7 +345,7 @@ async def queue(db, investigation: str, user_id: int, model: str) -> Run:
     run = Run(
         principal_id=agent.id,
         tool=TOOL,
-        route="local",
+        route=Config.AGENT_ROUTE,
         model_requested=model,
         inputs={"investigation": investigation, "for_user": user_id},
     )

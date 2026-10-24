@@ -360,7 +360,7 @@ async def gaps(c) -> str:
     await tasks.check_access(c.s, c.run)
     investigation, user_id = c.run.inputs["investigation"], c.run.inputs["for_user"]
     agent = await read.agent_for(c.s, AGENT, user_id)
-    if c.run.route != "local" or c.run.principal_id != agent.id:
+    if c.run.route != Config.AGENT_ROUTE or c.run.principal_id != agent.id:
         raise ValueError("Gap finder must run locally for the named person")
     case = await read.case(c.s, investigation)
     every = detect(case.claims, await event_kinds(c.s, case.claims))
@@ -430,7 +430,7 @@ async def queue(db, investigation, user_id, model=None) -> Run:
     run = Run(
         principal_id=agent.id,
         tool=TOOL,
-        route="local",
+        route=Config.AGENT_ROUTE,
         model_requested=model or Config.AGENT_MODEL,
         inputs={"investigation": investigation, "for_user": user_id},
     )

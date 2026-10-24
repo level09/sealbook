@@ -35,7 +35,11 @@ def missing() -> list[str]:
         name
         for name, value in (
             ("AGENT_MODEL", Config.AGENT_MODEL),
-            ("ROUTE_LOCAL_BASE_URL", os.environ.get("ROUTE_LOCAL_BASE_URL")),
+            (
+                ("ROUTE_LOCAL_BASE_URL", os.environ.get("ROUTE_LOCAL_BASE_URL"))
+                if Config.AGENT_ROUTE == "local"
+                else ("OPENROUTER_API_KEY", os.environ.get("OPENROUTER_API_KEY"))
+            ),
         )
         if not value
     ]
