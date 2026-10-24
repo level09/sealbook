@@ -19,10 +19,51 @@ MAX_ROWS, MAX_COLUMNS = 20000, 200
 _BY_EXTENSION = {".csv": CSV, ".xlsx": XLSX}
 
 
+TITLE_ROWS = 10  # the header is looked for in this many rows from the top
+
+
 @dataclass(frozen=True)
 class Sheet:
     name: str
     rows: tuple[tuple[str, ...], ...]  # padded to one width
+    header: int = 1  # file row number of the header; rows above it are titles
+
+    @property
+    def head(self) -> tuple[str, ...]:
+        return self.rows[self.header - 1] if self.rows else ()
+
+    @property
+    def body(self) -> range:
+        """File row numbers below the header."""
+        return range(self.header + 1, len(self.rows) + 1)
+
+    @property
+    def dropped(self) -> tuple[int, ...]:
+        """Columns (from 1) with no header and nothing below it: not offered for
+        mapping and never read."""
+        return tuple(
+            i + 1
+            for i, h in enumerate(self.head)
+            if not h.strip() and not any(self.rows[n - 1][i].strip() for n in self.body)
+        )
+
+
+def find_header(rows: list[list[str]]) -> int:
+    """The first row, within TITLE_ROWS, that looks like a header: at least two
+    filled cells and at least 60% as many as the fullest row near the top, all
+    distinct, not all numbers. Title rows above it (one merged cell, a date line)
+    fail the count. Deterministic, so every reader of the bytes agrees."""
+    top = rows[: TITLE_ROWS * 2]
+    filled = [[c.strip() for c in r if c.strip()] for r in top]
+    widest = max((len(f) for f in filled), default=0)
+    for n, cells in enumerate(filled[:TITLE_ROWS], 1):
+        if (
+            len(cells) >= max(2, 0.6 * widest)
+            and len(set(cells)) == len(cells)
+            and not all(c.replace(".", "").isdigit() for c in cells)
+        ):
+            return n
+    return 1
 
 
 def mime_for(filename: str | None, mime: str) -> str:
@@ -57,7 +98,8 @@ def _bounded(name: str, rows: list[list[str]]) -> Sheet:
             f"sheet {name!r} has {len(rows)} rows and {width} columns; "
             f"the limit is {MAX_ROWS} rows and {MAX_COLUMNS} columns"
         )
-    return Sheet(name, tuple(tuple((r + [""] * width)[:width]) for r in rows))
+    padded = [(r + [""] * width)[:width] for r in rows]
+    return Sheet(name, tuple(tuple(r) for r in padded), find_header(padded))
 
 
 def _csv(data: bytes) -> list[Sheet]:
