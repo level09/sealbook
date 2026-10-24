@@ -495,6 +495,60 @@ SCENARIOS = [
         "needs": AGENTS_OFF,
     },
     {
+        "id": "see-your-agents",
+        "area": "agents",
+        "title": "See every agent working for you",
+        "who": "You want to know what runs on your behalf in a case, and when.",
+        "steps": [
+            "Open Agents in the rail. It follows the case chosen in the top bar.",
+            "One card per agent says what it does, when it runs, whether it is "
+            "watching, checking now, paused and why, or off and what is missing.",
+            "Each card names its last run and what came of it, and links to where "
+            "its results show. Switch keep checking on or off where an agent "
+            "supports it.",
+            "Recent agent work lists your last runs across agents and cases.",
+            "Outside assistants shows the address to connect one and the ones "
+            "connected, each with Disconnect.",
+        ],
+        "ai": ["Nothing new: the page reads the runs and their stored outcomes."],
+        "you": ["Which agents keep checking, and which assistants stay connected."],
+        "result": "One place to see and steer the agents that work for you.",
+        "links": [{"label": "Agents", "href": "/agents/"}],
+        "needs": AGENTS_OFF,
+    },
+    {
+        "id": "notice-resemblances",
+        "area": "agents",
+        "title": "Notice evidence that resembles other evidence",
+        "who": "New evidence arrives and may repeat, copy or echo what you have.",
+        "steps": [
+            "On Agents, the Noticer card has Check now for the whole case, and a "
+            "switch to check each new source as it arrives.",
+            "Code finds the candidates: passages close in meaning (a weaker lead), "
+            "the same picture or sound, names spelled another way, the same "
+            "person or place in another case you can open, and long runs of the "
+            "same words in two texts.",
+            "Each item says how the two sources resemble each other and why, with "
+            "both sides named, and a next step. What it rests on lists the "
+            "signals and the claims.",
+            "Propose a link sends a same-person or document link to Review. "
+            "Nothing is proposed until you click.",
+            "Each evidence page shows This resembles for that source. An item "
+            "resting on a sensitive source stays locked until you reveal it.",
+        ],
+        "ai": [
+            "The kind of resemblance, the sentence why and the next step. A pair "
+            "judged not related is kept out of sight."
+        ],
+        "you": ["Whether two sources belong together, in Review."],
+        "result": "Copies, echoes and repeated names surface without a search.",
+        "links": [
+            {"label": "Agents", "href": "/agents/"},
+            {"label": "Sources in the demo case", "href": "/sources"},
+        ],
+        "needs": AGENTS_OFF,
+    },
+    {
         "id": "connect-an-assistant",
         "area": "agents",
         "title": "Let your own assistant read and propose",
@@ -504,12 +558,12 @@ SCENARIOS = [
             "It reads and searches, and proposes claims or same person links, "
             "on your behalf and under its own name.",
             "Every call is a sealed run with its own signing key.",
-            "Connected agents lists it; Disconnect ends its access.",
+            "Agents lists it under Outside assistants; Disconnect ends its access.",
         ],
         "ai": ["Proposals, which arrive in Review like any other."],
         "you": ["Every decision. No tool accepts, deletes or exports anything."],
         "result": "Help with reading, with every proposal on the record.",
-        "links": [{"label": "Connected agents", "href": "/agents/"}],
+        "links": [{"label": "Outside assistants on Agents", "href": "/agents/"}],
     },
     {
         "id": "sensitive-sources",

@@ -23,7 +23,7 @@ Product acceptance still needs a named first workflow, an Arabic gold set and a
 timed comparison using [the synthetic acceptance case](../acceptance/data/README.md).
 Local tests do not settle ownership, adoption, model quality or legal readiness.
 
-## Proactive agents (proposed 2026-10-24; intake brief, linker and standing questions built)
+## Proactive agents (proposed 2026-10-24; intake brief, linker, standing questions and Noticer built)
 
 Today agents are pipelines: extraction proposes claims, discovery proposes findings
 from rules and embeddings, speech and thumbnails process media, and outside assistants
@@ -49,12 +49,16 @@ case alongside the analyst, each one a signed run that can only propose.
    disagree panel checks the selected case, with cited sides and sensitive-source
    masking. Repeat claim sets are suppressed. A switch on the panel checks again as
    evidence arrives, through the same task queue as standing questions.
-6. **Next step suggester.** Orders each analyst's queue by value and suggests flows, such
+6. **Noticer** (built, hosted-model check on synthetic data). Compares new evidence with
+   everything the person may read (meaning, fingerprints, name variants, other cases,
+   shared wording) and proposes cited resemblances; a link is proposed only on a click.
+   The Agents page lists every agent working for the person.
+7. **Next step suggester.** Orders each analyst's queue by value and suggests flows, such
    as reviewing a register before the testimony that cites it.
-7. **Shadow reviewer.** Predicts each human decision without acting and measures agreement
+8. **Shadow reviewer.** Predicts each human decision without acting and measures agreement
    per claim type; where agreement holds, analysts get batches to sign together.
-8. **Research runner.** Runs approved web queries on schedule and proposes captures.
-9. **Narrative drafter.** Drafts incident and person summaries in which every sentence cites
+9. **Research runner.** Runs approved web queries on schedule and proposes captures.
+10. **Narrative drafter.** Drafts incident and person summaries in which every sentence cites
    its claims, as a proposal for review.
 
 Guardrails: every output is a proposal in the existing review path, run under the

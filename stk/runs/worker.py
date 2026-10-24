@@ -25,6 +25,7 @@ from stk.agents.brief import brief
 from stk.agents.contradictions import contradictions
 from stk.agents.gaps import gaps
 from stk.agents.linker import link
+from stk.agents.noticer import notice
 from stk.agents.standing import standing
 from stk.collaboration import intake
 from stk.discovery import findings, indexing
@@ -402,6 +403,7 @@ TOOLS: dict[str, Callable[[Ctx], Awaitable[str | None]]] = {
     "standing": standing,
     "contradictions": contradictions,
     "gaps": gaps,
+    "notice": notice,
 }
 
 

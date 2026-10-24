@@ -788,3 +788,19 @@ covers in the text it was read from (`span_blob`).
   (`<bdi>` with `direction: ltr`). OCR still wrote the header date day first, so that
   one claim falls back to its box on the scan. Match OCR values on their own line
   (row, letterhead, label), never the first hit anywhere: the stamp repeats the date.
+## Agents page and Noticer (2026-10-24)
+
+- The "Connected agents" page listed only MCP assistants, so the owner saw an empty
+  page while six agents worked for him. Name a page after what a person expects to
+  find there, and show the app's own agents first.
+- A lone first name matched half the case through the normaliser's ordered match
+  ("سامر" against "خليل سمير القاضي"). Name variants need two names on each side.
+- A moderate lead by meaning alone was 40 of the first 96 whole-case candidates and
+  almost never meant anything. It now only adds weight beside another signal.
+- `nearest` read the request session for reveals, so the worker could not call it.
+  Split the probe (`near_pairs`) from what a reader may see.
+- A frozen dataclass with a dict field is unhashable; collect claims by id.
+- A scratch script named `queue.py` shadowed the standard library's `queue` and
+  broke Quart's import. Never name scripts after standard modules.
+- Gemini Flash Lite called two captures that differ in one sentence "identical".
+  The signal text is shown beside each item so the reviewer sees what was measured.

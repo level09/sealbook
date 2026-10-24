@@ -6,6 +6,7 @@ import {registerMediaViewers} from '/static/js/components/media.js';
 import {EvidenceLocation} from '/static/js/components/EvidenceLocation.js';
 import {ResearchDrawer} from '/static/js/components/ResearchDrawer.js';
 import {FindLinks} from '/static/js/components/FindLinks.js';
+import {NoticerPanel} from '/static/js/components/NoticerPanel.js';
 import {TIMEOUT, failure} from '/static/js/components/EvidenceViewer.js';
 
 const api = axios.create({timeout: TIMEOUT});
@@ -252,6 +253,7 @@ export function mount(boot) {
   app.component('evidence-location', EvidenceLocation);
   app.component('research-drawer', ResearchDrawer);
   app.component('find-links', FindLinks);
+  app.component('noticer-panel', NoticerPanel);
   registerStkComponents(app);
   app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
   return app;

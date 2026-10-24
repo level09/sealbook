@@ -360,8 +360,19 @@ async def crawl_width(browser, base, token_url, case, width):
         "/monitor",
         "/ingest/",
         "/guide",
+        "/agents/",
     ]:
         await visit(path)
+    resp = await page.request.get(
+        f"{base}/api/agents/notice?investigation={quote(case)}"
+    )
+    noticed = [i for i in (await resp.json())["items"] if not i.get("locked")]
+    # Sheets are read below by type; this adds the panel on another kind of source.
+    noticed.sort(key=lambda i: i["here"]["title"].startswith("Family intake sheet"))
+    if noticed:
+        href = noticed[0]["here"]["href"]
+        # The header shows the short hash on purpose, as on every evidence page.
+        await visit(href, "/evidence/noticer", [href.rsplit("/", 1)[1]])
 
     await visit("/people")
     people = await links(page, "/people/", 5)

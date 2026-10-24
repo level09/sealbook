@@ -1,6 +1,6 @@
 """MCP endpoint and the authorization server in front of it: RFC 9728 and RFC
 8414 metadata, authorization code with PKCE S256, client ID metadata
-documents, rotating refresh tokens, revocation, and the connected agents page."""
+documents, rotating refresh tokens, revocation, and the Agents page."""
 
 import secrets
 import uuid
@@ -327,7 +327,7 @@ async def mcp():
     return await server.dispatch(db, caller, body, request.headers)
 
 
-# --- connected agents ------------------------------------------------------------
+# --- the Agents page ---------------------------------------------------------------
 
 
 @bp_mcp.get("/agents/")
@@ -354,7 +354,11 @@ async def agents():
         }
         for grant in grants
     ]
-    return await render_template("mcp/agents.html", rows=rows)
+    mcp = {
+        "url": oauth.resource_url(),
+        "scopes": [{"name": k, "description": v} for k, v in oauth.SCOPES.items()],
+    }
+    return await render_template("mcp/agents.html", rows=rows, mcp=mcp)
 
 
 @bp_mcp.post("/agents/<uuid:grant_id>/revoke")

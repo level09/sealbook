@@ -73,7 +73,7 @@
                 <v-list-item title="{{ current_user.name or current_user.email }}" subtitle="{{ current_user.email }}"></v-list-item>
                 <v-divider></v-divider>
                 <v-list-item href="/security" prepend-icon="ti ti-key" title="Security and passkeys"></v-list-item>
-                <v-list-item href="/agents/" prepend-icon="ti ti-plug-connected" title="Connected agents"></v-list-item>
+                <v-list-item href="/agents/" prepend-icon="ti ti-plug-connected" title="Agents and outside assistants"></v-list-item>
                 {% if current_user.has_role('admin') %}
                 <v-list-item href="/admin" prepend-icon="ti ti-settings" title="Admin"></v-list-item>
                 {% endif %}
@@ -254,7 +254,6 @@
                     {kind: 'Page', t: 'Search', h: '/search', icon: 'ti ti-search'},
                     {kind: 'Page', t: 'Add evidence', h: '/ingest/', icon: 'ti ti-upload'},
                     {kind: 'Page', t: 'Security and passkeys', h: '/security', icon: 'ti ti-key'},
-                    {kind: 'Page', t: 'Connected agents', h: '/agents/', icon: 'ti ti-plug-connected'},
                     ...(userRoles.includes('admin') ? [{kind: 'Page', t: 'Admin', h: '/admin', icon: 'ti ti-settings'}] : []),
                 ];
                 return [...pages, ...this.palRecords];

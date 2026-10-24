@@ -44,7 +44,17 @@ KINDS = {
         "The gap finder found silences worth a look.",
         "/people",
     ),
+    "noticer": (
+        "notice",
+        "Noticer",
+        True,
+        "The noticer found evidence that resembles other evidence.",
+        "/agents/",
+    ),
 }
+# Runs that make a source comparable by meaning or by picture and sound without
+# writing claims; they wake only the noticer.
+MEDIA_TOOLS = ("embed", "fingerprint")
 ACTIVE = ("queued", "running")
 
 
@@ -207,15 +217,19 @@ async def tick(Session):  # noqa: N803
 
 
 async def evidence(db, run):
-    """Only sealed runs that actually wrote extracted claims wake a case."""
+    """Only sealed runs that actually wrote extracted claims wake a case, and media
+    indexing wakes the noticer."""
     if run.status != "done":
         return
+    kinds = [kind for kind, k in KINDS.items() if k[2]]
     if not await db.scalar(
         select(Statement.id)
         .where(Statement.run_id == run.id, Statement.prop.in_(EXTRACTED_PROPS))
         .limit(1)
     ):
-        return
+        if run.tool not in MEDIA_TOOLS or not run.inputs.get("acquisition"):
+            return
+        kinds = ["noticer"]
     if ref := run.inputs.get("acquisition"):
         acq = await db.get(Acquisition, uuid.UUID(ref))
         investigations = [acq.context.get("investigation")]
@@ -231,7 +245,6 @@ async def evidence(db, run):
                 .distinct()
             )
         )
-    kinds = [kind for kind, k in KINDS.items() if k[2]]
     for task in await db.scalars(
         select(AgentTask).where(
             AgentTask.enabled.is_(True),

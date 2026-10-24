@@ -12,7 +12,7 @@ from quart import Blueprint, Response, abort, g, request
 from quart_security import auth_required, current_user
 from sqlalchemy import select
 
-from stk.agents import brief, contradictions, linker, standing, tasks
+from stk.agents import brief, contradictions, linker, noticer, overview, standing, tasks
 from stk.agents.models import AgentTask
 from stk.agents.read import read_output
 from stk.collaboration.models import Notification
@@ -265,6 +265,86 @@ async def find_gaps():
     return _json({"run": str(run.id)}, 202)
 
 
+async def _required_case(db, slug):
+    from stk.cases import service as cases
+
+    try:
+        return (await cases.require(db, slug)).slug
+    except cases.Unknown:
+        abort(404)
+
+
+@bp_agents.get("/overview")
+async def agents_overview():
+    """Every agent working for this person in the case, and their recent runs."""
+    db = g.db_session
+    investigation = await _required_case(db, request.args.get("investigation"))
+    return _json(await overview.overview(db, current_user, investigation, missing()))
+
+
+@bp_agents.get("/notice")
+async def read_notice():
+    db = g.db_session
+    investigation = await _required_case(db, request.args.get("investigation"))
+    sha = request.args.get("sha") or None
+    return _json(await noticer.show(db, current_user, investigation, sha))
+
+
+@bp_agents.post("/notice")
+async def check_notice():
+    """Check now: the whole case against everything this person may read."""
+    db = g.db_session
+    investigation = (await _item()).get("investigation")
+    if not isinstance(investigation, str) or not investigation.strip():
+        abort(400, description="Choose a case to check.")
+    investigation = await _required_case(db, investigation)
+    if missing():
+        return _json(
+            {
+                "reason": "off",
+                "message": "The noticer needs a local model. Ask an administrator to set it up.",
+            },
+            409,
+        )
+    if any(
+        r.status in tasks.ACTIVE
+        for r in await noticer.runs(db, investigation, current_user.id)
+    ):
+        return _json(
+            {"reason": "busy", "message": "The noticer is reading this case."}, 409
+        )
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    run = await noticer.queue(db, investigation, current_user.id, Config.AGENT_MODEL)
+    await db.commit()
+    return _json({"run": str(run.id)}, 202)
+
+
+@bp_agents.post("/notice/link")
+async def propose_notice_link():
+    """The person's click: send one resemblance into review as a proposed link."""
+    item = await _item()
+    try:
+        rid = uuid.UUID(str(item.get("run")))
+    except ValueError:
+        abort(400, description="Choose a resemblance.")
+    key = item.get("key")
+    if not isinstance(key, str):
+        abort(400, description="Choose a resemblance.")
+    db = g.db_session
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    try:
+        statement = await noticer.propose(db, current_user, rid, key)
+    except LookupError:
+        abort(404)
+    except noticer.NotProposed as exc:
+        return _json({"message": str(exc)}, 409)
+    return _json({"statement": statement}, 201)
+
+
 async def _case(db, scope: str) -> str | None:
     if scope.startswith("blob:"):
         sha = scope.removeprefix("blob:")
@@ -288,7 +368,12 @@ async def _case(db, scope: str) -> str | None:
 async def run_status(rid):
     db = g.db_session
     run = await db.get(Run, rid)
-    if run is None or run.tool not in (brief.TOOL, linker.TOOL, standing.TOOL):
+    if run is None or run.tool not in (
+        brief.TOOL,
+        linker.TOOL,
+        standing.TOOL,
+        noticer.TOOL,
+    ):
         abort(404)
     if run.inputs.get("for_user") != current_user.id and not current_user.has_role(
         "admin"

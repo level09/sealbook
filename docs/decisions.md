@@ -62,6 +62,19 @@ repeated local model failures without losing evidence or hiding the last good re
 A task-settled run event makes completion idempotent and lets the next poll recover
 after a worker stops between sealing and task settlement.
 
+## The Noticer's candidates and why it never accepts (2026-10-24)
+
+The Noticer builds candidates only from machinery already in the app: the evidence
+page's nearest-by-meaning probe, fingerprint matches, the Arabic name normaliser and
+open same-person proposals, resolved places, and a shingled comparison of source
+texts. Each is checkable and bounded, so the model judges pairs that share something
+real instead of searching on its own, and the reviewer sees the signal behind every
+item. Cross-case candidates come only from cases the person can open, checked per
+case at run time and again when shown. Semantic and perceptual similarity can say
+two sources look alike, never that they are the same person or document, so the
+Noticer stores proposals as a report and writes a link statement only when the
+person clicks, through the linker's shapes and the normal review gate.
+
 ## Decisions still open
 
 The model/server choice is approved, implemented and measured on the synthetic

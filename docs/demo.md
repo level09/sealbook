@@ -228,6 +228,20 @@ again from a person page or the evidence Intelligence panel (Find links): what i
 already proposed or decided is not proposed again, and a rejected link returns only
 with a claim the rejection did not see.
 
+## Every agent, and what resembles what
+
+Open Agents in the rail with case-demo-02 selected. Each agent says what it does,
+when it runs and how its last run went; the intake brief and linker show the seeded
+demo runs. On the Noticer card press Check now (the worker must be running with a
+model set). It pairs the two family intake sheet versions (67 words in a row the
+same), the coastal bus voice note with its forwarded excerpt (same sound, same
+words), the two captures of the missing person post, the forwarded checkpoint photo
+with the original, the Jdeideh re-upload with the 2017 video, and Yousef's register
+entry with the record of the same name in case-demo-01. Each says why, with a next
+step; Propose a link sends one to Review, and nothing goes there without that
+click. Open any of those evidence pages for This resembles. Outside assistants at
+the bottom shows how to connect an MCP assistant.
+
 ## Decide together
 
 Open `/review`. Asked of me lists the claims a colleague asked you about, due first,

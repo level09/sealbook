@@ -483,9 +483,10 @@ def group_places(rows, here: dict) -> list[dict]:
     return out[:20]
 
 
-async def nearest(db, sha: str, fam: list[str], investigation) -> list[dict]:
+async def near_pairs(db, sha: str, fam: list[str], investigation) -> list[dict]:
     """Closest segments of other sources in the active embedding space, best per
-    source. Leads by meaning only."""
+    source, with both passages' text where the segments carry text. Leads by
+    meaning only; callers decide what a reader may see."""
     await db.execute(text("set local hnsw.iterative_scan = 'strict_order'"))
     mine_seg, mine_vec = aliased(Segment), aliased(SegmentEmbedding)
     seg, vec = aliased(Segment), aliased(SegmentEmbedding)
@@ -545,11 +546,6 @@ async def nearest(db, sha: str, fam: list[str], investigation) -> list[dict]:
         if row[2] not in best or row[5] < best[row[2]][5]:
             best[row[2]] = row
     top = sorted(best.values(), key=lambda r: r[5])[:6]
-    # Each side quoted, so the reader sees what is alike, from sources they may read.
-    readable = {
-        x: granted(x) or not await is_sensitive(db, x)
-        for x in {sha, *(r[2] for r in top)}
-    }
     texts = {
         b.sha256: blobs.read(b, Config.BLOB_DIR).decode()
         for b in (
@@ -562,15 +558,37 @@ async def nearest(db, sha: str, fam: list[str], investigation) -> list[dict]:
         if blobs.stored(b, Config.BLOB_DIR)
     }
 
-    def quote(blob, start, end, source):
-        if not (blob in texts and readable.get(source)):
+    def quote(blob, start, end):
+        if blob not in texts:
             return None
         words = " ".join(MARKUP.sub(" ", texts[blob][start:end]).split())
         return words if len(words) <= EXCERPT else words[: EXCERPT - 1] + "…"
 
     return [
-        lead(*r[:6], quote(r[6], r[7], r[8], sha), quote(r[9], r[10], r[11], r[2]))
+        {
+            "row": r[:6],
+            "mine": quote(r[6], r[7], r[8]),
+            "theirs": quote(r[9], r[10], r[11]),
+        }
         for r in top
+    ]
+
+
+async def nearest(db, sha: str, fam: list[str], investigation) -> list[dict]:
+    """Nearest-by-meaning rows for the evidence page."""
+    pairs = await near_pairs(db, sha, fam, investigation)
+    # Each side quoted, so the reader sees what is alike, from sources they may read.
+    readable = {
+        x: granted(x) or not await is_sensitive(db, x)
+        for x in {sha, *(p["row"][2] for p in pairs)}
+    }
+    return [
+        lead(
+            *p["row"],
+            p["mine"] if readable[sha] else None,
+            p["theirs"] if readable[p["row"][2]] else None,
+        )
+        for p in pairs
     ]
 
 
