@@ -199,6 +199,8 @@ body {
 ::selection { background: var(--violet); color: var(--paper); }
 html { caret-color: var(--violet); accent-color: var(--ink); }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 2px; }
+/* Bordered pills show focus on their own border; an outline beside it reads as two. */
+.quiet:focus-visible, .invite-link:focus-visible { outline: none; border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
 html { scrollbar-color: var(--ink-3) var(--paper); }
 .text-body, .tray { scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
 button { font: inherit; color: inherit; cursor: pointer; }

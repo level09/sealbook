@@ -10,7 +10,7 @@
 .invite-form .opt { font-weight: 400; color: var(--ink-3); }
 .invite-form input, .invite-form textarea { font: 16px/1.4 var(--sans); color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 11px 12px; }
 .invite-form textarea { resize: vertical; }
-.invite-form input:focus-visible, .invite-form textarea:focus-visible { outline: 2px solid var(--violet); outline-offset: 1px; border-color: var(--violet); }
+.invite-form input:focus-visible, .invite-form textarea:focus-visible { outline: none; border-color: var(--violet); box-shadow: 0 0 0 1px var(--violet); }
 .invite-form button { justify-self: start; font: 500 15px/1 var(--sans); color: var(--paper); background: var(--violet); border: 0; border-radius: 999px; padding: 14px 22px; }
 .invite-form button:hover { filter: brightness(1.1); }
 .invite-form button:disabled { opacity: .6; cursor: wait; }

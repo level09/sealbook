@@ -101,6 +101,11 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .v-application { background: var(--bg) !important; color: var(--ink); }
 ::selection { background: var(--agent-solid); }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+/* Controls with their own border show focus on that border; an outline beside it reads as two. */
+.v-field input:focus-visible, .v-field textarea:focus-visible { outline: none; }
+.v-chip:focus-visible, .gd-chip:focus-visible, .v-btn--variant-outlined:focus-visible, .v-btn--variant-tonal:focus-visible {
+  outline: none; border-color: var(--ink) !important; box-shadow: 0 0 0 1px var(--ink);
+}
 * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
 .mono { font-family: var(--mono) !important; font-size: 12px; }
 .text-agent { color: var(--agent) !important; }
