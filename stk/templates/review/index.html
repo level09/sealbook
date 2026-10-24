@@ -151,8 +151,8 @@
           <media-thumb v-else-if="it.source" :key="it.source.sha256 + it.source.revealed" :locked="it.source.sensitive && !it.source.revealed" :sha="it.source.sha256" :mime="it.source.mime" :file="it.source.file" :link="false" :caption="false" :width="64" :height="44"></media-thumb>
           <span v-else class="tile"><i class="ti ti-users" aria-hidden="true"></i></span>
           <div style="min-width: 0">
-            <div class="rv-s" dir="auto"><template v-for="(p, i) in parts(it)" :key="i"><span v-if="i" class="q"> · </span><span v-if="p && p.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>${ p.t }</span><b v-else-if="p && p.strong"><bdi>${ p.t }</bdi></b><span v-else-if="p" :class="{q: p.quiet}"><bdi>${ p.t }</bdi></span></template></div>
-            <div class="rv-src" v-if="it.kind === 'finding'"><span class="f">${ KINDS[it.kind] || it.label }, ${ plural(it.members.length, 'member') }</span></div>
+            <div class="rv-s" dir="auto"><template v-for="(p, i) in parts(it)" :key="i"><span v-if="i" class="q">${ p && p.tight ? ' ' : ' · ' }</span><span v-if="p && p.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>${ p.t }</span><b v-else-if="p && p.strong"><bdi>${ p.t }</bdi></b><span v-else-if="p" :class="{q: p.quiet}"><bdi>${ p.t }</bdi></span></template></div>
+            <div class="rv-src" v-if="it.kind === 'finding'"><span class="f">${ KINDS[it.kind] || it.label }, ${ plural(new Set(it.members.map(m => m.cluster || m.subject)).size, 'person', 'people') }</span></div>
             <div class="rv-src" v-else-if="it.source"><span class="f"><bdi>${ it.source.file }</bdi>,</span><span class="w">${ it.where.label }</span></div>
           </div>
           <div class="rv-who" v-if="it.kind !== 'finding'">
@@ -187,16 +187,16 @@
         </header>
         <div v-if="done && done.id === claim.id" class="rv-done" role="status"><v-icon icon="ti ti-signature" size="18"></v-icon><span>${ done.text }</span><v-spacer></v-spacer><v-btn v-if="done.review" size="small" variant="outlined" prepend-icon="ti ti-arrow-back-up" :loading="busy" @click="undo">Undo</v-btn></div>
         <div class="rv-claim">
-          <h2 id="rv-h-claim" dir="auto"><template v-for="(p, i) in parts(claim)" :key="i"><span v-if="i" class="q"> · </span><span v-if="p && p.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>${ p.t }</span><span v-else-if="p" :class="{q: p.quiet}"><bdi>${ p.t }</bdi></span></template></h2>
+          <h2 id="rv-h-claim" dir="auto"><template v-for="(p, i) in parts(claim)" :key="i"><span v-if="i" class="q">${ p && p.tight ? ' ' : ' · ' }</span><span v-if="p && p.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>${ p.t }</span><span v-else-if="p" :class="{q: p.quiet}"><bdi>${ p.t }</bdi></span></template></h2>
           <p class="at">
             <span>Proposed by</span><actor-chip :actor="claim.proposer"></actor-chip><span class="rv-muted">${ ago(claim.recorded_at) }</span>
           </p>
           <p class="at" v-if="claim.request && claim.request.visible">
-            <span>Asked by</span><actor-chip :actor="claim.request.by"></actor-chip><i class="ti ti-arrow-right" aria-hidden="true"></i><actor-chip :actor="claim.request.to" :you="claim.request.mine"></actor-chip><span class="rv-muted">${ ago(claim.request.at) }</span>
+            <actor-chip :actor="claim.request.by"></actor-chip><span>asked</span><actor-chip :actor="claim.request.to" :you="claim.request.mine"></actor-chip><span class="rv-muted">${ ago(claim.request.at) }</span>
             <span v-if="due(claim)" class="rv-due" :class="{late: due(claim).late}">${ due(claim).text }</span>
           </p>
           <p class="at" v-else-if="claim.assignment">
-            <span>Assigned by</span><actor-chip :actor="claim.assignment.by"></actor-chip><i class="ti ti-arrow-right" aria-hidden="true"></i><actor-chip :actor="claim.assignment.to"></actor-chip>
+            <actor-chip :actor="claim.assignment.by"></actor-chip><span>assigned it to</span><actor-chip :actor="claim.assignment.to"></actor-chip>
             <span v-if="due(claim)" class="rv-due" :class="{late: due(claim).late}">${ due(claim).text }</span>
           </p>
           <p class="rv-quote" v-if="claim.request && claim.request.reason" dir="auto">${ claim.request.reason }</p>

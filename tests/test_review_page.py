@@ -82,7 +82,7 @@ class ReviewPageTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(item["source"]["sha256"], self.sha)
         self.assertTrue(item["where"]["label"].startswith("characters"))
         self.assertEqual(item["proposer"]["kind"], "extractor")
-        self.assertEqual(item["proposer"]["name"], "extract run")
+        self.assertEqual(item["proposer"]["name"], "AI extraction")
         self.assertEqual(item["request"]["by"]["name"], "analyst")
         self.assertEqual(item["request"]["to"]["role"], "analyst")
         self.assertTrue(item["request"]["mine"])

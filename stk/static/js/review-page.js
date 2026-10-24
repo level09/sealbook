@@ -41,12 +41,12 @@ const label = p => PROP[p] || (p || '').replaceAll('_', ' ');
 const sec = ms => {const s = Math.round((ms || 0) / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;};
 
 // Invariant copy in plain words. Same checks and outcomes as data.invariants.
-export function checkText(c) {
+export function checkText(c, claim) {
   const n = /(\d+) basis/.exec(c.note || '')?.[1];
   if (c.name === 'basis stands') return c.ok ? `Based on ${plural(+n, 'statement')}, all still standing` : c.note === 'no basis statements named' ? 'Names no statements it is based on' : `Its basis no longer stands: ${c.note.replace('a basis statement', 'one statement')}`;
   if (c.name === 'span exists') return c.ok ? (c.note === 'no span needed' ? 'Needs no place in a source' : 'Points at a real place in the source') : `The source location does not check out: ${c.note.replaceAll('_', ' ')}`;
   if (c.name === 'sources available') return c.ok ? 'Both recordings are still held' : 'A recording is missing or erased';
-  if (c.name === 'date in range') return c.ok === null ? 'The document date is unknown, so the date cannot be checked' : c.note === 'no date claimed' ? 'No date claimed' : c.ok ? `Dated within the document date, ${fmtDate(c.note.split(' ').pop())}` : `Dated after the document date, ${fmtDate(c.note.split(' ').pop())}`;
+  if (c.name === 'date in range') return c.ok === null ? 'The document date is unknown, so the date cannot be checked' : c.note === 'no date claimed' ? (claim?.inherited && claim.from ? `Takes its date from the document, ${fmtDate(claim.from)}` : 'No date claimed') : c.ok ? `Dated within the document date, ${fmtDate(c.note.split(' ').pop())}` : `Dated after the document date, ${fmtDate(c.note.split(' ').pop())}`;
   if (c.name === 'subject not stale') return c.ok ? 'Nothing changed since it was proposed' : 'Something about this person changed since it was proposed';
   return c.note;
 }
@@ -112,7 +112,7 @@ export function mount(boot) {
         const passage = (this.read?.passages || []).find(p => p.text_blob === c.span_blob);
         return passage ? passage.text.slice(c.span.start, c.span.end).trim() : c.excerpt?.span.trim() || '';
       },
-      checks() {return (this.claim?.checks || []).map(c => ({...c, text: checkText(c)}));},
+      checks() {return (this.claim?.checks || []).map(c => ({...c, text: checkText(c, this.claim)}));},
       stale() {return this.checks.find(c => c.ok === false && 'acknowledge' in c) || null;},
       blocked() {return this.checks.some(c => c.ok === false && !('acknowledge' in c));},
       blind() {return (this.claim?.hidden_sources || []).length > 0;},
@@ -154,11 +154,19 @@ export function mount(boot) {
         const subject = c.person ? who(c.person) : {t: c.source?.file || 'This source', strong: true};
         const v = this.valueText(c);
         const value = c.value.erased ? {t: 'value erased', quiet: true} : c.value.masked && v == null ? {masked: true, t: "value from a sensitive source"} : c.fields.length && !v ? {t: c.fields.map(f => `${f[0]} ${f[1]}`).join(', ')} : {t: /^\d{4}(-\d\d){0,2}$/.test(v || '') ? fmtDate(v) : v, value: true};
+        // A correction reads as the change it makes: "Name: correct X to Y". A name
+        // correction drops the subject, whose label is the old name.
+        const old = c.corrects?.prop === c.prop && !c.corrects.value.erased && c.corrects.value;
+        if (old && value.value) {
+          const was = old.masked ? {masked: true, t: 'value from a sensitive source'} : {t: old.text, value: true};
+          const fix = [{t: label(c.prop).replace(/^./, x => x.toUpperCase()) + ': correct', quiet: true}, {...was, tight: true}, {t: 'to', quiet: true, tight: true}, {...value, tight: true}];
+          return c.prop === 'name' ? fix : [subject, ...fix];
+        }
         const out = [subject, {t: label(c.prop), quiet: true}, value];
         if (c.from && !['birth_date', 'document_date'].includes(c.prop)) out.push({t: span(c.from, c.to) + (c.inherited ? ' (document date)' : ''), quiet: c.inherited});
         return out;
       },
-      sentence(c) {return this.parts(c).filter(Boolean).map(p => p.t).join(' · ');},
+      sentence(c) {return this.parts(c).filter(Boolean).map((p, i) => (i ? (p.tight ? ' ' : ' · ') : '') + p.t).join('');},
       pick(id) {
         if (id === this.selId) return;
         this.selId = id; this.mode = null; this.done = null; this.needPasskey = null; this.reason = ''; this.relationship = null;

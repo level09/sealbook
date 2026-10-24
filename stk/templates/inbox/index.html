@@ -69,13 +69,13 @@
         <p v-else-if="!cur.req" class="pa-4 ibx-muted">${ cur.failed }</p>
         <template v-else>
           <div class="ibx-about">
-            <media-thumb v-if="doc(cur.req)" :sha="doc(cur.req).sha256" :file="doc(cur.req).file" :href="srcHref(cur.req)" :caption="false" :width="isMobile ? 64 : 96" :height="isMobile ? 44 : 64"></media-thumb>
+            <media-thumb v-if="doc(cur.req)" :sha="doc(cur.req).sha256" :file="doc(cur.req).title" :href="srcHref(cur.req)" :caption="false" :width="isMobile ? 64 : 96" :height="isMobile ? 44 : 64"></media-thumb>
             <div class="t">
               <div class="text-caption ibx-muted">Review request on a ${ cur.req.proposal.prop === 'finding' ? 'finding' : 'claim' }</div>
               <div><strong dir="auto">${ sentence(cur.req) }</strong>
                 <v-chip size="x-small" variant="outlined" class="ms-1">${ cur.req.proposal.tier }</v-chip></div>
-              <div class="text-caption ibx-muted"><template v-if="doc(cur.req)">In <a :href="srcHref(cur.req)">${ doc(cur.req).file }</a><template v-if="spanLabel(cur.req.proposal.span)">, ${ spanLabel(cur.req.proposal.span) }</template>,</template>
-                proposed by <actor-chip v-if="cur.req.proposal.actor" :name="cur.req.proposal.actor.label" :kind="cur.req.proposal.actor.kind"></actor-chip></div>
+              <div class="text-caption ibx-muted"><template v-if="doc(cur.req)">In <a :href="srcHref(cur.req)">${ doc(cur.req).title }</a><template v-if="spanLabel(cur.req.proposal.span)">, ${ spanLabel(cur.req.proposal.span) }</template>,</template>
+                proposed by <actor-chip v-if="cur.req.proposal.actor" :actor="{kind: cur.req.proposal.actor.kind, name: cur.req.proposal.actor.label, detail: cur.req.proposal.actor.detail}"></actor-chip></div>
               <div class="d-flex ga-2 mt-2 flex-wrap">
                 <v-btn v-if="doc(cur.req)" size="small" variant="outlined" prepend-icon="ti ti-file-search" :href="srcHref(cur.req)">Open source</v-btn>
                 <v-btn size="small" :color="decidable(cur.req) ? 'primary' : undefined" :variant="decidable(cur.req) ? 'flat' : 'outlined'" prepend-icon="ti ti-checklist" :href="'/review?request=' + cur.req.id">${ decidable(cur.req) ? 'Decide in Review' : 'Open in Review' }</v-btn>
@@ -83,12 +83,12 @@
             </div>
           </div>
           <div class="ibx-msg">
-            <div class="who"><actor-chip :name="cur.req.sender.name" role="asked for review" :me="cur.req.sender.id === me"></actor-chip><span class="ibx-muted text-caption">${ ago(cur.req.at) }</span>
+            <div class="who"><actor-chip :actor="{kind: 'human', name: cur.req.sender.name, role: 'asked for review'}" :you="cur.req.sender.id === me"></actor-chip><span class="ibx-muted text-caption">${ ago(cur.req.at) }</span>
               <v-chip size="x-small" color="warning" variant="outlined" prepend-icon="ti ti-user-plus">asks ${ cur.req.reviewer === me ? 'you' : nameOf(cur.req.reviewer) }</v-chip></div>
             <div class="body" dir="auto" v-html="mark(cur.req.reason)"></div>
           </div>
           <div v-for="m in cur.req.comments" :key="m.id" class="ibx-msg">
-            <div class="who"><actor-chip :name="m.author" :role="roleOf(m.author)"></actor-chip><span class="ibx-muted text-caption">${ ago(m.at) }</span></div>
+            <div class="who"><actor-chip :actor="{kind: 'human', name: m.author, role: roleOf(m.author)}"></actor-chip><span class="ibx-muted text-caption">${ ago(m.at) }</span></div>
             <div class="body" dir="auto" v-html="mark(m.text)"></div>
           </div>
           <div class="ibx-reply">
@@ -111,7 +111,7 @@
         <div class="ibx-about">
           <media-thumb v-if="cur.a.source && cur.a.source.sha256" :sha="cur.a.source.sha256" :file="cur.a.source.title || ''" :href="cur.href" :caption="false" :width="isMobile ? 64 : 96" :height="isMobile ? 44 : 64"></media-thumb>
           <div class="t">
-            <div class="text-caption ibx-muted d-flex flex-wrap ga-1 align-center"><actor-chip :name="myName" role="assignee" :me="true"></actor-chip><template v-if="cur.a.investigation"> in ${ cur.a.investigation }</template></div>
+            <div class="text-caption ibx-muted d-flex flex-wrap ga-1 align-center"><actor-chip :actor="{kind: 'human', name: myName, role: 'assignee'}" :you="true"></actor-chip><template v-if="cur.a.investigation"> in ${ cur.a.investigation }</template></div>
             <div><strong dir="auto">${ cur.title }</strong></div>
             <div class="d-flex ga-2 mt-1 flex-wrap"><v-chip v-if="cur.due" size="x-small" variant="outlined" :color="cur.due.late ? 'error' : undefined">${ cur.due.text }</v-chip><v-chip size="x-small" variant="outlined">${ cur.a.priority } priority</v-chip></div>
             <v-btn class="mt-2" size="small" color="primary" variant="flat" prepend-icon="ti ti-arrow-right" :href="cur.href">Open it</v-btn>
@@ -192,9 +192,9 @@ window.app = Vue.createApp({
     spanLabel(s) { return !s ? '' : s.bbox ? `region on page ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.page ? `page ${s.page}` : s.start != null ? `characters ${s.start} to ${s.end}` : ''; },
     // A claim as a person reads it; never an id or a raw value.
     sentence(req) {
-      const c = req.proposal, file = c.doc?.file, v = c.display && !/^[{[]/.test(c.display) ? c.display : null;
+      const c = req.proposal, file = c.doc?.title, v = c.display && !/^[{[]/.test(c.display) ? c.display : null;
       if (c.prop === 'same_as') return 'Same person? Two records that may name one person';
-      if (c.prop === 'media_match') return req.media ? `Same picture or sound? ${req.media.left.file} and ${req.media.right.file}` : 'Same picture or sound? A source was erased';
+      if (c.prop === 'media_match') return req.media ? `Same picture or sound? ${req.media.left.title || req.media.left.file} and ${req.media.right.title || req.media.right.file}` : 'Same picture or sound? A source was erased';
       if (c.prop === 'finding') return 'A connection proposed by discovery';
       if (c.masked) return `${this.prop(c.prop)}: sensitive, shown on the source page after a logged reveal`;
       // First-strong isolates keep an Arabic value from reordering the words around it.
@@ -227,10 +227,10 @@ window.app = Vue.createApp({
       const days = Math.round((new Date(m[1]) - new Date(new Date().toLocaleDateString('en-CA'))) / 864e5); // the viewer's local day
       return {late: days < 0, text: days < 0 ? `${-days} d overdue` : days === 0 ? 'due today' : `due in ${days} d`};
     },
-    workRow(a) {
+    workRow(a, notes = []) {
       const what = a.subject === 'blob' ? (a.source?.title || 'A source') : a.subject === 'statement' ? `${this.prop(a.prop)} claim${a.source?.title ? ' in ' + a.source.title : ''}` : `${(a.finding || 'A').replaceAll('_', ' ')} finding`;
       const href = a.subject === 'finding' ? '/discover' : a.source?.sha256 ? '/evidence/' + a.source.sha256 : '/sources?assignee=me';
-      return {key: 'assignment:' + a.id, kind: 'assignment', a, at: a.at, unread: false, icon: ICON.assignment, title: what, sub: `Assigned to you, ${a.priority} priority`, due: this.dueOf(a.status), href, notes: [], tags: ['work']};
+      return {key: 'assignment:' + a.id, kind: 'assignment', a, at: a.at, unread: notes.some(n => !n.isSeen), icon: ICON.assignment, title: what, sub: `Assigned to you, ${a.priority} priority`, due: this.dueOf(a.status), href, notes, tags: ['work']};
     },
     noteRow(n) {
       return {key: 'note:' + n.id, kind: 'note', n, at: n.at, notes: [n], unread: !n.isSeen, icon: ICON[n.kind] || 'ti ti-bell', label: LABEL[n.kind] || 'Notice',
@@ -261,12 +261,22 @@ window.app = Vue.createApp({
           const id = (REQ.exec(n.to) || [])[1];
           if (id) { if (!byReq.has(id)) byReq.set(id, []); byReq.get(id).push(n); } else loose.push(n);
         }
+        // "Work assigned to you" is stored per assign call, not per item. It belongs
+        // to the work rows written in the same moment, not a row of its own.
+        const near = (n, a) => Math.abs(new Date(n.at) - new Date(a.at)) < 1000;
+        const told = new Map(work.map(a => [a.id, []]));
+        const rest = loose.filter(n => {
+          const hit = n.kind === 'assigned' && work.filter(a => near(n, a));
+          if (!hit || !hit.length) return true;
+          hit.forEach(a => told.get(a.id).push(n));
+          return false;
+        });
         const old = new Map(this.rows.filter(r => r.req).map(r => [r.id, r.req]));
         const ids = new Set([...reqs.keys(), ...byReq.keys()]);
         this.rows = [
           ...[...ids].map(id => this.threadRow(id, reqs.get(id) || old.get(id) || null, byReq.get(id) || [])),
-          ...work.map(a => this.workRow(a)),
-          ...loose.map(n => this.noteRow(n)),
+          ...work.map(a => this.workRow(a, told.get(a.id))),
+          ...rest.map(n => this.noteRow(n)),
         ].sort((a, b) => (b.at || '').localeCompare(a.at || ''));
         this.navCounts = {...this.navCounts, notifications: notes.data.unread};
       } catch (err) { this.fail(err); } finally { this.loading = false; }

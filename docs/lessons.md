@@ -454,9 +454,38 @@ covers in the text it was read from (`span_blob`).
 
 ## Reading every screen as an analyst (2026-10-24)
 
+- Pages wrote sentences from storage words. The Desk fell back to "read N <prop>
+  values" for any prop, so a human's place confirmations read "read 2 located at
+  values"; the actor label was "extract run (model)" on the person page, Review and
+  the evidence page, and "import by importer" for imported claims. The canonical
+  words live in one place now: `Context.actor` labels the work ("AI extraction",
+  "imported with the source") with the model as `detail`, the Desk names each kind
+  ("AI proposed 17 ages", "accepted 26 claims", splitting reviews by verdict), and a
+  claim's provenance shows its source first.
+- Sources were named by the bare seed stem ("list", "release") or a doc kind shared
+  by several items ("Report" twice). `Context.doc` now carries `title`, the same rule
+  the Desk used (`sources.data.title`), and the demo seed gives every source a
+  distinct `context.title`. Read `title` for display and keep `file` for matching.
+  A transcript's span blob has no acquisition, so name it by `mfilter.source`, or
+  the reader sees a hash.
+- The Desk read a notification's stored subtitle ("Request 1fbaac41"), which is kept
+  bare on purpose; the bell names it at read time with `notifications.describe`.
+  Every reader of a stored notification must call it.
 - `track()` flagged two same-day positions at different place ids as a fork, so
   "arrested at Harasta" and "last seen at Douma" (3.8 km) read "sources disagree".
   Positions now disagree only past the larger of the two place precisions (the rule
   `findings.near` uses for shared presence) and never for a last-seen and arrest
   pair. A last-seen and arrest pair far apart is still not flagged; that is a
   deliberate limit.
+- A bulk-assign notification has no subject, so the Inbox showed it as its own row
+  beside the assignment it announced. It folds into the assignment rows written
+  within a second of it.
+- The Inbox passed `name`, `role` and `me` to `<actor-chip>`, which takes `actor` and
+  `you`; Vue drops unknown props silently, so every chip read "unknown". The chip
+  also printed its initials as text, so reading the line gave "A2 analyst-2 analyst
+  SA you admin". Initials are drawn by CSS now; check a component's props when a
+  label reads "unknown".
+- Review said "No date claimed" next to "12 Feb 2014 (document date)": the check
+  reports the claim's own date, the header the inherited one. Say the date comes
+  from the document. A correction read "old name · name · new name" because the
+  subject label is the old name; it reads "Name: correct X to Y".

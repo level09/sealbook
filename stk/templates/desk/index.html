@@ -26,11 +26,11 @@
 .desk-status { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
 .desk-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .desk-item:not(.desk-sens) .mv-thumb .lock { display: none; }
-.show-m { display: none; }
+.show-m, .show-mi { display: none; }
 .desk-band { display: inline-flex; gap: 2px; vertical-align: middle; }
 .desk-band i { width: 12px; height: 6px; border-radius: 1px; background: var(--line-strong); }
 .desk-band.strong i, .desk-band.moderate i:nth-child(-n+2), .desk-band.weak i:first-child { background: var(--agent); }
-@media (max-width: 959px) { .desk-grid { grid-template-columns: 1fr; } .hide-m { display: none !important; } .show-m { display: flex; margin-top: 2px; } .desk-trunc { max-width: 220px; } }
+@media (max-width: 959px) { .desk-grid { grid-template-columns: 1fr; } .hide-m { display: none !important; } .show-m { display: flex; margin-top: 2px; } .show-mi { display: inline; } .desk-trunc { max-width: 220px; } }
 </style>
 {% endblock %}
 {% block content %}
@@ -50,7 +50,7 @@
       <header><h2 id="h-chg">Since you left</h2><span class="desk-muted text-caption">${ sinceText }</span></header>
       <v-data-table-server class="desk-table" :headers="hChg" :items="chg.items" :items-length="chg.total" :loading="chg.loading" density="compact" :items-per-page="chg.perPage" :items-per-page-options="[10, 25, 50]" :row-props="rowProps(r => changeHref(r))" :hide-default-footer="chg.total <= chg.perPage" @update:options="o => load('chg', o)" @click:row="clickRow">
         <template #item.who="{ item }"><span :class="item.who.agent ? 'desk-agent' : ''"><i v-if="item.who.agent" class="ti ti-robot" aria-label="agent"></i> ${ item.who.name }</span></template>
-        <template #item.what="{ item }"><a :href="changeHref(item)" @click.stop>${ verb(item) }</a> <span v-if="item.sources.length" class="desk-muted">in ${ where(item) }</span></template>
+        <template #item.what="{ item }"><span class="show-mi" :class="item.who.agent ? 'desk-agent' : ''">${ item.who.name }&nbsp;</span><a :href="changeHref(item)" @click.stop>${ verb(item) }</a><span v-if="item.sources.length" class="desk-muted">${ prep(item) === ': ' ? '' : ' ' }${ prep(item) }${ where(item) }</span></template>
         <template #item.at="{ item }"><span class="desk-muted text-no-wrap" :title="item.at">${ ago(item.at) }</span></template>
         <template #no-data><v-empty-state icon="ti ti-coffee" title="Nothing new" :text="'No one else has worked on this case ' + sinceText + '.'"></v-empty-state></template>
       </v-data-table-server>
@@ -71,7 +71,7 @@
           <span v-for="(p, i) in item.people" :key="p"><a :href="'/people/' + p" @click.stop><bdi v-if="fnd.names[p]" dir="auto">${ fnd.names[p] }</bdi><span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> ${ unnamed[p] }</span></a>${ i < item.people.length - 1 ? ', ' : '' }</span>
           <span v-if="!item.people.length" class="desk-muted">${ plural(item.members, 'claim') }</span>
           <span v-if="item.places.length" class="desk-muted"> at </span><span v-for="(pl, i) in item.places" :key="item.place_ids[i]"><a :href="'/places/' + item.place_ids[i]" @click.stop><bdi dir="auto">${ pl || 'an unnamed place' }</bdi></a>${ i < item.places.length - 1 ? ', ' : '' }</span>
-          <span v-if="item.month" class="desk-muted"> in ${ item.month }</span>
+          <span v-if="item.month" class="desk-muted"> in ${ monthName(item.month) }</span><span v-if="item.also" class="desk-muted">, also proposed as ${ kindLabel(item.also).toLowerCase() }</span>
         </template>
         <template #item.why="{ item }"><span class="desk-muted">${ why(item) }</span></template>
         <template #item.band="{ item }"><span class="text-no-wrap" title="A band from independent sources and overlap, not a probability"><span class="desk-band" :class="item.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ item.band }</span></template>
@@ -88,8 +88,8 @@
       <v-data-table-server class="desk-table" :headers="hEv" :items="ev.items" :items-length="ev.total" :loading="ev.loading" density="compact" :items-per-page="ev.perPage" :items-per-page-options="[10, 25, 50]" :row-props="rowProps(r => '/evidence/' + r.sha256)" :hide-default-footer="ev.total <= ev.perPage" @update:options="o => load('ev', o)" @click:row="clickRow">
         <template #item.title="{ item }"><div class="desk-item" :class="{ 'desk-sens': item.sensitive }">
           <media-thumb :locked="!item.revealed" :sha="item.sha256" :mime="item.mime" :kind="item.type" :caption="false" :link="false" :width="56" :height="40"></media-thumb>
-          <div class="t"><div class="desk-trunc" dir="auto" :title="item.title"><i v-if="item.sensitive" class="ti ti-eye-off me-1" title="Sensitive, opening it is logged" aria-label="Sensitive"></i><a :href="'/evidence/' + item.sha256" @click.stop>${ item.title }</a></div>
-            <div class="desk-muted text-caption"><i :class="typeIcon(item.type)" aria-hidden="true"></i> ${ docLabel(item) }<span class="mono ms-2 hide-m" :title="item.sha256">${ item.sha256.slice(0, 8) }</span></div>
+          <div class="t"><div class="desk-trunc" dir="auto" :title="item.title"><i v-if="item.sensitive" class="ti ti-eye-off me-1" title="Sensitive, opening it is logged" aria-label="Sensitive"></i><a :href="'/evidence/' + item.sha256" :title="'SHA-256 ' + item.sha256" @click.stop>${ item.title }</a></div>
+            <div class="desk-muted text-caption"><i :class="typeIcon(item.type)" aria-hidden="true"></i> ${ docLabel(item) }<bdi v-if="item.file" dir="auto">, ${ item.file }</bdi></div>
             <div class="desk-status show-m"><span class="desk-muted text-caption">${ ago(item.acquired_at) }, ${ item.by.name }</span><v-chip v-for="c in chips(item)" :key="c.t" size="x-small" :variant="c.v" :color="c.c">${ c.t }</v-chip></div></div>
         </div></template>
         <template #item.investigation="{ item }"><span class="desk-muted">${ item.investigation }</span></template>
@@ -112,16 +112,25 @@ import {registerMediaViewers} from '/static/js/components/media.js';
 const DISCOVER = '/discover';
 const VERBS = {
   acquisition: n => `added ${n.items === 1 ? 'a source' : n.items + ' sources'}`,
-  review: n => `decided ${plural(n.n, 'claim')}`, retraction: n => `retracted ${plural(n.n, 'decision')}`,
+  review: n => `decided ${plural(n.n, 'claim')}`, review_accept: n => `accepted ${plural(n.n, 'claim')}`, review_reject: n => `rejected ${plural(n.n, 'claim')}`,
+  access: n => `viewed ${plural(n.items, 'source')}`, located_at: n => `confirmed ${plural(n.n, 'place')}`, retraction: n => `retracted ${plural(n.n, 'decision')}`,
   review_request: n => `asked for ${plural(n.n, 'review')}`, review_comment: n => `commented ${n.n === 1 ? 'once' : n.n + ' times'}`,
   media_match: n => `proposed ${plural(n.n, 'picture or sound match', 'picture or sound matches')}`,
   same_as: n => `proposed ${plural(n.n, 'same-person link')}`, not_same: n => `separated ${plural(n.n, 'person record')}`,
   c2pa_verify: n => `checked content credentials on ${plural(n.items, 'source')}`, url_liveness: n => `rechecked ${plural(n.items, 'link')}`,
   finding: n => `proposed ${plural(n.n, 'finding')}`, package: n => `built ${plural(n.n, 'package')}`, attest: n => `signed ${plural(n.n, 'package')}`,
 };
-const REVIEWS = ['review', 'retraction', 'review_request', 'review_comment'];
+const REVIEWS = ['review', 'review_accept', 'review_reject', 'retraction', 'review_request', 'review_comment'];
+const TYPE = {text: 'text file', image: 'photo', pdf: 'PDF', audio: 'recording', video: 'video', web: 'web page', other: 'file'};
+// A claim kind as a countable noun, for "AI proposed 17 ages".
+const NOUN = {name: ['name'], father_name: ["father's name", "fathers' names"], mother_name: ["mother's name", "mothers' names"], birth_date: ['birth date'], place_of_birth: ['birthplace'],
+  arrested_at: ['arrest place'], detained_at: ['detention place'], detention_branch: ['detention branch', 'detention branches'], transferred_to: ['transfer'], seen_at: ['sighting'],
+  last_seen: ['last-seen place'], sex: ['sex entry', 'sex entries'], age: ['age'], occupation: ['occupation'], event: ['event'], document_date: ['document date'],
+  document_type: ['document type'], photographed_at: ['photo place'], filmed_at: ['filming place'], located_at: ['place']};
 function plural(n, one, many) { return `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`; }
-const human = s => (s || '').replaceAll('_', ' ').replace(/^./, c => c.toUpperCase());
+// Field names as the bell and Inbox write them.
+const FIELD = {father_name: "Father's name", mother_name: "Mother's name", birth_date: 'Birth date', place_of_birth: 'Birthplace', detention_branch: 'Held by branch'};
+const human = s => FIELD[s] || (s || '').replaceAll('_', ' ').replace(/^./, c => c.toUpperCase());
 const table = () => ({items: [], total: 0, loading: true, page: 1, perPage: 10, loaded: false});
 
 window.app = Vue.createApp({
@@ -131,7 +140,7 @@ window.app = Vue.createApp({
       DISCOVER, error: '', since: null, basis: null, asks: 0, recentTotal: null, cursor: -1,
       chg: table(), need: table(), fnd: {...table(), ran: true, names: {}}, ev: table(),
       shellHints: [['/', 'search'], ['meta+k', 'go to'], ['j', 'next row'], ['k', 'previous row'], ['enter', 'open']],
-      hChg: [{title: 'Who', key: 'who', width: 140, sortable: false}, {title: 'What', key: 'what', sortable: false}, {title: 'When', key: 'at', align: 'end', width: 90, sortable: false}],
+      hChg: [{title: 'Who', key: 'who', width: 140, sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}, {title: 'What', key: 'what', sortable: false}, {title: 'When', key: 'at', align: 'end', width: 90, sortable: false}],
       hNeed: [{title: 'On', key: 'on', sortable: false}, {title: 'Status', key: 'status', align: 'end', width: 150, sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}],
       hFnd: [{title: 'Kind', key: 'kind', width: 190, sortable: false}, {title: 'Between', key: 'between', sortable: false}, {title: 'Why', key: 'why', sortable: false, headerProps: {class: 'hide-m'}, cellProps: {class: 'hide-m'}}, {title: 'Strength', key: 'band', align: 'end', width: 130, sortable: false}],
     };
@@ -176,7 +185,8 @@ window.app = Vue.createApp({
         r.pending && {t: `needs review, ${r.pending}`, v: 'outlined', c: 'agent'}, r.findings && {t: plural(r.findings, 'finding'), v: 'tonal', c: 'agent'}].filter(Boolean);
     },
     typeIcon: t => ({image: 'ti ti-photo', pdf: 'ti ti-file-type-pdf', audio: 'ti ti-volume', video: 'ti ti-video', web: 'ti ti-world', text: 'ti ti-file-text'}[t] || 'ti ti-file'),
-    docLabel(r) { const k = r.doc_type && r.doc_type !== 'unknown' ? human(r.doc_type) : null; return [k !== r.title ? k : null, r.type].filter(Boolean).join(' · '); },
+    docLabel(r) { const k = r.doc_type && r.doc_type !== 'unknown' ? human(r.doc_type) : null; const t = TYPE[r.type] || r.type; return [k !== r.title ? k : null, k?.toLowerCase() === t ? null : t].filter(Boolean).join(', '); },
+    monthName: m => new Date(m + '-01T00:00:00Z').toLocaleDateString('en', {month: 'long', year: 'numeric', timeZone: 'UTC'}),
     kindLabel: k => ({shared_presence: 'Same place and time', candidate_incident: 'Candidate incident'}[k] || human(k)),
     why(f) {
       const x = f.features;
@@ -184,8 +194,16 @@ window.app = Vue.createApp({
       if (f.kind === 'candidate_incident') return `${plural(x.people, 'person', 'people')} from ${plural(x.sources, 'source')} within ${plural(x.span_days, 'day')}`;
       return plural(f.members, 'claim');
     },
-    verb(r) { return (VERBS[r.what] || (n => `read ${plural(n.n, human(r.what).toLowerCase() + ' value')}`))(r); },
-    where(r) { const t = r.sources.map(s => s.title); return t.join(', ') + (r.items > t.length ? ` and ${(r.items - t.length).toLocaleString()} more` : ''); },
+    // Agents propose claims and people add them; neither "reads" a value.
+    verb(r) {
+      if (VERBS[r.what] && !(r.who.agent && r.what === 'located_at')) return VERBS[r.what](r);
+      const [one, many] = NOUN[r.what] || [human(r.what).toLowerCase() + ' claim'];
+      return `${r.who.agent ? 'AI proposed' : 'added'} ${plural(r.n, one, many)}`;
+    },
+    // Work on sources lists them; work on claims says where the claims are.
+    prep(r) { return ['acquisition', 'c2pa_verify', 'url_liveness'].includes(r.what) ? ': ' : r.who.agent && (!VERBS[r.what] || r.what === 'located_at') ? 'from ' : 'in '; },
+    // Titles carry commas of their own, so a list of them is split by semicolons.
+    where(r) { const t = [...new Set(r.sources.map(s => s.title))]; return t.join('; ') + (r.items > r.sources.length ? ` and ${(r.items - r.sources.length).toLocaleString()} more` : ''); },
     changeHref(r) { return REVIEWS.includes(r.what) ? '/review' : r.sources[0] ? '/evidence/' + r.sources[0].sha256 : '/sources'; },
     needTitle(i) {
       if (i.kind === 'review') return `${human(i.prop)} claim${i.source?.title ? ' in ' + i.source.title : ''}`;

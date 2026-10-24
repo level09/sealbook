@@ -197,7 +197,7 @@ async def links(db, rows: list[dict]) -> dict[str, dict]:
         link = {
             "source": src,
             "mime": mime.get(src),
-            "file": ctx.doc(src)["file"],
+            "file": ctx.doc(src)["title"],
             "sensitive_source": ctx.doc(src)["sensitive"],
             "href": f"/evidence/{src}",
             "segment": None,

@@ -32,6 +32,7 @@ from stk.ledger.write import sig_problem, subject_head
 from stk.monitor import filter as mfilter
 from stk.places import normalise
 from stk.settings import Config
+from stk.sources.data import title
 
 # Personal data: masked by default when the source is sensitive.
 PERSONAL = {
@@ -145,6 +146,22 @@ def subject_label(subject: str, files: dict) -> str:
     return f"{kind} {ref[:6]}"
 
 
+TOOL_WORDS = {
+    "extract": "AI extraction",
+    "extract_sheet": "AI sheet extraction",
+    "transcribe": "AI transcription",
+    "embed": "AI embedding",
+    "propose": "AI proposal",
+    "match": "name matching",
+    "discover": "discovery",
+    "hash": "hashing",
+    "fingerprint": "fingerprinting",
+    "c2pa_verify": "content credentials check",
+    "url_check": "link check",
+    "pdf": "PDF text reading",
+}
+
+
 class Context:
     """Principals, runs, acquisitions and document dates behind a set of rows,
     loaded once per request."""
@@ -219,6 +236,13 @@ class Context:
                 else None
             )
             or (sha or "")[:12],
+            "title": title(
+                first.context.get("title"),
+                first.context.get("file") or first.context.get("filename"),
+                first.doc_type,
+            )
+            if first
+            else (sha or "")[:12],
             "doc_type": first.doc_type if first else None,
             "origins": sorted({a.origin for a in acqs}),
             # No acquisition means no sensitivity was ever set: sensitive by default.
@@ -243,7 +267,11 @@ class Context:
         if author.kind == "human":
             return base | {"kind": "human", "label": author.name}
         if run is not None and run.tool == "import":
-            return base | {"kind": "import", "label": f"import by {author.name}"}
+            return base | {
+                "kind": "import",
+                "label": "imported with the source",
+                "detail": f"import by {author.name}",
+            }
         if author.on_behalf_of:
             boss = self.principals[author.on_behalf_of]
             return base | {
@@ -251,9 +279,13 @@ class Context:
                 "label": f"{author.name} for {boss.name}",
                 "for": boss.name,
             }
-        tool = run.tool if run else "unknown"
-        model = f" ({run.model_served})" if run and run.model_served else ""
-        return base | {"kind": "extractor", "label": f"{tool} run{model}"}
+        # The work in plain words; the model is secondary detail, never the label.
+        tool = run.tool if run else None
+        return base | {
+            "kind": "extractor",
+            "label": TOOL_WORDS.get(tool) or f"{tool or 'unknown'} run",
+            "detail": run.model_served if run else None,
+        }
 
     def statement(self, st: Statement, tier: str, reason: str, value) -> dict:
         sha = st.span_blob or (
@@ -755,7 +787,7 @@ async def statement_page(db: AsyncSession, sid: uuid.UUID) -> dict | None:
     if st.prop == Prop.MEDIA_MATCH:
         media = await media_pair(db, st)
         row["display"] = (
-            f"{media['left']['file']} and {media['right']['file']}"
+            f"{media['left']['title']} and {media['right']['title']}"
             if media
             else "A source was erased. This match cannot be used."
         )

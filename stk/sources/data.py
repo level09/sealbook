@@ -8,6 +8,7 @@ sort or filter needs them across the whole result. Never a query per row."""
 
 from __future__ import annotations
 
+import re
 import uuid
 from datetime import date, timedelta
 
@@ -41,6 +42,17 @@ MAX_IDS = 50_000
 # Group by the first output column: the same expression bound twice is two
 # parameters to Postgres, which then refuses the GROUP BY.
 FIRST = text("1")
+
+
+def title(given, file, doc_type) -> str:
+    """A name a person reads: the acquisition's title, else its file name, unless that
+    is one bare word such as "list" or "note", where the document kind says more."""
+    kind = None if doc_type in (None, "unknown") else doc_type.replace("_", " ")
+    if given:
+        return given
+    if file and (not kind or not re.fullmatch(r"[a-z]+", file)):
+        return file
+    return (kind or "untitled source").capitalize()
 
 
 def parse(args, user_id: int) -> dict:
@@ -159,7 +171,9 @@ def base(f: dict):
         Acquisition.doc_type,
         Acquisition.collector_id,
         func.coalesce(
-            Acquisition.context["file"].astext, Acquisition.context["filename"].astext
+            Acquisition.context["title"].astext,
+            Acquisition.context["file"].astext,
+            Acquisition.context["filename"].astext,
         ).label("file"),
         # Same rule as the monitor: any sensitive acquisition makes the source
         # sensitive. A window over the same sort as DISTINCT ON costs no extra pass.

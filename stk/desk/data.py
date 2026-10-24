@@ -4,7 +4,6 @@ never by value, so nothing here needs a reveal or survives an erasure."""
 
 from __future__ import annotations
 
-import re
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -13,6 +12,7 @@ from sqlalchemy.dialects.postgresql import UUID, array_agg
 from sqlalchemy.orm import aliased
 
 from stk.collaboration.models import Assignment, Notification
+from stk.collaboration.notifications import BARE, describe
 from stk.discovery import service
 from stk.discovery.models import FindingKey
 from stk.ledger.contracts import Prop, Tier
@@ -29,7 +29,7 @@ from stk.people import data as people
 from stk.places.models import Place
 from stk.review.findings import band
 from stk.sources import data as sources
-from stk.sources.data import DERIVED, _blob
+from stk.sources.data import DERIVED, _blob, title
 from stk.user.models import User
 
 # Bookkeeping, not work: reads, fingerprints and hashes would drown the changes.
@@ -66,22 +66,16 @@ def _mine(user_id):
     return select(Principal.id).where(Principal.user_id == user_id)
 
 
-def title(given, file, doc_type) -> str:
-    """A name a person reads: the acquisition's title, else its file name, unless that
-    is one bare word such as "list" or "note", where the document kind says more."""
-    kind = None if doc_type in (None, "unknown") else doc_type.replace("_", " ")
-    if given:
-        return given
-    if file and (not kind or not re.fullmatch(r"[a-z]+", file)):
-        return file
-    return (kind or "untitled source").capitalize()
-
-
 async def files(db, shas) -> dict[str, str]:
     """Title per available source; erased sources are left out."""
+    return {sha: title(*rest) for sha, *rest in await _named(db, shas)}
+
+
+async def _named(db, shas):
+    """(sha, given title, file name, doc type) per available source."""
     shas = sorted({s for s in shas if s})
     if not shas:
-        return {}
+        return []
     q = (
         select(
             Acquisition.blob_sha256,
@@ -97,7 +91,7 @@ async def files(db, shas) -> dict[str, str]:
         .distinct(Acquisition.blob_sha256)
         .order_by(Acquisition.blob_sha256, Acquisition.at)
     )
-    return {sha: title(*rest) for sha, *rest in await db.execute(q)}
+    return (await db.execute(q)).all()
 
 
 async def since(db, user) -> tuple[datetime, str]:
@@ -127,10 +121,16 @@ async def changes(db, user, investigation, page, per_page) -> dict:
     s, t, t2 = Statement, aliased(Statement), aliased(Statement)
     blob = func.coalesce(_blob(s), _blob(t), _blob(t2))
     derived = DERIVED
+    # A decision reads as what it decided: "accepted 4 claims", not "decided".
+    verdict = Payload.value["verdict"].astext
+    what = case(
+        (s.prop == Prop.REVIEW, func.coalesce("review_" + verdict, s.prop)),
+        else_=s.prop,
+    )
     said = (
         select(
             s.author_id.label("who"),
-            s.prop.label("what"),
+            what.label("what"),
             func.coalesce(derived.c.source, blob).label("sha"),
             s.recorded_at.label("at"),
         )
@@ -138,6 +138,9 @@ async def changes(db, user, investigation, page, per_page) -> dict:
         .outerjoin(t, t.id == _ref(s))
         .outerjoin(t2, t2.id == _ref(t))
         .outerjoin(derived, derived.c.derived == blob)
+        .outerjoin(
+            Payload, (Payload.commitment == s.commitment) & (s.prop == Prop.REVIEW)
+        )
         .where(
             s.recorded_at > at,
             s.prop.not_in(QUIET),
@@ -287,12 +290,16 @@ async def needs(db, user, investigation, page, per_page) -> dict:
     mentions = mentions.order_by(Notification.created_at.desc(), Notification.id)
 
     async def shape_mentions(rows):
+        # Stored as "Request 1fbaac41"; named at read time as the bell names them.
+        named = await describe(
+            db, [n.subject for (n,) in rows if BARE.fullmatch(n.subtitle or "")]
+        )
         return [
             {
                 "kind": n.kind,
                 "id": str(n.id),
                 "title": n.title,
-                "detail": n.subtitle,
+                "detail": named.get(n.subject, n.subtitle),
                 "status": "mentions you" if n.kind == "mention" else "new reply",
                 "mine": n.kind == "mention",
                 "href": n.link,
@@ -417,29 +424,38 @@ async def findings(db, investigation, page, per_page) -> dict:
             }
         ),
     )
+    items = [
+        {
+            "key": fk.key,
+            "kind": fk.kind,
+            "investigation": fk.investigation,
+            "rank": fk.rank,
+            "band": band(fk.kind, fk.features or {}),
+            "features": fk.features or {},
+            "members": len(fk.members or ()),
+            "people": [p.removeprefix("person:") for p in (v or {}).get("people", ())],
+            "places": [places.get(p) for p in (v or {}).get("places", ())],
+            "place_ids": [
+                p.removeprefix("place:") for p in (v or {}).get("places", ())
+            ],
+            "month": (v or {}).get("month"),
+            "at": fk.created_at.isoformat(),
+        }
+        for fk, v in rows
+    ]
+
+    # Two kinds over the same people, places and month are one set read twice.
+    def same(i):
+        return (tuple(sorted(i["people"])), tuple(sorted(i["place_ids"])), i["month"])
+
+    for i in items:
+        i["also"] = next(
+            (j["kind"] for j in items if j["kind"] != i["kind"] and same(j) == same(i)),
+            None,
+        )
     return {
         "names": named,
-        "items": [
-            {
-                "key": fk.key,
-                "kind": fk.kind,
-                "investigation": fk.investigation,
-                "rank": fk.rank,
-                "band": band(fk.kind, fk.features or {}),
-                "features": fk.features or {},
-                "members": len(fk.members or ()),
-                "people": [
-                    p.removeprefix("person:") for p in (v or {}).get("people", ())
-                ],
-                "places": [places.get(p) for p in (v or {}).get("places", ())],
-                "place_ids": [
-                    p.removeprefix("place:") for p in (v or {}).get("places", ())
-                ],
-                "month": (v or {}).get("month"),
-                "at": fk.created_at.isoformat(),
-            }
-            for fk, v in rows
-        ],
+        "items": items,
         "total": total,
         "ran": bool(await db.scalar(ran)),
     }
@@ -468,10 +484,11 @@ async def recent(db, user, f: dict) -> dict:
                 )
             ).all()
         )
-        names = await files(db, shas)
+        names = {sha: (title(*rest), rest[1]) for sha, *rest in await _named(db, shas)}
         for r in out["items"]:
             r["investigation"] = cases.get(r["sha256"])
-            r["title"] = names.get(r["sha256"], r["title"])
+            r["title"], file = names.get(r["sha256"], (r["title"], None))
+            r["file"] = file if file != r["title"] else None
     at, _ = await since(db, user)
     mark_new(out["items"], at)
     return out

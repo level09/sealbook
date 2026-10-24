@@ -38,11 +38,11 @@ export const ActorChip = {
     },
     initials() {return initials(this.a.name);},
     label() {return this.you ? 'you' : this.a.name;},
-    sub() {return this.a.role || this.a.detail || '';},
+    sub() {return this.you ? '' : this.a.role || this.a.detail || '';},
     title() {return [this.a.name, this.a.role, this.a.detail].filter(Boolean).join(' · ');},
   },
   template: `<span class="ac" :class="['ac-' + a.kind, {'ac-machine': machine}]" :title="title">
-    <span class="ac-av" :style="style" :aria-label="bare ? title : null" :role="bare ? 'img' : null"><i v-if="icon" :class="icon" aria-hidden="true"></i><template v-else>{{ initials }}</template></span>
+    <span class="ac-av" :style="style" :data-i="icon ? null : initials" :aria-label="bare ? title : null" :role="bare ? 'img' : null" :aria-hidden="bare ? null : 'true'"><i v-if="icon" :class="icon" aria-hidden="true"></i></span>
     <template v-if="!bare"><span class="ac-n"><bdi>{{ label }}</bdi></span><span v-if="sub && size !== 'sm'" class="ac-r">{{ sub }}</span></template>
   </span>`,
   beforeCreate() {
@@ -50,6 +50,7 @@ export const ActorChip = {
     document.head.append(Object.assign(document.createElement('style'), {id: 'actor-chip-css', textContent: `
 .ac { display: inline-flex; align-items: center; gap: 6px; min-width: 0; vertical-align: middle; line-height: 1.3; }
 .ac-av { flex: none; display: inline-grid; place-items: center; border-radius: 50%; font-size: 9.5px; font-weight: 650; letter-spacing: .02em; color: #fff; background: var(--ac-l); }
+.ac-av[data-i]::before { content: attr(data-i); }
 .dark-mode .ac-av { color: #141518; background: var(--ac-d); }
 .ac-machine .ac-av { background: var(--agent-wash, rgba(90,70,200,.09)); color: var(--agent, #5a46c8); box-shadow: inset 0 0 0 1px var(--agent-solid, rgba(90,70,200,.18)); font-size: 12px; }
 .ac-import .ac-av { background: var(--wash, rgba(24,25,27,.06)); color: var(--ink-2, #44464a); box-shadow: inset 0 0 0 1px var(--line-strong, #c9c9c3); font-size: 12px; }

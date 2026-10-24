@@ -137,11 +137,8 @@ class People:
             }
         if actor["kind"] == "agent":
             name, detail = p.name, run.model_served if run else None
-        elif actor["kind"] == "import":
-            name, detail = actor["label"], None
         else:
-            name = f"{run.tool} run" if run else p.name
-            detail = run.model_served if run else None
+            name, detail = actor["label"], actor["detail"]
         return {
             "kind": actor["kind"],
             "name": name,
@@ -403,7 +400,7 @@ async def rows(db, user, wanted: list[uuid.UUID]) -> list[dict]:
         mime = mimes.get(sha, "")
         return {
             "sha256": sha,
-            "file": doc["file"],
+            "file": doc["title"],
             "mime": mime,
             "kind": evidence.kind_of(mime),
             "doc_type": doc["doc_type"],
