@@ -1,18 +1,18 @@
 /* Evidence monitor. Tier is texture (hatched, outlined, solid) with a quiet tier hue
-   (teal accepted, steel corroborated, neutral unconfirmed); who authored a value is the
+   (teal accepted, teal outline corroborated, neutral unconfirmed); who authored a value is the
    text hue (ink for people, violet for agents). Roles come from shell.css. */
 
 .mon {
-    --bg: #f3f3f1;
-    --panel: #ffffff;
-    --raise: #fafaf8;
-    --line: #e4e4e0;
-    --line-strong: #c9c9c3;
-    --ink: #18191b;
-    --ink-2: #44464a;
+    --bg: #ecebe6;
+    --panel: #fbfaf7;
+    --raise: #f5f4f0;
+    --line: #e0dfd9;
+    --line-strong: #c6c5be;
+    --ink: #1f2124;
+    --ink-2: #4a4c50;
     --ink-3: #66696e;
-    --wash: rgba(24, 25, 27, 0.06);
-    --solid: rgba(24, 25, 27, 0.13);
+    --wash: rgba(31, 33, 36, 0.06);
+    --solid: rgba(31, 33, 36, 0.13);
     --agent: #5a46c8;
     --agent-wash: rgba(90, 70, 200, 0.09);
     --agent-solid: rgba(90, 70, 200, 0.18);
@@ -28,16 +28,16 @@
 
 /* The layout marks the body; Vuetify 4 puts no theme class on an ancestor of page content. */
 .dark-mode .mon {
-    --bg: #0c0d0f;
-    --panel: #141518;
-    --raise: #1a1c20;
-    --line: #25282d;
-    --line-strong: #383c43;
-    --ink: #e7e7e4;
-    --ink-2: #b9bbbf;
-    --ink-3: #8f9298;
-    --wash: rgba(231, 231, 228, 0.06);
-    --solid: rgba(231, 231, 228, 0.16);
+    --bg: #151619;
+    --panel: #1c1d21;
+    --raise: #222428;
+    --line: #2c2e33;
+    --line-strong: #3e4148;
+    --ink: #d9dad6;
+    --ink-2: #aeb1b5;
+    --ink-3: #8d9197;
+    --wash: rgba(217, 218, 214, 0.06);
+    --solid: rgba(217, 218, 214, 0.16);
     --agent: #ab9ef7;
     --agent-wash: rgba(171, 158, 247, 0.1);
     --agent-solid: rgba(171, 158, 247, 0.22);

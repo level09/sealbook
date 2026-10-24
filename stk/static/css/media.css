@@ -1,5 +1,5 @@
 /* Media viewers (stk/static/js/components/*). Loaded once by media.js. Violet marks
-   agent proposals; hatching is an unconfirmed tier, teal accepted and steel corroborated
+   agent proposals; hatching is an unconfirmed tier, teal accepted and teal outline corroborated
    (role tokens in shell.css). */
 .mv { --mv-agent: var(--agent, #5a46c8); --mv-ink: var(--ink, #18191b); --mv-line: var(--line, #e4e4e0); --mv-line-strong: var(--line-strong, #c9c9c3); --mv-raise: var(--raise, #fafaf8); --mv-panel: var(--panel, #fff); --mv-wash: var(--wash, rgba(24,25,27,.06)); --mv-agent-wash: var(--agent-wash, rgba(90,70,200,.09)); --mv-agent-solid: var(--agent-solid, rgba(90,70,200,.18)); --mv-solid: var(--solid, rgba(24,25,27,.13)); --mv-ink-3: var(--ink-3, #62656a); --mv-mono: var(--mono, ui-monospace, Menlo, monospace); position: relative; outline: none; background: var(--mv-panel); }
 body.dark-mode .mv { --mv-agent: var(--agent, #ab9ef7); --mv-ink: var(--ink, #e7e7e4); --mv-line: var(--line, #25282d); --mv-line-strong: var(--line-strong, #383c43); --mv-raise: var(--raise, #1a1c20); --mv-panel: var(--panel, #141518); --mv-wash: var(--wash, rgba(231,231,228,.06)); --mv-agent-wash: var(--agent-wash, rgba(171,158,247,.1)); --mv-agent-solid: var(--agent-solid, rgba(171,158,247,.22)); --mv-solid: var(--solid, rgba(231,231,228,.16)); --mv-ink-3: var(--ink-3, #969aa0); }

@@ -16,12 +16,12 @@ html, body {
 /* Quiet console: one family, 1px lines, ink for primary actions. Matches the
    evidence monitor (monitor.css) so every page speaks the same vocabulary. */
 :root {
-    --app-line: #e4e4e0;
-    --app-line-strong: #c9c9c3;
+    --app-line: #e0dfd9;
+    --app-line-strong: #c6c5be;
 }
 .dark-mode {
-    --app-line: #25282d;
-    --app-line-strong: #383c43;
+    --app-line: #2c2e33;
+    --app-line-strong: #3e4148;
 }
 
 /* ===== Typography ===== */

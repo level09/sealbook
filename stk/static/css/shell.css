@@ -21,16 +21,16 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 :root {
-  --bg: #f3f3f1; --panel: #fff; --raise: #fafaf8; --line: #e4e4e0; --line-strong: #c9c9c3;
-  --ink: #18191b; --ink-2: #44464a; --ink-3: #62656a;
-  --wash: rgba(24,25,27,.06); --solid: rgba(24,25,27,.13);
+  --bg: #ecebe6; --panel: #fbfaf7; --raise: #f5f4f0; --line: #e0dfd9; --line-strong: #c6c5be;
+  --ink: #1f2124; --ink-2: #4a4c50; --ink-3: #66696e;
+  --wash: rgba(31,33,36,.06); --solid: rgba(31,33,36,.13);
   --agent: #5a46c8; --agent-wash: rgba(90,70,200,.09); --agent-solid: rgba(90,70,200,.18);
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 :root.dark-mode, body.dark-mode {
-  --bg: #0c0d0f; --panel: #141518; --raise: #1a1c20; --line: #25282d; --line-strong: #383c43;
-  --ink: #e7e7e4; --ink-2: #b9bbbf; --ink-3: #969aa0;
-  --wash: rgba(231,231,228,.06); --solid: rgba(231,231,228,.16);
+  --bg: #151619; --panel: #1c1d21; --raise: #222428; --line: #2c2e33; --line-strong: #3e4148;
+  --ink: #d9dad6; --ink-2: #aeb1b5; --ink-3: #8d9197;
+  --wash: rgba(217,218,214,.06); --solid: rgba(217,218,214,.16);
   --agent: #ab9ef7; --agent-wash: rgba(171,158,247,.1); --agent-solid: rgba(171,158,247,.22);
   color-scheme: dark;
 }
@@ -38,20 +38,16 @@
    MapLibre and canvas read them. Each role has an ink for text and glyphs (AA on panel,
    bg and its own wash), a -wash for chip grounds and a -line for edges and marks (3:1
    on panel). Colour never carries meaning alone: it rides on a texture, icon or word.
-   config.js mirrors the inks for Vuetify colour props; change both together. */
+   config.js mirrors the inks for Vuetify colour props; change both together.
+   Six hues only: below about 6 OKLab dE two roles read as one at chip size, so entity
+   kinds are ink with their icon, corroborated is the accepted hue in outline texture
+   and overdue is the negative hue with its alert icon. */
 :root {
   --accepted: #0d6a58; --accepted-wash: #e0f6ef; --accepted-line: #569c89;
-  --corroborated: #3a6283; --corroborated-wash: #e5f2fe; --corroborated-line: #6c91b0;
   --conflict: #915c08; --conflict-wash: #feeddb; --conflict-line: #b38144;
   --negative: #a04034; --negative-wash: #ffebe7; --negative-line: #c96f61;
   --sensitive: #964267; --sensitive-wash: #feeaf1; --sensitive-line: #bf6f8f;
-  --overdue: #b32e2a; --overdue-wash: #ffebe8; --overdue-line: #d96157;
   --new: #0d6abb; --new-wash: #e6f2ff; --new-line: #488fdb;
-  --person: #0e6a9b; --person-wash: #e4f3fe; --person-line: #4e94c2;
-  --place: #397247; --place-wash: #e4f6e7; --place-line: #689a72;
-  --source: #81632f; --source-wash: #f9efdf; --source-line: #a38859;
-  --incident: #9c522e; --incident-wash: #ffece3; --incident-line: #be7858;
-  --story: #485b91; --story-wash: #eaf0ff; --story-line: #778bbe;
   /* actor avatars: low chroma, clear of the status hues and of agent violet */
   --av-1: #c0e6eb; --av-1-ink: #024c52; --av-2: #c7e2f6; --av-2-ink: #0d4768;
   --av-3: #ebd6ee; --av-3-ink: #56335b; --av-4: #e7dcd2; --av-4-ink: #513e2f;
@@ -60,23 +56,25 @@
 }
 :root.dark-mode, body.dark-mode {
   --accepted: #7bd1ba; --accepted-wash: #0c2d25; --accepted-line: #388472;
-  --corroborated: #98c0e2; --corroborated-wash: #1a2834; --corroborated-line: #577895;
   --conflict: #f6b669; --conflict-wash: #34220b; --conflict-line: #9c681f;
   --negative: #ea998b; --negative-wash: #3a1e19; --negative-line: #a35f55;
   --sensitive: #e9a3bd; --sensitive-wash: #361e27; --sensitive-line: #9a6077;
-  --overdue: #f6857a; --overdue-wash: #3a1d1a; --overdue-line: #b2534b;
   --new: #77b5fb; --new-wash: #15283c; --new-line: #4177b2;
-  --person: #84c3ef; --person-wash: #122938; --person-line: #457b9f;
-  --place: #8ed09c; --place-wash: #152d1a; --place-line: #4b8358;
-  --source: #e0bf89; --source-wash: #302411; --source-line: #8b7042;
-  --incident: #eda382; --incident-wash: #391f13; --incident-line: #a06347;
-  --story: #a4b6e5; --story-wash: #202636; --story-line: #64739a;
   --av-1: #133f44; --av-1-ink: #bae8ed; --av-2: #1f3b4e; --av-2-ink: #c2e3fb;
   --av-3: #442f47; --av-3-ink: #eed4f1; --av-4: #41352d; --av-4-ink: #e9dbd0;
   --av-5: #313941; --av-5-ink: #d5dfea; --av-6: #3c382a; --av-6-ink: #e3decd;
   --av-agent: #2d2850; --av-agent-ink: #c9c0fb; --av-import: #2a2c31; --av-import-ink: #c8cace;
 }
-:root, body { --due: var(--conflict); --due-wash: var(--conflict-wash); --due-line: var(--conflict-line); }
+:root, body {
+  --due: var(--conflict); --due-wash: var(--conflict-wash); --due-line: var(--conflict-line);
+  --overdue: var(--negative); --overdue-wash: var(--negative-wash); --overdue-line: var(--negative-line);
+  --corroborated: var(--accepted); --corroborated-wash: transparent; --corroborated-line: var(--accepted-line);
+  --person: var(--ink-2); --person-wash: var(--wash); --person-line: var(--ink-3);
+  --place: var(--ink-2); --place-wash: var(--wash); --place-line: var(--ink-3);
+  --source: var(--ink-2); --source-wash: var(--wash); --source-line: var(--ink-3);
+  --incident: var(--ink-2); --incident-wash: var(--wash); --incident-line: var(--ink-3);
+  --story: var(--ink-2); --story-wash: var(--wash); --story-line: var(--ink-3);
+}
 
 /* Role carriers: a role class names the meaning, r-ink, r-chip and r-dot draw it. No
    role edge on rows: the inset left edge already marks the selected row everywhere. */

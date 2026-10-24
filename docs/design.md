@@ -281,23 +281,36 @@ Primary actions stay ink. Colour is never the only cue: each role rides on the t
 icon or word in the last column, and deuteranopia and protanopia simulations still read
 through those.
 
+Six hues only (2026-10-24): agent, accepted, conflict (and due), negative (and overdue),
+sensitive and new. Below about 6 OKLab dE two roles read as one at chip size; the earlier
+14 had pairs at 0.7 to 3 under colour-blind simulation (person, corroborated and story;
+source and incident). So entity kinds are ink-2 and keep their icon, corroborated is the
+accepted hue in outline texture, and overdue is the negative hue with its alert icon.
+Agent violet and new blue still sit close under deuteranopia; the robot icon and the
+dot separate them.
+
+Ground (2026-10-24), tuned for long sessions: light is warm paper (bg #ecebe6, panel
+#fbfaf7, ink #1f2124, 15.5:1) instead of pure white; dark is lifted off near-black (bg
+#151619, panel #1c1d21, ink #d9dad6, 12:1) to cut halation. monitor.css, app.css and
+config.js mirror these values.
+
 | Role | Meaning | Light | Dark | Where | Non-colour pair |
 |---|---|---|---|---|---|
 | `--agent` | AI proposals, agent runs, findings, leads | #5a46c8 | #ab9ef7 | actor text, finding chips, strength bands, unconfirmed agent marks, a ring on confirmed agent marks | robot icon, "agent" or run name |
 | `--accepted` | a person accepted it | #0d6a58 | #7bd1ba | tier fills on chips, swatches, bboxes, map and timeline points | solid texture, the word accepted |
-| `--corroborated` | independent origins agree | #3a6283 | #98c0e2 | tier outlines | outline texture |
+| `--corroborated` | independent origins agree | = accepted | = accepted | tier outlines | outline texture |
 | unconfirmed | not yet decided | ink-2 / ink-3 | ink-2 / ink-3 | hatched marks in the author's hue | hatch, dashed edge |
 | `--conflict` | places or values disagree | #915c08 | #f6b669 | timeline forks, map fork lines, fork notes | fork icon, "conflict" |
 | `--negative` | rejected, erased, failed | #a04034 | #ea998b | rejected strike, failed chips and checks | line-through, cross, "failed" |
 | `--sensitive` | sensitive source | #964267 | #e9a3bd | sensitive chips, thumbnail hatch and lock | eye-off or lock icon, hatch, "sensitive" |
 | `--due` | needs your action, has a date | = conflict | = conflict | Needs you chips, assignee due | clock icon, "due" or "asks you" |
-| `--overdue` | past its due date | #b32e2a | #f6857a | Needs you chips, Sources workload and assignee | alert icon, "overdue" |
+| `--overdue` | past its due date | = negative | = negative | Needs you chips, Sources workload and assignee | alert icon, "overdue" |
 | `--new` | unread or new since last look | #0d6abb | #77b5fb | bell badge and unread icons, new chips | dot icon, "new" |
-| `--person` | person | #0e6a9b | #84c3ef | search glyphs and group dots | user icon |
-| `--place` | place | #397247 | #8ed09c | search glyphs and group dots | pin icon |
-| `--source` | source file | #81632f | #e0bf89 | thumbnail type icons, search glyphs | file-type icon |
-| `--incident` | incident | #9c522e | #eda382 | Stories incident bands, search glyphs | band label, alert icon |
-| `--story` | story | #485b91 | #a4b6e5 | reserved for story links | story icon |
+| `--person` | person | ink-2 | ink-2 | search glyphs and group dots | user icon |
+| `--place` | place | ink-2 | ink-2 | search glyphs and group dots | pin icon |
+| `--source` | source file | ink-2 | ink-2 | thumbnail type icons, search glyphs | file-type icon |
+| `--incident` | incident | ink-2 | ink-2 | Stories incident bands, search glyphs | band label, alert icon |
+| `--story` | story | ink-2 | ink-2 | reserved for story links | story icon |
 
 Washes and lines per role are in shell.css. Utilities: a role class (`.is-person`,
 `.is-place`, `.is-source`, `.is-incident`, `.is-story`, `.is-finding`, `.tier-accepted`,
