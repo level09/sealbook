@@ -17,6 +17,11 @@ const ms = v => {const s = Math.max(0, Math.round((v || 0) / 1000)); return `${S
 const prop = p => PROP[p] || p.replace(/_/g, ' ');
 const short = h => h ? h.slice(0, 8) : '';
 const message = failure;
+// Unicode isolate: an Arabic name ending in digits keeps its own order inside English copy.
+const iso = t => `\u2068${t}\u2069`;
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+// A place more sources than this name folds behind one summary line.
+const FOLD_PLACE = 3;
 const spanLabel = s => !s ? '' : s.bbox ? `region, p. ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.start != null ? `characters ${s.start} to ${s.end}` : '';
 
 export function mount(boot) {
@@ -26,7 +31,7 @@ export function mount(boot) {
       return {boot, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
         cursor: {list: 'claims', i: -1}, excerpt: null, threadId: null, thread: null, threadBusy: false, comment: '',
         ask: {open: false, statement: null, reviewer: null, reason: '', busy: false}, analysts: [], relate: {open: false, row: null, value: 'same_recording'},
-        snack: {show: false, text: ''}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
+        snack: {show: false, text: ''}, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
     },
     computed: {
       claims() {return this.it ? this.it.claims.map(c => ({...c, label: prop(c.prop), value: this.read?.values?.[c.id] ?? c.display})) : [];},
@@ -42,12 +47,21 @@ export function mount(boot) {
       otherCopy() {return this.other && this.it.copies.find(c => c.other === this.other.sha256);},
       otherAt() {return this.boot.at ?? this.otherCopy?.there?.[0] ?? null;},
       otherMarks() {const c = this.otherCopy; return c ? [[c.there[0], Math.max(c.there[1], c.there[0] + 1000)]] : this.otherAt != null ? [[this.otherAt, this.otherAt + 2000]] : [];},
-      relations() {return this.it ? this.it.relations : [];},
+      relations() {
+        if (!this.it) return [];
+        const out = [], folded = new Set();
+        for (const r of this.it.relations) {
+          if (r.kind !== 'Same place' || r.sources <= FOLD_PLACE) {out.push(r); continue;}
+          if (!folded.has(r.place)) {folded.add(r.place); out.push({id: `fold:${r.place}`, fold: true, place: r.place, at_place: r.at_place, sources: r.sources});}
+          if (this.unfolded[r.place]) out.push({...r, nested: true});
+        }
+        return out;
+      },
       connections() {
         if (!this.it) return [];
         const seen = new Set();
-        return [...this.it.copies, ...this.relations].filter(r => r.other && r.other !== this.it.sha256 && !seen.has(r.other + r.kind) && seen.add(r.other + r.kind))
-          .map(r => ({key: r.other + r.kind, kind: r.kind === 'Nearest by meaning' ? `Meaning ${r.distance.toFixed(2)}` : r.kind, o: this.it.docs[r.other], href: this.side(r)}));
+        return [...this.it.copies, ...this.it.relations].filter(r => r.other && r.other !== this.it.sha256 && !seen.has(r.other + r.kind) && seen.add(r.other + r.kind))
+          .map(r => ({key: r.other + r.kind, kind: r.kind === 'Nearest by meaning' ? 'Similar meaning' : r.kind, o: this.it.docs[r.other], href: this.side(r)}));
       },
       threadsByAbout() {const m = {}; (this.it?.threads || []).forEach(t => (m[t.about] ||= []).push(t)); return m;},
       c2pa() {const v = this.it?.c2pa; return v && (v.status || v.result);},
@@ -63,13 +77,24 @@ export function mount(boot) {
       hl() {const s = this.boot.segment; return s?.span && ['text', 'web'].includes(this.it?.kind) && s.kind === 'text' ? s.span : null;},
     },
     methods: {
-      ms, prop, short, spanLabel,
+      ms, prop, short, spanLabel, plural,
       say(text) {this.snack = {show: true, text};},
       nameOf(subject) {
         if (!subject.startsWith('person:')) return 'This document';
         const n = this.claims.find(c => c.subject === subject && c.prop === 'name' && c.value);
         return n ? n.value : `Person ${short(subject.slice(7))}`;
       },
+      // One sentence per relation, with the same prop words as the claims list.
+      relWhy(r) {
+        const words = ps => ps.map(p => prop(p).toLowerCase()).join(', ');
+        if (r.kind === 'Same place') return `Both name ${iso(r.at_place)}. There: ${words(r.props_there)} (${plural(r.count, 'claim')}). Here: ${words(r.props_here)}.`;
+        if (r.kind === 'Same person?') {
+          const here = this.claims.find(c => c.subject === r.here && c.prop === 'name' && c.value)?.value || r.here_name;
+          return `${here ? iso(here) : 'An unnamed person'} here and ${r.their_name ? iso(r.their_name) : 'an unnamed person'} there, ${r.why}`;
+        }
+        return r.why;
+      },
+      fold(r) {this.unfolded = {...this.unfolded, [r.place]: !this.unfolded[r.place]};},
       side(r) {return r.other ? `/evidence/${this.it.sha256}?with=${r.other}${r.there?.[0] != null ? '&at=' + r.there[0] : ''}` : null;},
       doc(sha) {return this.it.docs[sha] || {file: short(sha)};},
       tierOf(r) {return r.tier;},
@@ -128,7 +153,7 @@ export function mount(boot) {
         this.$nextTick(() => {const el = document.querySelector(`[data-row="${list}:${i}"]`); el?.focus(); el?.scrollIntoView({block: 'nearest'});});
       },
       focusRow(list, i) {this.cursor = {list, i}; if (list === 'claims') this.pick(this.lists.claims[i].id);},
-      enter() {const r = this.current; if (!r) return; if (this.cursor.list === 'claims') this.openSpan(r); else if (r.other) location.href = `/evidence/${r.other}`;},
+      enter() {const r = this.current; if (!r) return; if (this.cursor.list === 'claims') this.openSpan(r); else if (r.fold) this.fold(r); else if (r.other) location.href = `/evidence/${r.other}`;},
       canDecide(r) {return r && r.can_review && PENDING.includes(r.tier);},
       async decide(r, verdict, relationship) {
         if (!this.canDecide(r)) {this.say(r?.statement || r?.prop ? 'The review flow does not let you decide this one' : 'A lead, not a proposal. Nothing to accept'); return;}

@@ -8,6 +8,7 @@ import asyncio
 import hmac
 import time
 import uuid
+from collections import Counter
 from datetime import UTC, datetime
 
 import orjson
@@ -31,6 +32,7 @@ from stk.ledger.models import (
 )
 from stk.monitor import data
 from stk.monitor import filter as mfilter
+from stk.people import data as people_data
 from stk.places import resolve
 from stk.settings import Config
 from stk.sheets.parse import MIMES as SHEETS
@@ -380,6 +382,10 @@ async def same_person(db, sha: str, people: set[str]) -> list[dict]:
     ):
         if source != sha or subject not in sources:
             sources[subject] = source
+    # Only names the reader may see; a masked one leaves the row unnamed.
+    named = await people_data.names(
+        db, sorted({people_data.pid(x) for p in pairs for x in p[3:]})
+    )
     out = []
     for st, value, tier, mine, theirs in pairs:
         n = len(value.get("basis", []))
@@ -390,8 +396,10 @@ async def same_person(db, sha: str, people: set[str]) -> list[dict]:
                 "kind": "Same person?",
                 "here": mine,
                 "theirs": theirs,
+                "here_name": named.get(people_data.pid(mine)),
+                "their_name": named.get(people_data.pid(theirs)),
                 "other": sources.get(theirs),
-                "why": f"{n} basis statement{'s' if n != 1 else ''} named by the proposal",
+                "why": f"based on {n} statement{'s' if n != 1 else ''}",
                 "strength": "strong" if n >= SAME_PERSON_STRONG_BASIS else "moderate",
                 "tier": tier,
             }
@@ -400,7 +408,9 @@ async def same_person(db, sha: str, people: set[str]) -> list[dict]:
 
 
 async def same_place(db, sha: str, fam: list[str], investigation, claims) -> list:
-    """Claims in other sources resolved to a place a claim here resolves to."""
+    """Other sources with claims resolved to a place a claim here resolves to: one
+    row per source and place, with the props on each side and the claim count. A
+    place many sources name says least, so its rows come last."""
     mine = [uuid.UUID(c["id"]) for c in claims if c["prop"] in data.LOCATED]
     if not mine:
         return []
@@ -423,36 +433,52 @@ async def same_place(db, sha: str, fam: list[str], investigation, claims) -> lis
         ).scalars()
     )
     places = await resolve.resolved(db, list({*ids, *mine}), investigation)
-    here = {places[i].id: i for i in mine if places.get(i)}
+    props = {c["id"]: c["prop"] for c in claims}
+    here: dict = {}
+    for i in mine:
+        if place := places.get(i):
+            here.setdefault(place.id, {})[props[str(i)]] = None
     near = [i for i in ids if i not in mine and places.get(i) and places[i].id in here]
     if not near:
         return []
     src = mfilter.source(mfilter.statement_blob())
     rows = await db.execute(
-        select(Statement.id, Statement.subject, Statement.prop, src).where(
-            Statement.id.in_(near)
-        )
+        select(Statement.id, Statement.prop, src).where(Statement.id.in_(near))
     )
-    labels = {c["id"]: c for c in claims}
-    out = []
-    for sid, subject, prop, source in rows:
-        if source in fam:
-            continue
-        place = places[sid]
-        mine_claim = labels[str(here[place.id])]
-        out.append(
-            {
-                "id": f"{here[place.id]}:{sid}",
-                "kind": "Same place",
-                "other": source,
-                "at_place": place.name_ar or place.name_en,
-                "why": f"{prop.replace('_', ' ')} there and "
-                f"{mine_claim['prop'].replace('_', ' ')} here resolve to the same place",
-                "strength": "resolved place",
-                "here": mine_claim["id"],
-                "theirs": subject,
-            }
-        )
+    return group_places(
+        [
+            (source, places[sid], prop)
+            for sid, prop, source in rows
+            if source not in fam
+        ],
+        here,
+    )
+
+
+def group_places(rows, here: dict) -> list[dict]:
+    """(source, place, prop) claims elsewhere into one row per source and place."""
+    groups: dict[tuple, Counter] = {}
+    names = {}
+    for source, place, prop in rows:
+        groups.setdefault((source, place.id), Counter())[prop] += 1
+        names[place.id] = place.name_ar or place.name_en
+    sources = Counter(pid for _, pid in groups)
+    out = [
+        {
+            "id": f"place:{pid}:{source}",
+            "kind": "Same place",
+            "other": source,
+            "place": str(pid),
+            "at_place": names[pid],
+            "props_there": [p for p, _ in props.most_common()],
+            "props_here": list(here[pid]),
+            "count": props.total(),
+            "sources": sources[pid],
+            "strength": "resolved place",
+        }
+        for (source, pid), props in groups.items()
+    ]
+    out.sort(key=lambda r: (r["sources"], -r["count"], r["at_place"], r["other"]))
     return out[:20]
 
 
@@ -508,25 +534,23 @@ async def nearest(db, sha: str, fam: list[str], investigation) -> list[dict]:
     for row in rows:
         if row[2] not in best or row[5] < best[row[2]][5]:
             best[row[2]] = row
-    out = []
-    for kind, location, source, their_kind, theirs, d in sorted(
-        best.values(), key=lambda r: r[5]
-    )[:6]:
-        out.append(
-            {
-                "id": f"near:{source}",
-                "kind": "Nearest by meaning",
-                "other": source,
-                "why": f"{where(kind, location)} here is close to "
-                f"{where(their_kind, theirs)} there, cosine distance {d:.3f}. "
-                "A lead, not a match.",
-                "strength": band(d),
-                "distance": round(d, 4),
-                "here": location.get("ms"),
-                "there": theirs.get("ms"),
-            }
-        )
-    return out
+    return [lead(*row) for row in sorted(best.values(), key=lambda r: r[5])[:6]]
+
+
+def lead(kind, location, source, their_kind, theirs, d) -> dict:
+    """A nearest-by-meaning row. The distance stays out of the sentence: a band
+    word reads plainly, and the number is for the tooltip."""
+    return {
+        "id": f"near:{source}",
+        "kind": "Nearest by meaning",
+        "other": source,
+        "why": f"{where(kind, location)} here is close to "
+        f"{where(their_kind, theirs)} there. A lead, not a match.",
+        "strength": band(d),
+        "distance": round(d, 4),
+        "here": location.get("ms"),
+        "there": theirs.get("ms"),
+    }
 
 
 async def links(db, acqs, investigation) -> list[dict]:
@@ -622,9 +646,9 @@ async def item(db, sha: str, user) -> dict | None:
     persons = await same_person(db, sha, people)
     relations = [
         *persons,
+        *await links(db, acqs, investigation),
         *await same_place(db, sha, fam, investigation, claims),
         *await nearest(db, sha, fam, investigation),
-        *await links(db, acqs, investigation),
     ]
     decided = [c["id"] for c in claims] + [
         r["statement"] for r in found_copies + persons

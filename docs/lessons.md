@@ -407,3 +407,15 @@ covers in the text it was read from (`span_blob`).
   date anywhere (UTC minus 12 hours); the client already offers its local date.
 - Desk "Findings waiting" printed place links with no separator. A `v-for` over
   links needs the same comma rule as the people list next to it.
+
+## Relations in storage words (2026-10-24)
+
+- The evidence page Relations tab built one "Same place" row per pair of claims and
+  wrote its sentence from stored values: prop keys with the underscore replaced, a
+  person id, a cosine distance. One witness listed `list` four times, a same-person
+  proposal named "person a464e7a6", and a lead read "cosine distance 0.216". The 20
+  row cap counted claims, so four rows from one file pushed out other files. Group a
+  relation by what the reader compares (one other source and one place), cap by
+  that, name people through `people.names` and props through the page's own labels,
+  and keep measurements in a tooltip. Put an Arabic name inside English copy in a
+  Unicode isolate, or a trailing number jumps to the other side.

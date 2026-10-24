@@ -70,7 +70,7 @@
         <v-tabs v-model="tab" density="compact" grow color="primary">
           <v-tab value="read">Read <span class="ms-1 muted">${ pins.length }</span></v-tab>
           <v-tab value="dups">Copies <span class="ms-1 muted">${ it.copies.length }</span></v-tab>
-          <v-tab value="rel">Relations <span class="ms-1 muted">${ relations.length }</span></v-tab>
+          <v-tab value="rel">Relations <span class="ms-1 muted">${ it.relations.length }</span></v-tab>
           <v-tab value="meta">Metadata</v-tab>
         </v-tabs>
         <v-divider></v-divider>
@@ -102,15 +102,19 @@
             <v-empty-state v-if="!it.copies.length" icon="ti ti-fingerprint" title="No copies found" :text="it.fingerprint ? 'No picture or sound match, fingerprinted with ' + it.fingerprint.algorithm + '.' : 'Not fingerprinted yet.'"></v-empty-state>
           </v-tabs-window-item>
           <v-tabs-window-item value="rel">
-            <div v-for="(r, i) in relations" :key="r.id" class="ev-row ev-rel" :class="{sel: cursor.list === 'rel' && cursor.i === i}" tabindex="-1" :data-row="'rel:' + i" @click="focusRow('rel', i)">
+            <template v-for="(r, i) in relations" :key="r.id">
+            <div v-if="r.fold" class="ev-row ev-rel ev-fold" :class="{sel: cursor.list === 'rel' && cursor.i === i}" tabindex="-1" :data-row="'rel:' + i" role="button" :aria-expanded="!!unfolded[r.place]" @click="focusRow('rel', i); fold(r)">
+              <i class="ti" :class="unfolded[r.place] ? 'ti-chevron-down' : 'ti-chevron-right'" aria-hidden="true"></i> <strong>Same place</strong> <span class="why">${ plural(r.sources, 'other source') } in this case name <bdi>${ r.at_place }</bdi></span></div>
+            <div v-else class="ev-row ev-rel" :class="{sel: cursor.list === 'rel' && cursor.i === i, 'ev-folded': r.nested}" tabindex="-1" :data-row="'rel:' + i" @click="focusRow('rel', i)">
               <div class="d-flex ga-2"><media-thumb v-if="r.other" :locked="!doc(r.other).revealed" :sha="r.other" :kind="doc(r.other).kind" :file="doc(r.other).file" :caption="false" :width="72" :height="44"></media-thumb><div><strong>${ r.kind }</strong> <a v-if="r.other" :href="'/evidence/' + r.other">${ doc(r.other).file }</a><v-chip v-if="r.tier" size="x-small" color="agent" variant="tonal" class="ms-1">${ r.tier }</v-chip>
-                <div class="why" dir="auto"><template v-if="r.kind === 'Same person?'">${ nameOf(r.here) } here and person ${ short(r.theirs.slice(7)) } there, </template><template v-if="r.at_place">${ r.at_place }: </template>${ r.why }</div></div>
-                <span class="ms-auto text-no-wrap" :class="['strong', 'close'].includes(r.strength) ? 'font-weight-bold' : 'muted'">${ r.strength }</span></div>
+                <div class="why">${ relWhy(r) }</div></div>
+                <span class="ms-auto text-no-wrap" :class="['strong', 'close'].includes(r.strength) ? 'font-weight-bold' : 'muted'" :title="r.distance != null ? 'Cosine distance ' + r.distance.toFixed(3) : null">${ r.strength }</span></div>
               <div v-if="r.other || r.statement" class="d-flex ga-1 mt-1 flex-wrap">
                 <template v-if="canDecide(r)"><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-check" @click.stop="decide(r, 'accept')">Confirm</v-btn><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-x" @click.stop="decide(r, 'reject')">Reject</v-btn></template>
                 <v-btn v-if="r.statement && (threadFor(r) || r.tier === 'unconfirmed')" size="x-small" variant="outlined" prepend-icon="ti ti-message-question" @click.stop="askAbout(r)">${ threadFor(r) ? 'Thread' : 'Ask a colleague' }</v-btn>
                 <v-btn v-if="r.other && r.other !== it.sha256" size="x-small" variant="outlined" prepend-icon="ti ti-layout-columns" :href="side(r)">Side by side</v-btn></div>
             </div>
+            </template>
             <v-empty-state v-if="!relations.length" icon="ti ti-affiliate" title="No relations yet" text="Same person proposals, places resolved here and nearest items by meaning appear once this source is indexed."></v-empty-state>
           </v-tabs-window-item>
           <v-tabs-window-item value="meta">

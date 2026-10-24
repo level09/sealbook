@@ -53,6 +53,8 @@ body.dark-mode .evp {
 .ev-tx { white-space: pre-wrap; font-size: 14px; line-height: 1.8; padding: 8px 10px; background: var(--e-raise); border-radius: 6px; max-height: 260px; overflow: auto; }
 .ev-rel { padding: 8px 12px; border-top: 1px solid var(--e-line); }
 .ev-rel .why { font-size: 12px; color: var(--e-ink-2); }
+.ev-fold { cursor: pointer; }
+.ev-folded { padding-inline-start: 28px; }
 .ev-note { font-size: 12px; color: var(--e-ink-3); }
 .ev-legend { display: inline-flex; gap: 10px; font-size: 11.5px; color: var(--e-ink-3); align-items: center; flex-wrap: wrap; margin-inline-start: auto; }
 

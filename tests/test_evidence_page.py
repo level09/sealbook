@@ -205,3 +205,108 @@ class EvidencePageTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await client.get(path)).status_code, 403)
         await self.reveal(client, self.sha)
         self.assertEqual((await client.get(path)).status_code, 200)
+
+    async def test_same_person_names_the_other_person_not_its_id(self):
+        from datetime import UTC, datetime
+
+        from cryptography.hazmat.primitives.serialization import (
+            Encoding,
+            PublicFormat,
+        )
+
+        from stk.ledger.write import record_acquisition
+
+        here, there = f"person:{uuid.uuid4()}", f"person:{uuid.uuid4()}"
+        basis = [await self.propose(here, "محمد")]
+        sensitive = self.sha
+        async with ext.async_session_factory() as s, s.begin():
+            self.sha = (
+                await blobs.put(
+                    s, (test_review.TEXT + "\n").encode(), "text/plain", Config.BLOB_DIR
+                )
+            ).sha256
+            await record_acquisition(
+                s,
+                blob_sha256=self.sha,
+                origin="url:https://example.org/list",
+                collector_id=self.agent.id,
+                at=datetime.now(UTC),
+                context={"investigation": "case-r"},
+                sensitivity="ordinary",
+                doc_type="report",
+            )
+        basis.append(await self.propose(there, "يوسف"))
+        ordinary, self.sha = self.sha, sensitive
+        async with ext.async_session_factory() as s, s.begin():
+            run = Run(
+                principal_id=self.agent.id,
+                tool="mcp",
+                inputs={"basis": [f"statement:{x.id}" for x in basis]},
+                pubkey=self.key.public_key().public_bytes(
+                    Encoding.Raw, PublicFormat.Raw
+                ),
+            )
+            s.add(run)
+            await s.flush()
+            await append(
+                s,
+                StatementIn(
+                    subject=here,
+                    prop=Prop.SAME_AS,
+                    value={
+                        "person": there.removeprefix("person:"),
+                        "basis": [f"statement:{x.id}" for x in basis],
+                    },
+                    author_id=self.agent.id,
+                    run_id=run.id,
+                ),
+                sign=lambda h: {
+                    "kind": "ed25519",
+                    "sig": self.key.sign(h.encode()).hex(),
+                },
+            )
+        client = await self.client()
+        item = await (await client.get(f"/api/evidence/{self.sha}/item")).get_json()
+        (row,) = [r for r in item["relations"] if r["kind"] == "Same person?"]
+        # the other record's name is readable; this one's is masked, so unnamed
+        self.assertEqual((row["their_name"], row["here_name"]), ("يوسف", None))
+        self.assertEqual(
+            (row["other"], row["why"]), (ordinary, "based on 2 statements")
+        )
+        self.assertNotIn(there.removeprefix("person:")[:8], row["why"])
+
+
+class RelationRowsTest(unittest.TestCase):
+    def test_claims_in_one_source_give_one_row_per_place(self):
+        from types import SimpleNamespace
+
+        branch = SimpleNamespace(id=uuid.uuid4(), name_ar="الفرع 999", name_en=None)
+        city = SimpleNamespace(id=uuid.uuid4(), name_ar=None, name_en="Aleppo")
+        rows = [("list", branch, "detained_at")] * 3 + [
+            ("list", branch, "last_seen"),
+            ("roster", branch, "detained_at"),
+            *[(f"src{i}", city, "seen_at") for i in range(25)],
+        ]
+        here = {branch.id: {"seen_at": None}, city.id: {"seen_at": None}}
+        out = evidence.group_places(rows, here)
+        self.assertEqual(len(out), 20)  # the cap counts sources, not claims
+        first = out[0]
+        self.assertEqual(
+            (first["other"], first["at_place"], first["count"], first["sources"]),
+            ("list", "الفرع 999", 4, 2),
+        )
+        self.assertEqual(first["props_there"], ["detained_at", "last_seen"])
+        self.assertEqual(first["props_here"], ["seen_at"])
+        self.assertEqual((out[1]["other"], out[1]["count"]), ("roster", 1))
+        # the place 25 sources name comes after the rarer one
+        self.assertEqual({r["at_place"] for r in out[2:]}, {"Aleppo"})
+        self.assertEqual(out[2]["sources"], 25)
+
+    def test_meaning_lead_keeps_the_distance_out_of_the_sentence(self):
+        row = evidence.lead("text", {}, "b" * 64, "text", {}, 0.21637)
+        self.assertEqual(
+            row["why"],
+            "a passage here is close to a passage there. A lead, not a match.",
+        )
+        self.assertNotIn("0.2", row["why"])
+        self.assertEqual((row["strength"], row["distance"]), ("close", 0.2164))
