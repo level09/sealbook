@@ -5,13 +5,15 @@ person who started them; nothing here accepts or writes a fact."""
 import os
 import re
 import uuid
+from datetime import UTC, datetime
 
 import orjson
 from quart import Blueprint, Response, abort, g, request
 from quart_security import auth_required, current_user
 from sqlalchemy import select
 
-from stk.agents import brief, linker
+from stk.agents import brief, linker, standing, tasks
+from stk.agents.models import AgentTask
 from stk.agents.read import read_output
 from stk.collaboration.models import Notification
 from stk.ledger.models import Acquisition, Blob, Run, Statement
@@ -183,7 +185,7 @@ async def _case(db, scope: str) -> str | None:
 async def run_status(rid):
     db = g.db_session
     run = await db.get(Run, rid)
-    if run is None or run.tool not in (brief.TOOL, linker.TOOL):
+    if run is None or run.tool not in (brief.TOOL, linker.TOOL, standing.TOOL):
         abort(404)
     if run.inputs.get("for_user") != current_user.id and not current_user.has_role(
         "admin"
@@ -208,3 +210,129 @@ async def run_status(rid):
             "cost": out.get("cost"),
         }
     )
+
+
+async def _owned_task(tid, lock=False):
+    query = select(AgentTask).where(
+        AgentTask.id == tid, AgentTask.user_id == current_user.id
+    )
+    task = await g.db_session.scalar(query.with_for_update() if lock else query)
+    if task is None or not await tasks.can_read(
+        g.db_session, current_user.id, task.investigation
+    ):
+        abort(404)
+    return task
+
+
+@bp_agents.post("/tasks")
+async def create_task():
+    item = await _item()
+    question = item.get("question")
+    if (
+        item.get("kind") != "standing"
+        or not isinstance(question, str)
+        or not 3 <= len(question.strip()) <= 300
+    ):
+        abort(400, description="Ask a question of 3 to 300 characters.")
+    db = g.db_session
+    investigation = item.get("investigation")
+    if not isinstance(investigation, str) or not await tasks.can_read(
+        db, current_user.id, investigation
+    ):
+        abort(404)
+    interval = item.get("every_seconds", 86400)
+    if interval is not None and (type(interval) is not int or interval <= 0):
+        abort(
+            400, description="The check interval must be a positive number of seconds."
+        )
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    task = AgentTask(
+        user_id=current_user.id,
+        investigation=investigation,
+        kind="standing",
+        spec={"question": question.strip()},
+        every_seconds=interval,
+        next_at=datetime.now(UTC),
+    )
+    db.add(task)
+    await db.commit()
+    return _json({"id": str(task.id)}, 201)
+
+
+@bp_agents.get("/tasks")
+async def list_tasks():
+    db = g.db_session
+    query = select(AgentTask).where(AgentTask.user_id == current_user.id)
+    if investigation := request.args.get("investigation"):
+        query = query.where(AgentTask.investigation == investigation)
+    items = []
+    for task in await db.scalars(
+        query.order_by(AgentTask.created_at.desc(), AgentTask.id)
+    ):
+        if not await tasks.can_read(db, current_user.id, task.investigation):
+            continue
+        found = await standing.runs(db, task.id)
+        active = any(r.status in tasks.ACTIVE for r in found)
+        good = next((r for r in found if r.status == "done"), None)
+        out = read_output(await db.get(Blob, good.output_hash)) if good else None
+        items.append(
+            {
+                "id": str(task.id),
+                "question": task.spec["question"],
+                "enabled": task.enabled,
+                "state": "checking"
+                if active
+                else "paused"
+                if task.paused_reason or not task.enabled
+                else "watching",
+                "reason": task.paused_reason
+                or ("You stopped this question." if not task.enabled else None),
+                "last_checked": task.last_success_at.isoformat()
+                if task.last_success_at
+                else None,
+                "matches": out["outcome"]["proposed"] if out else None,
+            }
+        )
+    return _json({"items": items, "off": bool(missing())})
+
+
+@bp_agents.post("/tasks/<uuid:tid>/run")
+async def check_task(tid):
+    task = await _owned_task(tid, lock=True)
+    db = g.db_session
+    run = await db.get(Run, task.last_run_id) if task.last_run_id else None
+    if run and run.status in tasks.ACTIVE:
+        return _json({"message": "This question is already being checked."}, 409)
+    if not task.enabled or task.paused_reason:
+        return _json({"message": "Resume this question before checking it."}, 409)
+    if missing():
+        return _json(
+            {"message": "Standing questions are off until the local model is set up."},
+            409,
+        )
+    await tasks.wake(db, task.id, f"manual:{uuid.uuid4()}", "manual", {})
+    task.next_at = datetime.now(UTC)
+    await db.commit()
+    return _json({"state": "checking"}, 202)
+
+
+@bp_agents.patch("/tasks/<uuid:tid>")
+async def toggle_task(tid):
+    task = await _owned_task(tid, lock=True)
+    enabled = (await _item()).get("enabled")
+    if type(enabled) is not bool:
+        abort(400, description="Choose whether this question is watching.")
+    task.enabled = enabled
+    if enabled:
+        task.paused_reason, task.failures = None, 0
+        task.next_at = datetime.now(UTC)
+    await g.db_session.commit()
+    return _json({"enabled": task.enabled})
+
+
+@bp_agents.get("/tasks/<uuid:tid>")
+async def read_task(tid):
+    await _owned_task(tid)
+    return _json(await standing.show(g.db_session, current_user, tid))

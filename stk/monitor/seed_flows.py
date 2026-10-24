@@ -570,7 +570,8 @@ async def agents(session, owner, batches: list[str], colleague=None) -> dict:
     """The linker and the intake brief for each batch, run by the worker's own code
     on the fixed answer (`sealbook-demo-fixed-output`, a demo note in the inputs).
     Batches belong to whoever collected them: the owner's, or the colleague's."""
-    from stk.agents import brief, linker
+    from stk.agents import brief, linker, tasks
+    from stk.agents.models import AgentTask
     from stk.agents.read import FIXED
     from stk.runs.worker import process
 
@@ -601,4 +602,16 @@ async def agents(session, owner, batches: list[str], colleague=None) -> dict:
         )
         links += len(out["written"])
         briefs += 1
+    question = AgentTask(
+        user_id=owner.id,
+        investigation=case,
+        kind="standing",
+        spec={"question": "Tell me when anyone is placed at Branch 999."},
+        every_seconds=86400,
+    )
+    session.add(question)
+    await session.flush()
+    run = await tasks.queue(session, question, [], model=FIXED)
+    await session.commit()
+    await process(ext.async_session_factory, run.id)
     return {"links": links, "briefs": briefs}

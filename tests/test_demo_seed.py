@@ -184,8 +184,9 @@ class DemoSeedTest(unittest.IsolatedAsyncioTestCase):
         provenance = await s.scalar(
             select(func.count()).where(Run.model_served == "sealbook-demo-fixed-output")
         )
-        # The transcript, two sheet extractions, and the linker and brief per batch.
-        self.assertEqual(provenance, 7)
+        # The transcript, two sheet extractions, and the linker and brief per batch,
+        # and the standing question.
+        self.assertEqual(provenance, 8)
         # Team work: notifications for every active analyst, overdue work.
         for email in ("analyst-2@example.com", "analyst-3@example.com"):
             user = await s.scalar(select(User).where(User.email == email))

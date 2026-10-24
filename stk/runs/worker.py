@@ -20,8 +20,10 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from stk import blobs, speech
+from stk.agents import tasks
 from stk.agents.brief import brief
 from stk.agents.linker import link
+from stk.agents.standing import standing
 from stk.collaboration import intake
 from stk.discovery import findings, indexing
 from stk.discovery import service as discovery
@@ -395,6 +397,7 @@ TOOLS: dict[str, Callable[[Ctx], Awaitable[str | None]]] = {
     "capture": capture,
     "brief": brief,
     "link": link,
+    "standing": standing,
 }
 
 
@@ -434,6 +437,7 @@ async def process(
             # An investigation-wide run (discover) reads ledger rows, not a document.
             ref = run.inputs.get("acquisition")
             acq = await s.get(Acquisition, uuid.UUID(ref)) if ref else None
+            await tasks.check_access(s, run)
             await _check_route(s, run, acq)
             # Per-run key: the public half is sealed with the run, the private half
             # never leaves this process.
@@ -448,6 +452,7 @@ async def process(
                 transport=transport,
             )
             await write.seal_run(s, run, await tool(ctx))
+            await tasks.evidence(s, run)
     except Exception as exc:
         log.exception("run %s failed", run_id)
         async with Session() as s, s.begin():
@@ -456,9 +461,11 @@ async def process(
             )
         await emit("failed", drop_reason=f"{type(exc).__name__}: {exc}"[:500])
         await intake.finished(Session, run_id)
+        await tasks.settle(Session, run_id)
         return
     await emit("sealed")
     await intake.finished(Session, run_id)
+    await tasks.settle(Session, run_id)
 
 
 async def work_once(
@@ -476,5 +483,9 @@ async def work_once(
 
 async def serve(Session: async_sessionmaker, tools: list[str] | None = None) -> None:  # noqa: N803
     while True:
+        try:
+            await tasks.tick(Session)
+        except Exception:
+            log.exception("standing task scheduling failed")
         if not await work_once(Session, tools):
             await asyncio.sleep(POLL_SECONDS)

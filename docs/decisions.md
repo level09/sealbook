@@ -48,6 +48,20 @@
 | A sheet preview of the person's own file is not a view | `/ingest/sheet/peek` parses bytes the person is holding, stores and logs nothing, and returns only what they sent plus suggestions. Once stored, a sensitive sheet is confirmed after the logged reveal, as on its evidence page |
 | One process for now | Pending passkey operations and live delivery use local memory; scaling needs an explicit design |
 
+## Standing tasks (2026-10-24)
+
+Use a wake table with a unique task and key, inserted with conflict ignored. This
+keeps duplicate evidence events from creating duplicate work and lets one run consume
+many pending wakes. Every task result requires an outcome with a proposed count and
+a plain reason when empty, so scheduling does not depend on report wording.
+Scheduled checks back off by two after each empty result, capped at eight intervals.
+Compute the next check from completion time: missed schedules are skipped, never
+replayed. Failed checks release their wakes and wait five minutes. Three consecutive
+failures pause the task and notify its owner; access loss pauses at once. This bounds
+repeated local model failures without losing evidence or hiding the last good report.
+A task-settled run event makes completion idempotent and lets the next poll recover
+after a worker stops between sealing and task settlement.
+
 ## Decisions still open
 
 The model/server choice is approved, implemented and measured on the synthetic

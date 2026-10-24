@@ -6,6 +6,7 @@ not applied either new migration to the working database.
 
 | Area | Implemented | Limits |
 | --- | --- | --- |
+| Standing questions | `agent_task` and deduplicated `agent_wake` (`20261029_agent_tasks`); local runs for a named owner, evidence wakes, daily checks, coalescing, empty-result backoff, five-minute failure retry and pause after three failures or access loss. Two-pass screening and judgment use handles, validate citations, suppress repeated claim sets and retain deferred claims. Desk: ask, Check now, Stop/Resume, latest masked matches and check history. The full demo seed adds one fixed-output question to case-demo-02 | Migration, Postgres tests and browser checks not run in the offline workspace. Access follows the existing active analyst/admin role and case existence; the app has no per-case access list. As with the intake brief, masking hides erased citations but stored output and raw model bytes remain. Notification kind registration needs the approved ownership extension |
 | Custody | SHA-256/MD5 intake, acquisitions, signed statements, sealed runs and chain verification | Physical blob encryption and erasure remain incomplete |
 | Trust | Pure gate, rebuildable tiers, signed human acceptance/rejection/undo | Similarity never grants factual acceptance |
 | Integrity | Merkle batches, OTS/TSA receipt paths, partner root copies, offline package verifier | External service paths do not prove a configured or certified deployment |
@@ -39,6 +40,15 @@ not applied either new migration to the working database.
 | Demo case | `stk demo-seed --full` on a fresh database, then the worker, fills every page: Desk changes, requests, a mention and due and overdue assignments; stored notifications for the owner, analyst-2 and analyst-3; claims on an image box, PDF page text, transcript lines with times and sheet cells; planted copies; a sheet dataset with two confirmed versions and its diff; a real discovery run with four open findings, one accepted candidate incident (signed as one gesture) and one rejected shared presence with its reason; a person story with gaps (last seen in Douma and arrested in Harasta on one day is not a disagreement), an incident band and a Branch 999 place story. Sources carry titles an analyst would use (`context.title`; `file` stays the key the seed and search battery use). The retrieval gold set's news passages and test tone go to `case-search-eval`, not the demo case. Both demo cases are queued for indexing at seed time. The linker and the intake brief run on both batches (the owner's roster and statement, analyst-2's family intake sheets) with the fixed answer. `stk demo-seed --more` adds `case-demo-03` to `case-demo-06` (siege, displacement, detention, market shelling: 9 to 16 sources each, multiple spellings, dated placed claims, accepted, rejected and open proposals, assignments across analyst-2 to analyst-5) and `--scale N` adds N claim-free synthetic filler sources to `case-scale-demo` (chained, no runs queued, assigned only to analysts who are not admins). Walkthrough: [demo.md](demo.md) | The witness clip transcript, the two sheet extractions and the linker and intake brief on both batches are fixed output (served model `sealbook-demo-fixed-output`, a `demo` note in the run inputs), not model runs; human decisions are signed by a demo software passkey; no package is built, since that needs anchor receipts; the extra cases use text stand-ins and photographs only (no scans, PDFs, audio or sheets), and fillers have no bytes, so their previews are empty |
 
 ## Completed verification
+
+- Standing questions (offline, 2026-10-24): eight pure tests passed for backoff,
+  citation validation, sensitive leaks, repeat suppression, two-pass matching and
+  budget deferral. Ruff check and format passed. The component compiles with the
+  bundled Vue library. Model registration, the migration chain and the evidence
+  query compile offline. Postgres, migration application, demo seeding, live model
+  quality and browser behavior remain unverified. The Postgres tests cover wake
+  deduplication and coalescing, active-run exclusion, completion and failure retry,
+  access loss, evidence scoping, owner-only API writes, fixed matches and masking.
 
 - Real OCR and extraction (2026-10-24), on a copy of the demo database with
   `MODEL_LOCAL=gemma4:12b-it-qat` and `MODEL_CLOUD=google/gemini-3.1-flash-lite`:
