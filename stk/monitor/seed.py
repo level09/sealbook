@@ -21,6 +21,7 @@ from sqlalchemy import select
 
 import stk.extensions as ext
 from stk import blobs
+from stk.cases.service import ensure as ensure_case
 from stk.cli.base import console, run_async
 from stk.discovery import service as discovery
 from stk.ledger.contracts import Event, Prop, StatementIn
@@ -292,6 +293,7 @@ async def seed(session) -> dict:
     s = Seeder(session)
     if await seeded(session):
         raise click.ClickException(f"{CASE} is already seeded")
+    await ensure_case(session, CASE)
 
     analyst = await s.analyst("analyst-1")
     hasher = await s.principal("hasher")

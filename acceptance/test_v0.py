@@ -45,6 +45,7 @@ from stk.anchor import service as anchor
 from stk.anchor.models import Batch
 from stk.app import create_app
 from stk.blobs import blob_path
+from stk.cases.service import ensure as ensure_case
 from stk.ingest.service import recheck_url
 from stk.ledger import chain, merkle
 from stk.ledger.models import (
@@ -77,6 +78,7 @@ from tests.test_packages import make_signing_cert
 HERE = Path(__file__).parent
 DATA = HERE / "data"
 CASE = json.loads((HERE / "case.json").read_text())
+CASE_SLUG = "case-v0"  # the case intake files into
 DOCS = {d["key"]: d for d in CASE["documents"]}
 TIMED = HERE / "timed_comparison.json"
 POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
@@ -290,6 +292,9 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
         cls.model, cls.web = Model(), Web()
         pin = hashlib.sha256(cls.web.tsa.cert.dump()).hexdigest()
         cls.enterClassContext(mock.patch.object(Config, "TSA_CERT_SHA256", [pin]))
+        # Batches now name a case, which would start the proactive agents; this
+        # scenario predates them and its fake model does not answer their schema.
+        cls.enterClassContext(mock.patch.object(Config, "AGENT_MODEL", None))
         cls.keys = {name: SoftPasskey() for name in ("amal", "basel")}
         cls.clients = {}
 
@@ -318,6 +323,8 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
             s.add(extractor)
             await s.flush()
             self.s["extractor"] = extractor.id
+            # Intake refuses a case that does not exist; this one does.
+            await ensure_case(s, CASE_SLUG)
         for name in ("amal", "basel", "carol", "nobody"):
             self.clients[name] = await self.login(name)
 
@@ -374,6 +381,7 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
                 "origin": origin,
                 "doc_type": doc["doc_type"],
                 "sensitivity": doc["sensitivity"],
+                "investigation": CASE_SLUG,
             },
         )
         [result] = out["items"]
@@ -593,7 +601,9 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
 
         url = DOCS["post"]["origin"].removeprefix("url:")
         with self.internet():
-            post = self.s["post"] = await self.post("/ingest/url", {"url": url})
+            post = self.s["post"] = await self.post(
+                "/ingest/url", {"url": url, "investigation": CASE_SLUG}
+            )
         self.assertEqual(post["sha256"], hashlib.sha256(self.web.post).hexdigest())
         async with ext.async_session_factory() as s:
             acqs = {

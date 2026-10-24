@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import uuid
 
+import httpx
 from sqlalchemy import func, select
 
 from stk import blobs
@@ -43,7 +44,7 @@ def _sheet(sheets, number: int) -> parse.Sheet:
     if not 1 <= number <= len(sheets):
         raise ValueError(f"no sheet {number}")
     sheet = sheets[number - 1]
-    if len(sheet.rows) < 2:
+    if not sheet.body:
         raise ValueError("the sheet needs a header row and at least one row")
     return sheet
 
@@ -54,10 +55,62 @@ def table(sheets, number: int, limit: int = PREVIEW_ROWS) -> dict:
         "sheet": number,
         "sheets": [s.name for s in sheets],
         "name": sheet.name,
-        "header": list(sheet.rows[0]) if sheet.rows else [],
-        "rows": [list(r) for r in sheet.rows[1 : limit + 1]],
-        "total": max(len(sheet.rows) - 1, 0),
+        "header": list(sheet.head),
+        "header_row": sheet.header,
+        "first_row": sheet.header + 1,
+        "dropped": list(sheet.dropped),
+        "rows": [list(r) for r in sheet.rows[sheet.header : sheet.header + limit]],
+        "total": len(sheet.body),
     }
+
+
+PEEK_ROWS = 4
+PEEK_WAIT = 20  # seconds
+PEOPLE = frozenset({"name", "person"})
+
+
+async def peek(db, data: bytes, mime: str, filename: str, case: str | None) -> dict:
+    """What a sheet on the person's own device holds, before it is added: the header
+    found, a few rows, and a field per column (remembered from a dataset in the case
+    whose columns it repeats, else suggested). Nothing is stored or logged; the
+    bytes are the person's own and the reply holds only what they sent."""
+    sheets = await asyncio.to_thread(parse.read, data, mime)
+    number = next((i for i, sh in enumerate(sheets, 1) if sh.body), 1)
+    sheet = _sheet(sheets, number)
+    cols = mapping.columns(sheet)
+    known = await datasets(db, case) if case else []
+    headers = {c["header"] for c in cols}
+    match = next((d for d in known if headers <= set(d["mapping"])), None)
+    out = {
+        "table": table(sheets, number, limit=PEEK_ROWS),
+        "titles": sheet.header - 1,
+        "datasets": known,
+        "dataset": match["id"] if match else None,
+        "suggest_error": None,
+    }
+    try:
+        # The person is waiting on the page: a busy model gives way to mapping by hand.
+        out["columns"] = await asyncio.wait_for(
+            mapping.suggest(cols, match["mapping"] if match else {}), PEEK_WAIT
+        )
+    except TimeoutError:
+        out["suggest_error"] = "the local model did not answer in time"
+    except (ValueError, OSError, httpx.HTTPError) as exc:
+        out["suggest_error"] = str(exc) or type(exc).__name__
+    if out["suggest_error"]:
+        known_map = match["mapping"] if match else {}
+        out["columns"] = [
+            c | {"remembered": known_map.get(c["header"]), "suggestions": []}
+            for c in cols
+        ]
+    first = [
+        c["remembered"] or next(iter(c["suggestions"]), {}).get("field")
+        for c in out["columns"]
+    ]
+    people = bool(PEOPLE & set(first))
+    out["people"] = people
+    out["suggestion"] = ingest.suggest_doc_type(filename, mime, people)
+    return out
 
 
 def _dataset_row(d: Dataset, versions: int) -> dict:

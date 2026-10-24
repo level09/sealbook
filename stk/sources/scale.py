@@ -20,6 +20,7 @@ import click
 from sqlalchemy import column, insert, select, table, text
 from sqlalchemy.engine import make_url
 
+from stk.cases.service import ensure as ensure_case
 from stk.discovery.models import FindingKey
 from stk.ledger.contracts import EXTRACTED_PROPS, Prop, Tier
 from stk.ledger.models import (
@@ -68,6 +69,7 @@ async def seed(db, investigation: str, count: int, rng_seed: int = 7) -> dict:
         raise ValueError("synthetic sources go only into a case-scale-test* case")
     rng = random.Random(rng_seed)
     now = datetime.now(UTC)
+    await ensure_case(db, investigation)
     collectors = [
         {"id": uuid.uuid4(), "kind": "human", "name": f"synthetic-collector-{i}"}
         for i in range(1, 4)
@@ -273,6 +275,7 @@ async def fillers(db, count: int, rng_seed: int = 11) -> int:
 
     rng = random.Random(rng_seed)
     now = datetime.now(UTC)
+    await ensure_case(db, DEMO)
     collectors = [
         {"id": uuid.uuid4(), "kind": "human", "name": f"synthetic-filler-{i}"}
         for i in range(1, 4)

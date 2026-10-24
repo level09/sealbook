@@ -13,6 +13,7 @@ import stk.extensions as ext
 from stk.agent_login import agent_login_enabled, bp_agent_login
 from stk.agents.views import bp_agents
 from stk.assets import register_assets
+from stk.cases.views import bp_cases
 from stk.collaboration.views import bp as bp_collaboration
 from stk.desk.views import bp as bp_desk
 from stk.discovery.views import bp as bp_discovery
@@ -173,6 +174,7 @@ def register_blueprints(app):
     app.register_blueprint(bp_sheets)
     app.register_blueprint(bp_research)
     app.register_blueprint(bp_agents)
+    app.register_blueprint(bp_cases)
     if agent_login_enabled(app):
         app.register_blueprint(bp_agent_login)
     return None

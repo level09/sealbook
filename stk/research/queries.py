@@ -20,6 +20,7 @@ from stk.ledger.contracts import Prop, Tier
 from stk.ledger.models import Acquisition, Statement, StatementTier
 from stk.ledger.write import current_clause
 from stk.monitor.data import LOCATED, statement_rows
+from stk.monitor.filter import statement_clause
 from stk.people import data as people
 from stk.places.models import Place
 from stk.stories import data as stories
@@ -222,8 +223,37 @@ async def for_incident(db: AsyncSession, ref: str, blocked: set[str]) -> list[di
     return out[:MAX]
 
 
+async def for_case(db: AsyncSession, slug: str, blocked: set[str]) -> list[dict]:
+    """Names in the case with a place or year, from the same shareable claims as a
+    source's proposals; nothing from a blocked case."""
+    if slug in blocked:
+        return []
+    rows = await statement_rows(
+        db,
+        statement_clause({"investigation": slug, "time": None}),
+        Statement.prop.in_([Prop.NAME, *LOCATED]),
+        StatementTier.tier.in_([Tier.ACCEPTED, Tier.CORROBORATED]),
+        current_clause(),
+        limit=500,
+    )
+    groups, _ = await people.identity(db)
+
+    def person_of(r):
+        if not r["subject"].startswith("person:"):
+            return None
+        members = groups.get(people.pid(r["subject"]))
+        return f"person:{min(members)}" if members else r["subject"]
+
+    out = _from_rows(await usable(db, rows, blocked), person_of)
+    for q in out:
+        q["people"] = [p for p in q["people"] if p]
+    return out
+
+
 async def propose(db: AsyncSession, scope: str, blocked: set[str]) -> list[dict]:
     kind, _, ref = scope.partition(":")
+    if kind == "case":
+        return await for_case(db, ref, blocked)
     if kind == "person":
         return await for_person(db, ref, blocked)
     if kind == "place":
@@ -232,4 +262,6 @@ async def propose(db: AsyncSession, scope: str, blocked: set[str]) -> list[dict]
         return await for_incident(db, scope, blocked)
     if kind == "blob":
         return await for_source(db, ref, blocked)
-    raise ValueError(f"research scope must be person, place, incident or blob: {scope}")
+    raise ValueError(
+        f"research scope must be case, person, place, incident or blob: {scope}"
+    )

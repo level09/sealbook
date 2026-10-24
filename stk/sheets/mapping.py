@@ -58,10 +58,13 @@ def norm(header: str) -> str:
 
 
 def columns(sheet: Sheet) -> list[dict]:
-    """Header and up to five non-empty sample values per column. Row 1 is the header."""
-    header, body = sheet.rows[0], sheet.rows[1:]
+    """Header and up to five non-empty sample values per column, leaving out
+    columns with neither a header nor values."""
+    body = [sheet.rows[n - 1] for n in sheet.body]
     out = []
-    for i, name in enumerate(header):
+    for i, name in enumerate(sheet.head):
+        if i + 1 in sheet.dropped:
+            continue
         samples = [r[i].strip() for r in body if r[i].strip()][:SAMPLES]
         out.append({"column": i + 1, "header": name, "samples": samples})
     return out
@@ -112,9 +115,11 @@ async def suggest(cols: list[dict], remembered: dict[str, str]) -> list[dict]:
 
 def check(sheet: Sheet, key_column: str, mapping: dict[str, str]) -> None:
     """A confirmed mapping names every header once, only known fields, and the key."""
-    headers = list(sheet.rows[0]) if sheet.rows else []
+    headers = [h for i, h in enumerate(sheet.head) if i + 1 not in sheet.dropped]
     if len(set(headers)) != len(headers) or "" in headers:
-        raise ValueError("every column needs a distinct, non-empty header in row 1")
+        raise ValueError(
+            f"every column needs a distinct, non-empty header in row {sheet.header}"
+        )
     if set(mapping) != set(headers):
         raise ValueError("confirm a field for every column")
     if bad := set(mapping.values()) - FIELD_KEYS:
@@ -126,9 +131,8 @@ def check(sheet: Sheet, key_column: str, mapping: dict[str, str]) -> None:
 def _index(sheet: Sheet, key_column: str) -> tuple[dict[str, int], dict[int, str]]:
     """Key to row number for valid rows, and row number to (key, reason) for invalid
     ones. A blank key, or a key on more than one row, makes every such row invalid."""
-    headers = list(sheet.rows[0])
-    k = headers.index(key_column)
-    keys = {n: sheet.rows[n - 1][k].strip() for n in range(2, len(sheet.rows) + 1)}
+    k = list(sheet.head).index(key_column)
+    keys = {n: sheet.rows[n - 1][k].strip() for n in sheet.body}
     counts = Counter(keys.values())
     valid, invalid = {}, {}
     for n, key in keys.items():
@@ -156,12 +160,12 @@ def diff(
         for n, (key, why) in bad.items()
     ]
     compared = [h for h, f in mapping.items() if f not in ("ignore", "key")]
-    if previous is None or key_column not in previous.rows[0]:
+    if previous is None or key_column not in previous.head:
         before, prev_cols = {}, {}
     else:
         before, _ = _index(previous, key_column)
-        prev_cols = {h: i for i, h in enumerate(previous.rows[0])}
-    cur_cols = {h: i for i, h in enumerate(current.rows[0])}
+        prev_cols = {h: i for i, h in enumerate(previous.head) if h}
+    cur_cols = {h: i for i, h in enumerate(current.head) if h}
     for key, n in now.items():
         if key not in before:
             rows.append({"row": n, "key": key, "status": "new"})

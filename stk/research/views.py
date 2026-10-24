@@ -7,7 +7,9 @@ import orjson
 from quart import Blueprint, Response, abort, g, request
 from quart_security import auth_required, current_user
 
+from stk.cases import service as cases
 from stk.ingest import batch as batches
+from stk.ingest.service import DOC_TYPES
 from stk.ledger.write import principal_for_user
 from stk.monitor.views import ROLES
 from stk.research import queries, service, store
@@ -46,10 +48,17 @@ async def _item() -> dict:
     return ((await request.get_json(silent=True)) or {}).get("item") or {}
 
 
-def _scope(item) -> str:
+async def _scope(item) -> str:
     scope = str(item.get("scope") or "")
+    if scope.startswith("case:"):
+        try:
+            return "case:" + (await cases.require(g.db_session, scope[5:])).slug
+        except cases.Unknown as exc:
+            abort(404, description=str(exc))
     if not SCOPE.fullmatch(scope):
-        abort(400, description="scope must be person:, place:, incident: or blob:")
+        abort(
+            400, description="scope must be case:, person:, place:, incident: or blob:"
+        )
     return scope
 
 
@@ -68,7 +77,7 @@ async def status():
 async def propose():
     """What would be sent, before anything is. Nothing leaves the server here."""
     item = await _item()
-    scope = _scope(item)
+    scope = await _scope(item)
     db = g.db_session
     try:
         found = await queries.propose(db, scope, await service.blocked(db))
@@ -80,7 +89,7 @@ async def propose():
 @bp_research.post("/search")
 async def search():
     item = await _item()
-    scope = _scope(item)
+    scope = await _scope(item)
     try:
         sent = service.clean(item.get("queries"))
         window = service.clean_window(item.get("from"), item.get("to"))
@@ -117,6 +126,9 @@ async def thumb(cid):
 async def capture():
     item = await _item()
     db = g.db_session
+    doc_type = (item.get("doc_type") or "web_post").strip()
+    if doc_type not in DOC_TYPES:
+        abort(400, description=f"Unknown document type: {doc_type}")
     try:
         out = await service.queue_capture(
             db,
@@ -124,7 +136,8 @@ async def capture():
             await _who(),
             [str(i) for i in item.get("ids") or []],
             item.get("sensitivity") or "sensitive",
-            (item.get("doc_type") or "web_post").strip(),
+            doc_type,
+            item.get("batch"),
         )
     except service.Refusal as exc:
         return _refuse(str(exc))

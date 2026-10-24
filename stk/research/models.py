@@ -1,5 +1,5 @@
-"""Per-investigation research switches. An investigation is a name on acquisitions,
-not a table, so a case with no row here has research allowed and is not sensitive."""
+"""Per-case research switches, keyed by the case slug. A case with no row here has
+research allowed and is not sensitive."""
 
 from datetime import UTC, datetime
 

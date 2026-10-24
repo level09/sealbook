@@ -124,7 +124,7 @@ SCHEMA = {
 
 def prompt_rows(sheet: parse.Sheet, rows: list[int], mapping: dict) -> list[dict]:
     """The cells the model sees: non-empty, not the key, not marked `ignore`."""
-    header = sheet.rows[0]
+    header = sheet.head
     out = []
     for n in rows:
         cells = [
@@ -135,7 +135,7 @@ def prompt_rows(sheet: parse.Sheet, rows: list[int], mapping: dict) -> list[dict
                 "text": text,
             }
             for i, (h, text) in enumerate(zip(header, sheet.rows[n - 1], strict=True))
-            if text.strip() and mapping.get(h) not in ("ignore", "key")
+            if text.strip() and mapping.get(h, "ignore") not in ("ignore", "key")
         ]
         out.append({"row": n, "cells": cells})
     return out
@@ -183,7 +183,7 @@ async def extract_sheet(c) -> str | None:
     sheet_no = c.run.inputs["sheet"]
     sheet = parse.read(blobs.read(blob, Config.BLOB_DIR), blob.mime)[sheet_no - 1]
     mapping, rows = c.run.inputs["mapping"], c.run.inputs["rows"]
-    await c.emit("input_read", rows=len(rows), columns=len(sheet.rows[0]))
+    await c.emit("input_read", rows=len(rows), columns=len(sheet.head))
     c.run.prompt_hash = chain.sha256(chain.canon([SYSTEM, SCHEMA]))
     raws, counts = [], {"proposed": 0, "written": 0, "dropped": 0, "undated": 0}
     subjects, names, places = {}, [], []

@@ -1,407 +1,300 @@
 {% extends 'layout.html' %}
-{% block css %}
-    <style>
-        .intake { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 16px; align-items: start; }
-        .stages { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
-        .stage { display: inline-flex; gap: 4px; align-items: center; font-size: 12px; padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(var(--v-border-color), .35); color: rgba(var(--v-theme-on-surface), .6); }
-        .stage.done { color: rgb(var(--v-theme-on-surface)); border-color: rgb(var(--v-theme-on-surface)); }
-        .stage.running { color: rgb(var(--v-theme-primary)); border: 1px dashed rgb(var(--v-theme-primary)); }
-        .stage.failed { color: rgb(var(--v-theme-error)); border-color: rgb(var(--v-theme-error)); }
-        .stage.skipped { opacity: .6; }
-        .stage .ti-loader-2 { animation: stage-spin 1s linear infinite; }
-        @keyframes stage-spin { to { transform: rotate(360deg); } }
-        @media (prefers-reduced-motion: reduce) { .stage .ti-loader-2 { animation: none; } }
-        .intake-item { padding: 12px 16px; border-top: 1px solid rgba(var(--v-border-color), .2); outline: none; }
-        .intake-item:first-child { border-top: 0; }
-        .intake-item:focus-visible { background: rgba(var(--v-theme-on-surface), .06); box-shadow: inset 2px 0 0 rgb(var(--v-theme-on-surface)); }
-        .intake-name { overflow-wrap: anywhere; }
-        @media (max-width: 959px) { .intake { grid-template-columns: minmax(0, 1fr); } }
-        .map-cell { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; min-width: 180px; font-weight: 400; }
-        .map-note { font-size: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; color: rgba(var(--v-theme-on-surface), .65); }
-        .map-note.todo { color: rgb(var(--v-theme-warning)); }
-        .sheet-row { padding: 10px 0; border-top: 1px solid rgba(var(--v-border-color), .2); }
-        .sheet-row:first-child { border-top: 0; }
-        .claim-chip { cursor: pointer; }
-        .claim-chip.on { outline: 2px solid rgb(var(--v-theme-primary)); }
-    </style>
-{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ asset('css/intake.css') }}">{% endblock %}
 {% block content %}
-    <v-container class="py-6" style="max-width: 1200px;">
-        <div class="mb-4">
-            <h1 class="text-title-large">Add evidence</h1>
-            <p class="text-body-medium text-medium-emphasis mb-0">Set the batch details once, then drop files or paste links. Each item is hashed before anything else touches it.</p>
-        </div>
-        <div class="intake">
-            <v-card aria-labelledby="h-batch">
-                <v-card-title id="h-batch" class="text-title-medium pa-4 pb-2">This batch</v-card-title>
-                <v-card-text class="d-flex flex-column ga-3">
-                    <v-combobox v-model="intake.investigation" :items="cases" label="Case" density="compact" hide-details prepend-inner-icon="ti ti-folder" autofocus></v-combobox>
-                    <v-text-field v-model="intake.origin" label="Origin" placeholder="scanner-01 or channel:telegram/xyz" density="compact" hide-details prepend-inner-icon="ti ti-route"></v-text-field>
-                    <v-combobox v-model="intake.doc_type" :items="docTypes" label="Document type" density="compact" hide-details prepend-inner-icon="ti ti-file-description"></v-combobox>
-                    <v-select v-model="intake.sensitivity" :items="['sensitive', 'ordinary']" label="Sensitivity" density="compact" hide-details prepend-inner-icon="ti ti-eye-off"></v-select>
-                    <v-textarea v-model="intake.note" label="Acquisition note" rows="3" auto-grow density="compact" hide-details dir="auto"></v-textarea>
-                    <v-file-upload v-model="files" multiple density="compact" title="Drop files here" browse-text="Choose files" divider-text="or" icon="ti ti-upload" clearable></v-file-upload>
-                    <v-textarea v-model="links" label="Or paste links, one per line" rows="2" auto-grow density="compact" hide-details prepend-inner-icon="ti ti-link"></v-textarea>
-                    <v-btn color="primary" prepend-icon="ti ti-upload" :disabled="!ready" :loading="uploading" @click="start">${ addLabel }</v-btn>
-                </v-card-text>
+<div class="ae">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/desk" dir="auto">${ cur ? cur.name : 'No case' }</a><span aria-hidden="true">/</span><a href="/sources">Sources</a><span aria-hidden="true">/</span><span aria-current="page">Add evidence</span></nav>
+    <div>
+        <h1>Add evidence</h1>
+        <p class="lede">Bring in files, links, web results, spreadsheets or a voice note. Each item gets its fingerprint before anything reads it, and nothing it says becomes fact until a person signs.</p>
+    </div>
+
+    <!-- 1. the case: picked, or made on purpose -->
+    <div class="caseline">
+        <span class="muted">Adding to</span>
+        <v-menu v-model="caseMenu" :close-on-content-click="false" location="bottom start" :disabled="phase !== 'compose'">
+            <template #activator="{ props }">
+                <button v-bind="props" type="button" class="casebtn" :class="{ none: !cur }" :disabled="phase !== 'compose'" :aria-label="cur ? 'Case: ' + cur.name + '. Change case' : 'Choose a case'">
+                    <i class="ti ti-folder" aria-hidden="true" style="font-size: 18px"></i>
+                    <span v-if="cur"><strong dir="auto">${ cur.name }</strong><br><span class="meta">${ caseMeta(cur) }</span></span>
+                    <span v-else><strong>Choose a case</strong><br><span class="meta">Required before anything is added</span></span>
+                    <i v-if="phase === 'compose'" class="ti ti-selector" aria-hidden="true"></i>
+                </button>
+            </template>
+            <v-card class="case-menu" border>
+                <div class="pa-2"><v-text-field v-model="caseQ" density="compact" variant="outlined" hide-details autofocus placeholder="Find a case" prepend-inner-icon="ti ti-search" aria-label="Find a case" dir="auto"></v-text-field></div>
+                <v-list density="compact" class="py-0" aria-label="Cases" max-height="340">
+                    <v-list-item v-for="c in caseHits" :key="c.slug" :active="!!cur && cur.slug === c.slug" @click="pickCase(c)">
+                        <div class="case-row"><i class="ti ti-folder" aria-hidden="true"></i><strong dir="auto">${ c.name }</strong><i v-if="cur && cur.slug === c.slug" class="ti ti-check" aria-label="current"></i><span v-else></span><span class="meta">${ caseMeta(c) }</span><span v-if="c.description" class="meta" dir="auto">${ c.description }</span></div>
+                    </v-list-item>
+                    <v-list-item v-if="!caseHits.length" disabled><span class="muted">No case matches "${ caseQ }".</span></v-list-item>
+                </v-list>
+                <v-divider></v-divider>
+                <v-list density="compact" class="py-1"><v-list-item prepend-icon="ti ti-folder-plus" @click="openNewCase"><v-list-item-title>New case${ caseQ && !caseHits.length ? ' named "' + caseQ + '"' : '' }</v-list-item-title><v-list-item-subtitle>Opens a short form. Typing here never creates one.</v-list-item-subtitle></v-list-item></v-list>
             </v-card>
-            <div class="d-flex flex-column ga-4">
-                <v-card aria-labelledby="h-queue">
-                    <div class="d-flex align-center ga-3 flex-wrap pa-4 pb-2">
-                        <h2 id="h-queue" class="text-title-medium">Processing</h2>
-                        <span class="text-body-small text-medium-emphasis" aria-live="polite">${ finishedCount } of ${ queue.length } finished</span>
-                        <v-progress-linear class="ms-auto" :model-value="overall" color="primary" rounded height="6" style="max-width: 220px;" aria-label="Batch progress"></v-progress-linear>
-                    </div>
-                    <div v-if="!queue.length" class="pa-6 text-body-medium text-medium-emphasis">
-                        <i class="ti ti-inbox me-2" aria-hidden="true"></i>Nothing added yet. Each item will show its stages here.
-                    </div>
-                    <div v-for="q in queue" :key="q.key" class="intake-item" tabindex="0" role="group" :aria-label="q.name">
-                        <div class="d-flex ga-2 align-center flex-wrap">
-                            <i :class="'ti ' + typeIcon(q)" aria-hidden="true"></i>
-                            <strong class="intake-name">${ q.name }</strong>
-                            <span class="font-monospace text-caption text-medium-emphasis">${ q.sha256 ? q.sha256.slice(0, 12) : (q.error ? '' : 'hashing') }</span>
-                            <v-chip v-if="q.duplicate" size="x-small" label prepend-icon="ti ti-copy">Bytes already in the ledger</v-chip>
-                            <span class="ms-auto text-caption text-medium-emphasis">${ q.size }</span>
-                            <v-btn v-if="q.sheet && q.acquisition" size="x-small" variant="outlined" prepend-icon="ti ti-table" @click="openSheet(q)">${ sheetLabel(q) }</v-btn>
-                            <a v-if="q.sha256 && finished(q)" :href="'/evidence/' + q.sha256" class="text-caption">Open</a>
-                        </div>
-                        <v-progress-linear :model-value="progress(q)" :color="problem(q) ? 'error' : 'primary'" height="3" class="mt-2" :aria-label="q.name + ' progress'"></v-progress-linear>
-                        <div class="stages">
-                            <span v-for="s in stages" :key="s.key" class="stage" :class="stateOf(q, s.key)" :aria-label="s.label(q) + ': ' + words[stateOf(q, s.key)]">
-                                <i :class="'ti ' + icons[stateOf(q, s.key)]" aria-hidden="true"></i>${ s.label(q) }
-                            </span>
-                        </div>
-                        <div v-if="q.error" class="text-body-small text-error mt-2 d-flex ga-2 align-center flex-wrap" role="alert">
-                            <span>${ q.error }</span>
-                            <v-btn size="x-small" variant="outlined" color="error" prepend-icon="ti ti-refresh" @click="reupload(q)">Retry</v-btn>
-                        </div>
-                        <div v-for="f in q.failures" :key="f.run" class="text-body-small text-error mt-2 d-flex ga-2 align-center flex-wrap" role="alert">
-                            <span>${ f.message }</span>
-                            <v-btn v-if="f.retryable" size="x-small" variant="outlined" color="error" prepend-icon="ti ti-refresh" @click="retry(q, f)">Retry</v-btn>
-                            <span v-if="f.detail" class="text-caption text-medium-emphasis w-100">${ f.detail }</span>
-                        </div>
-                    </div>
-                    <div v-if="waiting" class="px-4 pb-3 text-caption text-medium-emphasis">Waiting stages continue as soon as a worker picks them up.</div>
-                </v-card>
-                <v-card v-if="sheet" aria-labelledby="h-sheet">
-                    <div class="d-flex align-center ga-2 flex-wrap pa-4 pb-2">
-                        <h2 id="h-sheet" class="text-title-medium">Sheet: ${ sheet.name }</h2>
-                        <span v-if="sheet.data" class="text-body-small text-medium-emphasis">${ sheet.data.table.total } rows, ${ sheet.data.table.header.length } columns</span>
-                        <v-spacer></v-spacer>
-                        <v-btn size="small" variant="text" icon="ti ti-x" aria-label="Close sheet" @click="sheet = null"></v-btn>
-                    </div>
-                    <v-card-text class="pt-0">
-                        <div v-if="sheet.reveal" class="d-flex ga-3 align-center flex-wrap">
-                            <span class="text-body-medium">This sheet is sensitive. Showing it records an access entry on its custody chain.</span>
-                            <v-btn color="primary" prepend-icon="ti ti-eye" :loading="sheet.busy" @click="revealSheet">Show the sheet</v-btn>
-                        </div>
-                        <v-progress-linear v-else-if="!sheet.data" indeterminate color="primary"></v-progress-linear>
-                        <template v-else-if="!sheet.data.version">
-                            <p class="text-body-medium mb-3">Say what each column holds. Remembered choices come from earlier versions of the dataset; suggestions come from the local embedding model and need your confirmation. Nothing is read until you confirm.</p>
-                            <div class="d-flex ga-3 flex-wrap mb-3">
-                                <v-select v-model="sheet.dataset" :items="datasetItems" label="Dataset" density="compact" hide-details style="min-width: 240px; max-width: 320px" prepend-inner-icon="ti ti-stack-2" @update:model-value="loadSheet"></v-select>
-                                <v-text-field v-if="!sheet.dataset" v-model="sheet.datasetName" label="New dataset name" density="compact" hide-details style="min-width: 220px; max-width: 320px" dir="auto"></v-text-field>
-                                <v-select v-model="sheet.key" :items="sheet.data.table.header" label="Row identifier column" density="compact" hide-details style="min-width: 200px; max-width: 280px" prepend-inner-icon="ti ti-key" @update:model-value="setKey"></v-select>
-                            </div>
-                            <v-alert v-if="sheet.data.suggest_error" type="warning" variant="tonal" density="compact" class="mb-3">Suggestions are unavailable (${ sheet.data.suggest_error }). Choose each column by hand.</v-alert>
-                            <sheet-viewer :table="sheet.data.table" :status="diffStatus" :changed="diffChanged" :only="diffOnly" height="460px">
-                                <template #head="{column, header}">
-                                    <div class="map-cell">
-                                        <v-select :model-value="sheet.map[header]" :items="fieldItems" density="compact" variant="outlined" hide-details :aria-label="'Field for ' + header" @update:model-value="v => choose(header, v)"></v-select>
-                                        <span v-if="sheet.confirmed[header]" class="map-note"><i class="ti ti-check" aria-hidden="true"></i>${ sheet.confirmed[header] }</span>
-                                        <span v-else class="map-note todo"><i class="ti ti-sparkles" aria-hidden="true"></i>suggested ${ score(header) }
-                                            <v-btn size="x-small" variant="tonal" :aria-label="'Confirm the field for ' + header" @click="choose(header, sheet.map[header])">Confirm</v-btn></span>
-                                    </div>
-                                </template>
-                            </sheet-viewer>
-                            <div v-if="diff" class="d-flex ga-2 align-center flex-wrap mt-3" role="group" aria-label="Rows by change">
-                                <span class="text-body-medium">${ diff.previous ? 'Against version ' + diff.previous + ':' : 'First version of this dataset:' }</span>
-                                <v-chip v-for="k in ['new', 'changed', 'unchanged', 'missing', 'invalid']" :key="k" size="small" :variant="diffFilter === k ? 'flat' : 'outlined'" :color="{new: 'primary', changed: 'warning', invalid: 'error'}[k]" @click="diffFilter = diffFilter === k ? null : k">${ diff.counts[k] } ${ k }</v-chip>
-                            </div>
-                            <ul v-if="diffFilter === 'missing'" class="ps-5 mt-2 text-body-small">
-                                <li v-for="r in diff.rows.filter(r => r.status === 'missing')" :key="r.key">Row ${ r.previous_row } of the previous version (identifier ${ r.key }) is not in this one. It stays as it was; nothing is retracted.</li>
-                            </ul>
-                            <p v-if="diff && diff.counts.invalid" class="text-body-small text-error mt-2">Rows with a blank or repeated identifier are not read. Fix them in the sheet and add it again.</p>
-                            <div class="d-flex ga-2 mt-3 flex-wrap">
-                                <v-btn variant="outlined" prepend-icon="ti ti-git-compare" :disabled="!mappingReady" :loading="sheet.busy" @click="checkDiff">Check changes</v-btn>
-                                <v-btn color="primary" prepend-icon="ti ti-player-play" :disabled="!mappingReady || !diff || !diff.to_read" :loading="sheet.busy" @click="confirmSheet">Read ${ diff ? diff.to_read : '' } new and changed rows</v-btn>
-                                <span v-if="!mappingReady" class="text-body-small text-medium-emphasis align-self-center">${ unconfirmed } column${ unconfirmed === 1 ? '' : 's' } to confirm${ sheet.key ? '' : ', and choose the row identifier' }</span>
-                            </div>
-                        </template>
-                        <template v-else>
-                            <p class="text-body-medium mb-2">Version ${ sheet.data.version.number } of ${ sheet.data.version.dataset_name }. ${ runWords }</p>
-                            <sheet-viewer :table="sheet.data.table" :claims="flatClaims" :sel="sheet.sel" height="420px" @select="id => sheet.sel = id"></sheet-viewer>
-                            <h3 class="text-title-small mt-4 mb-1">Proposals by row</h3>
-                            <p v-if="!proposals.length" class="text-body-medium text-medium-emphasis">No proposals yet.</p>
-                            <div v-for="r in proposals" :key="r.row" class="sheet-row">
-                                <div class="text-body-small text-medium-emphasis mb-1">Row ${ r.row }</div>
-                                <div class="d-flex ga-1 flex-wrap">
-                                    <v-chip v-for="c in r.claims" :key="c.id" size="small" label class="claim-chip" :class="{on: sheet.sel === c.id}" :variant="c.tier === 'rejected' ? 'outlined' : 'tonal'" :color="c.tier === 'accepted' ? 'success' : c.tier === 'rejected' ? 'error' : undefined" @click="sheet.sel = c.id">
-                                        <strong class="me-1">${ propLabel(c.prop) }</strong><span dir="auto">${ claimText(c) }</span>
-                                    </v-chip>
-                                </div>
-                            </div>
-                            <div class="d-flex ga-2 mt-3">
-                                <v-btn size="small" variant="outlined" prepend-icon="ti ti-file-search" :href="'/evidence/' + sheet.sha">Review on the source page</v-btn>
-                                <v-btn size="small" variant="outlined" prepend-icon="ti ti-checklist" href="/review">Review queue</v-btn>
-                            </div>
-                        </template>
-                    </v-card-text>
-                </v-card>
-                <v-card v-if="summary" aria-labelledby="h-summary">
-                    <v-card-title id="h-summary" class="text-title-medium pa-4 pb-2">What this batch found</v-card-title>
-                    <v-card-text class="pt-0">
-                        <ul class="ps-5">
-                            <li v-for="l in summaryLines" :key="l">${ l }</li>
-                        </ul>
-                    </v-card-text>
-                    <v-card-actions class="px-4 pb-4">
-                        <v-btn size="small" variant="outlined" prepend-icon="ti ti-checklist" href="/review">Review</v-btn>
-                        <v-btn size="small" variant="outlined" prepend-icon="ti ti-files" :href="'/sources?investigation=' + encodeURIComponent(intake.investigation) + '&batch=' + batch">Open these sources</v-btn>
-                    </v-card-actions>
-                </v-card>
+        </v-menu>
+        <span v-if="cur && cur.fresh" class="r-chip" style="--r: var(--ink-2); --r-wash: var(--wash); --r-line: var(--line-strong)"><i class="ti ti-sparkles" aria-hidden="true"></i>new case, created by you just now</span>
+    </div>
+
+    <!-- 2. one place for every source -->
+    <section v-if="phase === 'compose'" class="panel composer" :class="{ over: overWell }" aria-labelledby="h-in" @dragover.prevent="overWell = true" @dragleave="overWell = false" @drop.prevent.stop="onDrop">
+        <h2 id="h-in" class="sr">Bring evidence in</h2>
+        <div class="well">
+            <div class="smart">
+                <v-text-field v-model="smart" variant="outlined" density="comfortable" hide-details :prepend-inner-icon="smartIsLink ? 'ti ti-link' : 'ti ti-world-search'" placeholder="Paste links, or type words to search the web" aria-label="Paste links, or type words to search the web" dir="auto" @keydown.enter.prevent="submitSmart">
+                    <template #append-inner><v-btn v-if="smart.trim()" size="small" variant="flat" color="primary" @click="submitSmart">${ smartIsLink ? 'Add ' + plural(smartLinks.length, 'link') : 'Search the web' }</v-btn></template>
+                </v-text-field>
+            </div>
+            <p class="drophint"><i class="ti ti-drag-drop" aria-hidden="true"></i> Drop files anywhere on this page, or paste them with <kbd>${ mac ? '⌘' : 'Ctrl' }</kbd> <kbd>V</kbd>. Several at once is fine, and each keeps its own settings.</p>
+            <div class="kinds" aria-label="Accepted kinds">
+                <span><i class="ti ti-photo" aria-hidden="true"></i>Photos and scans</span>
+                <span><i class="ti ti-file-type-pdf" aria-hidden="true"></i>PDFs</span>
+                <span><i class="ti ti-volume" aria-hidden="true"></i>Audio</span>
+                <span><i class="ti ti-video" aria-hidden="true"></i>Video</span>
+                <span><i class="ti ti-world" aria-hidden="true"></i>Web pages</span>
+                <span><i class="ti ti-table" aria-hidden="true"></i>Spreadsheets (CSV, XLSX), messy ones too</span>
+            </div>
+            <div v-if="rec.on" class="rec" role="status" aria-live="polite">
+                <span class="dot" aria-hidden="true"></span><strong class="mono">${ clock(rec.s) }</strong>
+                <span class="lv" aria-hidden="true"><i v-for="(h, i) in rec.lv" :key="i" :style="{ height: h + 'px' }"></i></span>
+                <span class="muted">Recording on this device. It is fingerprinted the moment you stop.</span>
+                <v-spacer></v-spacer>
+                <v-btn size="small" variant="text" @click="stopRec(false)">Discard</v-btn>
+                <v-btn size="small" color="primary" prepend-icon="ti ti-player-stop" @click="stopRec(true)">Stop and add</v-btn>
+            </div>
+            <div v-else class="ways">
+                <v-btn variant="outlined" prepend-icon="ti ti-upload" @click="$refs.pick.click()">Choose files</v-btn>
+                <v-btn v-if="isMobile" variant="outlined" prepend-icon="ti ti-camera" @click="$refs.camera.click()">Take a photo</v-btn>
+                <v-btn v-if="canRecord" variant="outlined" prepend-icon="ti ti-microphone" @click="startRec">${ isMobile ? 'Voice note' : 'Record a voice note' }</v-btn>
+                <v-btn variant="outlined" prepend-icon="ti ti-world-search" @click="openSearch">Search the web</v-btn>
+                <v-btn variant="outlined" prepend-icon="ti ti-table-import" @click="$refs.sheet.click()">${ isMobile ? 'Spreadsheet' : 'Import a spreadsheet' }</v-btn>
+                <input ref="pick" type="file" multiple hidden @change="chosen">
+                <input ref="camera" type="file" accept="image/*" capture="environment" hidden @change="chosen">
+                <input ref="sheet" type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden @change="chosen">
             </div>
         </div>
-        <v-snackbar v-model="error.show" color="error">${ error.text }</v-snackbar>
-    </v-container>
+        <div class="custody" aria-label="What happens to each item">
+            <span><i class="ti ti-fingerprint" aria-hidden="true"></i>Fingerprinted on arrival, before anything reads it</span>
+            <span><i class="ti ti-history" aria-hidden="true"></i>Who added it, when and from where is logged</span>
+            <span><i class="ti ti-lock" aria-hidden="true"></i>Sensitive items are read only by models on this server</span>
+            <span><i class="ti ti-signature" aria-hidden="true"></i>What models find stays a proposal until a person signs</span>
+        </div>
+    </section>
+
+    <!-- web search, inline under the composer -->
+    <section v-if="search.open && phase === 'compose'" class="panel" aria-labelledby="h-web">
+        <header>
+            <h2 id="h-web">Search the web</h2>
+            <form class="d-flex ga-2 align-center flex-grow-1" style="max-width: 560px" role="search" @submit.prevent="runSearch({ text: search.q })">
+                <v-text-field id="web-q" v-model="search.q" density="compact" variant="outlined" hide-details placeholder="Words to search for" aria-label="Words to search for" prepend-inner-icon="ti ti-search" dir="auto"></v-text-field>
+                <v-btn type="submit" variant="flat" color="primary" :disabled="!search.q.trim() || !!searchBlocked" :loading="search.busy">Search</v-btn>
+            </form>
+            <v-btn class="act" icon="ti ti-x" size="small" variant="text" aria-label="Close web search" @click="search.open = false"></v-btn>
+        </header>
+        <div class="sent"><i class="ti ti-send" aria-hidden="true"></i>
+            <span v-if="searchBlocked">${ searchBlocked }</span>
+            <span v-else-if="search.sent">Sent to Brave Search: <strong dir="auto">${ quoted(search.sent) }</strong>, and nothing else. Your files, this case and sensitive values never leave this server.</span>
+            <span v-else>Only the words you search for are sent to Brave Search. Your files, this case and sensitive values never leave this server.</span>
+        </div>
+        <div v-if="search.error" class="sent" role="alert" style="color: var(--negative)"><i class="ti ti-alert-circle" aria-hidden="true"></i><span>${ search.error }</span></div>
+        <div v-if="!search.groups && !searchBlocked" class="sugg">
+            <template v-if="search.proposals.length"><span>From ordinary values in ${ cur.name }:</span>
+                <button v-for="q in search.proposals" :key="q.text" type="button" dir="auto" @click="runSearch(q)">${ q.text }</button></template>
+            <span v-else>No accepted value in ${ cur.name } may leave this server yet, so nothing is proposed. Type your own words.</span>
+        </div>
+        <template v-if="search.groups">
+            <v-tabs v-model="search.tab" density="compact" class="px-2" style="border-bottom: 1px solid var(--line)">
+                <v-tab value="web">Pages <span class="muted ms-1">${ search.groups.web.length }</span></v-tab>
+                <v-tab value="images">Images <span class="muted ms-1">${ search.groups.images.length }</span></v-tab>
+                <v-tab value="videos">Videos <span class="muted ms-1">${ search.groups.videos.length }</span></v-tab>
+            </v-tabs>
+            <p v-if="!search.groups[search.tab].length" class="empty">No ${ search.tab === 'web' ? 'pages' : search.tab } came back for this search.</p>
+            <div v-if="search.tab === 'web'">
+                <div v-for="r in search.groups.web" :key="r.id" class="res" tabindex="0" role="checkbox" :aria-checked="String(isPicked(r))" @click="toggle(r)" @keydown.space.prevent="toggle(r)" @keydown.enter.prevent="toggle(r)">
+                    <v-checkbox-btn :model-value="isPicked(r)" density="compact" tabindex="-1" aria-hidden="true" class="mt-n1"></v-checkbox-btn>
+                    <div><div class="t" dir="auto">${ r.title }</div><div class="u">${ shortUrl(r.url) }<span v-if="r.date">, ${ day(r.date) }</span></div></div>
+                    <span v-if="r.in_case.length" class="r-chip is-source" :title="r.in_case[0].why"><i class="ti ti-check" aria-hidden="true"></i>Already in this case</span><span v-else></span>
+                    <div class="s" dir="auto">${ r.description } <a v-if="r.in_case.length" :href="'/evidence/' + r.in_case[0].sha256" @click.stop>Open the source</a></div>
+                </div>
+            </div>
+            <div v-if="search.tab === 'images'" class="imgs">
+                <button v-for="r in search.groups.images" :key="r.id" type="button" class="imgc" :class="{ on: isPicked(r) }" :aria-pressed="String(isPicked(r))" @click="toggle(r)">
+                    <div class="im" :style="r.thumb ? { backgroundImage: 'url(/api/research/thumb/' + r.id + ')' } : {}"></div>
+                    <span class="ck" aria-hidden="true"><i v-if="isPicked(r)" class="ti ti-check"></i></span>
+                    <span v-if="r.in_case.length" class="in r-chip is-source" :title="r.in_case[0].why"><i class="ti ti-check" aria-hidden="true"></i>In this case</span>
+                    <div class="cap"><div dir="auto">${ r.title }</div><div class="u">${ r.domain }</div></div>
+                </button>
+            </div>
+            <div v-if="search.tab === 'videos'">
+                <div v-for="r in search.groups.videos" :key="r.id" class="res vid" tabindex="0" role="checkbox" :aria-checked="String(isPicked(r))" @click="toggle(r)" @keydown.space.prevent="toggle(r)" @keydown.enter.prevent="toggle(r)">
+                    <v-checkbox-btn :model-value="isPicked(r)" density="compact" tabindex="-1" aria-hidden="true" class="mt-n1"></v-checkbox-btn>
+                    <div class="vt" :style="r.thumb ? { backgroundImage: 'url(/api/research/thumb/' + r.id + ')' } : {}"></div>
+                    <div><div class="t" dir="auto">${ r.title }</div><div class="u">${ shortUrl(r.url) }<span v-if="r.date">, ${ day(r.date) }</span></div></div>
+                    <span v-if="r.in_case.length" class="r-chip is-source" :title="r.in_case[0].why"><i class="ti ti-check" aria-hidden="true"></i>Already in this case</span><span v-else></span>
+                    <div class="s" dir="auto">${ r.description }</div>
+                </div>
+            </div>
+            <div class="picked">
+                <span v-if="search.picked.length"><strong>${ search.picked.length } picked.</strong> The browser on this server captures each one: the page as it looks now, its text, and its own fingerprint.</span>
+                <span v-else>Pick results to capture. Items marked as already in this case would be logged as a second copy, not stored twice.</span>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" prepend-icon="ti ti-plus" :disabled="!search.picked.length" @click="addPicked">Add ${ search.picked.length || '' } to the list</v-btn>
+            </div>
+        </template>
+    </section>
+
+    <!-- 3. the list: one row per item, the same row through every stage -->
+    <section v-if="items.length" class="panel" aria-labelledby="h-list">
+        <header class="lhead">
+            <h2 id="h-list" class="count">${ listTitle }</h2>
+            <div class="tally" aria-live="polite">
+                <template v-if="phase !== 'compose'">
+                    <span v-if="tally.done" class="r-chip" style="--r: var(--ink-2); --r-wash: var(--wash); --r-line: var(--line-strong)"><i class="ti ti-check" aria-hidden="true"></i>${ tally.done } done</span>
+                    <span v-if="tally.run" class="r-chip is-agent"><i class="ti ti-loader-2" aria-hidden="true"></i>${ tally.run } in progress</span>
+                    <span v-if="tally.wait" class="r-chip state-due"><i class="ti ti-clock" aria-hidden="true"></i>${ tally.wait } waiting for a model</span>
+                    <span v-if="tally.you" class="r-chip state-due"><i class="ti ti-hand-finger" aria-hidden="true"></i>${ tally.you } waiting for you</span>
+                    <span v-if="tally.dup" class="r-chip is-source"><i class="ti ti-copy" aria-hidden="true"></i>${ tally.dup } already here</span>
+                    <span v-if="tally.retry" class="r-chip state-negative"><i class="ti ti-refresh" aria-hidden="true"></i>${ tally.retry } need${ tally.retry === 1 ? 's' : '' } a retry</span>
+                    <span v-if="tally.fail" class="r-chip state-negative"><i class="ti ti-x" aria-hidden="true"></i>${ tally.fail } refused</span>
+                </template>
+                <span v-else class="muted">${ composeHint }</span>
+            </div>
+            <v-btn v-if="phase === 'compose'" class="act" size="small" variant="text" prepend-icon="ti ti-trash" @click="items = []">Clear</v-btn>
+        </header>
+
+        <template v-if="phase === 'compose'">
+            <div class="from">
+                <v-combobox v-model="origin" :items="recentOrigins" density="compact" variant="outlined" hide-details label="Where these came from" prepend-inner-icon="ti ti-route" aria-describedby="from-help" dir="auto"></v-combobox>
+                <span id="from-help" class="text-caption muted" style="flex: 1 1 220px">Applies to every file without its own. Web items keep their address.</span>
+                <v-btn v-if="!noteOpen && !note" size="small" variant="text" prepend-icon="ti ti-notes" @click="noteOpen = true">Add a note</v-btn>
+            </div>
+            <div v-if="noteOpen || note" class="notebox">
+                <v-textarea v-model="note" rows="2" auto-grow density="compact" variant="outlined" hide-details label="How these arrived (optional)" placeholder="Handed over on a USB drive in sealed bag 4471" dir="auto"></v-textarea>
+            </div>
+            <div v-if="selN" class="bulk" role="toolbar" aria-label="Change selected items">
+                <strong>${ selN } selected</strong>
+                <v-menu><template #activator="{ props }"><v-btn v-bind="props" size="small" variant="outlined" append-icon="ti ti-chevron-down">Document type</v-btn></template>
+                    <v-list density="compact"><v-list-item v-for="d in DOCS" :key="d.value" @click="bulk('doc', d.value)">${ d.title }</v-list-item></v-list></v-menu>
+                <v-btn size="small" variant="outlined" prepend-icon="ti ti-eye-off" @click="bulk('sens', true)">Sensitive</v-btn>
+                <v-btn size="small" variant="outlined" prepend-icon="ti ti-eye" @click="bulk('sens', false)">Ordinary</v-btn>
+                <v-btn size="small" variant="text" prepend-icon="ti ti-trash" @click="bulk('remove')">Remove</v-btn>
+                <v-btn size="small" variant="text" @click="items.forEach(i => i.sel = false)">Clear selection</v-btn>
+            </div>
+            <div class="cols" aria-hidden="true">
+                <v-checkbox-btn :model-value="selN === items.length" :indeterminate="selN > 0 && selN < items.length" density="compact" @update:model-value="v => items.forEach(i => i.sel = v)"></v-checkbox-btn>
+                <span></span><span>Item</span><span>Detected</span><span>Document type</span><span>Sensitivity</span><span></span>
+            </div>
+        </template>
+
+        <div>
+            <template v-for="it in items" :key="it.id">
+                <!-- staged -->
+                <div v-if="phase === 'compose'" class="it" tabindex="-1" :data-label="it.name">
+                    <v-checkbox-btn class="ck" v-model="it.sel" density="compact" :aria-label="'Select ' + it.name"></v-checkbox-btn>
+                    <div class="thumb" :class="{ sens: it.sens }" :style="it.thumb ? { backgroundImage: 'url(' + it.thumb + ')' } : {}"><i v-if="!it.thumb" :class="KIND[it.kind].icon" aria-hidden="true"></i></div>
+                    <div class="nm">
+                        <strong dir="auto" :title="it.name">${ it.name }</strong>
+                        <div class="meta">
+                            <span v-if="it.file" class="mono" :title="it.sha ? 'Fingerprint taken in your browser: ' + it.sha : ''"><i class="ti ti-fingerprint" aria-hidden="true"></i> ${ it.sha ? it.sha.slice(0, 10) : 'taking fingerprint' }</span>
+                            <span v-if="it.file">${ size(it.file.size) }</span>
+                            <span v-if="it.url" dir="auto">from ${ shortUrl(it.url) }</span>
+                            <v-menu v-else><template #activator="{ props }"><button v-bind="props" type="button" :aria-label="'Origin of ' + it.name + ': ' + (it.origin || origin || 'not set') + '. Change'">from ${ it.origin || origin || 'unknown origin' }</button></template>
+                                <v-list density="compact"><v-list-item @click="it.origin = ''">Same as the batch${ origin ? ' (' + origin + ')' : '' }</v-list-item><v-list-item v-for="o in recentOrigins" :key="o" @click="it.origin = o">${ o }</v-list-item></v-list></v-menu>
+                        </div>
+                    </div>
+                    <div class="ctl">
+                        <span class="kind"><i :class="KIND[it.kind].icon" aria-hidden="true"></i>${ KIND[it.kind].label }</span>
+                        <div class="doc">
+                            <v-select v-model="it.doc" :items="DOCS" density="compact" variant="outlined" hide-details :aria-label="'Document type for ' + it.name" @update:model-value="it.docBy = 'you'">
+                                <template #prepend-inner><v-tooltip :text="it.docBy === 'you' ? 'Set by you' : it.docWhy" location="top"><template #activator="{ props }"><i v-bind="props" :class="it.docBy === 'you' ? 'ti ti-user' : 'ti ti-sparkles sug'" :aria-label="it.docBy === 'you' ? 'set by you' : 'suggested'"></i></template></v-tooltip></template>
+                            </v-select>
+                        </div>
+                        <button type="button" class="sensbtn" :aria-pressed="String(it.sens)" :aria-label="it.name + ' is ' + (it.sens ? 'sensitive' : 'ordinary') + '. Toggle'" @click="it.sens = !it.sens"><i :class="it.sens ? 'ti ti-eye-off' : 'ti ti-eye'" aria-hidden="true"></i>${ it.sens ? 'Sensitive' : 'Ordinary' }</button>
+                    </div>
+                    <v-btn class="x" icon="ti ti-x" size="small" variant="text" :aria-label="'Remove ' + it.name" @click="remove(it)"></v-btn>
+                    <sheet-columns v-if="it.kind === 'sheet'" :it="it" :fields="FIELDS"></sheet-columns>
+                </div>
+
+                <!-- in progress and finished: same item, now a story of stages -->
+                <div v-else class="it run" tabindex="-1" :data-label="it.name">
+                    <div class="thumb" :class="{ sens: it.sens }" :style="it.thumb ? { backgroundImage: 'url(' + it.thumb + ')' } : {}"><i v-if="!it.thumb" :class="KIND[it.kind].icon" aria-hidden="true"></i></div>
+                    <div class="nm">
+                        <strong dir="auto" :title="it.name">${ it.name }</strong>
+                        <div class="meta"><span>${ docTitle(it.doc) }</span><span v-if="it.sens" class="r-ink state-sensitive"><i class="ti ti-eye-off" aria-hidden="true"></i> sensitive</span><span v-if="it.sha" class="mono" :title="it.sha">${ it.sha.slice(0, 10) }</span><span v-if="it.checked" title="Your browser and the server took the same fingerprint"><i class="ti ti-circle-check" aria-hidden="true"></i> fingerprint matched</span></div>
+                        <div v-if="view(it).msg" class="status" :class="view(it).tone" role="status">
+                            <i :class="TONE[view(it).tone]" aria-hidden="true"></i>
+                            <span><template v-if="view(it).tone === 'dup'">Same bytes as <a :href="'/evidence/' + it.sha" dir="auto">${ it.original.title }</a>, added ${ ago(it.original.at) } from ${ originWords(it.original.origin) }${ it.original.investigation && it.original.investigation !== caseSlug ? ' in ' + it.original.investigation : '' }. No second copy stored; this upload is logged on that source's custody record.</template><template v-else>${ view(it).msg }</template>
+                                <div v-if="view(it).tone === 'fail'" class="acts">
+                                    <v-btn size="x-small" variant="outlined" prepend-icon="ti ti-refresh" @click="retry(it)">Try again</v-btn>
+                                    <v-btn v-if="it.result || it.url" size="x-small" variant="text" prepend-icon="ti ti-download" @click="say('Save the page from your browser, then drop the file on this page')">Save it yourself and drop it here</v-btn>
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+                    <ol class="track" :aria-label="'Stages for ' + it.name">
+                        <li v-for="s in stagesOf(it)" :key="s.k" :class="s.st" :aria-label="s.label + ': ' + WORD[s.st]">
+                            <span class="bar"></span><span class="lbl"><i v-if="ICON[s.st]" :class="ICON[s.st]" aria-hidden="true"></i>${ s.label }</span>
+                        </li>
+                    </ol>
+                    <a v-if="it.sha && it.acquisition" class="x text-caption" :href="'/evidence/' + it.sha" :aria-label="'Open ' + it.name">Open</a><span v-else class="x"></span>
+                    <sheet-columns v-if="it.kind === 'sheet' && it.acquisition && !it.sheetConfirmed && !it.dup" :it="it" :fields="FIELDS" :stored="true" @confirmed="poll"></sheet-columns>
+                </div>
+            </template>
+        </div>
+
+        <div v-if="phase === 'compose'" class="addbar">
+            <v-btn class="go" color="primary" size="large" prepend-icon="ti ti-plus" :disabled="!cur || !ready" @click="start">${ cur ? 'Add ' + plural(items.length, 'item') + ' to ' + cur.name : 'Choose a case first' }</v-btn>
+            <span class="text-caption muted" style="flex: 1 1 260px">${ sensN } of ${ items.length } marked sensitive. ${ ready ? (items.length > 1 ? 'You can keep adding while they process.' : '') : 'Taking fingerprints.' }</span>
+        </div>
+        <div v-else-if="phase === 'running'" class="addbar">
+            <span class="text-caption muted">You can leave this page. Items keep going, and the brief lands in your inbox when the batch finishes.</span>
+            <v-spacer></v-spacer>
+            <v-btn size="small" variant="outlined" prepend-icon="ti ti-plus" @click="$refs.more.click()">Add more</v-btn>
+            <input ref="more" type="file" multiple hidden @change="addMore">
+        </div>
+    </section>
+
+    <!-- 4. finish: the intake brief and what to do next -->
+    <section v-if="phase === 'done'" class="panel brief" aria-labelledby="h-brief">
+        <header>
+            <h2 id="h-brief" class="who"><span class="av" aria-hidden="true"><i class="ti ti-robot"></i></span>Intake brief</h2>
+            <span class="muted">Written by the case assistant on the local model. Every line cites its sources; nothing here is accepted.</span>
+        </header>
+        <intake-brief :batch="batch" :grid="true"></intake-brief>
+        <div class="finish">
+            <v-btn color="primary" :variant="claimsN ? 'flat' : 'outlined'" prepend-icon="ti ti-checklist" href="/review?box=open" :disabled="!claimsN">${ claimsN ? 'Review ' + plural(claimsN, 'proposed claim') : 'No claims to review' }</v-btn>
+            <v-btn variant="outlined" prepend-icon="ti ti-files" :href="'/sources?investigation=' + encodeURIComponent(caseSlug) + '&batch=' + batch">${ storedN ? 'Open the ' + plural(storedN, 'new source') : 'Open these sources' }</v-btn>
+            <v-btn variant="text" prepend-icon="ti ti-plus" @click="reset">Add another batch</v-btn>
+        </div>
+    </section>
+
+    <div v-if="dragging && phase === 'compose'" class="ae-dropall" aria-hidden="true"><div><i class="ti ti-upload" style="font-size: 22px"></i>Drop to add to ${ cur ? cur.name : 'the list' }</div></div>
+
+    <v-dialog v-model="nc.open" max-width="460" :fullscreen="isMobile">
+        <v-card>
+            <v-card-item><v-card-title>New case</v-card-title><v-card-subtitle class="text-wrap">A case groups sources, people and reviews. It is recorded with your name.</v-card-subtitle></v-card-item>
+            <v-card-text class="d-flex flex-column ga-3">
+                <v-text-field v-model="nc.name" label="Name" density="compact" variant="outlined" autofocus counter="60" maxlength="60" :error-messages="ncTaken ? ['A case with this name exists. Pick it from the list instead.'] : (nc.error ? [nc.error] : [])" dir="auto" hint="Short and specific, for example a place, period or partner" persistent-hint></v-text-field>
+                <div v-if="ncClose && !ncTaken" class="d-flex ga-2 align-start flex-wrap" role="alert" style="font-size: 13px; color: var(--due)">
+                    <i class="ti ti-alert-triangle mt-1" aria-hidden="true"></i><span style="flex: 1 1 200px">Close to <strong dir="auto">${ ncClose.name }</strong> (${ caseMeta(ncClose) }). Same case?</span>
+                    <v-btn size="x-small" variant="outlined" @click="pickCase(ncClose); nc.open = false">Use ${ ncClose.name }</v-btn>
+                </div>
+                <v-textarea v-model="nc.description" label="Short description (optional)" rows="2" auto-grow density="compact" variant="outlined" hide-details placeholder="Detentions recorded at Branch 999, 2013" dir="auto"></v-textarea>
+            </v-card-text>
+            <v-card-actions class="px-4 pb-4">
+                <v-spacer></v-spacer>
+                <v-btn variant="text" @click="nc.open = false">Cancel</v-btn>
+                <v-btn color="primary" variant="flat" :disabled="!nc.name.trim() || ncTaken" :loading="nc.busy" @click="createCase">Create case</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+    <v-snackbar v-model="toast.show" :color="toast.error ? 'error' : undefined" timeout="4000">${ toast.text }</v-snackbar>
+</div>
 {% endblock %}
 
 {% block js %}
-    <script type="module">
-        import {SheetViewer} from '/static/js/components/SheetViewer.js';
-        const {createApp} = Vue;
-        const {createVuetify} = Vuetify;
-        const vuetify = createVuetify(config.vuetifyConfig);
-        const CASES = {{ cases | tojson }};
-        const PROPS = {name: 'Name', sex: 'Sex', age: 'Age', occupation: 'Occupation', father_name: "Father's name", mother_name: "Mother's name", birth_date: 'Born', place_of_birth: 'Born in', arrested_at: 'Arrested at', detained_at: 'Detained at', detention_branch: 'Held by branch', transferred_to: 'Transferred to', seen_at: 'Seen at', last_seen: 'Last seen', event: 'Event', located_at: 'Place'};
-        const clock = (ms) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
-        const readProgress = (p) => !p ? '' : p.unit === 'ms' ? ` ${clock(p.completed)} of ${clock(p.total)}` : ` ${p.completed} of ${p.total} ${p.unit}`;
-
-        const app = createApp({
-            mixins: [layoutMixin],
-            data() {
-                const stored = storedCase();
-                return {
-                    cases: CASES, files: [], links: '', queue: [], batch: null, uploading: false, timer: null,
-                    summary: null, error: {show: false, text: ''}, sheet: null, diff: null, diffFilter: null, proposals: [], sheetTimer: null,
-                    intake: {investigation: (stored !== 'all' && stored) || CASES[0] || '', origin: '', doc_type: 'unknown', sensitivity: 'sensitive', note: ''},
-                    docTypes: ['detention_register', 'transfer_order', 'witness_statement', 'photo', 'web_post', 'unknown'],
-                    stages: [
-                        {key: 'hashed', label: () => 'hashed'},
-                        {key: 'c2pa', label: (q) => q.stage('c2pa') === 'done' ? 'C2PA checked' : 'C2PA'},
-                        {key: 'read', label: (q) => (q.sheet ? 'rows read' : q.type === 'audio' ? 'transcript read' : 'text read') + (q.stage('read') === 'done' ? '' : readProgress(q.read_progress))},
-                        {key: 'fingerprint', label: () => 'fingerprinted'},
-                        {key: 'embed', label: () => 'embedded'},
-                        {key: 'linked', label: () => 'linked'},
-                    ],
-                    icons: {done: 'ti-check', running: 'ti-loader-2', queued: 'ti-circle-dashed', failed: 'ti-alert-circle', skipped: 'ti-minus'},
-                    words: {done: 'done', running: 'running', queued: 'waiting', failed: 'failed', skipped: 'not run automatically'},
-                };
-            },
-            computed: {
-                entries() { return this.links.split('\n').map(l => l.trim()).filter(Boolean); },
-                ready() { return this.intake.investigation && (this.files.length || this.entries.length); },
-                datasetItems() { return [...(this.sheet?.data?.datasets || []).map(d => ({title: `${d.name} (${d.versions} version${d.versions === 1 ? '' : 's'})`, value: d.id})), {title: 'New dataset', value: null}]; },
-                fieldItems() { return (this.sheet?.data?.fields || []).map(f => ({title: f.label, value: f.key})); },
-                unconfirmed() { return this.sheet?.data ? this.sheet.data.table.header.filter(h => !this.sheet.confirmed[h]).length : 0; },
-                mappingReady() { const s = this.sheet; return !!s?.data && !!s.key && s.map[s.key] === 'key' && !this.unconfirmed && !!(s.dataset || s.datasetName.trim()); },
-                diffStatus() { return Object.fromEntries((this.diff?.rows || []).filter(r => r.row).map(r => [r.row, r.status])); },
-                diffChanged() { return Object.fromEntries((this.diff?.rows || []).filter(r => r.changed?.length).map(r => [r.row, r.changed])); },
-                diffOnly() { return this.diffFilter && this.diffFilter !== 'missing' ? this.diff.rows.filter(r => r.status === this.diffFilter && r.row).map(r => r.row) : null; },
-                flatClaims() { return this.proposals.flatMap(r => r.claims).map(c => ({...c, label: PROPS[c.prop] || c.prop})); },
-                runWords() {
-                    const v = this.sheet.data.version, run = v.run, n = v.counts.new + v.counts.changed;
-                    // No run with rows to read means the server could not queue one; say so.
-                    if (!run && n) return `${n} new and changed row${n === 1 ? ' was' : 's were'} not read: ${this.sheet.notRead || 'no model is configured for the route this sheet is allowed'}.`;
-                    if (!run) return `Nothing to read: ${v.counts.unchanged} unchanged rows were skipped.`;
-                    return {queued: `${n} rows wait for the reader.`, running: `Reading ${n} rows.`, failed: `Reading did not finish: ${run.error || ''}`, done: `Read ${n} rows; ${v.counts.unchanged} unchanged rows were skipped. Every proposal below is unconfirmed until a person reviews it.`}[run.status];
-                },
-                addLabel() { const n = this.files.length + this.entries.length; return `Add ${n || ''} item${n === 1 ? '' : 's'} to ${this.intake.investigation || 'a case'}`.replace('Add  ', 'Add '); },
-                finishedCount() { return this.queue.filter(q => this.finished(q)).length; },
-                overall() { return this.queue.length ? this.queue.reduce((a, q) => a + this.progress(q), 0) / this.queue.length : 0; },
-                waiting() { return this.queue.some(q => q.sha256 && Object.values(q.stages || {}).includes('queued') && !q.failures.length); },
-                summaryLines() {
-                    const s = this.summary, n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
-                    return [
-                        `${n(s.new_items, 'new item', 'new items')} hashed and stored with a custody entry`,
-                        `${n(s.exact_duplicates, 'duplicate', 'duplicates')} of existing items`,
-                        `${n(s.possible_matches, 'possible match', 'possible matches')} to existing items, for you to review`,
-                        `${n(s.claims, 'new claim', 'new claims')}, all unconfirmed until a person signs`,
-                        `${n(s.findings, 'new finding', 'new findings')} proposed in this case since the batch began`,
-                        s.failed ? `${n(s.failed, 'item needs', 'items need')} a retry` : 'no failures',
-                    ];
-                },
-            },
-            beforeUnmount() { clearTimeout(this.timer); clearTimeout(this.sheetTimer); },
-            methods: {
-                // Shell contract: a new batch goes to the switcher's case.
-                useCase(v) { if (v && !this.batch) this.intake.investigation = v; },
-                fail(e) { this.error = {show: true, text: e.response?.data?.message || e.message}; },
-                kind(mime) { return /^image/.test(mime) ? 'image' : /pdf/.test(mime) ? 'pdf' : /^audio/.test(mime) ? 'audio' : /^video/.test(mime) ? 'video' : /^text/.test(mime) ? 'text' : 'file'; },
-                typeIcon(q) { return {image: 'ti-photo', pdf: 'ti-file-type-pdf', audio: 'ti-headphones', video: 'ti-video', text: 'ti-file-text', link: 'ti-link'}[q.type] || 'ti-file'; },
-                size(n) { return n > 1e6 ? (n / 1e6).toFixed(1) + ' MB' : (n / 1e3).toFixed(1) + ' KB'; },
-                // The server owns stage states; before it answers, only upload is known.
-                stateOf(q, key) {
-                    if (q.error) return key === 'hashed' ? 'failed' : 'queued';
-                    if (!q.stages) return key === 'hashed' ? 'running' : 'queued';
-                    return q.stages[key];
-                },
-                finished(q) { return !!q.stages && !q.pending; },
-                problem(q) { return !!q.error || q.failures.length > 0; },
-                progress(q) {
-                    if (!q.stages) return 0;
-                    return this.stages.filter(s => ['done', 'skipped'].includes(q.stages[s.key])).length / this.stages.length * 100;
-                },
-                item(name, type, size, extra) {
-                    const q = {key: crypto.randomUUID(), name, type, size: this.size(size || 0), sha256: '', stages: null, pending: true, duplicate: false, failures: [], error: '', acquisition: null, ...extra};
-                    q.stage = (k) => q.stages?.[k];
-                    return q;
-                },
-                async start() {
-                    if (!this.batch || this.summary) { this.batch = crypto.randomUUID(); this.queue = []; this.summary = null; }
-                    const added = [
-                        ...this.files.map(f => this.item(f.name, this.kind(f.type), f.size, {file: f})),
-                        ...this.entries.map(u => this.item(u, 'link', 0, {url: u})),
-                    ];
-                    this.queue.push(...added);
-                    this.files = []; this.links = '';
-                    this.uploading = true;
-                    for (const q of this.queue.filter(x => !x.acquisition && !x.error)) await this.send(q);
-                    this.uploading = false;
-                    this.poll();
-                },
-                async send(q) {
-                    q.error = '';
-                    // Items in the live list are Vue proxies: look up by key after each await.
-                    const i = this.intake, origin = i.origin.trim(), m = origin.match(/^(device|channel):(.*)$/);
-                    try {
-                        let data;
-                        if (q.url) {
-                            ({data} = await axios.post('/ingest/url', {item: {url: q.url, investigation: i.investigation, batch: this.batch, note: i.note, doc_type: i.doc_type, sensitivity: i.sensitivity}}));
-                        } else {
-                            const form = new FormData();
-                            form.append('file', q.file);
-                            form.append('batch', this.batch);
-                            form.append('investigation', i.investigation);
-                            form.append('origin_kind', m ? m[1] : 'device');
-                            form.append('origin', m ? m[2] : origin);
-                            for (const k of ['doc_type', 'sensitivity', 'note']) if (i[k]) form.append(k, i[k]);
-                            ({data} = await axios.post('/ingest/file', form));
-                            data = data.items[0];
-                        }
-                        q.acquisition = data.acquisition_id;
-                        q.sha256 = data.sha256;
-                        q.duplicate = !data.new_blob;
-                    } catch (e) {
-                        q.error = e.response?.data?.message || 'The upload did not finish. Check the connection and retry.';
-                    }
-                },
-                async reupload(q) {
-                    this.uploading = true;
-                    await this.send(q);
-                    this.uploading = false;
-                    this.poll();
-                },
-                async retry(q, f) {
-                    try {
-                        await axios.post(`/ingest/run/${f.run}/retry`);
-                        this.summary = null;
-                        q.failures = q.failures.filter(x => x.run !== f.run);
-                        q.pending = true;
-                        this.poll();
-                    } catch (e) { this.fail(e); }
-                },
-                sheetLabel(q) { return this.sheet?.acq === q.acquisition ? 'Sheet open' : 'Prepare sheet'; },
-                propLabel(p) { return PROPS[p] || p; },
-                claimText(c) {
-                    const v = c.value || {}, parts = [v.text ?? 'erased'];
-                    if (v.norm != null) parts.push(`(${v.norm})`);
-                    if (v.kind) parts.push(`(${v.kind})`);
-                    if (c.from) parts.push(c.from === c.to ? c.from : `${c.from} to ${c.to}`);
-                    else if (v.date_text) parts.push('undated');
-                    if ('place' in c) parts.push(c.place ? `place: ${c.place.name}` : c.candidates ? `place open, ${c.candidates} candidate${c.candidates === 1 ? '' : 's'}` : 'place open, not in the gazetteer');
-                    if (c.tier === 'rejected') parts.push(`rejected: ${c.reason}`);
-                    return parts.join(' ');
-                },
-                score(h) { const c = this.sheet.data.columns.find(x => x.header === h), s = c?.suggestions?.[0]; return s && s.field === this.sheet.map[h] ? s.score.toFixed(2) : ''; },
-                openSheet(q) {
-                    clearTimeout(this.sheetTimer);
-                    this.sheet = {acq: q.acquisition, sha: q.sha256, name: q.name, data: null, reveal: false, busy: false, dataset: null, datasetName: q.name.replace(/\.[^.]+$/, ''), key: null, map: {}, confirmed: {}, sel: null, notRead: ''};
-                    this.diff = null; this.diffFilter = null; this.proposals = [];
-                    this.loadSheet();
-                },
-                async loadSheet() {
-                    const s = this.sheet;
-                    this.diff = null; this.diffFilter = null;
-                    try {
-                        const {data} = await axios.get(`/api/sheets/${s.acq}/preview`, {params: s.dataset ? {dataset: s.dataset} : {}});
-                        s.reveal = false; s.data = data;
-                        if (data.version) return this.loadProposals();
-                        s.map = {}; s.confirmed = {};
-                        for (const c of data.columns) {
-                            s.map[c.header] = c.remembered || c.suggestions[0]?.field || 'ignore';
-                            if (c.remembered) s.confirmed[c.header] = 'remembered';
-                        }
-                        const d = data.datasets.find(x => x.id === s.dataset);
-                        s.key = d && data.table.header.includes(d.key_column) ? d.key_column : (data.columns.find(c => s.map[c.header] === 'key')?.header || null);
-                    } catch (e) {
-                        if (e.response?.data?.reason === 'reveal_required') s.reveal = true; else this.fail(e);
-                    }
-                },
-                async revealSheet() {
-                    this.sheet.busy = true;
-                    try { await axios.post(`/api/evidence/${this.sheet.sha}/reveal`, {item: {}}); await this.loadSheet(); } catch (e) { this.fail(e); }
-                    this.sheet.busy = false;
-                },
-                choose(header, field) {
-                    const s = this.sheet;
-                    s.map[header] = field; s.confirmed[header] = 'confirmed';
-                    if (field === 'key') s.key = header;
-                    this.diff = null;
-                },
-                setKey(header) { this.choose(header, 'key'); },
-                sheetItem() { const s = this.sheet; return {item: {dataset: s.dataset, dataset_name: s.datasetName, key_column: s.key, mapping: s.map, sheet: s.data.table.sheet}}; },
-                async checkDiff() {
-                    this.sheet.busy = true;
-                    try { this.diff = (await axios.post(`/api/sheets/${this.sheet.acq}/diff`, this.sheetItem())).data; this.diffFilter = null; } catch (e) { this.fail(e); }
-                    this.sheet.busy = false;
-                },
-                async confirmSheet() {
-                    this.sheet.busy = true;
-                    try { const {data} = await axios.post(`/api/sheets/${this.sheet.acq}/confirm`, this.sheetItem()); this.sheet.notRead = data.reason; this.summary = null; this.poll(); await this.loadSheet(); } catch (e) { this.fail(e); }
-                    this.sheet.busy = false;
-                },
-                async loadProposals() {
-                    clearTimeout(this.sheetTimer);
-                    const s = this.sheet;
-                    if (!s) return;
-                    try {
-                        const {data} = await axios.get(`/api/sheets/${s.acq}/proposals`);
-                        this.proposals = data.rows;
-                        s.data.version = data.version;
-                        if (['queued', 'running'].includes(data.version.run?.status)) this.sheetTimer = setTimeout(() => this.loadProposals(), 2000);
-                    } catch (e) { this.fail(e); }
-                },
-                async poll() {
-                    clearTimeout(this.timer);
-                    if (!this.batch || this.uploading) return;
-                    try {
-                        const {data} = await axios.get(`/ingest/batch/${this.batch}`);
-                        for (const s of data.items) {
-                            const q = this.queue.find(x => x.acquisition === s.acquisition);
-                            if (q) Object.assign(q, {stages: s.stages, pending: s.pending, failures: s.failures, duplicate: s.duplicate, sha256: s.sha256, read_progress: s.read_progress, sheet: s.sheet});
-                        }
-                        const open = this.queue.some(q => !q.error && (!q.acquisition || q.pending));
-                        this.summary = data.done && !open ? data.summary : null;
-                        if (open) this.timer = setTimeout(() => this.poll(), 1500);
-                    } catch (e) { this.fail(e); this.timer = setTimeout(() => this.poll(), 5000); }
-                },
-            },
-            delimiters: config.delimiters
-        });
-
-        app.component('sheet-viewer', SheetViewer);
-        registerStkComponents(app);
-        app.use(vuetify).mount('#app');
-    </script>
+<script type="application/json" id="intake-boot">{{ boot|tojson|safe }}</script>
+<script type="module">
+import {mount} from '/static/js/intake-page.js';
+mount(JSON.parse(document.getElementById('intake-boot').textContent));
+</script>
 {% endblock %}

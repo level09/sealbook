@@ -7,7 +7,8 @@
    app.component('intake-brief', IntakeBrief);
    <intake-brief :batch="batchId" :compact="true"></intake-brief>
 
-   compact: the Desk's version, without versions or the regenerate button. */
+   compact: the Desk's version, without versions or the regenerate button.
+   grid: sections in two columns with next steps across, as on Add evidence. */
 const SECTIONS = [
   {key: 'arrived', title: 'What arrived'},
   {key: 'who', title: 'Who'},
@@ -20,7 +21,7 @@ const SECTIONS = [
 
 export const IntakeBrief = {
   name: 'IntakeBrief',
-  props: {batch: {type: String, required: true}, compact: {type: Boolean, default: false}},
+  props: {batch: {type: String, required: true}, compact: {type: Boolean, default: false}, grid: {type: Boolean, default: false}},
   data() {return {SECTIONS, data: null, error: '', busy: false, version: null, timer: null};},
   computed: {
     brief() {return this.data?.brief;},
@@ -57,7 +58,7 @@ export const IntakeBrief = {
     },
     pick(id) { this.version = id; this.load(); },
   },
-  template: `<div class="ib" :class="{'ib-compact': compact}" aria-live="polite">
+  template: `<div class="ib" :class="{'ib-compact': compact, 'ib-grid': grid && !!brief}" aria-live="polite">
     <p v-if="error" class="ib-muted">{{ error }}</p>
     <p v-else-if="!data" class="ib-muted">Loading the brief</p>
     <template v-else-if="!brief">
@@ -68,7 +69,7 @@ export const IntakeBrief = {
       <v-btn v-if="!compact && !data.pending && !data.missing.length" size="small" variant="outlined" prepend-icon="ti ti-sparkles" :loading="busy" @click="regenerate">Write a brief</v-btn>
     </template>
     <template v-else>
-      <section v-for="s in shown" :key="s.key" class="ib-sec">
+      <section v-for="s in shown" :key="s.key" class="ib-sec" :class="'ib-' + s.key">
         <h3>{{ s.title }}</h3>
         <p v-if="!brief[s.key].length" class="ib-muted">{{ s.key === 'disagrees' ? 'Nothing in this batch disagrees with an accepted claim.' : 'Nothing the brief could cite.' }}</p>
         <ul :class="{'ib-next': s.key === 'next'}">
@@ -104,6 +105,16 @@ const STYLE = `
 .ib-foot { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
 .ib-ver { max-width: 260px; }
 .ib-compact .ib-sec { margin-bottom: 6px; }
+.ib-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ib-grid .ib-sec { margin: 0; padding: 12px 14px; border-top: 1px solid var(--line); }
+.ib-grid .ib-sec:nth-child(odd):not(section.ib-next) { border-inline-end: 1px solid var(--line); }
+.ib-grid .ib-sec h3 { color: var(--ink-3); margin-bottom: 6px; }
+.ib-grid .ib-sec li { font-size: 13.5px; line-height: 1.55; }
+.ib-grid section.ib-next { grid-column: 1 / -1; background: var(--raise); }
+.ib-grid section.ib-next ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 18px; }
+.ib-grid .ib-foot { grid-column: 1 / -1; margin: 0; padding: 8px 14px; }
+.brief .ib:not(.ib-grid) { padding: 14px; }
+@media (max-width: 959px) { .ib-grid, .ib-grid section.ib-next ul { grid-template-columns: minmax(0, 1fr); } .ib-grid .ib-sec:nth-child(odd):not(section.ib-next) { border-inline-end: 0; } }
 `;
 
 if (!document.getElementById('ib-style')) document.head.insertAdjacentHTML('beforeend', `<style id="ib-style">${STYLE}</style>`);

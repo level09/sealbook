@@ -7,7 +7,8 @@ a frontend build. The supported evidence deployment is one process.
 | Module | Responsibility |
 | --- | --- |
 | `stk/ledger` | Typed statements, salted payload commitments, signatures, chain, trust gate and source-origin groups |
-| `stk/ingest` | Content-addressed bytes, acquisitions, hashes, C2PA and URL capture |
+| `stk/cases` | Case records: the list people pick from, creation on purpose with a close-name warning, and the check intake runs so no case appears by typing |
+| `stk/ingest` | Content-addressed bytes, acquisitions, hashes, C2PA and URL capture; the Add evidence page with per-item type, sensitivity and origin, type suggestions, the browser fingerprint check and batch progress |
 | `stk/runs` | Durable PostgreSQL run queue, route policy, worker, raw outputs and typed events |
 | `stk/discovery` | Located text/PDF/media segments, separate text and media vectors, coverage, fingerprints and search |
 | `stk/sheets` | CSV and XLSX intake: parsing into cells, datasets with remembered column mappings, version diffs and the `extract_sheet` run that proposes claims pinned to cells |

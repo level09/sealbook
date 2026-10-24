@@ -25,6 +25,7 @@ from sqlalchemy import select
 import stk.extensions as ext
 from stk import blobs, netguard
 from stk.agent_login import create_agent_login_token
+from stk.cases.service import ensure as ensure_case
 from stk.ingest import service as ingest
 from stk.ledger.contracts import Prop, StatementIn
 from stk.ledger.models import Acquisition, Blob, Payload, Run, Statement, StatementTier
@@ -574,6 +575,8 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
                     s, b"Closed case: Samir Haddad", "text/plain", Config.BLOB_DIR
                 )
             ).sha256
+            for case in ("case-r", "case-closed"):
+                await ensure_case(s, case)
             for sha, case, sens in (
                 (ordinary, "case-r", "ordinary"),
                 (hidden, "case-closed", "ordinary"),
@@ -915,6 +918,52 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
             pass
         r = await client.get(f"/api/research/batch/{queued['batch']}")
         return pick, queued, await r.get_json()
+
+    async def test_case_scope_from_add_evidence(self):
+        """Add evidence searches for a whole case: proposals from the case's shareable
+        values, the query logged on the case, captures into the page's own batch."""
+        client = await self.client()
+        status, body = await self.post(
+            client, "/api/research/queries", {"scope": "case:case-r"}
+        )
+        self.assertEqual(status, 200, body)
+        self.assertIn(f'"{NAME}"', [q["text"] for q in body["queries"]])
+        self.assertNotIn(SECRET, orjson.dumps(body).decode())
+        status, _ = await self.post(
+            client, "/api/research/queries", {"scope": "case:no-such-case"}
+        )
+        self.assertEqual(status, 404)
+        status, body = await self.send(
+            client,
+            [{"text": f'"{NAME}"', "kinds": ["images"], "people": [self.person]}],
+            scope="case:case-r",
+        )
+        self.assertEqual(status, 200, body)
+        async with ext.async_session_factory() as s:
+            logged = await s.scalar(
+                select(Statement)
+                .where(Statement.prop == Prop.ACCESS)
+                .order_by(Statement.recorded_at.desc())
+                .limit(1)
+            )
+        self.assertEqual(logged.subject, "case:case-r")
+        pick, batch = body["groups"]["images"][0], str(uuid.uuid4())
+        item = {"ids": [pick["id"]], "sensitivity": "ordinary", "batch": batch}
+        status, _ = await self.post(
+            client, "/api/research/capture", item | {"doc_type": "scanned_order"}
+        )
+        self.assertEqual(status, 400)
+        status, queued = await self.post(
+            client, "/api/research/capture", item | {"doc_type": "photo"}
+        )
+        self.assertEqual((status, queued["batch"]), (200, batch))
+        while await work_once(ext.async_session_factory, ["capture"], self.transport):
+            pass
+        progress = await (await client.get(f"/ingest/batch/{batch}")).get_json()
+        (capture,) = progress["captures"]
+        self.assertEqual((capture["status"], capture["doc_type"]), ("done", "photo"))
+        roles = {i["role"] for i in progress["items"] if i["capture"] == capture["run"]}
+        self.assertIn("page", roles)
 
     async def test_capture_records_provenance_and_enters_intake(self):
         client = await self.client()

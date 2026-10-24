@@ -8,7 +8,7 @@
    <sheet-viewer :table="t" :claims="claims" :sel="id" @select="..."></sheet-viewer>
 
    table: {sheet, header: [...], rows: [[...]], total} from GET /api/evidence/<sha>/sheet
-   (rows start at file row 2; row 1 is the header). claims: [{id, span: {sheet, row,
+   (rows start at file row first_row, the one below the header row). claims: [{id, span: {sheet, row,
    column, start?, end?}, tier, prop, label?}]. status: {row: 'new'|'changed'|...},
    changed: {row: [header, ...]}, only: row numbers to show. Slot `head` renders under
    each header: {column, header}. */
@@ -75,7 +75,7 @@ export const SheetViewer = {
     },
     rows() {
       const keep = this.only ? new Set(this.only) : null;
-      return this.table.rows.map((cells, i) => ({n: i + 2, cells})).filter(r => !keep || keep.has(r.n));
+      return this.table.rows.map((cells, i) => ({n: i + (this.table.first_row || 2), cells})).filter(r => !keep || keep.has(r.n));
     },
     selRow() {return this.claims.find(c => c.id === this.sel)?.span?.row ?? null;},
   },

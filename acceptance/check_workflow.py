@@ -4,6 +4,7 @@ Run: uv run python -m acceptance.check_workflow
 """
 
 import asyncio
+import tempfile
 import uuid
 from datetime import UTC, datetime
 from io import BytesIO
@@ -91,6 +92,7 @@ async def main():
         async with case.app.app_context():
             token = create_agent_login_token("analyst@example.com", "/review")
         async with async_playwright() as p:
+            tmp = case.enterContext(tempfile.TemporaryDirectory())
             browser = await p.chromium.launch()
             page = await browser.new_page(viewport={"width": 1440, "height": 1000})
             page.set_default_timeout(8000)
@@ -209,10 +211,42 @@ async def main():
                 f"{origin}/monitor?statement={proposal.id}", wait_until="networkidle"
             )
             await expect(page.get_by_text("Statement hash", exact=True)).to_be_visible()
+            # Add evidence: a case is made on purpose, a file is staged with the
+            # browser's fingerprint, added, and the same bytes again point at it.
+            case.app.config["BLOB_DIR"] = Config.BLOB_DIR
+            note = Path(tmp) / "witness_note.txt"
+            note.write_text("Synthetic witness note for the workflow check.")
+            await page.goto(f"{origin}/ingest/", wait_until="networkidle")
+            await page.locator(".casebtn").click()
+            await page.get_by_text("New case", exact=True).click()
+            await page.get_by_label("Name", exact=True).fill("Workflow check case")
+            await page.get_by_role("button", name="Create case").click()
+            await expect(page.locator(".casebtn")).to_contain_text(
+                "Workflow check case"
+            )
+            for round_ in ("first", "again"):
+                await page.locator(".ways input[type=file][multiple]").set_input_files(
+                    str(note)
+                )
+                await expect(page.locator(".it .mono").first).not_to_have_text(
+                    "taking fingerprint"
+                )
+                await page.get_by_role(
+                    "button", name="Add 1 item to Workflow check case"
+                ).click()
+                await expect(page.locator(".it.run")).to_contain_text(
+                    "fingerprint matched"
+                )
+                if round_ == "again":
+                    await expect(page.locator(".status.dup")).to_contain_text(
+                        "Same bytes as"
+                    )
+                    break
+                await page.goto(f"{origin}/ingest/", wait_until="networkidle")
             assert not errors, errors
             assert not failures, failures
             print(
-                "Browser checks passed: assign, sender permissions, comment, two logged media previews, Arabic text jump, PDF page jump, coverage; no browser errors or failed requests."
+                "Browser checks passed: assign, sender permissions, comment, two logged media previews, Arabic text jump, PDF page jump, coverage, add evidence to a new case with a duplicate; no browser errors or failed requests."
             )
             await browser.close()
     finally:
