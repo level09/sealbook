@@ -19,6 +19,9 @@ const TIER = {unconfirmed: 'Unconfirmed', corroborated: 'Corroborated', accepted
 const BOXES = [{v: 'mine', t: 'Asked of me'}, {v: 'sent', t: 'Sent by me'}, {v: 'open', t: 'All open'}, {v: 'findings', t: 'Findings'}];
 const RELATIONSHIPS = [{title: 'Same recording', value: 'same_recording'}, {title: 'Contains the other recording', value: 'contains'}, {title: 'Excerpt of the other recording', value: 'contained_in'}, {title: 'Related event, different recording', value: 'related'}];
 const CORRECTABLE = ['name', 'birth_date', 'place_of_birth', 'father_name', 'mother_name', 'arrested_at', 'detained_at', 'detention_branch', 'transferred_to', 'seen_at', 'last_seen', 'document_type', 'document_date', 'occupation', 'sex', 'age', 'event'];
+// What each kind of claim is about, as an icon; place-valued claims read in the place hue.
+const PROP_ICON = {name: 'ti ti-id', father_name: 'ti ti-users', mother_name: 'ti ti-users', birth_date: 'ti ti-cake', place_of_birth: 'ti ti-map-pin', arrested_at: 'ti ti-user-x', last_seen: 'ti ti-eye', detention_branch: 'ti ti-building-community', transferred_to: 'ti ti-arrow-right', seen_at: 'ti ti-eye', detained_at: 'ti ti-building-community', sex: 'ti ti-gender-bigender', age: 'ti ti-hourglass', occupation: 'ti ti-briefcase', event: 'ti ti-activity', document_date: 'ti ti-calendar', document_type: 'ti ti-file-description', located_at: 'ti ti-map-pin', photographed_at: 'ti ti-camera', filmed_at: 'ti ti-video'};
+const PLACE_PROPS = new Set(['place_of_birth', 'arrested_at', 'last_seen', 'transferred_to', 'seen_at', 'detained_at', 'located_at', 'photographed_at', 'filmed_at']);
 const ICON = {image: 'ti ti-photo', pdf: 'ti ti-file-type-pdf', audio: 'ti ti-volume', video: 'ti ti-video', web: 'ti ti-world', sheet: 'ti ti-table', text: 'ti ti-file-text'};
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -150,15 +153,15 @@ export function mount(boot) {
       parts(c) {
         if (!c) return [];
         if (c.kind === 'finding') return [{t: c.reason}];
-        const who = s => s ? (s.masked ? {masked: true, t: 'Name from a sensitive source'} : {t: s.name || 'Unnamed person', strong: true}) : null;
+        const who = s => s ? (s.masked ? {masked: true, t: 'Name from a sensitive source'} : {t: s.name || 'Unnamed person', strong: true, role: 'person'}) : null;
         if (c.prop === 'same_as' || c.prop === 'not_same') return [{t: c.prop === 'same_as' ? 'Same person?' : 'Different people?'}, who(c.person), {t: 'and', quiet: true}, who(c.identity)];
         if (c.prop === 'media_match') return [{t: 'Same recording?'}, {t: c.source?.file, strong: true}, {t: 'and', quiet: true}, {t: c.media?.other?.file, strong: true}];
         if (c.prop === 'relation' && c.document) return [{t: RELATION_ASK[c.relation] || 'Related?'}, {t: c.source?.file, strong: true}, {t: 'and', quiet: true}, {t: c.document.file, strong: true}];
         if (c.prop === 'relation') return [{t: RELATION_ASK[c.relation] || 'Related?'}, who(c.person), {t: 'and', quiet: true}, who(c.other)];
         if (c.prop === 'involved') return [{t: 'In this incident?'}, who(c.other), {t: 'in', quiet: true}, {t: c.incident?.title || 'an incident', strong: true}];
-        const subject = c.person ? who(c.person) : {t: c.source?.file || 'This source', strong: true};
+        const subject = c.person ? who(c.person) : {t: c.source?.file || 'This source', strong: true, role: 'source'};
         const v = this.valueText(c);
-        const value = c.value.erased ? {t: 'value erased', quiet: true} : c.value.masked && v == null ? {masked: true, t: "value from a sensitive source"} : c.fields.length && !v ? {t: c.fields.map(f => `${f[0]} ${f[1]}`).join(', ')} : {t: /^\d{4}(-\d\d){0,2}$/.test(v || '') ? fmtDate(v) : v, value: true};
+        const value = c.value.erased ? {t: 'value erased', quiet: true} : c.value.masked && v == null ? {masked: true, t: "value from a sensitive source"} : c.fields.length && !v ? {t: c.fields.map(f => `${f[0]} ${f[1]}`).join(', ')} : {t: /^\d{4}(-\d\d){0,2}$/.test(v || '') ? fmtDate(v) : v, value: true, place: PLACE_PROPS.has(c.prop)};
         // A correction reads as the change it makes: "Name: correct X to Y". A name
         // correction drops the subject, whose label is the old name.
         const old = c.corrects?.prop === c.prop && !c.corrects.value.erased && c.corrects.value;
@@ -167,9 +170,17 @@ export function mount(boot) {
           const fix = [{t: label(c.prop).replace(/^./, x => x.toUpperCase()) + ': correct', quiet: true}, {...was, tight: true}, {t: 'to', quiet: true, tight: true}, {...value, tight: true}];
           return c.prop === 'name' ? fix : [subject, ...fix];
         }
-        const out = [subject, {t: label(c.prop), quiet: true}, value];
-        if (c.from && !['birth_date', 'document_date'].includes(c.prop)) out.push({t: span(c.from, c.to) + (c.inherited ? ' (document date)' : ''), quiet: c.inherited});
+        const out = [subject, {t: label(c.prop), quiet: true, prop: true, icon: PROP_ICON[c.prop] || 'ti ti-point'}, value];
+        if (c.from && !['birth_date', 'document_date'].includes(c.prop)) out.push({t: span(c.from, c.to) + (c.inherited ? ' (document date)' : ''), quiet: c.inherited, date: true});
         return out;
+      },
+      // What Accept writes, in words, for a plain claim about a person or a source.
+      outcome(c) {
+        const p = this.parts(c);
+        if (!c || c.kind === 'finding' || c.corrects || !p[1]?.prop || !p[2]?.value) return null;
+        const whose = c.person ? (c.person.masked ? "this person's" : `${c.person.name || 'this person'}'s`) : "this source's";
+        const when = p[3] && !p[3].quiet ? `, ${p[3].t}` : '';
+        return {whose, prop: p[1].t, value: p[2].t, when};
       },
       sentence(c) {return this.parts(c).filter(Boolean).map((p, i) => (i ? (p.tight ? ' ' : ' · ') : '') + p.t).join('');},
       pick(id) {
