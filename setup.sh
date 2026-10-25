@@ -44,7 +44,7 @@ echo -e "${GREEN}Virtual environment will be available at .venv${NC}"
 
 # Install dependencies using modern uv sync  
 echo -e "${GREEN}Installing dependencies from pyproject.toml...${NC}"
-uv sync --extra dev
+uv sync
 
 # Repo hooks refuse AI attribution lines in commit messages.
 git config core.hooksPath .githooks
@@ -185,12 +185,6 @@ fi
 # Create instance directory for SQLite database
 mkdir -p instance
 
-# Create .quartenv for Quart CLI auto-loading
-cat > .quartenv << 'EOF'
-QUART_APP=run.py
-QUART_DEBUG=1
-EOF
-echo -e "${GREEN}Created .quartenv for Quart CLI${NC}"
 echo -e "${GREEN}SQLite database will be created at: instance/stk.db${NC}"
 echo
 echo -e "${GREEN}Next steps:${NC}"

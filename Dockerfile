@@ -3,15 +3,15 @@ FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# Install build deps + uv in one layer
+# Install build deps + uv in one layer (git, for dependencies pinned to a commit)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential python3-dev \
+    build-essential python3-dev git \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir uv
 
 # Install dependencies
 COPY pyproject.toml uv.lock ./
-RUN uv sync --extra full --frozen --no-install-project
+RUN uv sync --extra full --frozen --no-dev --no-install-project
 
 # Runtime
 FROM python:3.12-slim
@@ -48,4 +48,4 @@ USER stk
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/ || exit 1
 
-CMD ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "5000", "--timeout-graceful-shutdown", "3"]
+CMD ["uvicorn", "sealbook.app:app", "--host", "0.0.0.0", "--port", "5000", "--timeout-graceful-shutdown", "3"]

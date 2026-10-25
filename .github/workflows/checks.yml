@@ -7,7 +7,6 @@ on:
     branches: [master]
 
 env:
-  QUART_APP: run.py
   SECRET_KEY: test-secret-key-for-ci
   SECURITY_PASSWORD_SALT: test-salt-for-ci
   SECURITY_TOTP_SECRETS: test-totp-secret
@@ -52,7 +51,7 @@ jobs:
         run: uv python install 3.11
 
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: uv sync
 
       - name: Install Chromium
         run: uv run playwright install --with-deps chromium
@@ -68,8 +67,8 @@ jobs:
           sudo install /tmp/c2patool/c2patool /usr/local/bin/c2patool
           c2patool --version
 
-      - name: Create database tables
-        run: uv run stk create-db
+      - name: Migrate (stk's lineage, then Sealbook's)
+        run: uv run stk db upgrade
 
       - name: Unit tests
         run: uv run python -m unittest discover tests -v
@@ -112,7 +111,7 @@ jobs:
         run: docker exec ${{ job.services.postgres.id }} sh -c 'apt-get update -qq && apt-get install -y -qq --no-install-recommends postgresql-17-pgvector'
       - uses: astral-sh/setup-uv@v9.0.0
       - run: uv python install 3.11
-      - run: uv sync --extra dev --extra full
+      - run: uv sync --extra full
       - name: PostgreSQL migrations
         env:
           SQLALCHEMY_DATABASE_URI: postgresql+asyncpg://review:isolated-review-password@localhost/review
@@ -140,7 +139,7 @@ jobs:
         run: uv run python -m unittest discover -s tests -p test_production_security.py -v
       - name: Dependency advisories
         run: |
-          uv export --frozen --no-hashes --no-emit-project --extra full --extra asgi -o /tmp/runtime.txt
+          uv export --frozen --no-hashes --no-emit-project --extra full -o /tmp/runtime.txt
           uv run --no-project --with pip-audit python -m pip_audit -r /tmp/runtime.txt --no-deps --disable-pip
 
   production-container:
