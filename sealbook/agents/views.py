@@ -13,6 +13,7 @@ from quart_security import auth_required, current_user
 from sqlalchemy import select
 
 from sealbook.agents import (
+    approximate,
     brief,
     contradictions,
     linker,
@@ -132,6 +133,49 @@ async def contradiction_status(rid):
     ):
         abort(404)
     return _json({"status": run.status})
+
+
+@bp_agents.post("/approximate")
+async def find_approximate():
+    """Ask the place finder to suggest approximate places for one case's names."""
+    from sealbook.cases.service import Unknown, require
+
+    db = g.db_session
+    investigation = (await _item()).get("investigation")
+    if not isinstance(investigation, str) or not investigation.strip():
+        abort(400, description="Choose a case to read.")
+    try:
+        case = await require(db, investigation)
+    except Unknown:
+        abort(404)
+    if gap := missing():
+        return _json({"reason": "off", "missing": gap}, 409)
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    try:
+        run = await approximate.queue(
+            db, case.slug, current_user.id, Config.AGENT_MODEL
+        )
+    except ValueError as exc:
+        return _json({"reason": "busy", "message": str(exc)}, 409)
+    await db.commit()
+    return _json({"run": str(run.id)}, 202)
+
+
+@bp_agents.get("/approximate/runs/<uuid:rid>")
+async def approximate_status(rid):
+    run = await g.db_session.get(Run, rid)
+    if run is None or run.tool != approximate.TOOL:
+        abort(404)
+    if run.inputs.get("for_user") != current_user.id:
+        abort(404)
+    out = None
+    if run.status == "done":
+        out = read_output(await g.db_session.get(Blob, run.output_hash))["outcome"]
+    elif run.status == "failed":
+        out = {"proposed": 0, "reason": tasks.failure_reason(run.error)}
+    return _json({"status": run.status, "outcome": out})
 
 
 @bp_agents.get("/brief")

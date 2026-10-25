@@ -545,6 +545,47 @@ class PlacesApiTest(unittest.IsolatedAsyncioTestCase):
         assert "place_confirmed" in stages
         assert counts == {self.harasta.id: 1}
 
+    async def test_confirm_many_under_one_passkey_prompt(self):
+        client = await self.client("analyst@example.com")
+        one = {"statement": str(self.claim.id), "place": str(self.harasta.id)}
+        bad = {"statement": str(self.bad.id), "place": str(self.harasta.id)}
+        for links, status in (([one, one], 400), ([one, bad], 409), ([], 400)):
+            r = await self.confirm(client, {"links": links})
+            assert r.status_code == status, links
+        r = await self.confirm(client, {"links": [one]})
+        started = await r.get_json()
+        assert r.status_code == 200 and started["gesture"], started
+        assert started["rows"][0]["summary"].endswith("is Harasta")
+        r = await client.post(
+            "/api/review/commit",
+            json={
+                "item": {
+                    "hash": started["hash"],
+                    "credential": self.passkey.assert_(started["hash"]),
+                }
+            },
+            headers=client.csrf,
+        )
+        assert r.status_code == 200, await r.get_data(as_text=True)
+        async with ext.async_session_factory() as s:
+            assert await resolve.link_counts(s, None) == {self.harasta.id: 1}
+
+    async def test_create_approximate_place_with_its_radius(self):
+        client = await self.client("analyst@example.com")
+        body = {"name_ar": "فرن الدوار", "lon": 36.3, "lat": 33.5}
+        for radius in (0, -5, 1.5, 60_000, "1000"):
+            r = await client.post(
+                "/api/places", json=body | {"precision_m": radius}, headers=client.csrf
+            )
+            assert r.status_code == 400, radius
+        r = await client.post(
+            "/api/places", json=body | {"precision_m": 1500}, headers=client.csrf
+        )
+        assert r.status_code == 201
+        async with ext.async_session_factory() as s:
+            place = await s.get(Place, uuid.UUID((await r.get_json())["id"]))
+        assert place.precision_m == 1500
+
 
 @unittest.skipUnless(POSTGRES, "places need Postgres (set SQLALCHEMY_DATABASE_URI)")
 class BoundariesTest(Base):

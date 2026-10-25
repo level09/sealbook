@@ -51,6 +51,13 @@ KINDS = {
         "The noticer found evidence that resembles other evidence.",
         "/agents/",
     ),
+    "approximate": (
+        "approximate",
+        "Place finder",
+        True,
+        "The place finder suggested where unplaced names may be.",
+        "/places",
+    ),
 }
 # Runs that make a source comparable by meaning or by picture and sound without
 # writing claims; they wake only the noticer.

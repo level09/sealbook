@@ -185,6 +185,7 @@ TOOL_WORDS = {
     "gaps": "gap finder",
     "contradictions": "contradiction hunter",
     "notice": "noticer",
+    "approximate": "place finder",
     "notice_link": "noticer link proposal",
     "import": "import",
 }

@@ -2,9 +2,19 @@
 {% block css %}<link rel="stylesheet" href="{{ asset('css/entity.css') }}">
 <style>
 .pl-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--line); }
-.pl-un { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(0, 1.4fr) minmax(220px, 300px) auto; gap: 6px 14px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--line); }
-.pl-un .claims { font-size: 12.5px; color: var(--ink-2); }
-@media (max-width: 900px) { .pl-un { grid-template-columns: 1fr; } }
+.pl-un { display: grid; grid-template-columns: 32px minmax(150px, 1fr) minmax(0, 2fr) 290px; gap: 6px 14px; align-items: start; padding: 10px 12px; border-top: 1px solid var(--line); }
+.pl-un .claims { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+.pl-un .v-selection-control { margin: -8px 0 0 -8px; }
+.pl-un .acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.pl-un .pick { grid-column: 2 / -1; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pl-sugg { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pl-sugg .why { color: var(--ink-2); font-size: 12px; }
+.pl-sugg q { quotes: "\201C" "\201D"; }
+.pl-sugg .who { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; color: var(--agent); }
+.pl-sugg.is-agent { border-inline-start: 2px solid var(--agent-line); padding-inline-start: 8px; }
+.pl-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 12px 8px; }
+.pl-foot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 12px; border-top: 1px solid var(--line); position: sticky; bottom: 0; background: var(--panel); }
+@media (max-width: 900px) { .pl-un { grid-template-columns: 32px 1fr; } .pl-un .pl-sugg, .pl-un .acts { grid-column: 2; } .pl-un .acts { justify-content: flex-start; } }
 </style>
 {% endblock %}
 {% block content %}
@@ -33,19 +43,56 @@
       </v-data-table-server>
     </template>
     <template v-else>
-      <p class="en-muted text-caption px-3 pt-3 mb-2">A claim names a place in its own words. Pick the place it means and sign; the same spelling then resolves by itself within that case and governorate when the gazetteer has one candidate for it.</p>
+      <div class="pl-head">
+        <p class="en-muted text-caption ma-0" style="flex: 1 1 360px">Each name shows the place it most likely means and why. Nothing resolves until you confirm; the same spelling then resolves by itself within that case and governorate when the gazetteer has one candidate for it.</p>
+        <template v-if="unplaced">
+          <v-btn v-if="caseSel" size="small" variant="tonal" color="agent" prepend-icon="ti ti-robot-face" :loading="finder.busy" @click="askFinder">Suggest approximate places</v-btn>
+          <span v-else class="en-muted text-caption">Choose a case to ask the place finder about names the gazetteer lacks.</span>
+        </template>
+      </div>
       <v-skeleton-loader v-if="!un.loaded" type="list-item-two-line@4"></v-skeleton-loader>
       <div v-for="u in un.items" :key="u.norm" class="pl-un">
-        <div><strong><bdi dir="auto">${ u.name }</bdi></strong><div class="en-muted text-caption">${ plural(u.count, 'claim') }, ${ u.candidates.length ? plural(u.candidates.length, 'candidate place') : 'no gazetteer match' }</div></div>
-        <div class="claims"><div v-for="c in u.claims.slice(0, 3)" :key="c.id">${ PROP[c.prop] || human(c.prop) }${ c.when ? ', ' + c.when : '' }: <a v-if="c.href" :href="c.href"><bdi>${ c.file }</bdi></a><span v-else>${ c.file }</span></div>
-          <div v-if="u.count > 3" class="en-muted">and ${ plural(u.count - 3, 'more claim') }</div></div>
-        <template v-if="u.claims[0].proposal"><span class="text-caption">Proposed: <a :href="'/places/' + u.claims[0].proposal.place.id"><bdi dir="auto">${ placeName(u.claims[0].proposal.place) }</bdi></a>, waiting for a decision</span>
-          <v-btn size="small" variant="outlined" prepend-icon="ti ti-checklist" :href="'/review?statement=' + u.claims[0].proposal.id">Decide in Review</v-btn></template>
-        <template v-else>
-        <v-autocomplete v-model="choice[u.norm]" :items="options(u)" item-title="t" item-value="v" density="compact" hide-details no-filter placeholder="Which place?" aria-label="Place this name means" prepend-inner-icon="ti ti-map-pin" @update:search="s => find(u, s)"></v-autocomplete>
-        <v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-signature" :disabled="!choice[u.norm]" :loading="signBusy" @click="confirm(u)">Confirm for one claim</v-btn></template>
+        <div><v-checkbox-btn v-if="canPick(u)" v-model="picked" :value="u.norm" density="compact" :aria-label="'Select ' + u.name"></v-checkbox-btn></div>
+        <div><strong><bdi dir="auto">${ u.name }</bdi></strong> <span class="en-muted text-caption">${ plural(u.count, 'claim') }</span>
+          <div class="claims"><div v-for="c in u.claims.slice(0, 2)" :key="c.id">${ PROP[c.prop] || human(c.prop) }${ c.when ? ', ' + c.when : '' }: <a v-if="c.href" :href="c.href"><bdi>${ c.file }</bdi></a><span v-else>${ c.file }</span></div>
+            <div v-if="u.count > 2" class="en-muted">and ${ plural(u.count - 2, 'more claim') }</div></div></div>
+        <div v-if="u.claims[0].proposal" class="pl-sugg"><span>Proposed: <a :href="'/places/' + u.claims[0].proposal.place.id"><bdi dir="auto">${ placeName(u.claims[0].proposal.place) }</bdi></a></span><span class="why">Waiting for a decision in Review.</span></div>
+        <div v-else-if="s(u).kind === 'approximate'" class="pl-sugg is-agent">
+          <span class="who"><i class="ti ti-robot-face" aria-hidden="true"></i>${ s(u).agent }${ s(u).demo ? ', demo output' : '' }</span>
+          <span><strong>Approximate:</strong> near <a :href="'/places/' + s(u).near.id"><bdi dir="auto">${ placeName(s(u).near) }</bdi></a>, within about ${ km(s(u).radius_km) }</span>
+          <span class="why">${ s(u).why } <q><bdi dir="auto">${ s(u).quote }</bdi></q> <a :href="s(u).cite.href"><bdi>${ s(u).cite.file }</bdi></a>. It would show as a faint area on the map.</span></div>
+        <div v-else-if="s(u).kind === 'locked'" class="pl-sugg is-agent">
+          <span class="who"><i class="ti ti-robot-face" aria-hidden="true"></i>${ s(u).agent }</span>
+          <span class="why"><i class="ti ti-lock" aria-hidden="true"></i> ${ s(u).why } <a :href="s(u).cite.href"><bdi>${ s(u).cite.file }</bdi></a></span></div>
+        <div v-else-if="s(u).kind === 'several'" class="pl-sugg">
+          <span><template v-for="(p, i) in s(u).places" :key="p.id"><span v-if="i" class="en-muted"> or </span><a :href="'/places/' + p.id"><bdi dir="auto">${ placeName(p) }</bdi></a><span class="en-muted">${ placeMeta(p) }</span></template></span>
+          <span class="why">${ s(u).why }<template v-if="s(u).favoured"> The words around it say <q><bdi dir="auto">${ s(u).quote }</bdi></q> <a v-if="s(u).cite.href" :href="s(u).cite.href"><bdi>${ s(u).cite.file }</bdi></a><span v-else>${ s(u).cite.file }</span>, which favours ${ placeName(s(u).places.find(p => p.id === s(u).favoured)) }.</template></span></div>
+        <div v-else-if="s(u).places.length" class="pl-sugg">
+          <span><a :href="'/places/' + s(u).places[0].id"><bdi dir="auto">${ placeName(s(u).places[0]) }</bdi></a><span class="en-muted">${ placeMeta(s(u).places[0]) }</span></span>
+          <span class="why">${ s(u).why }</span></div>
+        <div v-else class="pl-sugg"><span class="en-muted">No suggestion</span><span class="why">${ s(u).why }</span></div>
+        <div class="acts">
+          <v-btn v-if="u.claims[0].proposal" size="small" variant="outlined" prepend-icon="ti ti-checklist" :href="'/review?statement=' + u.claims[0].proposal.id">Decide in Review</v-btn>
+          <template v-else-if="s(u).kind === 'gazetteer' || s(u).kind === 'elsewhere'">
+            <v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-signature" :loading="signBusy" @click="confirm(u, s(u).places[0].id)">Confirm</v-btn>
+            <v-btn size="small" variant="outlined" @click="toggle(u)">Other place</v-btn></template>
+          <v-btn v-else-if="s(u).kind === 'several'" size="small" variant="outlined" @click="toggle(u)">Choose</v-btn>
+          <template v-else-if="s(u).kind === 'approximate'">
+            <v-btn size="small" variant="outlined" prepend-icon="ti ti-map-pin-plus" :loading="signBusy" @click="addApproximate(u)">Add approximate place</v-btn>
+            <v-btn size="small" variant="text" @click="toggle(u)">Other place</v-btn></template>
+          <v-btn v-else size="small" variant="outlined" @click="toggle(u)">Find a place</v-btn>
+        </div>
+        <div v-if="open[u.norm]" class="pick">
+          <v-autocomplete v-model="choice[u.norm]" :items="options(u)" item-title="t" item-value="v" density="compact" hide-details no-filter placeholder="Which place?" aria-label="Place this name means" prepend-inner-icon="ti ti-map-pin" style="max-width: 420px; min-width: 240px" @update:search="q => find(u, q)"></v-autocomplete>
+          <v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-signature" :disabled="!choice[u.norm]" :loading="signBusy" @click="confirm(u, choice[u.norm])">Confirm for one claim</v-btn>
+        </div>
       </div>
       <v-empty-state v-if="un.loaded && !un.items.length" icon="ti ti-map-check" title="Every place name resolves" text="New claims with names no one has confirmed appear here."></v-empty-state>
+      <div v-if="un.items.some(canPick)" class="pl-foot">
+        <v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-signature" :disabled="!picked.length" :loading="signBusy" @click="confirmPicked">Confirm ${ picked.length || '' } selected</v-btn>
+        <v-btn size="small" variant="text" @click="picked = un.items.filter(canPick).map(u => u.norm)">Select every clear suggestion</v-btn>
+        <span class="en-muted text-caption">One passkey prompt signs each confirmation, the same statement as one at a time. Names with several places stay one claim at a time.</span>
+      </div>
     </template>
   </section>
   {% include "entity/_sign.html" %}
@@ -62,7 +109,7 @@ window.app = Vue.createApp({
     const tab = new URLSearchParams(location.search).get('tab') === 'unresolved' ? 'unresolved' : 'places';
     return {
       PROP, tab, q: '', all: false, items: [], total: null, loading: false, opts: {page: 1, itemsPerPage: 50, sortBy: [{key: 'claims', order: 'desc'}]},
-      un: {items: [], loaded: false}, choice: {}, found: {},
+      un: {items: [], loaded: false}, choice: {}, found: {}, open: {}, picked: [], finder: {busy: false},
       headers: [
         {title: 'Name', key: 'name'}, {title: 'Kind', key: 'kind'}, {title: 'Governorate', key: 'governorate'},
         {title: 'Claims', key: 'claims', align: 'end'}, {title: 'People', key: 'people', align: 'end'}, {title: 'Sources', key: 'sources', align: 'end'},
@@ -73,6 +120,7 @@ window.app = Vue.createApp({
   computed: {
     location: () => window.location,
     // A phone keeps the name and the counts that rank it; the rest is on the place page.
+    unplaced() { return this.un.items.some(u => !u.claims[0].proposal && u.suggestion.kind === 'none'); },
     shown() { return this.$vuetify.display.xs ? this.headers.filter(h => ['name', 'claims', 'people'].includes(h.key)) : this.headers; },
   },
   watch: {tab(t) { history.replaceState(null, '', t === 'unresolved' ? '?tab=unresolved' : location.pathname); if (t === 'unresolved' && !this.un.loaded) this.loadUnresolved(); }},
@@ -95,27 +143,77 @@ window.app = Vue.createApp({
       this.un.loaded = false;
       try {
         this.un.items = (await axios.get('/api/places/unresolved', {params: this.params()})).data.items;
-        for (const u of this.un.items) if (u.candidates.length === 1 && !this.choice[u.norm]) this.choice[u.norm] = u.candidates[0].id;
+        const live = new Set(this.un.items.map(u => u.norm));
+        this.picked = this.picked.filter(n => live.has(n));
+        for (const u of this.un.items) {
+          const s = u.suggestion;
+          if (!this.choice[u.norm]) this.choice[u.norm] = s.favoured || (s.places.length === 1 ? s.places[0].id : null);
+        }
       }
       catch (err) { this.say(this.fail(err)); }
       this.un.loaded = true;
     },
+    s(u) { return u.suggestion; },
+    canPick(u) { return !u.claims[0].proposal && u.suggestion.selectable; },
+    km(r) { return `${String(r).replace(/\.0$/, '')} km`; },
+    placeMeta(p) {
+      const kind = human(p.kind), gov = p.governorate && (p.governorate.en || p.governorate.ar);
+      return ` · ${kind.charAt(0).toUpperCase()}${kind.slice(1)}${gov ? ' · ' + gov : ''}`;
+    },
+    toggle(u) { this.open = {...this.open, [u.norm]: !this.open[u.norm]}; },
     options(u) {
       const seen = new Set(), out = [];
-      for (const p of [...u.candidates, ...(this.found[u.norm] || [])]) if (!seen.has(p.id)) { seen.add(p.id); out.push({t: `${placeName(p)}${p.name_en ? ' / ' + p.name_ar : ''}${p.governorate ? ', ' + (p.governorate.en || p.governorate) : ''}`, v: p.id}); }
+      for (const p of [...u.candidates, ...u.suggestion.places, ...(this.found[u.norm] || [])]) if (!seen.has(p.id)) { seen.add(p.id); out.push({t: `${placeName(p)}${p.name_en ? ' / ' + p.name_ar : ''}${p.governorate ? ', ' + (p.governorate.en || p.governorate) : ''}`, v: p.id}); }
       return out;
     },
     async find(u, s) {
       if (!s || s.trim().length < 2) return;
       try { this.found = {...this.found, [u.norm]: (await axios.get('/api/places', {params: {q: s}})).data.items}; } catch {}
     },
-    confirm(u) {
-      const place = this.options(u).find(o => o.v === this.choice[u.norm]);
-      this.stage({statement: u.claims[0].id, place: place.v}, '/api/places/confirm', `“${u.name}” is ${place.t}`, async () => {
-        this.say('Signed. That claim now resolves; others with this spelling follow when the rule allows.');
-        await this.loadUnresolved();
-        this.reload();
-      });
+    async signed(text) {
+      this.say(text);
+      await this.loadUnresolved();
+      this.reload();
+    },
+    confirm(u, place, title) {
+      title = title || this.options(u).find(o => o.v === place).t;
+      this.stage({statement: u.claims[0].id, place}, '/api/places/confirm', `“${u.name}” is ${title}`,
+        () => this.signed('Signed. That claim now resolves; others with this spelling follow when the rule allows.'));
+    },
+    confirmPicked() {
+      const rows = this.un.items.filter(u => this.picked.includes(u.norm) && this.canPick(u));
+      this.stage({links: rows.map(u => ({statement: u.claims[0].id, place: u.suggestion.places[0].id}))}, '/api/places/confirm',
+        `Confirm ${plural(rows.length, 'place')}`, () => { this.picked = []; return this.signed(`Signed ${plural(rows.length, 'confirmation')}.`); });
+    },
+    async addApproximate(u) {
+      // The place is created first, then confirmed with the passkey like any other.
+      const s = u.suggestion;
+      this.signBusy = true;
+      try {
+        const {data: place} = await axios.post('/api/places', {name_ar: u.name, lon: s.near.lon, lat: s.near.lat, precision_m: Math.round(s.radius_km * 1000)});
+        this.signBusy = false;
+        this.confirm(u, place.id, `an approximate place near ${placeName(s.near)}, within about ${this.km(s.radius_km)}`);
+      } catch (err) { this.signBusy = false; this.say(this.fail(err)); }
+    },
+    async askFinder() {
+      this.finder.busy = true;
+      try {
+        const {data} = await axios.post('/api/agents/approximate', {item: {investigation: this.caseSel}});
+        this.say('The place finder is reading this case. Suggestions appear here when it finishes.');
+        const run = data.run;
+        for (let i = 0; i < 120; i++) {
+          await new Promise(r => setTimeout(r, 3000));
+          const {data: st} = await axios.get(`/api/agents/approximate/runs/${run}`);
+          if (st.status === 'done' || st.status === 'failed') {
+            await this.loadUnresolved();
+            this.say(st.outcome?.proposed ? `The place finder suggested ${plural(st.outcome.proposed, 'approximate place')}.` : (st.outcome?.reason || 'The place finder found nothing new.'));
+            break;
+          }
+        }
+      } catch (err) {
+        const d = err.response?.data;
+        this.say(d?.reason === 'off' ? 'Agents are off until a model is set up.' : d?.message || this.fail(err));
+      } finally { this.finder.busy = false; }
     },
     useCase() { this.reload(); if (this.un.loaded) this.loadUnresolved(); },
   },

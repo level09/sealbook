@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from sealbook import blobs, speech
 from sealbook.agents import tasks
+from sealbook.agents.approximate import approximate
 from sealbook.agents.brief import brief
 from sealbook.agents.contradictions import contradictions
 from sealbook.agents.gaps import gaps
@@ -404,6 +405,7 @@ TOOLS: dict[str, Callable[[Ctx], Awaitable[str | None]]] = {
     "contradictions": contradictions,
     "gaps": gaps,
     "notice": notice,
+    "approximate": approximate,
 }
 
 

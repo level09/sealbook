@@ -15,12 +15,13 @@ from sealbook.ledger.write import principal_for_user
 from sealbook.monitor.views import ROLES
 from sealbook.places import boundaries, normalise, resolve
 from sealbook.places.models import AdminArea, Place, PlaceKind, PlaceName, point
-from sealbook.review.views import stage
+from sealbook.review.views import stage, stage_gesture
 
 bp_places = Blueprint("places", __name__)
 
 # Syria, with a margin for border sites.
 LON, LAT = (35.7, 42.4), (32.3, 37.4)
+MAX_M = 50_000  # the widest radius an approximate place may carry
 
 
 @bp_places.before_request
@@ -113,6 +114,10 @@ async def create():
     if not name:
         abort(400, description="name_ar is required")
     lon, lat = _coord(body, "lon", *LON), _coord(body, "lat", *LAT)
+    # An approximate place carries its radius of uncertainty; else the kind's default.
+    radius = body.get("precision_m")
+    if radius is not None and (type(radius) is not int or not 0 < radius <= MAX_M):
+        abort(400, description=f"precision_m must be whole metres up to {MAX_M}")
     author = await principal_for_user(db, current_user.id, current_user.name)
     place = Place(
         id=uuid.uuid4(),
@@ -120,7 +125,7 @@ async def create():
         name_en=english,
         kind="facility",
         geom=point(lon, lat),
-        precision_m=(await db.get(PlaceKind, "facility")).default_precision_m,
+        precision_m=radius or (await db.get(PlaceKind, "facility")).default_precision_m,
         geo_source="analyst",
         source="person",
         created_by=author.id,
@@ -145,15 +150,10 @@ async def create():
     return _json(_row(place, 0, (area.name_ar or area.name_en) if area else None), 201)
 
 
-@bp_places.post("/api/places/confirm")
-async def confirm():
-    """A person's choice of place for one position claim, signed like a review: start
-    here, then send the assertion to /api/review/commit. Once accepted, the same name
-    resolves by itself in that investigation and governorate when it has one
-    candidate; a name with several candidates needs a person per claim."""
-    db = g.db_session
+async def _link(db, item, who):
+    """One confirmation, checked: a live position claim and an existing place.
+    Aborts with the reason otherwise."""
     try:
-        item = (await request.get_json())["item"]
         claim, place = uuid.UUID(item["statement"]), uuid.UUID(item["place"])
     except (KeyError, TypeError, ValueError, AttributeError):
         abort(400, description="item needs statement and place ids")
@@ -169,9 +169,35 @@ async def confirm():
         == Tier.REJECTED
     ):
         abort(409, description="the claim is rejected")
+    return resolve.confirmation(claim, place, names[claim], who)
+
+
+@bp_places.post("/api/places/confirm")
+async def confirm():
+    """A person's choice of place for one position claim, signed like a review: start
+    here, then send the assertion to /api/review/commit. Once accepted, the same name
+    resolves by itself in that investigation and governorate when it has one
+    candidate; a name with several candidates needs a person per claim. With
+    `links`, a list of {statement, place}, every choice is signed under one passkey
+    assertion."""
+    db = g.db_session
+    try:
+        item = (await request.get_json())["item"]
+    except (KeyError, TypeError):
+        abort(400, description="item needs statement and place ids")
     # ponytail: a confirmation cannot be undone yet (review undo covers reviews only);
     # add retraction of a located_at in the review flow when analysts need to change one.
     who = await principal_for_user(
         db, current_user.id, current_user.name or current_user.email
     )
-    return await stage(db, resolve.confirmation(claim, place, names[claim], who.id))
+    links = item.get("links") if isinstance(item, dict) else None
+    if links is None:
+        return await stage(db, await _link(db, item, who.id))
+    if not isinstance(links, list) or not links:
+        abort(400, description="links must be a list of statement and place ids")
+    claims = [x.get("statement") if isinstance(x, dict) else None for x in links]
+    if len(set(map(str, claims))) != len(claims):
+        abort(400, description="each claim may appear once")
+    return await stage_gesture(
+        db, str(uuid.uuid4()), [await _link(db, x, who.id) for x in links]
+    )
