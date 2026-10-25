@@ -1,41 +1,27 @@
-# Original design and research
+# Sealbook design
 
-Historical reference copied from Notion on 2026-10-20. This document mixes
-requirements, experiments and proposed controls. It is not an implementation or
-legal-assurance report. Use [status.md](status.md) for what exists and
-[decisions.md](decisions.md) for current engineering boundaries. Historical external
-claims below need independent review before reuse in public or legal material.
+This document records the design Sealbook is built from: requirements, the core
+model, the proposed controls and the experiments that could change them. It is not
+an implementation or legal-assurance report. Use [status.md](status.md) for what
+exists and [decisions.md](decisions.md) for current engineering boundaries. External
+claims below are dated research and need independent review before reuse in legal
+material.
 
----
+Part A is the lean core. Part B is the full model. Where they conflict, Part A wins.
 
-# Sealbook: AI-First Evidence System
-
-Working name. Part A is the build spec for v0. Part B is the full plan for
-reference; where they conflict, Part A wins.
-
-**Hard rule: no production or partner data.** Use synthetic or public
+**No production or partner data.** Development and demos use synthetic or public
 data shaped like real Syrian material.
 
-**Positioning (research 2026-10-20).** Courts authenticate digital evidence through people:
+**Premise (research 2026-10-20).** Courts authenticate digital evidence through people:
 the Caesar photos at Koblenz were authenticated by a forensic expert, police analysis and a
-witness, not by hashes. No court has yet relied on OpenTimestamps or C2PA. So the product is
-not "tamper-proof evidence"; it is the system that makes a custody witness's testimony easy
-to give and hard to attack, and makes every AI step explainable on the stand.
-
-## Before the build
-
-1. **Name the first user.** One partner, one analyst, one real workflow this replaces.
-   Without it the review-cost experiment cannot run, and that experiment decides adoption.
-2. **Ownership.** Settle who owns Sealbook before writing code.
-3. **Handwritten OCR gold set first.** Zero-shot VLMs measured ~70% CER on historical
-   handwritten Arabic (arxiv 2608.22366); fine-tuned Qwen3-VL-4B reached ~9 to 11% on NAKBA
-   data. Handwritten security-branch records are the reason anyone adopts this, so the gold
-   set is on the critical path, not a side experiment.
+witness, not by hashes. No court has yet relied on OpenTimestamps or C2PA. So the system
+does not claim tamper-proof evidence. It makes a custody witness's testimony easy to give
+and hard to attack, and makes every AI step explainable on the stand.
 
 ## Usage: what changes for the analyst
 
-The real job is "what do we know about this person". Sealbook is designed around six
-workflows:
+The central question is "what do we know about this person". Sealbook is designed
+around six workflows:
 
 1. **Person lookup.** Type a name in any spelling. One person view assembled from every
    document: a track of arrest, transfers, sightings and last seen on map and time;
@@ -60,13 +46,13 @@ workflows:
    analyst's permissions; its proposals arrive as review cards attributed to the agent on
    behalf of the analyst. Nothing changes until a human accepts.
 
-The proof is a timed comparison: one synthetic missing-person case, "assemble everything we
-know plus an exportable answer", done in the team's current tool and in Sealbook. If Sealbook is not several
-times faster with better sourcing, the thesis fails.
+The measure is a timed comparison: one synthetic missing-person case, "assemble everything we
+know plus an exportable answer", done in a conventional records tool and in Sealbook. The
+target is several times faster with better sourcing.
 
 ---
 
-# Part A. Lean core v0 (build spec)
+# Part A. Lean core v0
 
 One idea carries the system: **everything is a signed statement, and trust is computed from
 origins, never stored as a field.** Five tables, one pure gate function, a hash chain, an MCP
@@ -86,7 +72,7 @@ payload     commitment, salt, value, value_key, idem_key        -- erasable valu
 chain       seq, kind, ref, row_hash, prev_hash, hash           -- one global order
 ```
 
-As built in wave 0 (`sealbook/ledger/`): one `chain` table links statements, acquisitions and
+As built (`sealbook/ledger/`): one `chain` table links statements, acquisitions and
 sealed runs in a single order, instead of `prev_hash` on each table. Value fingerprints
 (`value_key`, `idem_key`) live in `payload`, so erasure removes them with the value. Tiers
 are a rebuildable `statement_tier` projection written by `gate()`, never a statement field.
@@ -184,7 +170,7 @@ it as challenge, review cards dry-run through it) then `commit`.
   schema-constrained JSON statements with spans. Raw output is kept; a re-run is a new run.
   Record the model actually served, not just the one requested.
 - **Model routes.** One OpenAI-compatible client; a route is a base URL plus key. Routes:
-  `local` (vLLM or Ollama on our hardware), `cloud-zdr` (OpenRouter with ZDR enforced
+  `local` (vLLM or Ollama on self-hosted hardware), `cloud-zdr` (OpenRouter with ZDR enforced
   account-wide, not per request), `cloud`. The policy table decides which routes a
   capability, document type, sensitivity and partner may use; the model never picks.
   Sensitivity is set on the acquisition at intake (human or deterministic rule) before any
@@ -192,7 +178,8 @@ it as challenge, review cards dry-run through it) then `commit`.
   No fallback between routes: local down means the run fails and waits. Each run records
   route, endpoint, provider served and model served. Verify which OpenRouter response field
   carries provider and model before relying on it. EU-only processing needs OpenRouter
-  enterprise. Synthetic data runs on `cloud` so the pipeline is testable before the GPU box.
+  enterprise. Synthetic data runs on `cloud` so the pipeline is testable
+  without a local GPU host.
 - Runs emit a typed event stream (`run_id`, `seq`, stage, counts, drop reasons), masked for
   sensitive text. It drives the live UI and doubles as audit. Events also carry
   `causation_id` and `correlation_id`. `human_gesture` is set by the server only after a
@@ -385,8 +372,8 @@ Syrian material. The six usage workflows run against it end to end. Tests:
 
 ## Borrowed from voidaccess
 
-KatrielMoses/voidaccess (MIT, v2.1.0; one contributor, created 2026-04, a dark-web OSINT
-pipeline with no custody model: patterns only, never a dependency): origin-vs-contributor corroboration,
+KatrielMoses/voidaccess (MIT, v2.1.0, a dark-web OSINT pipeline with no custody model;
+patterns only, never a dependency): origin-vs-contributor corroboration,
 quarantine-by-default tiers, pure deterministic gate, calibration-required matching, typed
 run event stream, source re-check loop. Not borrowed: its silent no-op fallbacks and SHA-256
 fallback embedder.
@@ -412,6 +399,8 @@ and delete over MCP, one scope for all tools (Relaticle, keni); approval left to
 judgment, timeline merge keys that fold history, last-write-wins drafts, runtime custom
 objects (Twenty); "full auto" mode, provider fallback chains, model-to-model certification
 (Nomi); proposal expiry (evidence proposals go stale, never silently die).
+
+# Part B. Full model
 
 ## 1. The idea
 
@@ -502,8 +491,8 @@ Gates are policy data, not code. Each human verdict is a label that feeds calibr
 - Later: every derivative as a new blob with its own manifest listing the source as an
   ingredient.
 - Caveats: public verifiers show "trusted" only with a recognised CA certificate. The Interim
-  Trust List froze 2026-01-01; budget a certificate from a C2PA Trust List CA (DigiCert,
-  SSL.com) or ship our own trust anchor with packages. C2PA proves who handled which bytes,
+  Trust List froze 2026-01-01; packages need a certificate from a C2PA Trust List CA
+  (DigiCert, SSL.com) or a trust anchor shipped with them. C2PA proves who handled which bytes,
   never that content is true, and its security is contested (IACR eprint 2026/804), so no
   claim rests on C2PA alone.
 
@@ -538,7 +527,7 @@ cited answers where every sentence cites spans; keyboard review cards.
 | Provenance | c2pa-rs and c2pa-python |
 | Capture | Bellingcat auto-archiver v1.2.9; ProofMode and Tella bundles verified on ingest |
 | Dedup | ThreatExchange PDQ and vPDQ; later Splink v5 for person linkage |
-| Models | vLLM on one GPU box. OCR: dots.ocr, Qwen3-VL or Gemma 4, LoRA on a Syrian gold set. ASR: Whisper large-v3-turbo fine-tuned. OpenRouter (ZDR) as the cloud route, only where policy allows |
+| Models | vLLM on a self-hosted GPU host. OCR: dots.ocr, Qwen3-VL or Gemma 4, LoRA on a Syrian gold set. ASR: Whisper large-v3-turbo fine-tuned. OpenRouter (ZDR) as the cloud route, only where policy allows |
 | Timestamps | OpenTimestamps plus a qualified RFC 3161 TSA |
 | Embeddings | bge-m3 or Qwen3-Embedding-0.6B |
 | Evals | inspect_ai with span-grounded field scoring and hallucinated-entity rate |
@@ -551,12 +540,15 @@ EmbeddingGemma have restrictive licences; skip them.
 
 - **Syrian OCR gold set.** ~200 pages: printed forms, handwritten security-branch records,
   civil registry extracts, name lists. CER, field F1, hallucinated-entity rate per type.
-  Feeds gate calibration. On the critical path (see Before the build).
+  Feeds gate calibration. Handwriting is the hard case: zero-shot VLMs measured ~70% CER
+  on historical handwritten Arabic (arxiv 2608.22366), while fine-tuned Qwen3-VL-4B
+  reached ~9 to 11% on NAKBA data. Handwritten OCR stays gated until a model passes this
+  set for the document type.
 - **Arabic name resolution.** Splink vs bge-m3 vs Qwen3-Embedding-0.6B on known duplicates.
   If embeddings lose, extend the rule-based Arabic normaliser.
 - **Passkey signing.** Prove assertions over statement hashes verify years later; design key
   loss and rotation.
-- **Review cost.** Time per accepted fact vs typing it into a form, with a real analyst.
+- **Review cost.** Time per accepted fact vs typing it into a form, measured with an analyst.
 
 ## 12. Requirements sources and landscape
 
@@ -566,12 +558,7 @@ EmbeddingGemma have restrictive licences; skip them.
 - ICC e-Court Protocol v2.0 (ICC-01/21-01/25-511-Anx, Oct 2026): Table 1 fields, MD5 Digital
   Signature, Chain of Custody string, 2026 URL field.
 - Embeddings never establish identity; hashes never establish truth.
-- Landscape: Uwazi (ML suggestions, no custody), OpenAleph (MIT fork of Aleph), Datashare
-  (search only), Hunchly (capture integrity, no analysis), Relativity aiR (AI audit trail,
-  closed, eDiscovery; the ICC OTP reportedly runs RelativityOne), OCCRP Aleph Pro (hosted,
-  closed since Dec 2025), Starling Lab (capture prototypes, no case model), Benetech
-  JusticeAI (self-hostable). No open tool found that combines a structured case model,
-  capture-grade integrity and a court-producible trail of AI processing (one search pass,
-  not exhaustive).
-- Buyers are cloud-wary: IIIM names OCR, MT and transcription as needs but says "no
-  automation replaces human efforts"; ICIJ translates locally on purpose.
+- Landscape (one search pass, 2026-10-20, not exhaustive): tools such as Uwazi,
+  OpenAleph, Datashare, Hunchly and Benetech JusticeAI cover search, ML suggestions or
+  capture integrity. None found combines a structured case model, capture-grade integrity
+  and a court-producible trail of AI processing.

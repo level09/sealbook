@@ -1,7 +1,7 @@
 # Start here
 
-Sealbook is a source-backed evidence application built on stk. This directory is
-the handoff record for a new contributor or agent.
+Sealbook is a source-backed evidence application built on stk. This directory
+describes the code, its decisions and its limits for contributors.
 
 | Read | Purpose |
 | --- | --- |
@@ -19,7 +19,7 @@ the handoff record for a new contributor or agent.
 | [Research](research.md) | Borrowed patterns and DigUp references |
 | [Model choice](models.md) | Current local multimodal recommendation, alternatives and validation gap |
 | [Development](development.md) | Detailed stk conventions |
-| [Original design](design.md) | Dated requirements and research, preserved as history |
+| [Design](design.md) | Requirements, core model, controls and dated research |
 
 Code and reproducible checks win when prose disagrees. Correct the prose in the
 same change. Keep claims about legal compliance, live model quality and production

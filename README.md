@@ -12,8 +12,8 @@ offline.
 Built on [stk](https://github.com/level09/stk).
 
 Start with [docs/README.md](docs/README.md) for the current code state, architecture,
-operations, decisions, lessons and pending work. The original plan is preserved as
-[design history](docs/design.md). Sealbook requires PostgreSQL with pgvector and
+operations, decisions, lessons and pending work. The design is in
+[docs/design.md](docs/design.md). Sealbook requires PostgreSQL with pgvector and
 pg_trgm; it does not run its evidence migrations on SQLite.
 
 ```bash
