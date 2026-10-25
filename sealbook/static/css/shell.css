@@ -24,30 +24,33 @@
   --bg: #ecebe6; --panel: #fbfaf7; --raise: #f5f4f0; --line: #e0dfd9; --line-strong: #c6c5be;
   --ink: #1f2124; --ink-2: #4a4c50; --ink-3: #66696e;
   --wash: rgba(31,33,36,.06); --solid: rgba(31,33,36,.13);
-  --agent: #5a46c8; --agent-wash: rgba(90,70,200,.09); --agent-solid: rgba(90,70,200,.18);
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 :root.dark-mode, body.dark-mode {
   --bg: #151619; --panel: #1c1d21; --raise: #222428; --line: #2c2e33; --line-strong: #3e4148;
   --ink: #d9dad6; --ink-2: #aeb1b5; --ink-3: #8d9197;
   --wash: rgba(217,218,214,.06); --solid: rgba(217,218,214,.16);
-  --agent: #ab9ef7; --agent-wash: rgba(171,158,247,.1); --agent-solid: rgba(171,158,247,.22);
   color-scheme: dark;
 }
-/* Colour roles (docs/DESIGN.md, Colour roles). Picked in OKLCH, stored as sRGB hex so
+/* Colour roles (docs/design.md, Colour roles). Picked in OKLCH, stored as sRGB hex so
    MapLibre and canvas read them. Each role has an ink for text and glyphs (AA on panel,
-   bg and its own wash), a -wash for chip grounds and a -line for edges and marks (3:1
-   on panel). Colour never carries meaning alone: it rides on a texture, icon or word.
-   config.js mirrors the inks for Vuetify colour props; change both together.
-   Six hues only: below about 6 OKLab dE two roles read as one at chip size, so entity
-   kinds are ink with their icon, corroborated is the accepted hue in outline texture
-   and overdue is the negative hue with its alert icon. */
+   bg and its own wash), a -wash for chip and tile grounds and a -line for edges, marks
+   and link underlines (3:1 on panel). Colour never carries meaning alone: it rides on
+   a texture, icon or word. config.js mirrors the inks for Vuetify colour props; change
+   both together. Maps and timelines read these tokens at runtime. Kinds (person, place, source, incident, story) have hues
+   again; light inks sit at different lightness so they stay apart under deutan and
+   protan simulation (acceptance/check_palette.py). */
 :root {
-  --accepted: #0d6a58; --accepted-wash: #e0f6ef; --accepted-line: #569c89;
-  --conflict: #915c08; --conflict-wash: #feeddb; --conflict-line: #b38144;
-  --negative: #a04034; --negative-wash: #ffebe7; --negative-line: #c96f61;
-  --sensitive: #964267; --sensitive-wash: #feeaf1; --sensitive-line: #bf6f8f;
-  --new: #0d6abb; --new-wash: #e6f2ff; --new-line: #488fdb;
+  --agent: #6f5bb0; --agent-wash: #f0eeff; --agent-solid: rgba(111,91,176,.2); --agent-line: #8c7ad2;
+  --accepted: #00775c; --accepted-wash: #daf8ec; --accepted-line: #28997a;
+  --conflict: #724800; --conflict-wash: #ffedd8; --conflict-line: #a06800;
+  --negative: #ac4a41; --negative-wash: #ffebe8; --negative-line: #ce695e;
+  --sensitive: #9c5076; --sensitive-wash: #ffe9f3; --sensitive-line: #bd6e95;
+  --new: #006cac; --new-wash: #e4f2ff; --new-line: #178dda;
+  --person: #007289; --person-wash: #d9f6ff; --person-line: #0695b1;
+  --place: #45751c; --place-wash: #e7f6de; --place-line: #64963f;
+  --source: #404e60; --source-wash: #ebf1f8; --source-line: #637285;
+  --incident: #b2471c; --incident-wash: #ffebe5; --incident-line: #d5663e;
   /* actor avatars: low chroma, clear of the status hues and of agent violet */
   --av-1: #c0e6eb; --av-1-ink: #024c52; --av-2: #c7e2f6; --av-2-ink: #0d4768;
   --av-3: #ebd6ee; --av-3-ink: #56335b; --av-4: #e7dcd2; --av-4-ink: #513e2f;
@@ -55,25 +58,29 @@
   --av-agent: #e6e2f8; --av-agent-ink: #4a37b0; --av-import: #e9e9e6; --av-import-ink: #44464a;
 }
 :root.dark-mode, body.dark-mode {
-  --accepted: #7bd1ba; --accepted-wash: #0c2d25; --accepted-line: #388472;
-  --conflict: #f6b669; --conflict-wash: #34220b; --conflict-line: #9c681f;
-  --negative: #ea998b; --negative-wash: #3a1e19; --negative-line: #a35f55;
-  --sensitive: #e9a3bd; --sensitive-wash: #361e27; --sensitive-line: #9a6077;
-  --new: #77b5fb; --new-wash: #15283c; --new-line: #4177b2;
+  --agent: #b3a1fd; --agent-wash: #2c283e; --agent-solid: rgba(179,161,253,.22); --agent-line: #7768b0;
+  --accepted: #6cd5b3; --accepted-wash: #143228; --accepted-line: #389075;
+  --conflict: #eaa950; --conflict-wash: #382814; --conflict-line: #a16d20;
+  --negative: #f2897c; --negative-wash: #3d2320; --negative-line: #a8554c;
+  --sensitive: #e694bb; --sensitive-wash: #3a232e; --sensitive-line: #9e5d7d;
+  --new: #3ba6f5; --new-wash: #1a2d3e; --new-line: #0e70ae;
+  --person: #50c2df; --person-wash: #103039; --person-line: #1d829a;
+  --place: #d3ef8b; --place-wash: #282f17; --place-line: #8ba150;
+  --source: #ccd5e2; --source-wash: #262c33; --source-line: #878e98;
+  --incident: #f0834e; --incident-wash: #3c251a; --incident-line: #a85125;
   --av-1: #133f44; --av-1-ink: #bae8ed; --av-2: #1f3b4e; --av-2-ink: #c2e3fb;
   --av-3: #442f47; --av-3-ink: #eed4f1; --av-4: #41352d; --av-4-ink: #e9dbd0;
   --av-5: #313941; --av-5-ink: #d5dfea; --av-6: #3c382a; --av-6-ink: #e3decd;
   --av-agent: #2d2850; --av-agent-ink: #c9c0fb; --av-import: #2a2c31; --av-import-ink: #c8cace;
 }
+/* Story shares incident's hue: a story is told through its incidents, and an eleventh
+   hue has no room left that stays apart under colour-blind simulation. Its icon
+   (timeline) tells the two apart. */
 :root, body {
   --due: var(--conflict); --due-wash: var(--conflict-wash); --due-line: var(--conflict-line);
   --overdue: var(--negative); --overdue-wash: var(--negative-wash); --overdue-line: var(--negative-line);
   --corroborated: var(--accepted); --corroborated-wash: transparent; --corroborated-line: var(--accepted-line);
-  --person: var(--ink-2); --person-wash: var(--wash); --person-line: var(--ink-3);
-  --place: var(--ink-2); --place-wash: var(--wash); --place-line: var(--ink-3);
-  --source: var(--ink-2); --source-wash: var(--wash); --source-line: var(--ink-3);
-  --incident: var(--ink-2); --incident-wash: var(--wash); --incident-line: var(--ink-3);
-  --story: var(--ink-2); --story-wash: var(--wash); --story-line: var(--ink-3);
+  --story: var(--incident); --story-wash: var(--incident-wash); --story-line: var(--incident-line);
 }
 
 /* Role carriers: a role class names the meaning, r-ink, r-chip and r-dot draw it. No
@@ -83,10 +90,11 @@
 .is-source { --r: var(--source); --r-wash: var(--source-wash); --r-line: var(--source-line); }
 .is-incident { --r: var(--incident); --r-wash: var(--incident-wash); --r-line: var(--incident-line); }
 .is-story { --r: var(--story); --r-wash: var(--story-wash); --r-line: var(--story-line); }
-.is-agent, .is-finding { --r: var(--agent); --r-wash: var(--agent-wash); --r-line: var(--agent); }
+.is-agent, .is-finding { --r: var(--agent); --r-wash: var(--agent-wash); --r-line: var(--agent-line); }
 .tier-accepted { --r: var(--accepted); --r-wash: var(--accepted-wash); --r-line: var(--accepted-line); }
 .tier-corroborated { --r: var(--corroborated); --r-wash: var(--corroborated-wash); --r-line: var(--corroborated-line); }
 .tier-unconfirmed { --r: var(--ink-2); --r-wash: var(--wash); --r-line: var(--line-strong); }
+.r-neutral { --r: var(--ink-2); --r-wash: var(--wash); --r-line: var(--line-strong); }
 .tier-rejected, .state-negative { --r: var(--negative); --r-wash: var(--negative-wash); --r-line: var(--negative-line); }
 .state-conflict { --r: var(--conflict); --r-wash: var(--conflict-wash); --r-line: var(--conflict-line); }
 .state-sensitive { --r: var(--sensitive); --r-wash: var(--sensitive-wash); --r-line: var(--sensitive-line); }
@@ -96,10 +104,22 @@
 .r-ink, .r-ink .ti { color: var(--r) !important; }
 .r-chip { display: inline-flex; align-items: center; gap: 4px; padding: 0 6px; border: 1px solid var(--r-line); border-radius: 3px; background: var(--r-wash); color: var(--r); font-size: 11.5px; font-weight: 600; line-height: 1.6; white-space: nowrap; }
 .r-dot::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--r); margin-inline-end: 6px; vertical-align: 1px; }
+/* Kind tile: the item's icon on a small square of its kind's wash, set on the icon itself. */
+.r-tile { display: inline-grid !important; place-items: center; width: 20px; height: 20px; border-radius: 5px; background: var(--r-wash); color: var(--r) !important; font-size: 13px !important; line-height: 1; flex: none; opacity: 1 !important; }
+/* Kind links: a link takes the kind of the page it opens, so a person, place, source or
+   incident reads the same on every page. Anchors that wrap a whole row keep their ink. */
+a[href^="/people/"] { --r: var(--person); --r-line: var(--person-line); }
+a[href^="/places/"] { --r: var(--place); --r-line: var(--place-line); }
+a[href^="/evidence/"] { --r: var(--source); --r-line: var(--source-line); }
+a[href^="/incidents/"] { --r: var(--incident); --r-line: var(--incident-line); }
+a:is([href^="/people/"], [href^="/places/"], [href^="/evidence/"], [href^="/incidents/"]):not(.v-btn, .v-list-item, .v-tab, .v-chip, .en-rel, .sr-hit, .mv-thumb, .ev-thumb),
+.r-link { color: var(--r); text-decoration: underline; text-decoration-color: var(--r-line); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+/* Rail: each section's icon takes the hue of what the page is about; labels stay ink. */
+.sb-nav-icon .v-icon, .sb-nav-icon.v-icon { color: var(--r) !important; opacity: 1 !important; }
 html, body { background: var(--bg); }
 body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .v-application { background: var(--bg) !important; color: var(--ink); }
-::selection { background: var(--agent-solid); }
+::selection { background: var(--solid); }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 /* Controls with their own border show focus on that border; an outline beside it reads as two. */
 .v-field input:focus-visible, .v-field textarea:focus-visible { outline: none; }

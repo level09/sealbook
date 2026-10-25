@@ -13,9 +13,6 @@
     --ink-3: #66696e;
     --wash: rgba(31, 33, 36, 0.06);
     --solid: rgba(31, 33, 36, 0.13);
-    --agent: #5a46c8;
-    --agent-wash: rgba(90, 70, 200, 0.09);
-    --agent-solid: rgba(90, 70, 200, 0.18);
     --fork: var(--conflict);
     --bad: var(--negative);
     --good: var(--accepted);
@@ -38,9 +35,6 @@
     --ink-3: #8d9197;
     --wash: rgba(217, 218, 214, 0.06);
     --solid: rgba(217, 218, 214, 0.16);
-    --agent: #ab9ef7;
-    --agent-wash: rgba(171, 158, 247, 0.1);
-    --agent-solid: rgba(171, 158, 247, 0.22);
     --map-water: #101215;
     --map-land: #181a1e;
     --map-land-focus: #1e2126;
