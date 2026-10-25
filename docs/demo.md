@@ -139,6 +139,13 @@ rows were read, so version 2 has proposals for those rows alone. To watch the
 mapping and diff steps live, edit one cell of `acceptance/data/messy_people_v2.csv`
 in a copy and add it in `/ingest`; the remembered dataset is picked from its columns.
 
+Once a batch is read, a case suggestion sits above the intake brief. Add, as
+ordinary, a text file into case-demo-01 that names Yousef Khaled Al-Ali last seen
+in Douma on 2 May 2013: it reads "1 of 1 source looks like case-demo-02", with the
+name and the place, each with its date and the characters it was read from. A file
+about an unrelated place gets a suggested new case name from that place and month.
+Add to case-demo-02 records the file there too; it stays in case-demo-01.
+
 ## See it
 
 Open a source from Sources or the Desk. Each kind shows its claims on the span they
