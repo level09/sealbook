@@ -10,7 +10,8 @@ import pyotp
 import stk
 import stk.extensions as ext
 from quart import request
-from quart.testing.connections import WebsocketDisconnectError
+from quart.testing import QuartClient
+from quart.testing.connections import TestWebsocketConnection
 from quart_security import hash_password
 from quart_session.sessions import RedisSessionInterface
 from sqlalchemy import select
@@ -35,6 +36,25 @@ class TestConfig(stk.TestingConfig, Config):
     GITHUB_AUTH_ENABLED = True
 
 
+class WebsocketClosed(Exception):
+    def __init__(self, code):
+        super().__init__(code)
+        self.code = code
+
+
+# Quart 0.23 drops a server close in its test client; receive() would hang.
+class ClosingWebsocket(TestWebsocketConnection):
+    async def _asgi_send(self, message):
+        if message["type"] == "websocket.close":
+            await self._receive_queue.put(WebsocketClosed(message.get("code")))
+        else:
+            await super()._asgi_send(message)
+
+
+class Client(QuartClient):
+    websocket_connection_class = ClosingWebsocket
+
+
 class MemoryRedis:
     def __init__(self):
         self.values = {}
@@ -52,6 +72,7 @@ class MemoryRedis:
 class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.app = create_app(TestConfig)
+        self.app.test_client_class = Client
 
         @self.app.get("/_fixture/oauth")
         async def oauth_fixture():
@@ -207,11 +228,12 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
     async def test_websocket_rejects_foreign_origin(self):
         client = self.app.test_client()
         await self.login(client)
-        with self.assertRaises(WebsocketDisconnectError):
+        with self.assertRaises(WebsocketClosed) as closed:
             async with client.websocket(
                 "/ws", headers={"Origin": "https://foreign.example"}
             ) as ws:
                 await ws.receive()
+        self.assertEqual(closed.exception.code, 4003)
 
     async def test_websocket_closes_after_logout(self):
         self.app.config["STK_WS_AUTH_INTERVAL"] = 0.02
@@ -223,8 +245,9 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
             await ws.receive()
             token = await self.csrf(client)
             await client.post("/logout", form={"csrf_token": token})
-            with self.assertRaises(WebsocketDisconnectError):
+            with self.assertRaises(WebsocketClosed) as closed:
                 await asyncio.wait_for(ws.receive(), 1)
+            self.assertEqual(closed.exception.code, 4001)
 
     async def test_admin_password_policy_cannot_be_bypassed(self):
         client = self.app.test_client()
@@ -368,8 +391,9 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
             await connection.receive()
             for _ in range(3):
                 await connection.send("ignored")
-            with self.assertRaises(WebsocketDisconnectError):
+            with self.assertRaises(WebsocketClosed) as closed:
                 await asyncio.wait_for(connection.receive(), 1)
+            self.assertEqual(closed.exception.code, 4008)
 
     async def test_google_id_token_validates_signature_and_claims(self):
         import time
@@ -497,8 +521,9 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
                                 state = await db.get(SecurityState, auth_token)
                                 state.expires_at = 0
                             await db.commit()
-                    with self.assertRaises(WebsocketDisconnectError):
+                    with self.assertRaises(WebsocketClosed) as closed:
                         await asyncio.wait_for(connection.receive(), 1)
+                    self.assertEqual(closed.exception.code, 4001)
                 async with ext.async_session_factory() as db:
                     user = await db.get(User, self.admin_id)
                     user.active = True
