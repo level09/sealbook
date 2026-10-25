@@ -7,6 +7,7 @@ import {EvidenceLocation} from '/static/js/components/EvidenceLocation.js';
 import {ResearchDrawer} from '/static/js/components/ResearchDrawer.js';
 import {FindLinks} from '/static/js/components/FindLinks.js';
 import {NoticerPanel} from '/static/js/components/NoticerPanel.js';
+import {SourceSteps, LIVE} from '/static/js/components/SourceSteps.js';
 import {TIMEOUT, failure} from '/static/js/components/EvidenceViewer.js';
 
 const api = axios.create({timeout: TIMEOUT});
@@ -35,7 +36,7 @@ export function mount(boot) {
       return {boot, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
         cursor: {list: 'claims', i: -1}, excerpt: null, threadId: null, thread: null, threadBusy: false, comment: '',
         ask: {open: false, statement: null, reviewer: null, reason: '', busy: false}, analysts: [], relate: {open: false, row: null, value: 'same_recording'},
-        snack: {show: false, text: ''}, unfolded: {}, busy: false, queueing: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
+        snack: {show: false, text: ''}, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
     },
     computed: {
       claims() {return this.it ? this.it.claims.map(c => ({...c, label: prop(c.prop), value: this.read?.values?.[c.id] ?? c.display})) : [];},
@@ -78,7 +79,12 @@ export function mount(boot) {
       lists() {return {claims: this.other ? [] : this.ordered, copies: this.it?.copies || [], rel: this.relations};},
       activeList() {return this.cursor.list === 'claims' && this.lists.claims.length ? 'claims' : this.tab === 'dups' ? 'copies' : this.tab === 'rel' ? 'rel' : this.lists.claims.length ? 'claims' : 'copies';},
       current() {const l = this.lists[this.cursor.list]; return l && this.cursor.i >= 0 ? l[this.cursor.i] : null;},
-      readPending() {return (this.it?.reading || []).some(r => ['queued', 'running'].includes(r.status));},
+      // Something is queued or running on this source: the run stream stays open.
+      live() {return (this.it?.steps || []).some(s => LIVE.includes(s.state));},
+      // With claims shown, the steps panel stays while anything is not settled.
+      // A sheet's columns wait for a person: the claims panel takes the full width.
+      mapping() {return (this.it?.steps || []).some(s => s.action === 'map');},
+      stepsOpen() {return (this.it?.steps || []).some(s => !['done', 'skipped'].includes(s.state));},
       hl() {const s = this.boot.segment; return s?.span && ['text', 'web'].includes(this.it?.kind) && s.kind === 'text' ? s.span : null;},
     },
     methods: {
@@ -205,16 +211,11 @@ export function mount(boot) {
         try {await api.post(`/api/collaboration/requests/${this.thread.id}/comments`, {item: {text: this.comment}}); this.comment = ''; await this.openThread({id: this.thread.id, visible: true}); await this.refresh();}
         catch (err) {this.say(message(err));} finally {this.threadBusy = false;}
       },
-      readWords(r) {
-        const parts = r.runs > 1 ? `${r.runs} parts, ` : '';
-        if (r.status === 'failed') return `${parts}did not finish. ${r.failure || ''}`;
-        if (r.status === 'done') return `${parts}done${r.route === 'local' ? ' on this server' : r.route ? ' by a cloud model' : ''}`;
-        return `${parts}${r.status === 'running' ? 'running now' : 'queued'} on the ${r.route} route`;
-      },
-      // While this source is read, live run events nudge a reload, so claims appear
-      // when the run finishes; the stream closes once nothing is queued.
+      // While anything on this source is queued or running, live run events nudge a
+      // reload, so the steps and claims change as runs finish; the stream closes once
+      // nothing is queued.
       follow() {
-        if (!this.readPending) {stream?.close(); stream = null; return;}
+        if (!this.live) {stream?.close(); stream = null; return;}
         if (stream) return;
         stream = new EventSource('/monitor/stream');
         stream.addEventListener('run_event', e => {
@@ -223,12 +224,8 @@ export function mount(boot) {
           nudge = setTimeout(async () => {await this.refresh(); this.follow();}, 400);
         });
       },
-      async queue() {
-        this.queueing = true;
-        try {const {data} = await api.post(`/api/evidence/${this.it.sha256}/analyse`, {item: {}}); this.say(data.message); await this.refresh(); this.follow();}
-        catch (err) {this.say(message(err));}
-        finally {this.queueing = false;}
-      },
+      // After an action in the steps panel the panel itself shows the new state.
+      async changed() {await this.refresh(); this.follow();},
       aboutLabel(id) {const c = this.claims.find(x => x.id === id); return c ? `${prop(c.prop)}${c.value ? ': ' + c.value : ''}` : `proposal ${short(id)}`;},
       key(e) {
         const tag = e.target.tagName;
@@ -254,6 +251,7 @@ export function mount(boot) {
   app.component('research-drawer', ResearchDrawer);
   app.component('find-links', FindLinks);
   app.component('noticer-panel', NoticerPanel);
+  app.component('source-steps', SourceSteps);
   registerStkComponents(app);
   app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
   return app;

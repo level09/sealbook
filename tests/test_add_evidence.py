@@ -52,7 +52,7 @@ class PureTest(unittest.TestCase):
             run = Run(id=uuid.uuid4(), tool="ocr", error=error)
             self.assertEqual(
                 _failure(run)["detail"],
-                "The model on this server did not answer in time; try again later.",
+                "The model did not answer in time; try again later.",
             )
 
     def test_doc_type_suggestions(self):
@@ -254,21 +254,25 @@ class IntakeTest(unittest.IsolatedAsyncioTestCase):
             )
             found = await self.status(client)
         self.assertEqual(found["held.txt"]["stages"]["read"], "waiting")
+        # The reason comes from the policy table, not from an assumed route.
         self.assertIn(
-            "sensitive items are read only by a model on this server",
+            "No model is set up to read claims from text for sensitive sources",
             found["held.txt"]["waiting"],
         )
-        self.assertIn("no model allowed for this item", found["open.txt"]["waiting"])
+        self.assertIn("for ordinary sources", found["open.txt"]["waiting"])
+        [read] = [s for s in found["held.txt"]["steps"] if s["key"] == "read"]
+        self.assertEqual(read["state"], "model")
+        self.assertNotIn("_", read["words"])
         # Nothing queues it later on its own, so a model set up since then is said.
         with mock.patch.object(Config, "RUN_MODELS", {"local": "m/l"}):
             later = (await self.status(client))["held.txt"]["waiting"]
-        self.assertIn("A model is set up now", later)
+        self.assertIn("One is set up now", later)
         with mock.patch.object(Config, "RUN_MODELS", {"local": "m/l"}):
             await self.upload(client, b"first in line", name="one.txt", batch="b2")
             await self.upload(client, b"second in line", name="two.txt", batch="b2")
         found = await self.status(client, "b2")
         self.assertIsNone(found["one.txt"]["waiting"])
-        self.assertIn("busy with 1 other item.", found["two.txt"]["waiting"])
+        self.assertIn("behind 1 other item", found["two.txt"]["waiting"])
         self.assertTrue(found["two.txt"]["pending"])
 
     async def test_suggest_and_sheet_peek(self):
@@ -282,8 +286,8 @@ class IntakeTest(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual((await r.get_json())["items"][0]["doc_type"], "transfer_order")
 
-        async def peek(**patch):
-            with mock.patch.object(mapping, "suggest", **patch):
+        async def peek(target="suggest", **patch):
+            with mock.patch.object(mapping, target, **patch):
                 r = await client.post(
                     "/ingest/sheet/peek",
                     files={
@@ -296,35 +300,34 @@ class IntakeTest(unittest.IsolatedAsyncioTestCase):
                 )
             return await r.get_json()
 
-        down = await peek(side_effect=ValueError("EMBEDDING_MODEL is not configured"))
+        down = await peek(
+            "embed", side_effect=ValueError("EMBEDDING_MODEL is not configured")
+        )
         self.assertEqual(
             (down["table"]["header_row"], down["titles"], down["table"]["dropped"]),
             (3, 2, [4]),
         )
         self.assertEqual(down["table"]["first_row"], 4)
         self.assertEqual(down["table"]["rows"][0][1], "Yousef Khaled Al-Ali")
-        self.assertIn("EMBEDDING_MODEL", down["suggest_error"])
-        self.assertEqual(down["suggestion"]["doc_type"], "unknown")
-        self.assertFalse(down["people"])
+        # No model: headers still match; the note says so in words, no setting name.
+        self.assertEqual(
+            [c["suggestions"][0]["field"] for c in down["columns"]],
+            ["key", "name", "mother_name", "place"],
+        )
+        self.assertIsNone(down["suggest_note"])
+        self.assertTrue(down["people"])
 
-        async def named(cols, remembered):
-            return [
-                c
-                | {
-                    "remembered": None,
-                    "suggestions": [
-                        {
-                            "field": "name" if c["header"] == "Name" else "ignore",
-                            "score": 0.5,
-                        }
-                    ],
-                }
-                for c in cols
-            ]
+        async def unnamed(cols, remembered):
+            return {
+                "columns": [c | {"remembered": None, "suggestions": []} for c in cols],
+                "note": mapping.MODEL_DOWN,
+            }
 
-        up = await peek(side_effect=named)
-        self.assertTrue(up["people"])
-        self.assertEqual(up["suggestion"]["doc_type"], "detention_register")
+        up = await peek(side_effect=unnamed)
+        self.assertFalse(up["people"])
+        self.assertEqual(up["suggestion"]["doc_type"], "unknown")
+        self.assertEqual(up["suggest_note"], mapping.MODEL_DOWN)
+        self.assertEqual(down["suggestion"]["doc_type"], "detention_register")
         async with ext.async_session_factory() as s:
             self.assertEqual(
                 await s.scalar(

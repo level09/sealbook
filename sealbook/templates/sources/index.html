@@ -80,7 +80,7 @@
     <v-data-table-server v-if="mode === 'table'" v-model="selected" class="src-table" :headers="headers" :items="items" :items-length="total || 0" :loading="loading" item-value="sha256" show-select density="compact" fixed-header height="620"
       v-model:sort-by="sortBy" v-model:page="page" v-model:items-per-page="perPage" :items-per-page-options="[25, 50, 100]" :row-props="rowProps" must-sort @update:options="load" @click:row="clickRow">
       <template #item.type="{ item }"><v-tooltip :text="hidden(item) ? 'Sensitive ' + item.type + ': click to reveal, the reveal is logged' : item.type + ' · ' + item.mime"><template #activator="{ props }"><component :is="hidden(item) ? 'button' : 'span'" v-bind="props" class="src-mini" :aria-label="hidden(item) ? 'Reveal ' + item.title + ', logged' : item.type" @click.stop="hidden(item) && reveal(item)"><media-thumb :key="item.sha256 + (revealed[item.sha256] || 0)" :locked="hidden(item)" :sha="item.sha256" :mime="item.mime" :kind="item.type" :caption="false" :link="false" :width="40" :height="28"></media-thumb></component></template></v-tooltip></template>
-      <template #item.title="{ item }"><div class="src-trunc" :title="item.title"><i v-if="item.sensitive" class="ti ti-eye-off me-1 r-ink state-sensitive" title="Sensitive, opening it is logged" aria-label="Sensitive"></i><a :href="openUrl(item)" @click.stop>${ label(item.doc_type) }</a> <span class="src-muted">${ item.title }</span><v-chip v-if="item.synthetic" size="x-small" label variant="outlined" class="ms-1" title="Synthetic filler record for testing at scale; no file is stored">synthetic</v-chip></div></template>
+      <template #item.title="{ item }"><div class="src-trunc" :title="item.title"><i v-if="item.sensitive" class="ti ti-eye-off me-1 r-ink state-sensitive" title="Sensitive, opening it is logged" aria-label="Sensitive"></i><span v-if="item.next" class="r-chip me-1" :class="NEXT[item.next.state].cls" :title="item.next.label + ': ' + item.next.words"><i :class="NEXT[item.next.state].icon" aria-hidden="true"></i>${ item.next.chip }</span><a :href="openUrl(item)" @click.stop>${ label(item.doc_type) }</a> <span class="src-muted">${ item.title }</span><v-chip v-if="item.synthetic" size="x-small" label variant="outlined" class="ms-1" title="Synthetic filler record for testing at scale; no file is stored">synthetic</v-chip></div></template>
       <template #item.origin="{ item }"><div class="src-trunc src-muted" style="max-width: 200px" :title="item.origin">${ item.origin }</div></template>
       <template #item.acquired_at="{ item }"><span class="text-no-wrap">${ item.acquired_at.slice(0, 10) }</span></template>
       <template #item.by="{ item }"><div class="src-trunc" style="max-width: 120px" :title="item.by.name">${ item.by.name }</div></template>
@@ -101,7 +101,7 @@
           </div>
           <div class="pa-2 text-caption d-flex align-start ga-1">
             <v-checkbox-btn :model-value="selected.includes(r.sha256)" density="compact" :aria-label="'Select ' + r.title" @update:model-value="toggle(r.sha256)"></v-checkbox-btn>
-            <div class="flex-grow-1 text-start" style="min-width: 0"><a class="d-block text-truncate font-weight-medium" :href="openUrl(r)">${ label(r.doc_type) }</a><div class="text-truncate src-muted">${ r.title }</div></div>
+            <div class="flex-grow-1 text-start" style="min-width: 0"><a class="d-block text-truncate font-weight-medium" :href="openUrl(r)">${ label(r.doc_type) }</a><div class="text-truncate src-muted">${ r.title }</div><span v-if="r.next" class="r-chip mt-1" :class="NEXT[r.next.state].cls" :title="r.next.label + ': ' + r.next.words"><i :class="NEXT[r.next.state].icon" aria-hidden="true"></i>${ r.next.chip }</span></div>
           </div>
         </v-card>
       </div>
@@ -315,6 +315,12 @@ window.app = Vue.createApp({
   },
   beforeUnmount() { document.removeEventListener('keydown', this.onKey); },
 });
+// What waits on a source (sealbook.ingest.batch.attention): a person, a model or a retry.
+app.config.globalProperties.NEXT = {
+  you: {cls: 'state-due', icon: 'ti ti-hand-finger'},
+  model: {cls: 'state-due', icon: 'ti ti-clock-pause'},
+  failed: {cls: 'state-negative', icon: 'ti ti-refresh'},
+};
 registerStkComponents(app);
 registerMediaViewers(app);
 app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');

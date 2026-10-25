@@ -16,6 +16,7 @@ from openpyxl import Workbook
 from sqlalchemy import select
 
 from sealbook import blobs
+from sealbook.ingest import batch
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import Acquisition, Blob, Run, Statement, StatementTier
 from sealbook.ledger.span import validate
@@ -157,14 +158,61 @@ class MappingTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(cols[1]["samples"]), 5)
         embed = mock.AsyncMock()
         with mock.patch.object(mapping, "embed", embed):
-            out = await mapping.suggest(
+            found = await mapping.suggest(
                 cols, {h.upper(): f for h, f in MAPPING.items()}
             )
         embed.assert_not_awaited()
+        self.assertIsNone(found["note"])
+        out = found["columns"]
         self.assertEqual([c["remembered"] for c in out], list(MAPPING.values()))
+
+    async def test_headers_and_values_match_without_a_model(self):
+        # Arabic and English headers, and the shape of the values, map every column
+        # of the messy sheet with no model; each suggestion says why.
+        for data in (V1, V2):
+            cols = mapping.columns(parse.read(data, parse.CSV)[0])
+            with mock.patch.object(mapping, "embed", side_effect=ValueError("off")):
+                found = await mapping.suggest(cols, {})
+            self.assertIsNone(found["note"])
+            top = {c["header"]: c["suggestions"][0] for c in found["columns"]}
+            self.assertEqual({h: s["field"] for h, s in top.items()}, MAPPING)
+            self.assertTrue(all(s["by"] == "rules" for s in top.values()))
+        why = {h: s["why"] for h, s in top.items()}
+        self.assertEqual(why["المكان"], "header says ⁨المكان⁩")
+        self.assertIn("values look like dates", why["التاريخ"])
+        self.assertIn("cells hold a name with sex, age or job", why["الشخص / person"])
+        # Without telling headers, the values alone still say what a column holds.
+        shapes = {
+            "sequence": ["1", "2", "3", "٤"],
+            "codes": ["A-17", "B-02", "C-9"],
+            "dates": ["2013-05-12", "15/3/2014", "اذار 2013", "unknown"],
+            "sex": ["ذكر", "أنثى", "male", "Female"],
+            "people": ["سامر خليل النجار - ذكر - 29 سنة", "Rania Haddad (female), 41"],
+            "ages": ["29", "41", "29"],
+        }
+        for want, values in shapes.items():
+            self.assertEqual(mapping.shape(values), want, values)
+        self.assertIsNone(mapping.shape(["Douma", "Homs", "Aleppo"]))
+        for header, want in {
+            "اسم الأم": "mother_name",
+            "تاريخ الولادة": "birth_date",
+            "Father's name": "father_name",
+            "مكان الولادة": "place_of_birth",
+            "الجنس": "sex",
+            "Notes": "ignore",
+        }.items():
+            self.assertEqual(mapping.by_header(header).key, want, header)
+        bare = [{"column": 1, "header": "Col", "samples": ["x"], "shape": None}]
+        with mock.patch.object(mapping, "embed", side_effect=ValueError("off")):
+            off = await mapping.suggest(bare, {})
+        self.assertEqual(off["note"], mapping.NO_MODEL)
+        self.assertEqual(off["columns"][0]["suggestions"], [])
 
     async def test_unfamiliar_columns_are_ranked(self):
         cols = mapping.columns(parse.read(V1, parse.CSV)[0])
+        # Headers and values that say nothing leave the two columns to the model.
+        for i in (1, 4):
+            cols[i] |= {"header": f"عمود {i}", "shape": None}
         n = len(mapping.FIELDS)
 
         async def embed(texts):
@@ -182,7 +230,7 @@ class MappingTest(unittest.IsolatedAsyncioTestCase):
 
         remembered = {h: f for h, f in MAPPING.items() if f not in ("person", "date")}
         with mock.patch.object(mapping, "embed", embed):
-            out = await mapping.suggest(cols, remembered)
+            out = (await mapping.suggest(cols, remembered))["columns"]
         person, dated = out[1], out[4]
         self.assertIsNone(person["remembered"])
         self.assertEqual(
@@ -321,6 +369,10 @@ class SheetFlowTest(unittest.IsolatedAsyncioTestCase):
             )
         return blob.sha256, acq.id
 
+    async def steps(self, s, sha) -> dict:
+        found = (await batch.source_steps(s, {sha: [sha]}))[sha]
+        return {step["key"]: step["state"] for step in found}
+
     async def test_confirm_extract_and_second_version(self):
         sha, acq = await self.sheet(V1)
         client = await self.client()
@@ -329,7 +381,12 @@ class SheetFlowTest(unittest.IsolatedAsyncioTestCase):
         body = await r.get_json()
         self.assertEqual(r.status_code, 200, body)
         self.assertEqual(body["table"]["total"], 15)
-        self.assertEqual(body["suggest_error"], "down")
+        # Every column is matched by its header and values, so the model is not asked.
+        self.assertIsNone(body["suggest_note"])
+        self.assertEqual(
+            {c["header"]: c["suggestions"][0]["field"] for c in body["columns"]},
+            MAPPING,
+        )
         item = {
             "dataset_name": "Missing people list",
             "key_column": "No.",
@@ -341,6 +398,11 @@ class SheetFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await r.get_json())["counts"]["new"], 15)
         async with ext.async_session_factory() as s:
             self.assertIsNone(await s.scalar(select(Dataset.id)))  # diff writes nothing
+            # What happens next: the columns wait for a person, the rows wait on them.
+            state = await self.steps(s, sha)
+            self.assertEqual((state["columns"], state["rows"]), ("you", "later"))
+            nxt = batch.attention((await batch.source_steps(s, {sha: [sha]}))[sha])
+            self.assertEqual((nxt["state"], nxt["chip"]), ("you", "Map the columns"))
         r = await client.post(
             f"/api/sheets/{acq}/confirm", json={"item": item}, headers=client.csrf
         )
@@ -350,6 +412,9 @@ class SheetFlowTest(unittest.IsolatedAsyncioTestCase):
             f"/api/sheets/{acq}/confirm", json={"item": item}, headers=client.csrf
         )
         self.assertEqual(again.status_code, 409)
+        async with ext.async_session_factory() as s:
+            state = await self.steps(s, sha)
+        self.assertEqual((state["columns"], state["rows"]), ("done", "queued"))
 
         transport = self.model([{"row": 2, "facts": ROW2}, {"row": 4, "facts": ROW4}])
         self.assertTrue(
@@ -368,6 +433,10 @@ class SheetFlowTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(run.status, "done", run.error)
             self.assertEqual(run.inputs["mapping"], MAPPING)
             self.assertEqual(run.model_served, "gemma-local")
+            self.assertEqual((await self.steps(s, sha))["rows"], "done")
+            self.assertIsNone(
+                batch.attention((await batch.source_steps(s, {sha: [sha]}))[sha])
+            )
             raw = orjson.loads(
                 blobs.read(await s.get(Blob, run.raw_output_ref), Config.BLOB_DIR)
             )
@@ -420,6 +489,15 @@ class SheetFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(place["place"])  # no gazetteer in this database: stays open
 
         sha2, acq2 = await self.sheet(V2, name="messy_people_v2.csv")
+        # The stored preview starts on the dataset whose columns it repeats, and a
+        # second dataset under the same name is refused in words, not a 500.
+        r = await client.get(f"/api/sheets/{acq2}/preview")
+        self.assertEqual((await r.get_json())["dataset"], out["version"]["dataset"])
+        r = await client.post(
+            f"/api/sheets/{acq2}/confirm", json={"item": item}, headers=client.csrf
+        )
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("already in this case", (await r.get_json())["message"])
         embed = mock.AsyncMock()
         with mock.patch.object(mapping, "embed", embed):
             r = await client.get(

@@ -7,7 +7,6 @@ from __future__ import annotations
 import asyncio
 import uuid
 
-import httpx
 from sqlalchemy import func, select
 
 from sealbook import blobs
@@ -65,7 +64,6 @@ def table(sheets, number: int, limit: int = PREVIEW_ROWS) -> dict:
 
 
 PEEK_ROWS = 4
-PEEK_WAIT = 20  # seconds
 PEOPLE = frozenset({"name", "person"})
 
 
@@ -79,30 +77,16 @@ async def peek(db, data: bytes, mime: str, filename: str, case: str | None) -> d
     sheet = _sheet(sheets, number)
     cols = mapping.columns(sheet)
     known = await datasets(db, case) if case else []
-    headers = {c["header"] for c in cols}
-    match = next((d for d in known if headers <= set(d["mapping"])), None)
+    match = _repeats(known, cols)
+    found = await mapping.suggest(cols, match["mapping"] if match else {})
     out = {
         "table": table(sheets, number, limit=PEEK_ROWS),
         "titles": sheet.header - 1,
         "datasets": known,
         "dataset": match["id"] if match else None,
-        "suggest_error": None,
+        "columns": found["columns"],
+        "suggest_note": found["note"],
     }
-    try:
-        # The person is waiting on the page: a busy model gives way to mapping by hand.
-        out["columns"] = await asyncio.wait_for(
-            mapping.suggest(cols, match["mapping"] if match else {}), PEEK_WAIT
-        )
-    except TimeoutError:
-        out["suggest_error"] = "the local model did not answer in time"
-    except (ValueError, OSError, httpx.HTTPError) as exc:
-        out["suggest_error"] = str(exc) or type(exc).__name__
-    if out["suggest_error"]:
-        known_map = match["mapping"] if match else {}
-        out["columns"] = [
-            c | {"remembered": known_map.get(c["header"]), "suggestions": []}
-            for c in cols
-        ]
     first = [
         c["remembered"] or next(iter(c["suggestions"]), {}).get("field")
         for c in out["columns"]
@@ -111,6 +95,12 @@ async def peek(db, data: bytes, mime: str, filename: str, case: str | None) -> d
     out["people"] = people
     out["suggestion"] = ingest.suggest_doc_type(filename, mime, people)
     return out
+
+
+def _repeats(known: list[dict], cols: list[dict]) -> dict | None:
+    """The dataset in the case whose remembered columns this sheet repeats."""
+    headers = {c["header"] for c in cols}
+    return next((d for d in known if headers <= set(d["mapping"])), None)
 
 
 def _dataset_row(d: Dataset, versions: int) -> dict:
@@ -151,24 +141,23 @@ async def preview(db, acq: Acquisition, blob: Blob, dataset_id, number: int) -> 
     sheets = await sheets_of(blob)
     sheet = _sheet(sheets, number)
     case = _case(acq)
-    dataset = await _dataset(db, dataset_id, case) if dataset_id else None
     cols = mapping.columns(sheet)
+    known = await datasets(db, case)
+    # A later version of a known sheet starts on its dataset, as the peek does.
+    if not dataset_id and (match := _repeats(known, cols)):
+        dataset_id = match["id"]
+    dataset = await _dataset(db, dataset_id, case) if dataset_id else None
     out = {
         "table": table(sheets, number),
-        "datasets": await datasets(db, case),
+        "datasets": known,
         "fields": [{"key": f.key, "label": f.label} for f in mapping.FIELDS],
         "dataset": str(dataset.id) if dataset else None,
         "key_column": dataset.key_column if dataset else None,
-        "suggest_error": None,
     }
     version = await version_of(db, acq)
     out["version"] = await _version_row(db, version) if version else None
-    try:
-        out["columns"] = await mapping.suggest(cols, dataset.mapping if dataset else {})
-    except (ValueError, OSError) as exc:
-        # The embedding server being down is visible, and mapping by hand still works.
-        out["suggest_error"] = str(exc)
-        out["columns"] = [c | {"remembered": None, "suggestions": []} for c in cols]
+    found = await mapping.suggest(cols, dataset.mapping if dataset else {})
+    out["columns"], out["suggest_note"] = found["columns"], found["note"]
     return out
 
 
@@ -207,8 +196,14 @@ async def plan(db, acq: Acquisition, blob: Blob, item: dict) -> dict:
     dataset = None
     if item.get("dataset"):
         dataset = await _dataset(db, item["dataset"], case)
-    elif not (item.get("dataset_name") or "").strip():
+    elif not (name := (item.get("dataset_name") or "").strip()):
         raise ValueError("choose a dataset or name a new one")
+    elif await db.scalar(
+        select(Dataset.id).where(Dataset.investigation == case, Dataset.name == name)
+    ):
+        raise ValueError(
+            f"a dataset named {name} is already in this case; choose it from the list"
+        )
     previous, before = (None, None)
     if dataset is not None:
         previous, before = await _previous(db, dataset)
