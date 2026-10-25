@@ -240,6 +240,7 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
                 s.add(self.keys[name].register(user))
                 users[name] = user
             amal = await principal_for_user(s, users["amal"].id, "amal")
+            blob_dir = self.app.config["BLOB_DIR"]
             blob = await blobs.put(
                 s,
                 "سجل الفرع 999: يوسف الأحمد، أوقف 2013-05-02".encode(),
@@ -309,26 +310,97 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
                 sign,
             )
             await seal_run(s, run, "cd" * 32)
-            review = await prepare(
+
+            async def accept(statement):
+                review = await prepare(
+                    s,
+                    StatementIn(
+                        subject=f"statement:{statement.id}",
+                        prop=Prop.REVIEW,
+                        value={"verdict": "accept", "reason": "matches the register"},
+                        author_id=amal.id,
+                    ),
+                )
+                async with self.app.test_request_context(
+                    "/", headers={"Host": "localhost"}
+                ):
+                    sig = await attest.verify(
+                        s,
+                        users["amal"],
+                        review.hash,
+                        self.keys["amal"].assert_(review.hash),
+                    )
+                await commit(s, review, sig)
+
+            await accept(name)
+            self.fact = name
+
+            # A claim read from OCR text: its span blob has no acquisition and
+            # derives from the acquired scan.
+            self.scan = await blobs.put(
+                s, b"%PDF-1.4 synthetic scan", "application/pdf", blob_dir
+            )
+            self.scan_acq = await record_acquisition(
+                s,
+                blob_sha256=self.scan.sha256,
+                origin="url:https://example.org/register-page-2.pdf",
+                collector_id=amal.id,
+                at=datetime.now(UTC),
+                context={},
+                sensitivity="ordinary",
+                doc_type="detention_register",
+            )
+            text = await blobs.put(
+                s,
+                b"Register page 2: Samir Haddad, held 2014-01-09",
+                "text/plain",
+                blob_dir,
+            )
+            ocr = Run(
+                principal_id=agent.id,
+                tool="ocr",
+                route="local",
+                inputs={"blobs": [self.scan.sha256]},
+                pubkey=run.pubkey,
+            )
+            s.add(ocr)
+            await s.flush()
+            self.derived = await append(
                 s,
                 StatementIn(
-                    subject=f"statement:{name.id}",
-                    prop=Prop.REVIEW,
-                    value={"verdict": "accept", "reason": "matches the register"},
-                    author_id=amal.id,
+                    subject=f"blob:{text.sha256}",
+                    prop=Prop.DERIVED_FROM,
+                    value={"blob": self.scan.sha256},
+                    author_id=agent.id,
+                    run_id=ocr.id,
                 ),
+                sign,
             )
-            async with self.app.test_request_context(
-                "/", headers={"Host": "localhost"}
-            ):
-                sig = await attest.verify(
-                    s,
-                    users["amal"],
-                    review.hash,
-                    self.keys["amal"].assert_(review.hash),
-                )
-            await commit(s, review, sig)
-            self.fact = name
+            await seal_run(s, ocr, "ef" * 32)
+            read = Run(
+                principal_id=agent.id,
+                tool="extract",
+                route="local",
+                inputs={"blobs": [text.sha256]},
+                pubkey=run.pubkey,
+            )
+            s.add(read)
+            await s.flush()
+            self.ocr_fact = await append(
+                s,
+                StatementIn(
+                    subject=f"person:{uuid.uuid4()}",
+                    prop=Prop.NAME,
+                    value={"text": "Samir Haddad", "lang": "en"},
+                    author_id=agent.id,
+                    run_id=read.id,
+                    span_blob=text.sha256,
+                    span={"start": 17, "end": 29},
+                ),
+                sign,
+            )
+            await seal_run(s, read, "ab" * 32)
+            await accept(self.ocr_fact)
 
     async def asyncTearDown(self):
         await ext.engine.dispose()
@@ -540,6 +612,70 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
             manifest = orjson.loads(blobs.read(blob, self.app.config["BLOB_DIR"]))
         self.assertEqual(manifest["blobs"], [])
         self.assertEqual(len(manifest["values"]), 1)  # the name, not the review
+
+    async def test_package_traces_ocr_claim_to_the_acquired_scan(self):
+        async with self.app.test_client() as amal, self.app.test_client() as basel:
+            ha = await self.login(amal, "amal")
+            hb = await self.login(basel, "basel")
+            packages = {}
+            for audience in ("court", "family"):
+                r = await amal.post(
+                    "/api/packages/briefs",
+                    json={"item": {"title": "Samir", "audience": audience}},
+                    headers=ha,
+                )
+                bid = (await r.get_json())["id"]
+                await amal.post(
+                    f"/api/packages/briefs/{bid}/sentences",
+                    json={
+                        "item": {
+                            "text": "The scan names Samir Haddad.",
+                            "statement_ids": [str(self.ocr_fact.id)],
+                        }
+                    },
+                    headers=ha,
+                )
+                r = await amal.post(
+                    f"/api/packages/briefs/{bid}/build", json={}, headers=ha
+                )
+                self.assertEqual(r.status_code, 200, await r.get_data(as_text=True))
+                packages[audience] = await r.get_json()
+            pid, sha = packages["court"]["id"], packages["court"]["manifest_sha256"]
+            await self.attest(amal, ha, "amal", pid, sha)
+            await self.attest(basel, hb, "basel", pid, sha)
+            r = await amal.post(f"/api/packages/{pid}/finalize", json={}, headers=ha)
+            self.assertEqual(r.status_code, 200)
+            body = await (await amal.get(f"/packages/{pid}/download")).get_data()
+            async with ext.async_session_factory() as s:
+                family = await s.get(Package, uuid.UUID(packages["family"]["id"]))
+                family = orjson.loads(
+                    blobs.read(
+                        await s.get(Blob, family.manifest_sha256),
+                        self.app.config["BLOB_DIR"],
+                    )
+                )
+        await ext.engine.dispose()
+        out = self.tmp / "ocr"
+        zipfile.ZipFile(io.BytesIO(body)).extractall(out)
+        self.assertEqual(verify_package(out)[0], [])
+        data = orjson.loads((out / "manifest.json").read_bytes())
+        for manifest in (data, family):
+            ids = {s["id"] for s in manifest["statements"]}
+            self.assertIn(str(self.derived.id), ids)
+            self.assertIn(
+                str(self.scan_acq.id), [a["id"] for a in manifest["acquisitions"]]
+            )
+            self.assertIn(str(self.derived.run_id), [r["id"] for r in manifest["runs"]])
+            chained = {(e["kind"], e["ref"]) for e in manifest["chain"]}
+            rows = (
+                {("statement", i) for i in ids}
+                | {("acquisition", a["id"]) for a in manifest["acquisitions"]}
+                | {("run", r["id"]) for r in manifest["runs"]}
+            )
+            self.assertEqual(chained, rows)
+        # court ships the scan and the OCR text; family ships no bytes
+        self.assertIn(self.scan.sha256, [b["sha256"] for b in data["blobs"]])
+        self.assertEqual(family["blobs"], [])
 
     async def built(self, client, headers):
         r = await client.post(

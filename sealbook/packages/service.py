@@ -165,7 +165,8 @@ def _cited_ids(brief: Brief) -> list[uuid.UUID]:
 
 async def collect(db: AsyncSession, brief: Brief) -> dict:
     """The rows a brief's package discloses: cited statements plus the reviews and
-    attestations about them, their documents' acquisitions and their runs."""
+    attestations about them, the DERIVED_FROM links from their text to the
+    acquired files, those files' acquisitions and the runs."""
     cited = _cited_ids(brief)
     await require_factual(db, cited)
     about = [f"statement:{i}" for i in cited]
@@ -189,6 +190,25 @@ async def collect(db: AsyncSession, brief: Brief) -> dict:
         for s in statements
         if s.subject.startswith("blob:") and s.id in cited
     }
+    # Text read from a PDF, scan or recording has no acquisition of its own: ship
+    # the DERIVED_FROM statements back to the acquired file.
+    frontier, seen = set(shas), {s.id for s in statements}
+    while frontier:
+        derived = (
+            await db.execute(
+                select(Statement, Payload.value["blob"].astext)
+                .outerjoin(Payload, Payload.commitment == Statement.commitment)
+                .where(
+                    Statement.subject.in_([f"blob:{sha}" for sha in frontier]),
+                    Statement.prop == Prop.DERIVED_FROM,
+                )
+            )
+        ).all()
+        statements += [s for s, _ in derived if s.id not in seen]
+        seen |= {s.id for s, _ in derived}
+        frontier = {src for _, src in derived if src} - shas
+        shas |= frontier
+    statements.sort(key=lambda s: s.recorded_at)
     acquisitions = list(
         (
             await db.execute(
