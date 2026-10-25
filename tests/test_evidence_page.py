@@ -6,16 +6,16 @@ import asyncio
 import unittest
 import uuid
 
+import stk.extensions as ext
 from sqlalchemy import select
 
-import stk.extensions as ext
-from stk import blobs
-from stk.discovery import evidence
-from stk.discovery.models import Segment
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Payload, Run, Statement
-from stk.ledger.write import append
-from stk.settings import Config
+from sealbook import blobs
+from sealbook.discovery import evidence
+from sealbook.discovery.models import Segment
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Payload, Run, Statement
+from sealbook.ledger.write import append
+from sealbook.settings import Config
 from tests import test_review
 
 
@@ -128,7 +128,7 @@ class EvidencePageTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await client.get(wrong)).status_code, 404)
 
     async def test_bad_side_by_side_and_erased_source_are_refused(self):
-        from stk.people.data import erase
+        from sealbook.people.data import erase
 
         subject = f"person:{uuid.uuid4()}"
         await self.propose(subject, "أحمد")
@@ -150,7 +150,7 @@ class EvidencePageTest(unittest.IsolatedAsyncioTestCase):
     async def test_ordinary_source_shows_at_once_and_logs_one_view_per_session(self):
         from datetime import UTC, datetime
 
-        from stk.ledger.write import record_acquisition
+        from sealbook.ledger.write import record_acquisition
 
         async with ext.async_session_factory() as s, s.begin():
             sha = (
@@ -214,7 +214,7 @@ class EvidencePageTest(unittest.IsolatedAsyncioTestCase):
             PublicFormat,
         )
 
-        from stk.ledger.write import record_acquisition
+        from sealbook.ledger.write import record_acquisition
 
         here, there = f"person:{uuid.uuid4()}", f"person:{uuid.uuid4()}"
         basis = [await self.propose(here, "محمد")]

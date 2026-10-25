@@ -9,23 +9,23 @@ from datetime import UTC, datetime
 from unittest import mock
 
 import orjson
-from quart_security import hash_password
-from sqlalchemy import func, select
-
 import stk.app  # noqa: F401  (registers the CLI before the seed module loads)
 import stk.extensions as ext
-from stk import blobs
+from quart_security import hash_password
+from sqlalchemy import func, select
 from stk.agent_login import create_agent_login_token
-from stk.agents import brief, linker, read
-from stk.agents.read import FIXED, Claim, Handles
-from stk.ledger.contracts import Prop, Tier
-from stk.ledger.models import Blob, Principal, Run, Statement
-from stk.ledger.write import principal_for_user, record_acquisition, verify_db
-from stk.monitor.seed import Seeder
-from stk.people import data as people_data
-from stk.runs.worker import process
-from stk.settings import Config
 from stk.user.models import Role, User
+
+from sealbook import blobs
+from sealbook.agents import brief, linker, read
+from sealbook.agents.read import FIXED, Claim, Handles
+from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.models import Blob, Principal, Run, Statement
+from sealbook.ledger.write import principal_for_user, record_acquisition, verify_db
+from sealbook.monitor.seed import Seeder
+from sealbook.people import data as people_data
+from sealbook.runs.worker import process
+from sealbook.settings import Config
 from tests.test_people import POSTGRES, _app
 
 CASE = "case-agents"

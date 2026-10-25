@@ -7,16 +7,16 @@ from datetime import date, datetime
 from pathlib import Path
 from unittest import mock
 
+import stk.extensions as ext
 from quart_security import hash_password
 from sqlalchemy import select
-
-import stk.extensions as ext
 from stk.agent_login import create_agent_login_token
-from stk.ledger.contracts import Prop
-from stk.maps import tiles
-from stk.places import boundaries, resolve
-from stk.settings import Config
 from stk.user.models import Role, User
+
+from sealbook.ledger.contracts import Prop
+from sealbook.maps import tiles
+from sealbook.places import boundaries, resolve
+from sealbook.settings import Config
 from tests.test_people import _app
 from tests.test_places import POSTGRES, ResolveCase, ResolveTest
 
@@ -76,7 +76,7 @@ class TileTest(ResolveCase):
         await self.db.commit()
 
     async def body(self, z, lon=36.365, lat=33.558, **f):
-        from stk.maps.scale import _tile_of
+        from sealbook.maps.scale import _tile_of
 
         model = await tiles.build(
             self.db, {"investigation": None, "time": None} | f, tiles.TIERS[:3]
@@ -117,7 +117,7 @@ class TileTest(ResolveCase):
         assert await cache.get(self.db, 1, f, tiles.TIERS[:3]) is not first
 
     async def test_erased_value_leaves_the_tile(self):
-        from stk.ledger.models import Payload, Statement
+        from sealbook.ledger.models import Payload, Statement
 
         sid = self.claim.id
         commitment = await self.db.scalar(

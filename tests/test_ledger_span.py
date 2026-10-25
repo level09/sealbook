@@ -1,6 +1,6 @@
 import unittest
 
-from stk.ledger.span import validate
+from sealbook.ledger.span import validate
 
 
 class SpanTest(unittest.TestCase):

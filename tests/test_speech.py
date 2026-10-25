@@ -14,26 +14,26 @@ from unittest import mock
 
 import numpy as np
 import orjson
+from alembic import command
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
-from alembic import command
-from stk import blobs, speech
-from stk.discovery.models import IndexProgress, Segment
-from stk.ingest import batch, service
-from stk.ledger.contracts import Prop
-from stk.ledger.models import Blob, Payload, Principal, Run, RunEvent, Statement
-from stk.ledger.write import verify_db
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.runs.worker import work_once
-from stk.settings import Config
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+from sealbook import blobs, speech
+from sealbook.app import app as sealbook_app
+from sealbook.discovery.models import IndexProgress, Segment
+from sealbook.ingest import batch, service
+from sealbook.ledger.contracts import Prop
+from sealbook.ledger.models import Blob, Payload, Principal, Run, RunEvent, Statement
+from sealbook.ledger.write import verify_db
+from sealbook.runs.worker import work_once
+from sealbook.settings import Config
+
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 ROOT = Path(__file__).parent.parent / "acceptance"
 PROVENANCE = {
     "model": "large-v3-turbo",
@@ -97,11 +97,11 @@ class SpeechTest(unittest.IsolatedAsyncioTestCase):
         self.enterContext(mock.patch.object(Config, "EMBEDDING_MODEL", None))
         self.enterContext(mock.patch.object(Config, "RUN_MODELS", {"local": "m/l"}))
         self.enterContext(mock.patch.object(Config, "SPEECH_MODEL", "large-v3-turbo"))
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         self.url = make_url(url).set(drivername="postgresql+asyncpg")
         self.tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
         self.enterContext(mock.patch.object(Config, "BLOB_DIR", str(self.tmp / "b")))
@@ -368,7 +368,7 @@ def wer(reference, hypothesis):
 
 class CanonicalTest(unittest.TestCase):
     def test_transcription_output_survives_ledger_canonicalisation(self):
-        from stk.ledger import chain
+        from sealbook.ledger import chain
 
         model = FakeModel()
         segments, done = speech.recognise(
@@ -413,7 +413,7 @@ class LiveSpeechTest(unittest.TestCase):
 
 class TimelineTests(unittest.IsolatedAsyncioTestCase):
     async def test_offsets_map_to_segment_ms_across_runs(self):
-        from stk.discovery import evidence
+        from sealbook.discovery import evidence
 
         runs = {
             "b": {"segments": [{"ms": [5000, 7000], "text": "world"}]},

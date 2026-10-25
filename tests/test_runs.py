@@ -10,24 +10,31 @@ from unittest import mock
 
 import httpx
 import orjson
+from alembic import command
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
-from alembic import command
-from stk import blobs
-from stk.ledger.contracts import Prop, Tier
-from stk.ledger.models import Blob, Principal, Run, RunEvent, Statement, StatementTier
-from stk.ledger.write import record_acquisition, verify_db
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.runs.worker import locate, valid_range, work_once
-from stk.settings import Config
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.models import (
+    Blob,
+    Principal,
+    Run,
+    RunEvent,
+    Statement,
+    StatementTier,
+)
+from sealbook.ledger.write import record_acquisition, verify_db
+from sealbook.runs.worker import locate, valid_range, work_once
+from sealbook.settings import Config
+
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 TEXT = "Register entry: Samir Haddad, born 1990-03-14 in Aleppo."
 NAME = "Samir Haddad"
 
@@ -79,11 +86,11 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         self.enterContext(
             mock.patch.object(Config, "EMBEDDING_URL", "http://local.test")
         )
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         self.url = make_url(url).set(drivername="postgresql+asyncpg")
         blob_dir = self.enterContext(tempfile.TemporaryDirectory())
         self.enterContext(mock.patch.object(Config, "BLOB_DIR", blob_dir))
@@ -117,7 +124,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             self.requests.append(request)
             if error:
                 raise error
-            from stk.discovery.embeddings import QUERY_PREFIX, TEXT_PROBES
+            from sealbook.discovery.embeddings import QUERY_PREFIX, TEXT_PROBES
 
             inputs = orjson.loads(request.content).get("input", [])
             response = body
@@ -319,7 +326,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await self.get_run(run_id)).status, "done")
 
     async def test_embedding_indexes_exact_spans_and_skips_existing_model(self):
-        from stk.discovery.models import Segment, SegmentEmbedding
+        from sealbook.discovery.models import Segment, SegmentEmbedding
 
         run_id = await self.queue(tool="embed", route="local")
         body = {
@@ -345,7 +352,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(self.requests), 1)
 
     async def test_embedding_dimension_failure_leaves_no_search_rows(self):
-        from stk.discovery.models import SegmentEmbedding
+        from sealbook.discovery.models import SegmentEmbedding
 
         run_id = await self.queue(tool="embed", route="local")
         await work_once(
@@ -361,7 +368,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_explicit_rebuild_replaces_an_old_model_alias_index(self):
-        from stk.discovery.models import SegmentEmbedding
+        from sealbook.discovery.models import SegmentEmbedding
 
         body = {
             "model": "served-v1",
@@ -382,8 +389,8 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(await verify_db(s), [])
 
     async def test_actor_change_queues_a_followup_behind_a_running_job(self):
-        from stk.discovery.service import queue_actor
-        from stk.ledger.models import Acquisition
+        from sealbook.discovery.service import queue_actor
+        from sealbook.ledger.models import Acquisition
 
         self.enterContext(
             mock.patch.object(Config, "EMBEDDING_MODEL", "vendor/model-x")
@@ -408,10 +415,10 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             self.assertCountEqual(statuses, ["running", "queued"])
 
     async def test_actor_embedding_is_excluded_after_its_profile_changes(self):
-        from stk.discovery import service
-        from stk.discovery.models import EmbeddingSpace, EntityEmbedding
-        from stk.ledger.contracts import StatementIn
-        from stk.ledger.write import append
+        from sealbook.discovery import service
+        from sealbook.discovery.models import EmbeddingSpace, EntityEmbedding
+        from sealbook.ledger.contracts import StatementIn
+        from sealbook.ledger.write import append
 
         self.enterContext(
             mock.patch.object(Config, "EMBEDDING_MODEL", "vendor/model-x")
@@ -465,8 +472,8 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(found, [])
 
     async def test_new_actor_model_does_not_reuse_an_old_queued_job(self):
-        from stk.discovery.service import queue_actor
-        from stk.ledger.models import Acquisition
+        from sealbook.discovery.service import queue_actor
+        from sealbook.ledger.models import Acquisition
 
         rid = await self.queue(tool="embed_actor", route="local")
         async with self.Session() as s, s.begin():
@@ -484,7 +491,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             self.assertCountEqual(models, ["vendor/model-x", "vendor/new-model"])
 
     async def test_keyword_search_keeps_investigations_separate(self):
-        from stk.discovery.service import search
+        from sealbook.discovery.service import search
 
         for case in ("one", "two"):
             await self.queue(
@@ -508,7 +515,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         import subprocess
         from pathlib import Path
 
-        from stk.ledger.models import Payload
+        from sealbook.ledger.models import Payload
 
         original = (
             Path(__file__).resolve().parents[1] / "acceptance/data/witness_clip.ogg"

@@ -12,29 +12,30 @@ from pathlib import Path
 from unittest import mock
 
 import httpx
+import stk
+import stk.extensions as ext
+from alembic import command
 from PIL import Image
 from quart_security import hash_password
 from sqlalchemy import func, select
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
-import stk.extensions as ext
-from alembic import command
-from stk import netguard
 from stk.agent_login import create_agent_login_token
-from stk.app import create_app
-from stk.ingest import batch, service
-from stk.ledger.models import Acquisition, Blob, Principal, Run
-from stk.ledger.write import verify_db
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.settings import Config
 from stk.user.models import User
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+from sealbook import netguard
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.ingest import batch, service
+from sealbook.ledger.models import Acquisition, Blob, Principal, Run
+from sealbook.ledger.write import verify_db
+from sealbook.settings import Config
+
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 
 
 def jpeg(path: Path, signed: bool) -> bytes:
@@ -57,11 +58,11 @@ def jpeg(path: Path, signed: bool) -> bytes:
 @unittest.skipUnless(POSTGRES, "ingest needs Postgres (set SQLALCHEMY_DATABASE_URI)")
 class IngestTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         self.url = make_url(url).set(drivername="postgresql+asyncpg")
         self.tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
         self.blobs = str(self.tmp / "blobs")
@@ -283,18 +284,18 @@ class IngestTest(unittest.IsolatedAsyncioTestCase):
 @unittest.skipUnless(POSTGRES, "ingest needs Postgres (set SQLALCHEMY_DATABASE_URI)")
 class IngestRoleTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         db_url = (
             make_url(url)
             .set(drivername="postgresql+asyncpg")
             .render_as_string(hide_password=False)
         )
 
-        class TestConfig(Config):
+        class TestConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None

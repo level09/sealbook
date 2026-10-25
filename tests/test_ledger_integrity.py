@@ -7,9 +7,9 @@ from datetime import UTC, datetime
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 
-from stk.ledger.contracts import Prop, Refused, StatementIn, Tier
-from stk.ledger.models import Policy
-from stk.ledger.write import append, commit, prepare, record_acquisition, verify_db
+from sealbook.ledger.contracts import Prop, Refused, StatementIn, Tier
+from sealbook.ledger.models import Policy
+from sealbook.ledger.write import append, commit, prepare, record_acquisition, verify_db
 from tests.passkey import SoftPasskey
 from tests.test_ledger_db import POSTGRES, LedgerDbCase
 

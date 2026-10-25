@@ -11,26 +11,27 @@ from types import SimpleNamespace
 from unittest import mock
 
 import orjson
-from quart_security import hash_password
-from sqlalchemy import select
-
 import stk.app  # noqa: F401
 import stk.extensions as ext
-from stk import blobs
+from quart_security import hash_password
+from sqlalchemy import select
 from stk.agent_login import create_agent_login_token
-from stk.agents import gaps, read
-from stk.agents.read import Claim, Handles
-from stk.cases.service import ensure
-from stk.ledger import write
-from stk.ledger.contracts import Prop, Tier
-from stk.ledger.models import Blob, Principal, Run, Statement
-from stk.ledger.write import principal_for_user, record_acquisition, verify_db
-from stk.monitor.seed import Seeder
-from stk.places.models import Place
-from stk.places.resolve import confirmation
-from stk.runs.worker import process
-from stk.settings import Config
+from stk.app import CORE_STATIC
 from stk.user.models import Role, User
+
+from sealbook import blobs
+from sealbook.agents import gaps, read
+from sealbook.agents.read import Claim, Handles
+from sealbook.cases.service import ensure
+from sealbook.ledger import write
+from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.models import Blob, Principal, Run, Statement
+from sealbook.ledger.write import principal_for_user, record_acquisition, verify_db
+from sealbook.monitor.seed import Seeder
+from sealbook.places.models import Place
+from sealbook.places.resolve import confirmation
+from sealbook.runs.worker import process
+from sealbook.settings import Config
 from tests.test_people import POSTGRES, _app
 
 TODAY = date(2014, 1, 1)
@@ -325,11 +326,11 @@ class GapInterfaceTest(unittest.TestCase):
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-const source = fs.readFileSync('stk/static/js/components/GapFinder.js', 'utf8')
+const source = fs.readFileSync('sealbook/static/js/components/GapFinder.js', 'utf8')
   .replace(/^import \\{(\\w+)\\} .*;$/gm, 'const $1 = {};');
 const {GapFinder} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 const context = {};
-vm.runInNewContext(fs.readFileSync('stk/static/js/vue.min.js', 'utf8'), context);
+vm.runInNewContext(fs.readFileSync(process.argv[1], 'utf8'), context);
 context.Vue.compile(GapFinder.template, {decodeEntities: value => value, onError(e) { throw e; }});
 const filtered = GapFinder.computed.items.call({person: 'one', report: {items: [{person: 'person:one'}, {person: 'person:two'}]}});
 assert.deepEqual(filtered, [{person: 'person:one'}]);
@@ -345,7 +346,14 @@ assert.deepEqual(drawer.queries[0].kinds, ['web']);
 assert.equal(drawer.queries[0].why[0].label, 'Gap');
 """
         result = subprocess.run(
-            [shutil.which("node"), "--input-type=module", "-e", script],
+            [
+                shutil.which("node"),
+                "--input-type=module",
+                "-e",
+                script,
+                # Vue ships with stk.
+                str(CORE_STATIC / "js" / "vue.min.js"),
+            ],
             capture_output=True,
             text=True,
         )

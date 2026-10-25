@@ -7,17 +7,17 @@ import unittest
 from datetime import UTC, datetime
 from pathlib import Path
 
+import stk.extensions as ext
 from PIL import Image
 from sqlalchemy import select
 
-import stk.extensions as ext
-from stk import blobs
-from stk.ledger.contracts import Prop
-from stk.ledger.models import Acquisition, Payload, Run, Statement, StatementTier
-from stk.ledger.write import record_acquisition
-from stk.maps import geotag
-from stk.runs.worker import work_once
-from stk.settings import Config
+from sealbook import blobs
+from sealbook.ledger.contracts import Prop
+from sealbook.ledger.models import Acquisition, Payload, Run, Statement, StatementTier
+from sealbook.ledger.write import record_acquisition
+from sealbook.maps import geotag
+from sealbook.runs.worker import work_once
+from sealbook.settings import Config
 from tests import test_review
 
 

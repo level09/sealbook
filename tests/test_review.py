@@ -10,20 +10,27 @@ from datetime import UTC, datetime
 from unittest import mock
 
 import orjson
+import stk
+import stk.extensions as ext
+from alembic import command
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from quart_security import hash_password
 from quart_security.webauthn import bytes_to_base64url
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
-from stk import blobs
 from stk.agent_login import create_agent_login_token
-from stk.app import create_app
-from stk.ledger.contracts import Prop, Refused, StatementIn
-from stk.ledger.models import (
+from stk.migrations import (
+    build_alembic_config,
+    throwaway_database_url,
+)
+from stk.user.models import Role, User
+
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.ledger.contracts import Prop, Refused, StatementIn
+from sealbook.ledger.models import (
     Payload,
     Principal,
     Run,
@@ -31,18 +38,12 @@ from stk.ledger.models import (
     Statement,
     StatementTier,
 )
-from stk.ledger.write import append, record_acquisition, subject_head
-from stk.migrations import (
-    build_alembic_config,
-    get_database_url,
-    throwaway_database_url,
-)
-from stk.monitor import data
-from stk.settings import Config
-from stk.user.models import Role, User
+from sealbook.ledger.write import append, record_acquisition, subject_head
+from sealbook.monitor import data
+from sealbook.settings import Config
 from tests.passkey import SoftPasskey
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 TEXT = "سجل الموقوفين\nالاسم: محمد\nالاسم: يوسف\nالاسم: أحمد\n"
 
 
@@ -51,18 +52,18 @@ class ReviewTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.enterContext(mock.patch.dict("stk.websocket._clients", {}, clear=True))
         self.enterContext(mock.patch.object(Config, "EMBEDDING_MODEL", None))
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         db_url = (
             make_url(url)
             .set(drivername="postgresql+asyncpg")
             .render_as_string(hide_password=False)
         )
 
-        class TestConfig(Config):
+        class TestConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None
@@ -512,7 +513,7 @@ class ReviewTest(unittest.IsolatedAsyncioTestCase):
     async def test_colleague_correction_notifies_then_replaces_only_the_current_view(
         self,
     ):
-        from stk.people import data as people
+        from sealbook.people import data as people
 
         subject = f"person:{uuid.uuid4()}"
         original = await self.propose(subject, "محمد")
@@ -589,8 +590,8 @@ class ReviewTest(unittest.IsolatedAsyncioTestCase):
     async def test_confirmed_same_recording_updates_corroboration_and_undo_restores_it(
         self,
     ):
-        from stk.ledger.models import Policy
-        from stk.ledger.write import gate_input
+        from sealbook.ledger.models import Policy
+        from sealbook.ledger.write import gate_input
 
         async with ext.async_session_factory() as s, s.begin():
             s.add(
@@ -681,7 +682,7 @@ class ReviewTest(unittest.IsolatedAsyncioTestCase):
     async def test_accepted_correction_removes_old_corroboration_and_undo_restores_it(
         self,
     ):
-        from stk.ledger.models import Policy
+        from sealbook.ledger.models import Policy
 
         async with ext.async_session_factory() as s, s.begin():
             s.add(
@@ -878,9 +879,9 @@ class ReviewTest(unittest.IsolatedAsyncioTestCase):
         import numpy as np
         from PIL import Image
 
-        from stk.discovery import service
-        from stk.ledger.models import Acquisition, Blob
-        from stk.runs.worker import work_once
+        from sealbook.discovery import service
+        from sealbook.ledger.models import Acquisition, Blob
+        from sealbook.runs.worker import work_once
 
         image = Image.fromarray(
             np.random.default_rng(7).integers(0, 256, (256, 256, 3), dtype=np.uint8)

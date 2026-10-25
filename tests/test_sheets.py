@@ -11,20 +11,20 @@ from unittest import mock
 
 import httpx
 import orjson
+import stk.extensions as ext
 from openpyxl import Workbook
 from sqlalchemy import select
 
-import stk.extensions as ext
-from stk import blobs
-from stk.ledger.contracts import Prop, Tier
-from stk.ledger.models import Acquisition, Blob, Run, Statement, StatementTier
-from stk.ledger.span import validate
-from stk.ledger.write import record_acquisition, verify_db
-from stk.runs.worker import work_once
-from stk.settings import Config
-from stk.sheets import dates, mapping, parse
-from stk.sheets.extract import ROWS_PER_CALL, pin, value_of
-from stk.sheets.models import Dataset, DatasetVersion
+from sealbook import blobs
+from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.models import Acquisition, Blob, Run, Statement, StatementTier
+from sealbook.ledger.span import validate
+from sealbook.ledger.write import record_acquisition, verify_db
+from sealbook.runs.worker import work_once
+from sealbook.settings import Config
+from sealbook.sheets import dates, mapping, parse
+from sealbook.sheets.extract import ROWS_PER_CALL, pin, value_of
+from sealbook.sheets.models import Dataset, DatasetVersion
 from tests import test_review
 
 DATA = Path(__file__).resolve().parent.parent / "acceptance" / "data"
@@ -467,7 +467,6 @@ class SheetFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(table["header"][0], "No.")
 
         from quart_security import hash_password
-
         from stk.user.models import User
 
         async with ext.async_session_factory() as s, s.begin():
@@ -489,7 +488,7 @@ class SheetFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(r.status_code, 403)
 
     async def test_ordinary_sheet_logs_a_view_and_is_not_read_automatically(self):
-        from stk.ingest.service import queue_processing
+        from sealbook.ingest.service import queue_processing
 
         sha, acq = await self.sheet(V1)
         async with ext.async_session_factory() as s, s.begin():

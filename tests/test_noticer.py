@@ -10,25 +10,25 @@ from datetime import UTC, date, datetime
 from types import SimpleNamespace
 from unittest import mock
 
+import stk.app  # noqa: F401 (registers the CLI before the seed module loads)
+import stk.extensions as ext
 from jsonschema import Draft202012Validator
 from quart_security import hash_password
 from sqlalchemy import func, select
-
-import stk.app  # noqa: F401 (registers the CLI before the seed module loads)
-import stk.extensions as ext
-from stk import blobs
 from stk.agent_login import create_agent_login_token
-from stk.agents import noticer, read, tasks
-from stk.agents.models import AgentTask
-from stk.cases.service import ensure
-from stk.discovery.models import EmbeddingSpace, Segment, SegmentEmbedding
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Blob, Principal, Run, Statement, StatementTier
-from stk.ledger.write import append, principal_for_user, record_acquisition
-from stk.monitor.seed import Seeder
-from stk.runs.worker import TOOLS, process
-from stk.settings import Config
 from stk.user.models import Role, User
+
+from sealbook import blobs
+from sealbook.agents import noticer, read, tasks
+from sealbook.agents.models import AgentTask
+from sealbook.cases.service import ensure
+from sealbook.discovery.models import EmbeddingSpace, Segment, SegmentEmbedding
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Blob, Principal, Run, Statement, StatementTier
+from sealbook.ledger.write import append, principal_for_user, record_acquisition
+from sealbook.monitor.seed import Seeder
+from sealbook.runs.worker import TOOLS, process
+from sealbook.settings import Config
 from tests.test_agents import claim
 from tests.test_people import POSTGRES, _app
 
@@ -264,7 +264,7 @@ class ValidateTest(unittest.TestCase):
 
 class RegistrationTest(unittest.TestCase):
     def test_tool_kind_and_words_are_registered(self):
-        from stk.monitor.data import TOOL_WORDS
+        from sealbook.monitor.data import TOOL_WORDS
 
         self.assertIs(TOOLS["notice"], noticer.notice)
         self.assertEqual(tasks.KINDS["noticer"][:3], ("notice", "Noticer", True))

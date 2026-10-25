@@ -3,7 +3,7 @@ from unittest import mock
 
 import httpx
 
-from stk import netguard
+from sealbook import netguard
 
 
 class NetguardTest(unittest.IsolatedAsyncioTestCase):

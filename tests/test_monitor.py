@@ -10,36 +10,37 @@ from io import BytesIO
 from unittest import mock
 
 import orjson
+import stk
+import stk.extensions as ext
+from alembic import command
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from PIL import Image
 from quart_security import hash_password
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
-from stk import blobs
 from stk.agent_login import create_agent_login_token
-from stk.app import create_app
-from stk.cases.service import ensure as ensure_case
-from stk.ledger.contracts import Event, Prop, StatementIn
-from stk.ledger.models import Principal, Run
-from stk.ledger.write import append, emit, record_acquisition
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.monitor import filter as mfilter
-from stk.monitor.data import map_layer, track, tracks
-from stk.places import cli as places
-from stk.places import resolve
-from stk.settings import Config
 from stk.user.models import Role, User
+
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.cases.service import ensure as ensure_case
+from sealbook.ledger.contracts import Event, Prop, StatementIn
+from sealbook.ledger.models import Principal, Run
+from sealbook.ledger.write import append, emit, record_acquisition
+from sealbook.monitor import filter as mfilter
+from sealbook.monitor.data import map_layer, track, tracks
+from sealbook.places import cli as places
+from sealbook.places import resolve
+from sealbook.settings import Config
 from tests.passkey import attester
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 
 
 def png(color: str) -> bytes:
@@ -224,8 +225,8 @@ class TrackTest(unittest.TestCase):
         self.assertEqual(item["count"], 2)
 
     def test_every_worker_tool_has_words(self):
-        from stk.monitor.data import TOOL_WORDS
-        from stk.runs.worker import TOOLS
+        from sealbook.monitor.data import TOOL_WORDS
+        from sealbook.runs.worker import TOOLS
 
         self.assertLessEqual(set(TOOLS), set(TOOL_WORDS))
 
@@ -244,18 +245,18 @@ class TrackTest(unittest.TestCase):
 @unittest.skipUnless(POSTGRES, "monitor needs Postgres (set SQLALCHEMY_DATABASE_URI)")
 class MonitorTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         db_url = (
             make_url(url)
             .set(drivername="postgresql+asyncpg")
             .render_as_string(hide_password=False)
         )
 
-        class TestConfig(Config):
+        class TestConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None

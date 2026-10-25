@@ -6,19 +6,26 @@ import unittest
 import uuid
 from datetime import UTC, datetime, timedelta
 
+import stk
+import stk.extensions as ext
+from alembic import command
 from quart_security import hash_password
 from sqlalchemy import insert, select
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
 from stk.agent_login import create_agent_login_token
-from stk.app import create_app
-from stk.collaboration.models import Assignment, Notification
-from stk.desk.data import title
-from stk.discovery.models import FindingKey
-from stk.ledger.contracts import Prop, Tier
-from stk.ledger.models import (
+from stk.migrations import (
+    build_alembic_config,
+    throwaway_database_url,
+)
+from stk.user.models import Role, User
+
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.collaboration.models import Assignment, Notification
+from sealbook.desk.data import title
+from sealbook.discovery.models import FindingKey
+from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.models import (
     Acquisition,
     Blob,
     Payload,
@@ -27,15 +34,9 @@ from stk.ledger.models import (
     Statement,
     StatementTier,
 )
-from stk.migrations import (
-    build_alembic_config,
-    get_database_url,
-    throwaway_database_url,
-)
-from stk.settings import Config
-from stk.user.models import Role, User
+from sealbook.settings import Config
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 X, Y = "case-desk-test-x", "case-desk-test-y"
 
 
@@ -59,18 +60,18 @@ class TitleTest(unittest.TestCase):
 @unittest.skipUnless(POSTGRES, "the desk needs Postgres (set SQLALCHEMY_DATABASE_URI)")
 class DeskTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         db_url = (
             make_url(url)
             .set(drivername="postgresql+asyncpg")
             .render_as_string(hide_password=False)
         )
 
-        class TestConfig(Config):
+        class TestConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None

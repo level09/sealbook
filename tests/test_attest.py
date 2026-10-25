@@ -4,44 +4,45 @@ import unittest
 import uuid
 from datetime import datetime
 
+import stk
+import stk.extensions as ext
+from alembic import command
 from quart_security import hash_password
 from sqlalchemy import delete, select
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
-from stk.app import create_app
-from stk.ledger import attest
-from stk.ledger.contracts import Prop, Refused, StatementIn
-from stk.ledger.models import StatementTier
-from stk.ledger.write import append, commit, prepare, principal_for_user, verify_db
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.settings import Config
 from stk.user.models import User, WebAuthn
+
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.ledger import attest
+from sealbook.ledger.contracts import Prop, Refused, StatementIn
+from sealbook.ledger.models import StatementTier
+from sealbook.ledger.write import append, commit, prepare, principal_for_user, verify_db
+from sealbook.settings import Config
 from tests.passkey import SoftPasskey
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 
 
 @unittest.skipUnless(POSTGRES, "ledger needs Postgres (set SQLALCHEMY_DATABASE_URI)")
 class AttestTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         db_url = (
             make_url(url)
             .set(drivername="postgresql+asyncpg")
             .render_as_string(hide_password=False)
         )
 
-        class TestConfig(Config):
+        class TestConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None

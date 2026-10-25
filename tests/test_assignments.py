@@ -5,11 +5,11 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from unittest import mock
 
+import stk.extensions as ext
 from sqlalchemy import select, text, update
 from sqlalchemy.exc import DBAPIError
 
-import stk.extensions as ext
-from stk.collaboration.models import Assignment, AssignmentEvent, Notification
+from sealbook.collaboration.models import Assignment, AssignmentEvent, Notification
 from tests.collab_case import POSTGRES, CollabCase
 
 
@@ -74,7 +74,7 @@ class AssignmentTest(CollabCase):
             def now(cls, tz=None):
                 return datetime(2026, 10, 25, 3, tzinfo=UTC)
 
-        with mock.patch("stk.collaboration.views.datetime", At):
+        with mock.patch("sealbook.collaboration.views.datetime", At):
             ok = await self.bulk(alice, self.blob_subjects(), due="2026-10-24")
             late = await self.bulk(alice, self.blob_subjects(), due="2026-10-23")
         self.assertEqual((ok[0], late[0]), (201, 400))

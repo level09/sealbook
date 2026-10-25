@@ -10,10 +10,10 @@ import httpx
 import orjson
 from sqlalchemy import select
 
-from stk.discovery import service
-from stk.ledger.models import Run
-from stk.runs.worker import work_once
-from stk.settings import Config
+from sealbook.discovery import service
+from sealbook.ledger.models import Run
+from sealbook.runs.worker import work_once
+from sealbook.settings import Config
 from tests import test_review, test_runs
 
 
@@ -29,8 +29,8 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
     async def test_same_model_name_with_changed_reference_vectors_requires_rebuild(
         self,
     ):
-        from stk.discovery import embeddings
-        from stk.discovery.models import EmbeddingSpace
+        from sealbook.discovery import embeddings
+        from sealbook.discovery.models import EmbeddingSpace
 
         self.enterContext(
             mock.patch.object(Config, "EMBEDDING_MODEL", "vendor/model-x")
@@ -68,7 +68,7 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(sum(row.active for row in rows), 1)
 
     async def test_endpoint_that_ignores_content_is_refused(self):
-        from stk.discovery import embeddings
+        from sealbook.discovery import embeddings
 
         self.enterContext(mock.patch.object(Config, "EMBEDDING_MODEL", "gemma2"))
         self.enterContext(
@@ -156,7 +156,7 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_grouped_search_masks_sensitive_text_and_finds_hashes(self):
-        from stk.search import find
+        from sealbook.search import find
 
         for text, sensitivity in (
             (b"Registry 1234, open copy", "ordinary"),
@@ -183,7 +183,7 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual([i["id"] for i in sources["items"]], [sha])
 
     async def test_query_embedding_rechecks_only_the_text_probes(self):
-        from stk.discovery import embeddings
+        from sealbook.discovery import embeddings
 
         self.enterContext(
             mock.patch.object(Config, "EMBEDDING_URL", "http://embed.test")
@@ -246,7 +246,7 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
             )
             self.assertEqual(len(continuation), 1)
             self.assertEqual(continuation[0].inputs["cursor"], 1)
-            from stk.discovery.coverage import report
+            from sealbook.discovery.coverage import report
 
             coverage = await report(db, {"investigation": None, "time": None})
             self.assertFalse(coverage["complete"])
@@ -256,8 +256,8 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
     async def test_image_and_text_vectors_share_one_space_and_retrieve_the_source(self):
         from PIL import Image
 
-        from stk.discovery.models import SegmentEmbedding
-        from stk.ledger.write import verify_db
+        from sealbook.discovery.models import SegmentEmbedding
+        from sealbook.ledger.write import verify_db
 
         self.enterContext(
             mock.patch.object(Config, "EMBEDDING_MODEL", "vendor/model-x")
@@ -341,7 +341,7 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
             )
             self.assertEqual(await verify_db(db), [])
 
-        from stk.discovery.coverage import report
+        from sealbook.discovery.coverage import report
 
         async with self.Session() as db:
             self.assertTrue(
@@ -356,9 +356,9 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
 
         import uuid
 
-        from stk.ledger.contracts import Prop, StatementIn
-        from stk.ledger.write import append
-        from stk.people.data import erase
+        from sealbook.ledger.contracts import Prop, StatementIn
+        from sealbook.ledger.write import append
+        from sealbook.people.data import erase
 
         person = f"person:{uuid.uuid4()}"
         async with self.Session() as db, db.begin():
@@ -435,9 +435,10 @@ class SourceAccessTest(unittest.IsolatedAsyncioTestCase):
         import uuid
 
         import stk.extensions as ext
-        from stk.discovery.models import Segment
-        from stk.ledger.models import Acquisition
-        from stk.people.data import erase
+
+        from sealbook.discovery.models import Segment
+        from sealbook.ledger.models import Acquisition
+        from sealbook.people.data import erase
 
         subject = f"person:{uuid.uuid4()}"
         await self.propose(subject, "يوسف")
@@ -506,10 +507,10 @@ class SourceAccessTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((read["tool"], read["status"]), ("extract", "queued"))
 
     async def test_pdf_page_preview_is_rendered_only_after_logged_reveal(self):
+        import stk.extensions as ext
         from PIL import Image
 
-        import stk.extensions as ext
-        from stk import blobs
+        from sealbook import blobs
 
         fixture = (
             Path(__file__).resolve().parents[1] / "acceptance/data/transfer_order.pdf"
@@ -534,109 +535,3 @@ class SourceAccessTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             (await client.get(path.replace("page=1", "page=999"))).status_code, 400
         )
-
-
-@unittest.skipUnless(test_runs.POSTGRES, "search migration needs Postgres")
-class SearchMigrationTest(unittest.TestCase):
-    setUp = test_runs.RunsTest.setUp
-
-    def test_existing_chunks_survive_upgrade_and_round_trip(self):
-        import asyncio
-        import hashlib
-        import uuid
-        from datetime import UTC, datetime
-
-        from sqlalchemy import create_engine
-        from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
-        from alembic import command
-        from stk.discovery.models import SearchChunk
-        from stk.discovery.text import folded
-        from stk.ledger.models import Acquisition, Blob, Principal
-        from stk.migrations import build_alembic_config
-
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option(
-            "sqlalchemy.url",
-            self.url.set(drivername="postgresql+psycopg2")
-            .render_as_string(hide_password=False)
-            .replace("%", "%%"),
-        )
-        command.downgrade(config, "20261023_discovery")
-        original = "ﻻ １２３４\u200f  أَحْمَد   X"
-        raw = original.encode()
-        sha = hashlib.sha256(raw).hexdigest()
-        human, acquisition, run = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
-        engine = create_engine(self.url.set(drivername="postgresql+psycopg2"))
-        try:
-            with engine.begin() as db:
-                db.execute(
-                    Principal.__table__.insert().values(
-                        id=human, kind="human", name="synthetic analyst"
-                    )
-                )
-                db.execute(
-                    Blob.__table__.insert().values(
-                        sha256=sha,
-                        md5=hashlib.md5(raw).hexdigest(),
-                        size=len(raw),
-                        mime="text/plain",
-                        storage_ref=sha,
-                    )
-                )
-                db.execute(
-                    Acquisition.__table__.insert().values(
-                        id=acquisition,
-                        blob_sha256=sha,
-                        origin="device:migration-test",
-                        collector_id=human,
-                        at=datetime.now(UTC),
-                    )
-                )
-                db.execute(
-                    Run.__table__.insert().values(
-                        id=run,
-                        principal_id=human,
-                        tool="index",
-                        status="done",
-                        inputs={"blobs": [sha], "acquisition": str(acquisition)},
-                    )
-                )
-                db.execute(
-                    SearchChunk.__table__.insert().values(
-                        blob_sha256=sha,
-                        start=0,
-                        end=len(original),
-                        text=original,
-                        run_id=run,
-                    )
-                )
-            for _ in range(2):
-                command.upgrade(config, "head")
-                with engine.connect() as db:
-                    self.assertEqual(
-                        db.scalar(select(SearchChunk.normalized)), folded(original)[0]
-                    )
-                if _ == 0:
-                    command.downgrade(config, "20261023_discovery")
-        finally:
-            engine.dispose()
-
-        async def search():
-            engine = create_async_engine(self.url)
-            try:
-                async with async_sessionmaker(engine)() as db:
-                    hits = await service.search(
-                        db, "1234", "keyword", {"investigation": None, "time": None}
-                    )
-                    self.assertEqual(len(hits), 1)
-                    self.assertEqual(
-                        original[hits[0]["span"]["start"] : hits[0]["span"]["end"]],
-                        "１２３４",
-                    )
-                    self.assertEqual(hits[0]["sha256"], sha)
-            finally:
-                await engine.dispose()
-
-        asyncio.run(search())

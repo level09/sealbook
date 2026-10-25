@@ -9,36 +9,37 @@ from datetime import UTC, date, datetime
 from io import BytesIO
 from unittest import mock
 
+import stk
+import stk.extensions as ext
+from alembic import command
 from PIL import Image
 from quart_security import hash_password
 from sqlalchemy import delete, select
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
-from stk import blobs
 from stk.agent_login import create_agent_login_token
-from stk.app import create_app
-from stk.discovery.models import FindingKey
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Payload, Principal, Run, Statement, StatementTier
-from stk.ledger.offline_sigs import gesture_digest
-from stk.ledger.write import append, record_acquisition, verify_db
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.people.data import erase
-from stk.places import resolve
-from stk.places.models import Place, point
-from stk.review import findings
-from stk.runs.worker import work_once
-from stk.settings import Config
 from stk.user.models import Role, User
+
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.discovery.models import FindingKey
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Payload, Principal, Run, Statement, StatementTier
+from sealbook.ledger.offline_sigs import gesture_digest
+from sealbook.ledger.write import append, record_acquisition, verify_db
+from sealbook.people.data import erase
+from sealbook.places import resolve
+from sealbook.places.models import Place, point
+from sealbook.review import findings
+from sealbook.runs.worker import work_once
+from sealbook.settings import Config
 from tests.passkey import SoftPasskey, attester
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 JUL13 = (date(2013, 7, 1), date(2013, 7, 31))
 
 
@@ -47,18 +48,18 @@ class ReviewFindingsTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.enterContext(mock.patch.dict("stk.websocket._clients", {}, clear=True))
         self.enterContext(mock.patch.object(Config, "EMBEDDING_MODEL", None))
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         db_url = (
             make_url(url)
             .set(drivername="postgresql+asyncpg")
             .render_as_string(hide_password=False)
         )
 
-        class TestConfig(Config):
+        class TestConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None
@@ -497,7 +498,7 @@ def orjson_key(sig):
 
 class GestureSignatureTest(unittest.TestCase):
     def test_batch_sig_covers_each_listed_row_only(self):
-        from stk.ledger.offline_sigs import verify_statement_signature
+        from sealbook.ledger.offline_sigs import verify_statement_signature
 
         hashes = ["aa" * 32, "bb" * 32]
         sig = SoftPasskey().sig(gesture_digest(hashes)) | {"batch": hashes}
@@ -511,7 +512,7 @@ class GestureSignatureTest(unittest.TestCase):
         assert gesture_digest(["aa" * 32]) != "aa" * 32
 
     def test_malformed_batches_refused(self):
-        from stk.ledger.offline_sigs import GESTURE_MAX, verify_statement_signature
+        from sealbook.ledger.offline_sigs import GESTURE_MAX, verify_statement_signature
 
         row = "aa" * 32
         many = [f"{i:064x}" for i in range(GESTURE_MAX)] + [row]

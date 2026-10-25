@@ -2,8 +2,8 @@ import unittest
 import uuid
 from datetime import datetime
 
-from stk.ledger import chain
-from stk.ledger.contracts import (
+from sealbook.ledger import chain
+from sealbook.ledger.contracts import (
     EXTRACTED_PROPS,
     GateInput,
     PolicyRow,
@@ -11,7 +11,7 @@ from stk.ledger.contracts import (
     Prop,
     Tier,
 )
-from stk.ledger.gate import gate, resolve
+from sealbook.ledger.gate import gate, resolve
 
 
 class CanonTest(unittest.TestCase):

@@ -1,8 +1,8 @@
 import unittest
 from datetime import date
 
-from stk.discovery.intervals import interval, overlap
-from stk.ledger.contracts import Prop
+from sealbook.discovery.intervals import interval, overlap
+from sealbook.ledger.contracts import Prop
 
 
 class IntervalTest(unittest.TestCase):

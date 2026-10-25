@@ -13,9 +13,9 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from quart_security.utils import naive_utcnow
 from quart_security.webauthn import bytes_to_base64url
-
-from stk.ledger.models import Principal
 from stk.user.models import User, WebAuthn
+
+from sealbook.ledger.models import Principal
 
 
 class SoftPasskey:

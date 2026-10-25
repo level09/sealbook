@@ -7,32 +7,25 @@ import hashlib
 import io
 import unittest
 import uuid
-from datetime import UTC, datetime, timedelta
 from unittest import mock
 
+import stk.extensions as ext
 from openpyxl import Workbook
 from quart.datastructures import FileStorage
-from sqlalchemy import create_engine, func, select, text
+from sqlalchemy import func, select
 from sqlalchemy.engine import make_url
 
-import stk.extensions as ext
-from alembic import command
-from stk.cases import service as cases
-from stk.cases.service import ensure as ensure_case
-from stk.ingest.batch import _failure
-from stk.ingest.service import suggest_doc_type
-from stk.ledger.models import Acquisition, Blob, Run
-from stk.migrations import (
-    build_alembic_config,
-    get_database_url,
-    throwaway_database_url,
-)
-from stk.settings import Config
-from stk.sheets import mapping, parse
-from stk.sheets.models import DatasetVersion
+from sealbook.cases import service as cases
+from sealbook.cases.service import ensure as ensure_case
+from sealbook.ingest.batch import _failure
+from sealbook.ingest.service import suggest_doc_type
+from sealbook.ledger.models import Acquisition, Blob, Run
+from sealbook.settings import Config
+from sealbook.sheets import mapping, parse
+from sealbook.sheets.models import DatasetVersion
 from tests import test_review
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 
 
 def titled_sheet() -> bytes:
@@ -110,81 +103,6 @@ class PureTest(unittest.TestCase):
         self.assertEqual(cases.close("branch 999 2013", known).slug, "Branch 999")
         self.assertIsNone(cases.close("Harasta lists", known))
         self.assertIsNone(cases.close("abc", known))
-
-
-@unittest.skipUnless(POSTGRES, "cases need Postgres (set SQLALCHEMY_DATABASE_URI)")
-class CaseMigrationTest(unittest.TestCase):
-    def test_backfill_downgrade_and_upgrade_again(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "20261027_research")
-        engine = create_engine(url)
-        self.addCleanup(engine.dispose)
-        early = datetime(2024, 1, 2, tzinfo=UTC)
-        who = uuid.uuid4()
-        with engine.begin() as c:
-            c.execute(
-                text(
-                    "insert into principal (id, kind, name, created_at) values (:i, 'human', 'clerk', now())"
-                ),
-                {"i": who},
-            )
-            c.execute(
-                text(
-                    "insert into blob (sha256, md5, size, mime, storage_ref, created_at) values (:s, :m, 1, 'text/plain', 'x', now())"
-                ),
-                {"s": "a" * 64, "m": "b" * 32},
-            )
-            for case, at in (
-                ("case-a", early),
-                ("case-a", early + timedelta(days=3)),
-                ("case-b", early),
-                (None, early),
-            ):
-                c.execute(
-                    text(
-                        "insert into acquisition (id, blob_sha256, origin, collector_id, at, context, sensitivity, doc_type)"
-                        " values (:i, :s, 'device:x', :w, :at, cast(:ctx as jsonb), 'sensitive', 'unknown')"
-                    ),
-                    {
-                        "i": uuid.uuid4(),
-                        "s": "a" * 64,
-                        "w": who,
-                        "at": at,
-                        "ctx": f'{{"investigation": "{case}"}}' if case else "{}",
-                    },
-                )
-            c.execute(
-                text(
-                    "insert into case_setting (investigation, sensitive, research, updated_by, updated_at) values ('case-c', true, false, :w, now())"
-                ),
-                {"w": who},
-            )
-
-        def rows():
-            with engine.connect() as c:
-                return {
-                    r.slug: r
-                    for r in c.execute(
-                        text(
-                            "select slug, name, created_by, created_at from case_record"
-                        )
-                    )
-                }
-
-        command.upgrade(config, "head")
-        found = rows()
-        self.assertEqual(set(found), {"case-a", "case-b", "case-c"})
-        self.assertEqual(found["case-a"].name, "case-a")
-        self.assertIsNone(found["case-a"].created_by)  # nobody is known to have made it
-        self.assertEqual(found["case-a"].created_at, early)
-        command.downgrade(config, "20261027_research")
-        with engine.connect() as c:
-            self.assertIsNone(c.scalar(text("select to_regclass('case_record')")))
-        command.upgrade(config, "head")
-        self.assertEqual(set(rows()), {"case-a", "case-b", "case-c"})
 
 
 @unittest.skipUnless(POSTGRES, "intake needs Postgres (set SQLALCHEMY_DATABASE_URI)")

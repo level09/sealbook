@@ -18,22 +18,29 @@ from pathlib import Path
 from unittest import mock
 
 import orjson
+import stk
+import stk.extensions as ext
+from alembic import command
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from quart_security import hash_password
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
-from stk import blobs
 from stk.agent_login import create_agent_login_token
-from stk.app import create_app
-from stk.ledger import attest, merkle
-from stk.ledger.contracts import Prop, Refused, StatementIn
-from stk.ledger.models import Blob, Chain, Principal, Run, Statement
-from stk.ledger.verify_package import verify_package
-from stk.ledger.write import (
+from stk.migrations import (
+    build_alembic_config,
+    throwaway_database_url,
+)
+from stk.user.models import Role, User
+
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.ledger import attest, merkle
+from sealbook.ledger.contracts import Prop, Refused, StatementIn
+from sealbook.ledger.models import Blob, Chain, Principal, Run, Statement
+from sealbook.ledger.verify_package import verify_package
+from sealbook.ledger.write import (
     append,
     commit,
     prepare,
@@ -42,18 +49,12 @@ from stk.ledger.write import (
     seal_run,
     verify_db,
 )
-from stk.migrations import (
-    build_alembic_config,
-    get_database_url,
-    throwaway_database_url,
-)
-from stk.packages import service
-from stk.packages.models import Package, Sentence
-from stk.settings import Config
-from stk.user.models import Role, User
+from sealbook.packages import service
+from sealbook.packages.models import Package, Sentence
+from sealbook.settings import Config
 from tests.passkey import SoftPasskey
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 
 
 def make_signing_cert(directory: Path) -> tuple[str, str]:
@@ -133,7 +134,7 @@ def make_signing_cert(directory: Path) -> tuple[str, str]:
 
 
 class FakeAnchor:
-    """Stands in for stk.anchor.service: one real Merkle batch over the whole chain and a
+    """Stands in for sealbook.anchor.service: one real Merkle batch over the whole chain and a
     partner-held root file."""
 
     def __init__(self):
@@ -179,11 +180,11 @@ class FakeAnchor:
 @unittest.skipUnless(POSTGRES, "packages need Postgres (set SQLALCHEMY_DATABASE_URI)")
 class PackagesTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         db_url = (
             make_url(url)
             .set(drivername="postgresql+asyncpg")
@@ -192,7 +193,7 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
         tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
         cert, key = make_signing_cert(tmp)
 
-        class TestConfig(Config):
+        class TestConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None
@@ -212,7 +213,9 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
         self.anchor = FakeAnchor()
         for name in ("anchored", "proofs"):
             self.enterContext(
-                mock.patch(f"stk.anchor.service.{name}", getattr(self.anchor, name))
+                mock.patch(
+                    f"sealbook.anchor.service.{name}", getattr(self.anchor, name)
+                )
             )
 
     async def asyncSetUp(self):
@@ -463,7 +466,7 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
         problems, _ = verify_package(out)
         self.assertEqual(problems, [])
         cli = subprocess.run(
-            [sys.executable, "-m", "stk.ledger.verify_package", str(out)],
+            [sys.executable, "-m", "sealbook.ledger.verify_package", str(out)],
             capture_output=True,
             text=True,
         )

@@ -5,13 +5,13 @@ import unittest
 import uuid
 
 import orjson
-from sqlalchemy import select
-
 import stk.extensions as ext
-import tests.test_review as base
-from stk.monitor.data import display
-from stk.review.views import safe_next
+from sqlalchemy import select
 from stk.user.models import User
+
+import tests.test_review as base
+from sealbook.monitor.data import display
+from sealbook.review.views import safe_next
 from tests.passkey import SoftPasskey
 
 
@@ -119,8 +119,8 @@ class ReviewPageTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(missing.status_code, 404)
 
     async def test_reveal_all_logs_one_access_per_source_and_unblinds(self):
-        from stk.ledger.contracts import Prop
-        from stk.ledger.models import Payload, Statement
+        from sealbook.ledger.contracts import Prop
+        from sealbook.ledger.models import Payload, Statement
 
         st, _, _ = await self.ask()
         other = await self.client("colleague@example.com")
@@ -180,7 +180,7 @@ class ReviewPageTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(body["reason"], "no_passkey")
         self.assertEqual(body["setup_url"], "/wan-register?next=%2Freview%3Fbox%3Dopen")
         # Nothing is held for a prompt that cannot happen.
-        from stk.review.views import PENDING
+        from sealbook.review.views import PENDING
 
         # PENDING is process-wide; other tests may leave their own entries.
         self.assertFalse([key for key in PENDING if key[0] == uid])

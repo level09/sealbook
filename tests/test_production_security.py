@@ -7,21 +7,22 @@ import unittest
 from unittest.mock import AsyncMock, patch
 
 import pyotp
+import stk
+import stk.extensions as ext
 from quart import request
 from quart.testing.connections import WebsocketDisconnectError
 from quart_security import hash_password
 from quart_session.sessions import RedisSessionInterface
 from sqlalchemy import select
-
-import stk.extensions as ext
-from stk.app import create_app
 from stk.migrations import portable_tables
 from stk.public.views import handle_oauth_callback
-from stk.settings import Config
 from stk.user.models import Base, OAuth, Role, User
 
+from sealbook.app import create_app
+from sealbook.settings import Config
 
-class TestConfig(Config):
+
+class TestConfig(stk.TestingConfig, Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "STK_TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:"
@@ -278,7 +279,6 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
         import tempfile
 
         from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
         from stk.utils.ratelimit import consume_limit
 
         with tempfile.TemporaryDirectory() as directory:
@@ -452,7 +452,7 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
                         new=AsyncMock(return_value=discovery),
                     ),
                     patch("stk.public.views.get_google_client", return_value=oauth),
-                    patch("stk.public.views.httpx.AsyncClient", return_value=http),
+                    patch("stk.public.views.httpx2.AsyncClient", return_value=http),
                 ):
                     await client.get(
                         "/login/google/callback?code=fixture&state=" + args["state"][0]
@@ -523,7 +523,6 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_activity_does_not_broadcast_uncommitted_data(self):
         from quart import g
-
         from stk.user.models import Activity
         from stk.websocket import _clients
 

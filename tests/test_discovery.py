@@ -4,8 +4,8 @@ import unittest
 
 import numpy as np
 
-from stk.discovery.audio import align, landmarks
-from stk.discovery.compute import chunks, fingerprint, match_frames, rrf, vector
+from sealbook.discovery.audio import align, landmarks
+from sealbook.discovery.compute import chunks, fingerprint, match_frames, rrf, vector
 
 
 def frame(bits, ms, quality=100):
@@ -98,7 +98,7 @@ class DiscoveryTest(unittest.TestCase):
                 capture_output=True,
             )
             found = fingerprint(video, "video/mp4")
-            from stk.discovery.media import parts
+            from sealbook.discovery.media import parts
 
             located, total = parts(video, "video/mp4", 0, 8)
             self.assertEqual(total, 3)
@@ -124,7 +124,7 @@ class DiscoveryTest(unittest.TestCase):
         import tempfile
         from pathlib import Path
 
-        from stk.discovery.media import parts
+        from sealbook.discovery.media import parts
 
         with tempfile.TemporaryDirectory() as directory:
             video = Path(directory) / "longer_audio.webm"

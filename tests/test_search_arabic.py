@@ -3,9 +3,10 @@ import unittest
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
+from stk.migrations import throwaway_database_url
 
-from stk.migrations import get_database_url, throwaway_database_url
-from stk.search.arabic import NORMALIZE_SQL, candidates, name_keys, normalize
+from sealbook.search.arabic import NORMALIZE_SQL, candidates, name_keys, normalize
+from sealbook.settings import Config
 
 
 class NormalizeTests(unittest.TestCase):
@@ -96,7 +97,8 @@ if __name__ == "__main__":
 
 
 @unittest.skipUnless(
-    make_url(get_database_url()).get_backend_name() == "postgresql", "needs Postgres"
+    make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql",
+    "needs Postgres",
 )
 class SqlParityTest(unittest.TestCase):
     def test_sql_function_matches_python(self):
@@ -110,7 +112,7 @@ class SqlParityTest(unittest.TestCase):
             "a\r\nb\n\nc",
             "",
         ]
-        with throwaway_database_url(sync=True) as url:
+        with throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True) as url:
             engine = create_engine(url)
             try:
                 with engine.begin() as connection:

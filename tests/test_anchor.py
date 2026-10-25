@@ -10,6 +10,7 @@ from pathlib import Path
 from unittest import mock
 
 import httpx
+from alembic import command
 from asn1crypto import cms, tsp
 from asn1crypto import x509 as asn1_x509
 from cryptography import x509
@@ -20,29 +21,28 @@ from cryptography.x509.oid import NameOID
 from sqlalchemy import select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from stk.migrations import (
+    build_alembic_config,
+    throwaway_database_url,
+)
 
-from alembic import command
-from stk.anchor.models import Anchor, Batch
-from stk.anchor.service import (
+from sealbook.anchor.models import Anchor, Batch
+from sealbook.anchor.service import (
     anchored,
     proofs,
     provisional,
     run_once,
     verify_anchors,
 )
-from stk.ledger import chain, merkle
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Chain, Statement
-from stk.ledger.write import append, row_dict, verify_db
-from stk.migrations import (
-    build_alembic_config,
-    get_database_url,
-    throwaway_database_url,
-)
-from stk.settings import Config
+from sealbook.app import app as sealbook_app
+from sealbook.ledger import chain, merkle
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Chain, Statement
+from sealbook.ledger.write import append, row_dict, verify_db
+from sealbook.settings import Config
 from tests.passkey import attester
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 CALENDAR = "https://calendar.test"
 TSA = "https://tsa.test/tsr"
 
@@ -122,11 +122,11 @@ class FakeTsa:
 @unittest.skipUnless(POSTGRES, "anchoring needs Postgres (set SQLALCHEMY_DATABASE_URI)")
 class AnchorTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         self.url = make_url(url).set(drivername="postgresql+asyncpg")
         self.partner = Path(self.enterContext(tempfile.TemporaryDirectory()))
         for name, value in {

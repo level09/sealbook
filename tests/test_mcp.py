@@ -14,30 +14,36 @@ from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 
+import stk
+import stk.extensions as ext
+from alembic import command
 from PIL import Image
 from quart_security import hash_password
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
-from stk import blobs
-from stk.app import create_app
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Principal, Statement
-from stk.ledger.write import append, principal_for_user, record_acquisition, verify_db
-from stk.mcp import oauth
-from stk.mcp.models import McpGrant, McpToken
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.settings import Config
 from stk.user.models import Role, User, roles_users
+
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Principal, Statement
+from sealbook.ledger.write import (
+    append,
+    principal_for_user,
+    record_acquisition,
+    verify_db,
+)
+from sealbook.mcp import oauth
+from sealbook.mcp.models import McpGrant, McpToken
+from sealbook.settings import Config
 from tests.passkey import SoftPasskey
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 SNAPSHOT = Path(__file__).parent / "snapshots" / "mcp_tools.json"
 CLIENT_ID = "https://agent.example.org/client.json"
 REDIRECT = "http://127.0.0.1/callback"
@@ -45,7 +51,7 @@ ALL_SCOPES = "read propose_statements propose_identity"
 PASSWORD = "Password123!"
 
 
-class McpConfig(Config):
+class McpConfig(stk.TestingConfig, Config):
     TESTING = True
     SESSION_TYPE = None
     SECURITY_COOKIE_SECURE = False
@@ -76,11 +82,11 @@ def pkce():
 @unittest.skipUnless(POSTGRES, "MCP needs Postgres (set SQLALCHEMY_DATABASE_URI)")
 class McpTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         async_url = make_url(url).set(drivername="postgresql+asyncpg")
         self.app = create_app(
             type(
@@ -94,7 +100,9 @@ class McpTest(unittest.IsolatedAsyncioTestCase):
             )
         )
         self.enterContext(
-            patch("stk.mcp.oauth.fetch_client_metadata", side_effect=client_metadata)
+            patch(
+                "sealbook.mcp.oauth.fetch_client_metadata", side_effect=client_metadata
+            )
         )
         blob_dir = self.enterContext(tempfile.TemporaryDirectory())
         self.enterContext(patch.object(Config, "BLOB_DIR", blob_dir))

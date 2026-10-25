@@ -1,11 +1,13 @@
 import pathlib
 import unittest
 
-from stk.app import create_app
-from stk.settings import Config
+import stk
+
+from sealbook.app import create_app
+from sealbook.settings import Config
 
 
-class AcmeConfig(Config):
+class AcmeConfig(stk.TestingConfig, Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite+aiosqlite:///:memory:"
     SESSION_TYPE = None
@@ -24,7 +26,7 @@ class BrandingTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn("New to stk", html)
 
     def test_logo_lives_in_brand_partial(self):
-        templates = pathlib.Path(__file__).parent.parent / "stk" / "templates"
+        templates = pathlib.Path(__file__).parent.parent / "sealbook" / "templates"
         offenders = [
             str(p.relative_to(templates))
             for p in templates.rglob("*.html")

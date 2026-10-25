@@ -7,14 +7,14 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from urllib.parse import quote
 
+import stk.extensions as ext
 from sqlalchemy import select
 
-import stk.extensions as ext
-from stk.collaboration import intake
-from stk.collaboration.models import Assignment, Notification
-from stk.ledger.models import Payload, Run
-from stk.ledger.write import principal_for_user, record_acquisition
-from stk.monitor.stream import events
+from sealbook.collaboration import intake
+from sealbook.collaboration.models import Assignment, Notification
+from sealbook.ledger.models import Payload, Run
+from sealbook.ledger.write import principal_for_user, record_acquisition
+from sealbook.monitor.stream import events
 from tests.collab_case import POSTGRES, CollabCase
 
 
@@ -198,7 +198,7 @@ class NotificationTest(CollabCase):
 
         # Really erase the person the proposal is about, in a thread: the command
         # runs its own event loop.
-        from stk.people.cli import erase_cmd
+        from sealbook.people.cli import erase_cmd
 
         await ext.engine.dispose()
         out = await asyncio.to_thread(

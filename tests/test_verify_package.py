@@ -18,9 +18,9 @@ from cryptography.hazmat.primitives.asymmetric import ec, ed25519, padding, rsa
 from pyasn1.codec.der.encoder import encode
 from pyasn1.type import tag, univ, useful
 
-from stk.ledger import chain, merkle
-from stk.ledger.contracts import CHAINED_FIELDS
-from stk.ledger.offline_sigs import GESTURE_MAX, gesture_digest
+from sealbook.ledger import chain, merkle
+from sealbook.ledger.contracts import CHAINED_FIELDS
+from sealbook.ledger.offline_sigs import GESTURE_MAX, gesture_digest
 from tests.passkey import SoftPasskey
 
 
@@ -300,7 +300,12 @@ class PackageTests(unittest.TestCase):
             self.attest(SoftPasskey(), SoftPasskey())
         (self.directory / "manifest.json").write_bytes(chain.canon(self.manifest))
         return subprocess.run(
-            [sys.executable, "-m", "stk.ledger.verify_package", str(self.directory)]
+            [
+                sys.executable,
+                "-m",
+                "sealbook.ledger.verify_package",
+                str(self.directory),
+            ]
             + list(args),
             capture_output=True,
             text=True,
@@ -750,7 +755,12 @@ class PackageTests(unittest.TestCase):
     def test_invalid_json(self):
         (self.directory / "manifest.json").write_text("{")
         result = subprocess.run(
-            [sys.executable, "-m", "stk.ledger.verify_package", str(self.directory)],
+            [
+                sys.executable,
+                "-m",
+                "sealbook.ledger.verify_package",
+                str(self.directory),
+            ],
             capture_output=True,
             text=True,
         )

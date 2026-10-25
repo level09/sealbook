@@ -2,13 +2,14 @@
 
 import unittest
 
+import stk
 from sqlalchemy.exc import OperationalError
 
-from stk.app import create_app
-from stk.settings import Config
+from sealbook.app import create_app
+from sealbook.settings import Config
 
 
-class ErrorConfig(Config):
+class ErrorConfig(stk.TestingConfig, Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite+aiosqlite:///:memory:"
     SESSION_TYPE = None

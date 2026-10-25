@@ -9,6 +9,9 @@ from io import BytesIO
 from unittest import mock
 from urllib.parse import urlsplit
 
+import stk
+import stk.extensions as ext
+from alembic import command
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
     Ed25519PublicKey,
@@ -18,27 +21,25 @@ from PIL import Image
 from quart_security import hash_password
 from sqlalchemy import func, select
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
-from stk import blobs
 from stk.agent_login import create_agent_login_token
-from stk.app import create_app
-from stk.guide import content
-from stk.ledger import chain, merkle
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Principal, Run, Statement
-from stk.ledger.write import append, record_acquisition
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.settings import Config
 from stk.user.models import Role, User
+
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.guide import content
+from sealbook.ledger import chain, merkle
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Principal, Run, Statement
+from sealbook.ledger.write import append, record_acquisition
+from sealbook.settings import Config
 from tests.passkey import attester
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 CASE = "case-guide-test"
 
 
@@ -81,11 +82,11 @@ class ContentTest(unittest.TestCase):
 @unittest.skipUnless(POSTGRES, "the guide needs Postgres (set SQLALCHEMY_DATABASE_URI)")
 class GuideTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         self.enterContext(
             mock.patch.object(
                 Config, "BLOB_DIR", self.enterContext(tempfile.TemporaryDirectory())
@@ -97,7 +98,7 @@ class GuideTest(unittest.IsolatedAsyncioTestCase):
             .render_as_string(hide_password=False)
         )
 
-        class TestConfig(Config):
+        class TestConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None

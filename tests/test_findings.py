@@ -8,14 +8,19 @@ from datetime import UTC, date, datetime
 from io import BytesIO
 from unittest import mock
 
+from alembic import command
 from PIL import Image
 from sqlalchemy import func, select, update
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from stk.migrations import (
+    build_alembic_config,
+    throwaway_database_url,
+)
 
-from alembic import command
-from stk import blobs
-from stk.discovery.findings import (
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.discovery.findings import (
     INCIDENT,
     SHARED,
     candidate_incidents,
@@ -23,23 +28,18 @@ from stk.discovery.findings import (
     rank,
     shared_presence,
 )
-from stk.discovery.models import FindingKey, FindingSalt
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Payload, Principal, Run, Statement, StatementTier
-from stk.ledger.write import append, record_acquisition, verify_db
-from stk.migrations import (
-    build_alembic_config,
-    get_database_url,
-    throwaway_database_url,
-)
-from stk.people.data import erase
-from stk.places import resolve
-from stk.places.models import Place, point
-from stk.runs.worker import work_once
-from stk.settings import Config
+from sealbook.discovery.models import FindingKey, FindingSalt
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Payload, Principal, Run, Statement, StatementTier
+from sealbook.ledger.write import append, record_acquisition, verify_db
+from sealbook.people.data import erase
+from sealbook.places import resolve
+from sealbook.places.models import Place, point
+from sealbook.runs.worker import work_once
+from sealbook.settings import Config
 from tests.passkey import attester
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 JUL13 = (date(2013, 7, 1), date(2013, 7, 31))
 AUG13 = (date(2013, 8, 1), date(2013, 8, 31))
 
@@ -96,7 +96,7 @@ class RulesTest(unittest.TestCase):
         assert "distance_m" not in found[0]["features"]
 
     def test_reason_names_distance_and_precisions(self):
-        from stk.review.findings import reason
+        from sealbook.review.findings import reason
 
         f = {"distance_m": 1250, "precision_m": [250, 1000]}
         text = reason(SHARED, 2, ["Branch 999", "Al Jadida"], "2013-07", f)
@@ -178,11 +178,11 @@ class RulesTest(unittest.TestCase):
 @unittest.skipUnless(POSTGRES, "findings need Postgres (set SQLALCHEMY_DATABASE_URI)")
 class DiscoverTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         self.url = make_url(url).set(drivername="postgresql+asyncpg")
         blob_dir = self.enterContext(tempfile.TemporaryDirectory())
         self.enterContext(mock.patch.object(Config, "BLOB_DIR", blob_dir))
@@ -304,7 +304,7 @@ class DiscoverTest(unittest.IsolatedAsyncioTestCase):
         return a, b, [await self.claim(a, place), await self.claim(b, place)]
 
     async def test_near_pairs_need_both_precisions_within_reach(self):
-        from stk.discovery.findings import near
+        from sealbook.discovery.findings import near
 
         ids = []
         for lon, prec in (

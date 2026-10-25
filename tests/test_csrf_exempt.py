@@ -2,15 +2,16 @@
 
 import unittest
 
-from quart import Blueprint
-
+import stk
 import stk.extensions as ext
-from stk.app import create_app
+from quart import Blueprint
 from stk.security import csrf_exempt
-from stk.settings import Config
+
+from sealbook.app import create_app
+from sealbook.settings import Config
 
 
-class CsrfConfig(Config):
+class CsrfConfig(stk.TestingConfig, Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite+aiosqlite:///:memory:"
     SESSION_TYPE = None

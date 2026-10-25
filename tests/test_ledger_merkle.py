@@ -1,7 +1,7 @@
 import hashlib
 import unittest
 
-from stk.ledger import merkle
+from sealbook.ledger import merkle
 
 
 def digest(data):

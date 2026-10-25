@@ -11,43 +11,44 @@ from types import SimpleNamespace
 from unittest import mock
 
 import orjson
+import stk
+import stk.extensions as ext
+from alembic import command
 from quart_security import hash_password
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
 from stk.agent_login import create_agent_login_token
-from stk.app import create_app
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Blob, Payload, Statement
-from stk.ledger.write import append, verify_db
-from stk.mcp.tools import _search as mcp_search
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.monitor.data import statement_rows
-from stk.monitor.data import track as track_of
-from stk.monitor.seed import seed
-from stk.packages.models import Brief, Package, Sentence
-from stk.people import data
-from stk.settings import Config
 from stk.user.models import Role, User
+
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Blob, Payload, Statement
+from sealbook.ledger.write import append, verify_db
+from sealbook.mcp.tools import _search as mcp_search
+from sealbook.monitor.data import statement_rows
+from sealbook.monitor.data import track as track_of
+from sealbook.monitor.seed import seed
+from sealbook.packages.models import Brief, Package, Sentence
+from sealbook.people import data
+from sealbook.settings import Config
 from tests.passkey import attester
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 SPELLINGS = ("Yusuf Khaled al-Ali", "Youssef Khalid Al Ali", "يوسف خالد العلي")
 SECRETS = ("يوسف", "Yusuf", "Yousef", "حرستا", "فاطمة", "حمص")
 
 
 def _app(test):
-    url = test.enterContext(throwaway_database_url(sync=True))
-    config = build_alembic_config()
-    config.config_file_name = None
-    config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-    command.upgrade(config, "head")
+    url = test.enterContext(
+        throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+    )
+    config = build_alembic_config(sealbook_app, url, quiet=True)
+    command.upgrade(config, "heads")
     test.enterContext(
         mock.patch.object(
             Config, "BLOB_DIR", test.enterContext(tempfile.TemporaryDirectory())
@@ -61,7 +62,7 @@ def _app(test):
         .render_as_string(hide_password=False)
     )
 
-    class TestConfig(Config):
+    class TestConfig(stk.TestingConfig, Config):
         SQLALCHEMY_DATABASE_URI = db_url
         TESTING = True
         SESSION_TYPE = None
@@ -395,7 +396,7 @@ class ErasureTest(unittest.TestCase):
         case = self.run_db(_case(self.app))
         p1, p2, p3 = case["P1"], case["P2"], case["P3"]
         runner = self.app.test_cli_runner()
-        from stk.people.cli import erase_cmd
+        from sealbook.people.cli import erase_cmd
 
         drafts = self.run_db(self.drafts(case))
         missing = runner.invoke(

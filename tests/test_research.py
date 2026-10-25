@@ -18,31 +18,38 @@ from unittest import mock
 
 import httpx
 import orjson
+import stk.extensions as ext
 from PIL import Image
 from quart_security import hash_password
 from sqlalchemy import select
-
-import stk.extensions as ext
-from stk import blobs, netguard
 from stk.agent_login import create_agent_login_token
-from stk.cases.service import ensure as ensure_case
-from stk.ingest import service as ingest
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Acquisition, Blob, Payload, Run, Statement, StatementTier
-from stk.ledger.write import (
+from stk.user.models import Role, User
+
+from sealbook import blobs, netguard
+from sealbook.cases.service import ensure as ensure_case
+from sealbook.ingest import service as ingest
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import (
+    Acquisition,
+    Blob,
+    Payload,
+    Run,
+    Statement,
+    StatementTier,
+)
+from sealbook.ledger.write import (
     append,
     principal_for_user,
     record_acquisition,
     verify_db,
 )
-from stk.people.data import erase
-from stk.places.models import Place, point
-from stk.research import brave, browser, service, store, video, youtube
-from stk.research import queries as rq
-from stk.research import views as research_views
-from stk.runs.worker import work_once
-from stk.settings import Config
-from stk.user.models import Role, User
+from sealbook.people.data import erase
+from sealbook.places.models import Place, point
+from sealbook.research import brave, browser, service, store, video, youtube
+from sealbook.research import queries as rq
+from sealbook.research import views as research_views
+from sealbook.runs.worker import work_once
+from sealbook.settings import Config
 from tests import test_review
 from tests.passkey import attester
 

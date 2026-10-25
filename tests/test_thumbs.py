@@ -9,19 +9,19 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import orjson
+import stk.extensions as ext
 from PIL import Image
 from quart_security import hash_password
 from sqlalchemy import select
-
-import stk.extensions as ext
-from stk import blobs
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Blob, Run, RunEvent
-from stk.ledger.write import append, record_acquisition
-from stk.runs.worker import work_once
-from stk.settings import Config
-from stk.thumbs import make
 from stk.user.models import User
+
+from sealbook import blobs
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Blob, Run, RunEvent
+from sealbook.ledger.write import append, record_acquisition
+from sealbook.runs.worker import work_once
+from sealbook.settings import Config
+from sealbook.thumbs import make
 from tests import test_review
 
 ROOT = Path(__file__).resolve().parent.parent / "acceptance"
@@ -108,7 +108,7 @@ class ThumbEndpointTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(r.status_code, 200)
 
     async def make(self, path, mime, sensitivity):
-        from stk.ledger.models import Acquisition
+        from sealbook.ledger.models import Acquisition
 
         async with ext.async_session_factory() as s, s.begin():
             blob = await blobs.put(s, path.read_bytes(), mime, Config.BLOB_DIR)
@@ -259,7 +259,7 @@ class ThumbEndpointTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(info["strip"]["frames"]), 12)
 
     async def test_non_analyst_is_refused_and_erased_source_is_gone(self):
-        from stk.people.data import erase
+        from sealbook.people.data import erase
 
         sha = await self.make(PHOTO, "image/jpeg", "sensitive")
         async with ext.async_session_factory() as s, s.begin():

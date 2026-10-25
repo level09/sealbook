@@ -6,34 +6,34 @@ from datetime import datetime
 from unittest import mock
 
 import click
-from quart_security import hash_password
-from sqlalchemy import func, select
-
 import stk.app  # noqa: F401  (registers the CLI before the seed module loads)
 import stk.extensions as ext
-from stk.agents import read
-from stk.collaboration import service as collaboration
-from stk.collaboration.models import Assignment, Notification
-from stk.discovery.evidence import transcript_timeline
-from stk.discovery.models import FindingKey
-from stk.ledger.contracts import Prop
-from stk.ledger.models import Acquisition, Payload, Run, Statement, StatementTier
-from stk.ledger.write import verify_db
-from stk.monitor.seed import seed
-from stk.monitor.seed_full import P1, R1, seed_full
-from stk.monitor.seed_more import CASES, seed_more
-from stk.packages.models import Sentence
-from stk.people import data as people
-from stk.places.models import Place
-from stk.review import findings
-from stk.runs.worker import work_once
-from stk.search.find import find
-from stk.settings import Config
-from stk.sheets.models import DatasetVersion
-from stk.sources import scale
-from stk.stories.data import story
+from quart_security import hash_password
+from sqlalchemy import func, select
 from stk.user.models import Role, User
-from stk.watch.views import feed
+
+from sealbook.agents import read
+from sealbook.collaboration import service as collaboration
+from sealbook.collaboration.models import Assignment, Notification
+from sealbook.discovery.evidence import transcript_timeline
+from sealbook.discovery.models import FindingKey
+from sealbook.ledger.contracts import Prop
+from sealbook.ledger.models import Acquisition, Payload, Run, Statement, StatementTier
+from sealbook.ledger.write import verify_db
+from sealbook.monitor.seed import seed
+from sealbook.monitor.seed_full import P1, R1, seed_full
+from sealbook.monitor.seed_more import CASES, seed_more
+from sealbook.packages.models import Sentence
+from sealbook.people import data as people
+from sealbook.places.models import Place
+from sealbook.review import findings
+from sealbook.runs.worker import work_once
+from sealbook.search.find import find
+from sealbook.settings import Config
+from sealbook.sheets.models import DatasetVersion
+from sealbook.sources import scale
+from sealbook.stories.data import story
+from sealbook.watch.views import feed
 from tests.test_people import POSTGRES, _app
 
 

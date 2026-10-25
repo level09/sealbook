@@ -11,30 +11,31 @@ from unittest import mock
 
 import httpx
 import orjson
+import stk
+import stk.extensions as ext
+from alembic import command
 from quart_security import hash_password
 from sqlalchemy import func, select
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
-from stk import blobs
 from stk.agent_login import create_agent_login_token
-from stk.app import create_app
-from stk.ledger.contracts import Prop
-from stk.ledger.models import Principal, Run, Statement
-from stk.ledger.write import record_acquisition, verify_db
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.monitor.data import mask
-from stk.runs.worker import work_once
-from stk.settings import Config
 from stk.user.models import Role, User
-from stk.watch.matcher import corroborate, match_run, matcher_agent
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.ledger.contracts import Prop
+from sealbook.ledger.models import Principal, Run, Statement
+from sealbook.ledger.write import record_acquisition, verify_db
+from sealbook.monitor.data import mask
+from sealbook.runs.worker import work_once
+from sealbook.settings import Config
+from sealbook.watch.matcher import corroborate, match_run, matcher_agent
+
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 CASE = json.loads((Path(__file__).parent.parent / "acceptance/case.json").read_text())
 DOCS = {d["key"]: d for d in CASE["documents"]}
 
@@ -91,11 +92,11 @@ def document(key: str) -> tuple[str, list[dict]]:
 @unittest.skipUnless(POSTGRES, "watchlists need Postgres (set SQLALCHEMY_DATABASE_URI)")
 class WatchTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         db_url = (
             make_url(url)
             .set(drivername="postgresql+asyncpg")
@@ -113,7 +114,7 @@ class WatchTest(unittest.IsolatedAsyncioTestCase):
         )
         self.enterContext(mock.patch.object(Config, "EMBEDDING_MODEL", None))
 
-        class TestConfig(Config):
+        class TestConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None

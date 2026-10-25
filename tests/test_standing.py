@@ -6,20 +6,20 @@ from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from unittest import mock
 
-from sqlalchemy import func, select
-
 import stk.extensions as ext
-import tests.test_agents as fixtures
-from stk.agents import read, standing, tasks
-from stk.agents.models import AgentTask, AgentWake
-from stk.cases.service import ensure
-from stk.collaboration.models import Notification
-from stk.ledger import write
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Acquisition, Blob, Principal, Run, Statement
-from stk.runs.worker import TOOLS, process
-from stk.settings import Config
+from sqlalchemy import func, select
 from stk.user.models import User
+
+import tests.test_agents as fixtures
+from sealbook.agents import read, standing, tasks
+from sealbook.agents.models import AgentTask, AgentWake
+from sealbook.cases.service import ensure
+from sealbook.collaboration.models import Notification
+from sealbook.ledger import write
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Acquisition, Blob, Principal, Run, Statement
+from sealbook.runs.worker import TOOLS, process
+from sealbook.settings import Config
 
 
 class StandingRulesTest(unittest.TestCase):
@@ -229,7 +229,7 @@ class StandingRunTest(unittest.IsolatedAsyncioTestCase):
             for key in ("one", "one", "two"):
                 await tasks.wake(db, self.task.id, key, "manual", {})
             await db.commit()
-        with mock.patch("stk.agents.views.missing", return_value=["AGENT_MODEL"]):
+        with mock.patch("sealbook.agents.views.missing", return_value=["AGENT_MODEL"]):
             self.assertEqual(await tasks.tick(ext.async_session_factory), 0)
         self.assertEqual(await tasks.tick(ext.async_session_factory), 1)
         self.assertEqual(await tasks.tick(ext.async_session_factory), 0)
@@ -553,7 +553,7 @@ class StandingRunTest(unittest.IsolatedAsyncioTestCase):
         await process(ext.async_session_factory, rid)
         self.assertTrue((await self.output(rid))["matches"])
         async with ext.async_session_factory() as db:
-            with mock.patch("stk.agents.standing.granted", return_value=False):
+            with mock.patch("sealbook.agents.standing.granted", return_value=False):
                 shown = await standing.show(db, self.user, self.task.id)
             self.assertTrue(shown["matches"][0]["locked"])
             self.assertNotIn("Fatimah", str(shown["matches"]))
@@ -563,8 +563,10 @@ class StandingRunTest(unittest.IsolatedAsyncioTestCase):
         await tasks.settle(ext.async_session_factory, failed)
         async with ext.async_session_factory() as db:
             with (
-                mock.patch("stk.agents.standing.granted", return_value=True),
-                mock.patch("stk.agents.brief.log_view", new_callable=mock.AsyncMock),
+                mock.patch("sealbook.agents.standing.granted", return_value=True),
+                mock.patch(
+                    "sealbook.agents.brief.log_view", new_callable=mock.AsyncMock
+                ),
             ):
                 shown = await standing.show(db, self.user, self.task.id)
             self.assertIn("Fatimah", str(shown["matches"]))
@@ -612,7 +614,7 @@ class StandingRunTest(unittest.IsolatedAsyncioTestCase):
 
 
 async def write_run_failure(db, run):
-    from stk.ledger.queue import fail
+    from sealbook.ledger.queue import fail
 
     await fail(db, run, "RuntimeError: The local check could not finish.")
     await db.commit()

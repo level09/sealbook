@@ -9,16 +9,23 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from unittest import mock
 
+import stk
+import stk.extensions as ext
+from alembic import command
 from quart_security import hash_password
 from sqlalchemy import func, insert, select
 from sqlalchemy.engine import make_url
-
-import stk.extensions as ext
-from alembic import command
 from stk.agent_login import create_agent_login_token
-from stk.app import create_app
-from stk.ledger.contracts import Prop, Tier
-from stk.ledger.models import (
+from stk.migrations import (
+    build_alembic_config,
+    throwaway_database_url,
+)
+from stk.user.models import Role, User
+
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.models import (
     Acquisition,
     Blob,
     Payload,
@@ -26,16 +33,10 @@ from stk.ledger.models import (
     Statement,
     StatementTier,
 )
-from stk.migrations import (
-    build_alembic_config,
-    get_database_url,
-    throwaway_database_url,
-)
-from stk.settings import Config
-from stk.sources import scale
-from stk.user.models import Role, User
+from sealbook.settings import Config
+from sealbook.sources import scale
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 A, B = "case-scale-test-a", "case-scale-test-b"
 
 
@@ -46,18 +47,18 @@ def hexs(n=64):
 @unittest.skipUnless(POSTGRES, "sources need Postgres (set SQLALCHEMY_DATABASE_URI)")
 class SourcesTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         db_url = (
             make_url(url)
             .set(drivername="postgresql+asyncpg")
             .render_as_string(hide_password=False)
         )
 
-        class TestConfig(Config):
+        class TestConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None
@@ -345,7 +346,7 @@ class SourcesTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(body["total"], 0)
 
     async def test_request_review_of_open_proposals(self):
-        from stk.collaboration.models import Notification
+        from sealbook.collaboration.models import Notification
 
         sha, t = next((k, v) for k, v in self.truth.items() if v["pending"] >= 2)
         async with ext.async_session_factory() as s, s.begin():

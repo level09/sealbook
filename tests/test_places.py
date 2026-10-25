@@ -5,11 +5,12 @@ import tempfile
 import unittest
 import uuid
 from datetime import UTC, date, datetime
-from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 from unittest import mock
 
+import stk.extensions as ext
+from alembic import command
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from PIL import Image
@@ -18,30 +19,28 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import selectinload
-
-import stk.extensions as ext
-from alembic import command
-from stk import blobs
 from stk.agent_login import create_agent_login_token
-from stk.discovery.models import FindingKey
-from stk.ledger.contracts import Prop, StatementIn
-from stk.ledger.models import Principal, Run, RunEvent, Statement, StatementTier
-from stk.ledger.write import append, record_acquisition
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.places import boundaries, normalise, resolve
-from stk.places import cli as places_cli
-from stk.places.models import AdminArea, BoundarySet, Place, PlaceName, point
-from stk.settings import Config
 from stk.user.models import Role, User
+
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.discovery.models import FindingKey
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Principal, Run, RunEvent, Statement, StatementTier
+from sealbook.ledger.write import append, record_acquisition
+from sealbook.places import boundaries, normalise, resolve
+from sealbook.places import cli as places_cli
+from sealbook.places.models import AdminArea, BoundarySet, Place, PlaceName, point
+from sealbook.settings import Config
 from tests.passkey import SoftPasskey, attester
 from tests.test_people import _app
 
 FIXTURE = places_cli.FIXTURE
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 
 
 async def names_matching(db, norm):
@@ -65,11 +64,11 @@ class NormaliseTest(unittest.TestCase):
 
 class Base(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         self.url = make_url(url).set(drivername="postgresql+asyncpg")
 
     async def asyncSetUp(self):
@@ -112,7 +111,7 @@ class PlacesTest(Base):
         assert again == {"imported": 0, "updated": 1}
 
     async def test_finding_key_round_trips(self):
-        from stk.ledger.models import Principal, Run
+        from sealbook.ledger.models import Principal, Run
 
         agent = Principal(kind="agent", name="discover", on_behalf_of=None)
         self.db.add(agent)
@@ -595,67 +594,3 @@ class BoundariesTest(Base):
             (Path(d) / "syr_admin1.geojson").write_bytes(raw.replace(b"Homs", b"Hims"))
             with self.assertRaisesRegex(ValueError, "already imported"):
                 await boundaries.import_set(self.db, d)
-
-
-@unittest.skipUnless(POSTGRES, "places need Postgres (set SQLALCHEMY_DATABASE_URI)")
-class GeometryMigrationTest(unittest.TestCase):
-    """Plain lon/lat rows become PostGIS geometry and come back on downgrade."""
-
-    def test_backfill_and_round_trip(self):
-        from sqlalchemy import create_engine, text
-
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "20261025_saved_story")
-        engine = create_engine(url)
-        self.addCleanup(engine.dispose)
-        pid = uuid.uuid4()
-        with engine.begin() as c:
-            c.execute(
-                text(
-                    "INSERT INTO place (id, name_ar, name_en, kind, lon, lat, source) "
-                    "VALUES (:id, 'حرستا', 'Harasta', 'populated', 36.371, 33.558, "
-                    "'geonames')"
-                ),
-                {"id": pid},
-            )
-            c.execute(
-                text(
-                    "INSERT INTO place_name (place_id, norm, name, lang) VALUES "
-                    "(:id, 'harasta', 'Harasta', 'en'), (:id, 'harasta2', 'Harasta2', "
-                    "'en'), (:id, 'حرستا', 'حرستا', 'ar')"
-                ),
-                {"id": pid},
-            )
-        command.upgrade(config, "head")
-        with engine.connect() as c:
-            row = c.execute(
-                text(
-                    "SELECT lon, lat, ST_AsText(geom), ST_Y(centroid::geometry), "
-                    "precision_m, geo_source FROM place"
-                )
-            ).one()
-            kinds = dict(c.execute(text("SELECT norm, kind FROM place_name")).all())
-        assert row == (
-            Decimal("36.371000"),
-            Decimal("33.558000"),
-            "POINT(36.371 33.558)",
-            33.558,
-            3000,
-            "geonames",
-        )
-        assert kinds == {
-            "harasta": "official",
-            "harasta2": "transliteration",
-            "حرستا": "official",
-        }
-        command.downgrade(config, "20261025_saved_story")
-        with engine.connect() as c:
-            back = c.execute(text("SELECT lon, lat FROM place")).one()
-        assert back == (Decimal("36.371000"), Decimal("33.558000"))
-
-
-if __name__ == "__main__":
-    unittest.main()

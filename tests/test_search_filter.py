@@ -4,7 +4,7 @@ import unittest
 from sqlalchemy import column, table
 from sqlalchemy.dialects import postgresql
 
-from stk.search import filter as filters
+from sealbook.search import filter as filters
 
 
 def leaf(field="tier", op="eq", value="accepted"):

@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from io import BytesIO
 from unittest import mock
 
+from alembic import command
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from PIL import Image
@@ -14,22 +15,21 @@ from sqlalchemy import select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
-from alembic import command
-from stk import blobs
-from stk.ledger import queue
-from stk.ledger.contracts import Prop, Refused, StatementIn, Tier
-from stk.ledger.models import Policy, Principal, Run, StatementTier
-from stk.ledger.write import append, record_acquisition, seal_run, verify_db
 from stk.migrations import (
     build_alembic_config,
-    get_database_url,
     throwaway_database_url,
 )
-from stk.settings import Config
+
+from sealbook import blobs
+from sealbook.app import app as sealbook_app
+from sealbook.ledger import queue
+from sealbook.ledger.contracts import Prop, Refused, StatementIn, Tier
+from sealbook.ledger.models import Policy, Principal, Run, StatementTier
+from sealbook.ledger.write import append, record_acquisition, seal_run, verify_db
+from sealbook.settings import Config
 from tests.passkey import attester
 
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 
 
 def png(color: str) -> bytes:
@@ -45,11 +45,11 @@ class LedgerDbCase(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self):
         # One database per test: a tamper test must not poison the next test's chain.
-        url = self.enterContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = self.enterContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         self.url = make_url(url).set(drivername="postgresql+asyncpg")
         blob_dir = self.enterContext(tempfile.TemporaryDirectory())
         self.enterContext(mock.patch.object(Config, "BLOB_DIR", blob_dir))

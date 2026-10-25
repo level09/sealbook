@@ -3,18 +3,19 @@
 import unittest
 
 import pyotp
+import stk
+import stk.extensions as ext
 from quart import g
 from quart_security import hash_password
 from sqlalchemy import select
-
-import stk.extensions as ext
-from stk.app import create_app
 from stk.migrations import portable_tables
-from stk.settings import Config
 from stk.user.models import Base, SecurityState, Session, User
 
+from sealbook.app import create_app
+from sealbook.settings import Config
 
-class SecurityConfig(Config):
+
+class SecurityConfig(stk.TestingConfig, Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite+aiosqlite:///:memory:"
     SESSION_TYPE = None
