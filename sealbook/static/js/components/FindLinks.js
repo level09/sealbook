@@ -11,7 +11,7 @@ export const FindLinks = {
   beforeUnmount() { clearTimeout(this.timer); },
   methods: {
     async start() {
-      this.state = 'running'; this.note = 'The linker is reading the case on the local model.'; this.href = null;
+      this.state = 'running'; this.note = 'The linker is reading the case.'; this.href = null;
       try {
         const {data} = await axios.post('/api/agents/link', {item: {scope: this.scope}});
         this.poll(data.run);

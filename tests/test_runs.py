@@ -85,6 +85,8 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         self.enterContext(
             mock.patch.object(Config, "EMBEDDING_URL", "http://local.test")
         )
+        # These tests mock an Ollama-style /api/embed server.
+        self.enterContext(mock.patch.object(Config, "EMBEDDING_ROUTE", "local"))
         url = self.enterContext(
             throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
         )

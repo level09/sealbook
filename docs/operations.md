@@ -121,18 +121,23 @@ a larger filter incomplete. Search candidate limits do not establish absence.
 Images are read by OCR, then claims are read from the text; text files, transcripts
 and each PDF page with text go straight to extraction. Nothing runs until a route
 has a model. A run uses the most private route its policy row allows that has a
-model set, so with `MODEL_LOCAL` set every source stays local; to send ordinary
-sources to the cloud, an admin narrows the policy (for example `ocr`, `*`,
-`ordinary` to `{cloud}`). Sensitive sources never leave the local route.
+model set. By default that is `cloud-zdr`: OpenRouter with zero data retention,
+serving `google/gemma-4-31b-it` unless `MODEL_CLOUD_ZDR` names another model.
+Sensitive sources, agents and embeddings may use `local` or `cloud-zdr`
+(`sealbook_0002`). A deployment that wants nothing to leave its own machines sets
+`ROUTE_LOCAL_BASE_URL` and `MODEL_LOCAL` (Ollama, vLLM, or a private endpoint on
+RunPod or Modal); every source then uses it, and an admin can narrow the sensitive
+policy row to `{local}` so nothing falls back to a hosted model.
 
 | Setting | Meaning |
 | --- | --- |
 | `ROUTE_LOCAL_BASE_URL` | Any OpenAI-compatible server; Ollama is `http://127.0.0.1:11434/v1` |
 | `ROUTE_LOCAL_API_KEY` | Optional; Ollama needs none |
 | `ROUTE_LOCAL_TIMEOUT` | Seconds one local call may take, default 120; the run lease is this plus a minute, at least 5 minutes |
-| `MODEL_LOCAL` | Local model for OCR and extraction; it must accept images |
+| `MODEL_LOCAL` | Private endpoint model for OCR and extraction; it must accept images |
 | `OPENROUTER_API_KEY` | Key for both cloud routes |
-| `MODEL_CLOUD_ZDR` | OpenRouter model, sent with `provider.zdr` so only zero-retention providers serve it |
+| `MODEL_CLOUD_ZDR` | OpenRouter model, sent with `provider.zdr` so only zero-retention providers serve it; default `google/gemma-4-31b-it` |
+| `EMBEDDING_ROUTE` | `cloud-zdr` (default): `EMBEDDING_MODEL` on OpenRouter, default `google/gemini-embedding-2`, one item per call; `local`: an Ollama-style `/api/embed` server at `EMBEDDING_URL` |
 | `MODEL_CLOUD` | OpenRouter model for ordinary sources |
 
 Checked here on 2026-10-24 (Apple M2, 16 GB, Ollama 0.40.5): `gemma4:12b-it-qat`,

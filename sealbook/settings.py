@@ -29,7 +29,12 @@ class Config(stk.Config):
     BLOB_DIR = os.environ.get(
         "BLOB_DIR", os.path.join(PROJECT_ROOT, "instance", "blobs")
     )
-    EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL")
+    # One embedding space for text, images and audio. By default a hosted model on
+    # OpenRouter's zero-retention route (cloud-zdr), one item per call because batched
+    # calls lose the zero-retention endpoint. EMBEDDING_ROUTE=local with EMBEDDING_URL
+    # points it at a private Ollama-style /api/embed server instead.
+    EMBEDDING_ROUTE = os.environ.get("EMBEDDING_ROUTE", "cloud-zdr")
+    EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "google/gemini-embedding-2")
     EMBEDDING_URL = os.environ.get("EMBEDDING_URL")
     EMBEDDING_REVISION = os.environ.get("EMBEDDING_REVISION", "")
     INDEX_BATCH_CHUNKS = int(os.environ.get("INDEX_BATCH_CHUNKS", "32"))
@@ -111,20 +116,29 @@ class Config(stk.Config):
     # The model each route serves for OCR and extraction (MODEL_LOCAL,
     # MODEL_CLOUD_ZDR, MODEL_CLOUD). Ingest queues work on the most private route
     # the policy allows that has a model; none means the file waits, unprocessed.
+    # cloud-zdr defaults to Gemma 4 31B, which read the Arabic demo register almost
+    # exactly (2026-10-25); MODEL_CLOUD_ZDR= (empty) turns it off.
     RUN_MODELS = {
-        r: os.environ[f"MODEL_{r.upper().replace('-', '_')}"]
-        for r in ("local", "cloud-zdr", "cloud")
-        if os.environ.get(f"MODEL_{r.upper().replace('-', '_')}")
+        r: m
+        for r, m in (
+            (r, os.environ.get(f"MODEL_{r.upper().replace('-', '_')}", d))
+            for r, d in (
+                ("local", ""),
+                ("cloud-zdr", "google/gemma-4-31b-it"),
+                ("cloud", ""),
+            )
+        )
+        if m
     }
 
     # Proactive agents (intake brief, linker) read across a case, sensitive sources
-    # included, so by default they run on the local route (ROUTE_LOCAL_BASE_URL, an
-    # OpenAI-compatible server such as Ollama). AGENT_ROUTE=cloud-zdr sends them to
-    # OpenRouter instead; the policy table must also allow that route for each agent
-    # tool, so a setting alone never moves case data off the machine. Empty
-    # AGENT_MODEL turns them off.
-    AGENT_ROUTE = os.environ.get("AGENT_ROUTE", "local")
-    AGENT_MODEL = os.environ.get("AGENT_MODEL", "qwen3.5:9b")
+    # included. By default they run on OpenRouter's zero-retention route (cloud-zdr);
+    # AGENT_ROUTE=local sends them to a private OpenAI-compatible endpoint
+    # (ROUTE_LOCAL_BASE_URL: Ollama, vLLM, or one hosted on RunPod or Modal). The
+    # policy table must also allow the route for each agent tool. Empty AGENT_MODEL
+    # turns them off.
+    AGENT_ROUTE = os.environ.get("AGENT_ROUTE", "cloud-zdr")
+    AGENT_MODEL = os.environ.get("AGENT_MODEL", "deepseek/deepseek-v4.1-flash")
 
     # Package export signs its cover with c2patool (ES256 cert chain and key, PEM).
     C2PA_SIGN_CERT = os.environ.get("C2PA_SIGN_CERT")

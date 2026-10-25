@@ -201,7 +201,7 @@ class IngestTest(unittest.IsolatedAsyncioTestCase):
                 )
         # A sensitive document never falls back to a cloud route: it waits.
         self.assertIsNone(held["processing"]["queued"])
-        self.assertIn("Set MODEL_LOCAL in settings", held["processing"]["reason"])
+        self.assertIn("Set MODEL_LOCAL or MODEL_CLOUD_ZDR in settings", held["processing"]["reason"])
         self.assertEqual(free["processing"]["route"], "cloud")
 
     async def test_c2pa_valid_absent_invalid(self):

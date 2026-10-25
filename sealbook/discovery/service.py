@@ -144,7 +144,7 @@ async def queue(
         run = Run(
             principal_id=(await system_agent(db, "discovery")).id,
             tool=tool,
-            route="local",
+            route=Config.EMBEDDING_ROUTE if tool == "embed" else "local",
             model_requested=model,
             inputs={
                 "blobs": [blob_sha256 or acq.blob_sha256],
@@ -228,7 +228,7 @@ async def queue_actor(db, subject, acq, rebuild=False):
         Run(
             principal_id=(await system_agent(db, "discovery")).id,
             tool="embed_actor",
-            route="local",
+            route=Config.EMBEDDING_ROUTE,
             model_requested=Config.EMBEDDING_MODEL,
             inputs={
                 "subject": subject,

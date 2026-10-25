@@ -75,7 +75,7 @@
         <div class="custody" aria-label="What happens to each item">
             <span><i class="ti ti-fingerprint" aria-hidden="true"></i>Fingerprinted on arrival, before anything reads it</span>
             <span><i class="ti ti-history" aria-hidden="true"></i>Who added it, when and from where is logged</span>
-            <span><i class="ti ti-lock" aria-hidden="true"></i>Sensitive items are read only by models on this server</span>
+            <span><i class="ti ti-lock" aria-hidden="true"></i>Models that read your files keep no copy (zero data retention)</span>
             <span><i class="ti ti-signature" aria-hidden="true"></i>What models find stays a proposal until a person signs</span>
         </div>
     </section>
@@ -92,8 +92,8 @@
         </header>
         <div class="sent"><i class="ti ti-send" aria-hidden="true"></i>
             <span v-if="searchBlocked">${ searchBlocked }</span>
-            <span v-else-if="search.sent">Sent to Brave Search: <strong dir="auto">${ quoted(search.sent) }</strong>, and nothing else. Your files, this case and sensitive values never leave this server.</span>
-            <span v-else>Only the words you search for are sent to Brave Search. Your files, this case and sensitive values never leave this server.</span>
+            <span v-else-if="search.sent">Sent to Brave Search: <strong dir="auto">${ quoted(search.sent) }</strong>, and nothing else. Your files, this case and sensitive values are not sent there.</span>
+            <span v-else>Only the words you search for are sent to Brave Search. Your files, this case and sensitive values are not sent there.</span>
         </div>
         <div v-if="search.error" class="sent" role="alert" style="color: var(--negative)"><i class="ti ti-alert-circle" aria-hidden="true"></i><span>${ search.error }</span></div>
         <div v-if="!search.groups && !searchBlocked" class="sugg">
@@ -262,7 +262,7 @@
     <section v-if="phase === 'done'" class="panel brief" aria-labelledby="h-brief">
         <header>
             <h2 id="h-brief" class="who"><span class="av" aria-hidden="true"><i class="ti ti-robot"></i></span>Intake brief</h2>
-            <span class="muted">Written by the case assistant on the local model. Every line cites its sources; nothing here is accepted.</span>
+            <span class="muted">Written by the case assistant. Every line cites its sources; nothing here is accepted.</span>
         </header>
         <intake-brief :batch="batch" :grid="true"></intake-brief>
         <div class="finish">

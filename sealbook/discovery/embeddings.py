@@ -1,5 +1,6 @@
-"""One local embedding space is versioned and checked against non-sensitive inputs."""
+"""One embedding space is versioned and checked against non-sensitive inputs."""
 
+import asyncio
 import base64
 import io
 import math
@@ -52,7 +53,9 @@ def recipe():
         "dimensions": DIMENSIONS,
         "model": Config.EMBEDDING_MODEL,
         "revision": Config.EMBEDDING_REVISION,
-        "endpoint": Config.EMBEDDING_URL,
+        "endpoint": Config.EMBEDDING_URL
+        if Config.EMBEDDING_ROUTE == "local"
+        else "openrouter",
         "preprocessing": "gemma2-v1;chunks1800;title-none-document;png1024;mono16k;audio30-hop25;frame3s",
     }
 
@@ -82,7 +85,79 @@ async def bind_run(c, space):
     }
 
 
+# Gemini Embedding 2 on OpenRouter takes OpenAI-style input: a string, or a
+# content part with a data URL (checked 2026-10-25).
+PARALLEL = 8
+
+
+def _part(item):
+    if isinstance(item, str):
+        return item
+    ((kind, data),) = item.items()
+    if kind == "image":
+        mime = (
+            "image/png"
+            if base64.b64decode(data[:12]).startswith(b"\x89PNG")
+            else "image/jpeg"
+        )
+        return {
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:{mime};base64,{data}"},
+                }
+            ]
+        }
+    return {
+        "content": [
+            {
+                "type": "input_audio",
+                "input_audio": {
+                    "data": f"data:audio/wav;base64,{data}",
+                    "format": "wav",
+                },
+            }
+        ]
+    }
+
+
+async def _post_hosted(inputs, references, model, transport):
+    """One item per call: a batch is routed to endpoints without zero retention."""
+    endpoint = f"{routes.OPENROUTER}/embeddings"
+    key = routes._env("OPENROUTER_API_KEY")
+    gate = asyncio.Semaphore(PARALLEL)
+    async with httpx.AsyncClient(transport=transport, timeout=routes.TIMEOUT) as client:
+
+        async def one(item):
+            async with gate:
+                response = await client.post(
+                    endpoint,
+                    headers={"Authorization": f"Bearer {key}"},
+                    json={
+                        "model": model,
+                        "input": [_part(item)],
+                        "dimensions": DIMENSIONS,
+                        "provider": {"zdr": True},
+                    },
+                )
+                response.raise_for_status()
+                return response
+
+        responses = await asyncio.gather(*(one(x) for x in inputs + references))
+    bodies = [r.json() for r in responses]
+    served = {b.get("model") for b in bodies}
+    if len(served) != 1 or None in served:
+        raise ValueError("embedding responses name no single served model")
+    values = [vector(b["data"][0]["embedding"], DIMENSIONS) for b in bodies]
+    raw = httpx.Response(
+        200, content=b"[" + b",".join(r.content for r in responses) + b"]"
+    )
+    return values[: len(inputs)], values[len(inputs) :], served.pop(), endpoint, raw
+
+
 async def _post(inputs, references, model, transport):
+    if Config.EMBEDDING_ROUTE == "cloud-zdr":
+        return await _post_hosted(inputs, references, model, transport)
     if not Config.EMBEDDING_URL:
         raise ValueError("EMBEDDING_URL is not configured")
     endpoint = f"{Config.EMBEDDING_URL.rstrip('/')}/api/embed"

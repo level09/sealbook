@@ -62,7 +62,7 @@ export const IntakeBrief = {
     <p v-if="error" class="ib-muted">{{ error }}</p>
     <p v-else-if="!data" class="ib-muted">Loading the brief</p>
     <template v-else-if="!brief">
-      <p v-if="data.pending" class="ib-muted"><v-progress-circular indeterminate size="14" width="2" class="me-1"></v-progress-circular> The brief is being written on the local model.</p>
+      <p v-if="data.pending" class="ib-muted"><v-progress-circular indeterminate size="14" width="2" class="me-1"></v-progress-circular> The brief is being written.</p>
       <p v-else-if="data.failed" class="ib-muted">The brief could not be written: {{ data.failed.error }}</p>
       <p v-else-if="data.missing.length" class="ib-muted">No brief: the agents are off until {{ data.missing.join(' and ') }} {{ data.missing.length > 1 ? 'are' : 'is' }} set on the server.</p>
       <p v-else class="ib-muted">No brief was written for this batch.</p>

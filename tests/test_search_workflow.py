@@ -491,7 +491,7 @@ class SourceAccessTest(unittest.IsolatedAsyncioTestCase):
                 await client.post(path, headers=client.csrf, json={"item": {}})
             ).get_json()
         self.assertIsNone(off["processing"]["queued"])
-        self.assertIn("Set MODEL_LOCAL in settings.", off["message"])
+        self.assertIn("Set MODEL_LOCAL or MODEL_CLOUD_ZDR in settings.", off["message"])
         with mock.patch.object(Config, "RUN_MODELS", {"local": "m/l"}):
             on = await (
                 await client.post(path, headers=client.csrf, json={"item": {}})
