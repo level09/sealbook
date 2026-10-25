@@ -331,6 +331,18 @@ async def story(db, user, lens: str, ref: str | None, f: dict) -> dict:
         }
         for k in keys
     ]
+    # Two rows that read the same name get what sets them apart (People's rule).
+    told = await people.hints(
+        db,
+        [
+            {"person": people.pid(r["key"]), "name": r["label"]}
+            for r in story_rows
+            if r["named"]
+        ],
+        f["investigation"],
+    )
+    for r in story_rows:
+        r["hint"] = told.get(people.pid(r["key"]))
     ids = {p["id"] for p in points}
     if lens != "incident":
         story_incidents = [

@@ -82,7 +82,7 @@ export const CaseTimeline = {
         </g>
       </g>
       <g v-for="(r, i) in laidRows" :key="r.key" :opacity="path && !path.people.has(r.key) ? .35 : 1">
-        <text x="0" :y="rowY(i) + 4" font-size="12" :fill="r.named ? 'var(--ink)' : 'var(--ink-3)'" font-weight="550" dir="auto"><title>[[ r.named ? r.label : r.label + ': name from a sensitive source; reveal it on the person page' ]]</title>[[ short(r.label) ]]</text>
+        <text x="0" :y="rowY(i) + 4" font-size="12" :fill="r.named ? 'var(--ink)' : 'var(--ink-3)'" font-weight="550" dir="auto"><title>[[ r.named ? r.label + (r.hint ? ', ' + r.hint : '') : r.label + ': name from a sensitive source; reveal it on the person page' ]]</title>[[ short(r.label) ]]</text>
         <text v-if="r.pair" x="0" :y="rowY(i) + 16" font-size="10" fill="var(--agent)"><title>[[ r.pair ]]</title>possibly two people</text>
         <line :x1="L" :x2="W" :y1="rowY(i)" :y2="rowY(i)" stroke="var(--line)" stroke-dasharray="1 3"/>
         <g clip-path="url(#cm-clip)">
@@ -238,7 +238,7 @@ export const caseMapPage = boot => ({
         const r = this.v.rows.find(x => x.key === k), end = this.ends[k];
         let lastPlace = null;
         return {
-          key: k, label: r.label, named: r.named, gaps: r.gaps,
+          key: k, label: r.label, hint: r.hint, named: r.named, gaps: r.gaps,
           pair: (this.partner[k] || []).length ? `An open same-person proposal joins this record with ${this.partner[k].map(o => this.labels[o]).join(' and ')}; they stay two rows until someone reviews it` : null,
           end: end ? {...end, short: `no record after ${fmtDay(end.after)}`} : null,
           points: (this.byPerson[k] || []).map(p => {
@@ -291,7 +291,7 @@ export const caseMapPage = boot => ({
       return {claims: new Set(a.steps.flatMap(s => s.claims)), people: new Set(a.steps.flatMap(s => s.nodes).filter(n => n.startsWith('person:'))), places: new Set(a.steps.flatMap(s => s.nodes).filter(n => n.startsWith('place:')).map(n => n.slice(6)))};
     },
     askItems() {
-      return [...(this.v?.rows || []).map(r => ({title: r.label, value: r.key, props: {prependIcon: 'ti ti-user'}})),
+      return [...(this.v?.rows || []).map(r => ({title: r.label, value: r.key, props: {prependIcon: 'ti ti-user', subtitle: r.hint || undefined}})),
         ...this.placeItems.map(p => ({title: p.title, value: 'place:' + p.value, props: {prependIcon: 'ti ti-map-pin'}}))];
     },
     // The open side panel: a place or a band, read as who was there and how they came and went.

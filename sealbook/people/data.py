@@ -317,7 +317,10 @@ async def names(session: AsyncSession, people, groups=None) -> dict[str, str]:
         limit=5000,
     )
     best: dict[str, str] = {}
-    for r in sorted(rows, key=lambda r: (NAME_ORDER.get(r["tier"], 3), r["id"])):
+    # Earliest recorded first, so a label does not change between rebuilds of the
+    # same evidence (ids are random).
+    order = lambda r: (NAME_ORDER.get(r["tier"], 3), r["recorded_at"], r["id"])  # noqa: E731
+    for r in sorted(rows, key=order):
         if r["display"]:
             best.setdefault(pid(r["subject"]), r["display"])
     return {
