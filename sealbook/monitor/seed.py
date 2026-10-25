@@ -702,4 +702,4 @@ def demo_seed(full, more, scale):
                 console.print(f"Seeded {filler.DEMO}: {scale:,} synthetic sources.")
 
     run_async(_run())
-    console.print("Open /monitor")
+    console.print("Open /case-map")

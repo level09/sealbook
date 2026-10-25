@@ -26,12 +26,12 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
-from stk.agents import brief, contradictions, gaps, linker, read, tasks
-from stk.ledger import write
-from stk.ledger.contracts import Prop, Route
-from stk.monitor.data import when as doc_when
-from stk.runs import routes
-from stk.settings import Config
+from sealbook.agents import brief, contradictions, gaps, linker, read, tasks
+from sealbook.ledger import write
+from sealbook.ledger.contracts import Prop, Route
+from sealbook.monitor.data import when as doc_when
+from sealbook.runs import routes
+from sealbook.settings import Config
 
 CASE = Path(__file__).parent / "agents" / "case.json"
 NS = uuid.UUID("5ea1b00c-0000-4000-8000-a6e47e7a1000")
