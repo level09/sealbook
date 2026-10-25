@@ -18282,7 +18282,7 @@
   ],
   "facts": 10,
   "refused": "This case is marked sensitive, so nothing from it is sent to a search or rendering service.",
-  "refused_queries": 1
+  "refused_queries": 0
  },
  "speech": {
   "file": "witness_clip.ogg",
