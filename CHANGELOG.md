@@ -2,7 +2,7 @@
 
 ## Sealbook on stk 17, 2026-10-25
 
-- Depend on the `stkit` package (`>=17.0.1,<18`) instead of a fork of stk. Sealbook's
+- Depend on the `stkit` package (`>=17.0.2,<18`) instead of a fork of stk. Sealbook's
   modules live in `sealbook/`, each an extension with `init_app(app)`; the app is
   `sealbook.app:app`. `run.py`, `alembic/`, `alembic.ini` and the stk core copies are
   gone.

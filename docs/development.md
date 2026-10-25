@@ -5,7 +5,7 @@ The evidence application requires PostgreSQL; SQLite supports only isolated
 framework tests. Start with [architecture.md](architecture.md), [operations.md](operations.md)
 and [lessons.md](lessons.md). The conventions below are inherited from stk.
 
-stk is a dependency (`stkit>=17.0.1,<18`), not a fork. Sealbook's code is the
+stk is a dependency (`stkit>=17.0.2,<18`), not a fork. Sealbook's code is the
 `sealbook/` package: `sealbook/app.py` composes `Stk(__name__, config=Config,
 extensions=[...])` and `sealbook/settings.py` holds `class Config(stk.Config)`.
 Paths under `stk/` below name files in the installed stk package; never edit them.

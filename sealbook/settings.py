@@ -20,6 +20,11 @@ class Config(stk.Config):
     SECURITY_TOTP_ISSUER = APP_NAME
     # GET starts an MCP client's OAuth authorization flow; it is not a page.
     STK_SMOKE_SKIP = ["/oauth/authorize"]
+    STK_CLI_SECTIONS = [
+        ("Runs", ["worker", "enrich", "discover", "places", "basemap", "speech-model"]),
+        ("Case data", ["demo-seed", "erase"]),
+        ("Anchors", ["anchor", "verify-anchors"]),
+    ]
 
     BLOB_DIR = os.environ.get(
         "BLOB_DIR", os.path.join(PROJECT_ROOT, "instance", "blobs")
