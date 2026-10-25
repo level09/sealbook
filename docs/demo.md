@@ -316,8 +316,13 @@ carries the bakery queue incident.
 
 The Unresolved names tab lists spellings no confirmed place resolves (Aleppo,
 Central Prison K and Douma from the intake sheet). Each already has a pending
-place proposal, so the row opens it in Review; a name without one is confirmed in
-place with your passkey.
+place proposal, so the row opens it in Review; a name without one shows a
+suggested place and why (one gazetteer candidate, the same spelling confirmed in
+another case you can open, or which of several candidates the surrounding words
+favour) and is confirmed in place with your passkey, or ticked and confirmed with
+others under one prompt. Suggest approximate places asks the place finder about
+names the gazetteer lacks; its suggestion is marked as the agent's and quotes the
+passage it rests on.
 
 Open an incident from a place page, Search or Discover: "Women held at Branch 999,
 March 2014" (`case-demo-02`), "Shelling of a bakery queue, Al Jadida, 14 August
