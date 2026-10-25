@@ -210,7 +210,7 @@
   // One search, grouped
   scene("search", "A Latin-script query returns exact matches in either script first, then leads by meaning labelled close, related or loose. A lead far below the best match is left out.", 720, 260, (svg, say) => {
     const q = box(svg, 10, 14, 200, 34, "", "v");
-    const rows = [["exact", "person", "يوسف خالد العلي", "21 facts", 1, ""], ["exact", "person", "Yousef Khaled Al-Ali", "2 facts", 1, ""],
+    const rows = [["exact", "person", "يوسف خالد علي", "21 facts", 1, ""], ["exact", "person", "Yousef Khaled Al-Ali", "2 facts", 1, ""],
       ["exact", "passage", "Dormitory 4 roster, July 2013", "line 1", 1, ""], ["exact", "audio", "Witness clip, recorder 04", "at 00:09", 1, ""],
       ["close", "person", "يوسف عمر الحلبي", "", 0.74, "v"], ["related", "place", "الفرع 999", "", 0.58, "v"],
       ["loose", "finding", "Shared presence, July 2013", "", 0.41, "v"], ["loose", "passage", "Documentation note 14/2014", "", 0.12, "r"]];
@@ -499,7 +499,7 @@
   });
 
   // A person over time: Yousef Khaled Al-Ali in 2013
-  scene("story", "Yousef Khaled Al-Ali's accepted claims in 2013: two neighbouring places on one day that do not fork, gaps of 60 and 78 days without evidence, a transfer, and a hatched band for a finding awaiting review.", 720, 210, (svg, say) => {
+  scene("story", "Yousef Khaled Al-Ali's accepted claims in 2013: two neighbouring places on one day that do not fork, gaps of 60 and 48 days without evidence, a transfer, and a hatched band for a finding awaiting review.", 720, 210, (svg, say) => {
     const defs = s("defs", {}, svg);
     const pat = s("pattern", { id: "dg-hatch", width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
     s("line", { class: "hatch-line", x1: 0, y1: 0, x2: 0, y2: 6 }, pat);
@@ -515,7 +515,7 @@
     const near = [txt(svg, may, Y - 22, "حرستا", "lbl", "middle"), txt(svg, may, Y + 30, "دوما", "lbl", "middle"),
       txt(svg, may, Y + 46, "one day, two neighbours: within precision, no fork", "lbl f", "middle")];
     near.slice(0, 2).forEach((t) => t.classList.add("f"));
-    const gaps = [[may + 30, jul, "60 days, no evidence"], [jul, sep, "78 days, no evidence"]].map(([a, b, t]) =>
+    const gaps = [[may + 30, jul, "60 days, no evidence"], [jul, sep, "48 days, no evidence"]].map(([a, b, t]) =>
       [s("path", { class: "ed f", d: `M${a} ${Y} H${b}`, "stroke-dasharray": "4 4" }, svg), txt(svg, (a + b) / 2, Y - 10, t, "lbl f", "middle")]);
     const ev = (x, t) => { const g = s("g", { class: "f" }, svg); s("circle", { class: "dot", cx: x, cy: Y, r: 5 }, g); txt(g, x, Y + 22, t, "lbl", "middle"); return g; };
     const pJul = ev(jul, "الفرع 999"), pSep = ev(sep, "الفرع 999");
