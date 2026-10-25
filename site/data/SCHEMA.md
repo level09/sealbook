@@ -9,7 +9,7 @@ typed by hand. Pages read this file with `fetch("data/case.json")`.
 `site/build_live.py`: `stk demo-seed --full` on a throwaway Postgres database
 (created and dropped by `stk.migrations.throwaway_database_url`), read back
 through the app's own endpoints by a signed-in test client, with model calls off.
-`speech` is a run of `stk.speech` with the downloaded faster-whisper model.
+`speech` is a run of `sealbook.speech` with the downloaded faster-whisper model.
 Measured numbers in `status` and `grouped_search.battery|gold` are parsed from
 docs/status.md, docs/search-eval.md and docs/models.md.
 
@@ -71,7 +71,7 @@ docs/status.md, docs/search-eval.md and docs/models.md.
     "battery": {"scored": 34, "hit_at_1": 0.94, "hit_at_3": 1.0, "missed": 0, "p50_ms": 364, "p95_ms": 872, "date": "...", "setup": "..."},
     "gold": {"recall_at_1": 0.81, "recall_at_5": 0.94, "queries": 32}
   },
-  "speech": {                            // stk.speech on acceptance/data/witness_clip.ogg during the build
+  "speech": {                            // sealbook.speech on acceptance/data/witness_clip.ogg during the build
     "file": "witness_clip.ogg", "audio": "media/witness_clip.ogg", "duration_ms": 33700,
     "model": {"model": "large-v3-turbo", "repo": "...", "revision": "...", "weights_sha256": "...", "runtime": "..."},
     "device": {"device": "cpu", "compute_type": "int8"}, "hardware": "sysctl machdep.cpu.brand_string",
@@ -92,7 +92,7 @@ docs/status.md, docs/search-eval.md and docs/models.md.
                                "excerpt": {"before": "...", "span": "...", "after": "..."} | null, "span": {}}]}],
     "incidents": ["accepted incident titles"],
     "gestures": [{"rows": [{"hash": "...", "prop": "...", "what": "...", "role": "involved only", "valid": [from, to]}],
-                  "batch": ["row hashes, as signed"], "verified_offline": true,   // stk.ledger.offline_sigs
+                  "batch": ["row hashes, as signed"], "verified_offline": true,   // sealbook.ledger.offline_sigs
                   "sig": {"challenge": "...", "client_data_json": "...", "authenticator_data": "...",
                           "signature": "...", "public_key": "COSE, base64url", "rp_id": "...", "origin": "...", "demo": true}}],
     "gesture_domain": "sealbook-gesture-v1\n",
@@ -165,10 +165,10 @@ docs/status.md, docs/search-eval.md and docs/models.md.
     "preset": ["r5", "r10"],             // first path with a held-together step and a weak step
     "depth": 8
   },
-  "disagree": {                          // GET /api/people, /api/people/<id> and POST /api/search (people)
-    "fork": {"person": "...", "prop": "name", "from": "YYYY-MM-DD", "sides": [{"value": "...", "file": "..."}]},
+  "disagree": {                          // GET /api/agents/contradictions (the person page's panel), /api/people, /api/people/<id> and POST /api/search (people)
+    "fork": {"why": "...", "sides": [{"name": "...", "field": "Mother's name", "value": "...", "when": null, "file": "source title"}]},
     "counted": {"person": "...", "screens": [["People list", 10, 3], ["Person page", 10, 3], ["Search", 10, 3]]},
-    "forks": 2, "people": 34
+    "forks": 1, "people": 34             // disagreements the contradiction hunter reports; people in the case
   },
   "entities": {                          // GET /api/places/<id> (Branch 999) and /api/incidents/<id>
     "place": {"en": "...", "ar": "...", "kind": "Facility", "precision_m": 250, "geo_source": "analyst",

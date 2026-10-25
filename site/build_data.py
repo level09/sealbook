@@ -1404,11 +1404,10 @@ def build_casemap(live: dict) -> dict:
 
 
 def build_disagree(live: dict) -> dict:
-    """One disagreement kept open, and one person counted on three screens."""
-    fork = next(
-        p for p in live["people"] if any(f["prop"] == "name" for f in p["forks"])
-    )
-    f = next(f for f in fork["forks"] if f["prop"] == "name")
+    """One disagreement kept open, as the contradiction hunter reports it on the
+    person page, and one person counted on three screens."""
+    report = live["watch"]["reports"]["contradictions"]
+    item = next(i for i in report["items"] if not i["locked"])
     counted = next(
         p for p in live["people"] if p["row"]["person"] == live["research"]["person"]
     )
@@ -1421,13 +1420,20 @@ def build_disagree(live: dict) -> dict:
     ]
     return {
         "fork": {
-            "person": fork["row"]["name"],
-            "prop": f["prop"],
-            "from": f["from"],
-            "sides": [{"value": x["value"], "file": x["file"]} for x in f["sides"]],
+            "why": item["why"],
+            "sides": [
+                {
+                    "name": c["name"],
+                    "field": c["field"],
+                    "value": c["value"],
+                    "when": c["when"],
+                    "file": c.get("title") or c.get("source"),
+                }
+                for c in item["claims"]
+            ],
         },
         "counted": {"person": counted["row"]["name"], "screens": screens},
-        "forks": sum(len(p["forks"]) for p in live["people"]),
+        "forks": report["outcome"]["proposed"],
         "people": len(live["people"]),
     }
 
