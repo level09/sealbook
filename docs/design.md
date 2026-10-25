@@ -257,56 +257,108 @@ Mechanics (no build step, no new dependencies):
 - **Cited brief panel** (after v0): an AI summary of the current filter where every
   sentence cites spans; an uncited sentence is dropped, not shown.
 
-## Colour roles (implemented 2026-10-24)
+## Colour roles (implemented 2026-10-24, kinds restored 2026-10-25)
 
 Paper and ink stay the ground; colour names a role, never decorates. Tokens live in
-`sealbook/static/css/shell.css` (inks mirrored for Vuetify colour props in
-`sealbook/static/js/config.js`). Each role has an ink for text and glyphs (AA 4.5:1 on panel,
-page and its own wash in both themes), a `-wash` for chip grounds and a `-line` for
-edges and marks (3:1 on panel). Picked in OKLCH, stored as hex for MapLibre and canvas.
-Primary actions stay ink. Colour is never the only cue: each role rides on the texture,
-icon or word in the last column, and deuteranopia and protanopia simulations still read
-through those.
+`sealbook/static/css/shell.css`; `sealbook/static/js/config.js` mirrors the inks for
+Vuetify colour props, and the maps and timelines (`casemap.js`, `stories.js`,
+`monitor/mapview.js`, `entity-page.js`) read the tokens at runtime. Each role has an ink
+for text and glyphs (AA 4.5:1 on panel, page and its own wash in both themes), a `-wash`
+for chip and tile grounds and a `-line` for edges, marks and link underlines (3:1 on
+panel). Picked in OKLCH, stored as hex for MapLibre and canvas. Colour is never the
+only cue: each role rides on the icon, texture or word in the last column.
 
-Six hues only (2026-10-24): agent, accepted, conflict (and due), negative (and overdue),
-sensitive and new. Below about 6 OKLab dE two roles read as one at chip size; the earlier
-14 had pairs at 0.7 to 3 under colour-blind simulation (person, corroborated and story;
-source and incident). So entity kinds are ink-2 and keep their icon, corroborated is the
-accepted hue in outline texture, and overdue is the negative hue with its alert icon.
-Agent violet and new blue still sit close under deuteranopia; the robot icon and the
-dot separate them.
+Kinds have hues again (2026-10-25). The 2026-10-24 cut made person, place, source,
+incident and story `ink-2` grey to avoid colour-blind collisions. On Discover, where
+every finding is agent work, that left one violet plus grey: every chip and link looked
+alike and analysts could not tell kinds apart at a glance. The collisions came from
+picking every ink at the same lightness. The fix keeps ten hues and spreads lightness
+where CVD simulation pulls two hues together: in light mode conflict sits at 6.7:1 on
+the page and source at 7.1:1 while the rest sit near 4.6:1, place moves to hue 134 and
+incident to hue 40. Story shares incident's hue: a story is told through its incidents,
+there is no free hue that stays apart under simulation, and its timeline icon tells the
+two apart. Agent and new stay close under protanopia; the robot icon against the dot and
+the word separate them.
+
+| Role | Meaning | Light ink / wash / line | Dark ink / wash / line | Non-colour pair |
+|---|---|---|---|---|
+| `--person` | person | #007289 / #d9f6ff / #0695b1 | #50c2df / #103039 / #1d829a | user or users icon |
+| `--place` | place | #45751c / #e7f6de / #64963f | #d3ef8b / #282f17 / #8ba150 | pin or map icon |
+| `--source` | source file | #404e60 / #ebf1f8 / #637285 | #ccd5e2 / #262c33 / #878e98 | file-type icon |
+| `--incident` | incident | #b2471c / #ffebe5 / #d5663e | #f0834e / #3c251a / #a85125 | alert icon, band label |
+| `--story` | story | = incident | = incident | timeline icon |
+| `--agent` | AI proposals, agent runs, findings, leads | #6f5bb0 / #f0eeff / #8c7ad2 | #b3a1fd / #2c283e / #7768b0 | robot icon, "agent" or run name |
+| `--accepted` | a person accepted it | #00775c / #daf8ec / #28997a | #6cd5b3 / #143228 / #389075 | solid texture, the word accepted |
+| `--corroborated` | independent origins agree | = accepted | = accepted | outline texture |
+| unconfirmed | not yet decided | ink-2 | ink-2 | hatch, dashed edge |
+| `--conflict`, `--due` | places or values disagree; needs you, has a date | #724800 / #ffedd8 / #a06800 | #eaa950 / #382814 / #a16d20 | fork or clock icon, "conflict", "due" |
+| `--negative`, `--overdue` | rejected, erased, failed; past due | #ac4a41 / #ffebe8 / #ce695e | #f2897c / #3d2320 / #a8554c | cross or alert icon, "failed", "overdue" |
+| `--sensitive` | sensitive source | #9c5076 / #ffe9f3 / #bd6e95 | #e694bb / #3a232e / #9e5d7d | eye-off or lock icon, hatch, "sensitive" |
+| `--new` | unread or new since last look | #006cac / #e4f2ff / #178dda | #3ba6f5 / #1a2d3e / #0e70ae | dot icon, "new" |
+
+Contrast, ink on panel / page / own wash, and line on panel:
+
+| Role | Light | Dark |
+|---|---|---|
+| person | 5.3 / 4.7 / 4.9, line 3.4 | 8.1 / 8.7 / 6.7, line 3.8 |
+| place | 5.3 / 4.6 / 4.9, line 3.4 | 13.2 / 14.2 / 10.9, line 5.9 |
+| source | 8.1 / 7.1 / 7.5, line 4.7 | 11.4 / 12.2 / 9.5, line 5.1 |
+| incident | 5.3 / 4.6 / 4.8, line 3.5 | 6.5 / 6.9 / 5.5, line 3.1 |
+| agent | 5.3 / 4.6 / 4.8, line 3.5 | 7.6 / 8.1 / 6.4, line 3.5 |
+| accepted | 5.3 / 4.6 / 4.9, line 3.4 | 9.5 / 10.2 / 7.8, line 4.3 |
+| conflict | 7.6 / 6.7 / 6.9, line 4.5 | 8.3 / 8.9 / 6.9, line 3.8 |
+| negative | 5.3 / 4.6 / 4.8, line 3.5 | 6.9 / 7.4 / 5.9, line 3.3 |
+| sensitive | 5.3 / 4.6 / 4.8, line 3.5 | 7.5 / 8.0 / 6.4, line 3.5 |
+| new | 5.4 / 4.7 / 4.9, line 3.4 | 6.4 / 6.9 / 5.3, line 3.2 |
+
+Closest ink pairs in CAM02-UCS (about 6 reads as two at chip size). Light: normal
+negative/incident 8.0; deuteranopia negative/place 5.6, place/incident 5.8; protanopia
+sensitive/person 6.0, conflict/incident 6.5. Dark: normal negative/incident 8.9;
+deuteranopia conflict/incident 6.6, agent/person 6.9; protanopia sensitive/person 9.4.
+Agent/new is the one accepted close pair (light 2.6 deutan, 3.4 protan; dark 2.2
+protan). `acceptance/check_palette.py` reads shell.css, prints both tables and exits 1
+when an ink falls under 4.5:1 or a line under 3:1; run it after changing a hue with
+`uv run --with colorspacious --with coloraide --with numpy python -m
+acceptance.check_palette`.
+
+How colour is used:
+
+- Chrome stays neutral: buttons, panels, borders and headings are ink, and primary
+  actions stay ink. Colour carries meaning only.
+- A kind shows as a tile (`.r-tile`: its icon on a small square of the kind's wash)
+  beside the item, as its ink on names and links, and as a kind chip (tint ground, deep
+  ink, icon) for kind labels and filters. Links take the kind of the page they open by
+  their `href` (`/people/`, `/places/`, `/evidence/`, `/incidents/`), so a kind reads
+  the same on every page; anchors that wrap a whole row keep their ink. A finding takes
+  the hue of what it proposes: shared presence is person, candidate incident is
+  incident (`findingHue` in `components/index.js`). Subtype labels on a list of one
+  kind (Facility, Populated place on Places) stay neutral (`.r-neutral`).
+- Statuses show as chips and marks. Sensitive notices take the sensitive wash and ink;
+  new chips take the new hue with a dot; unread marks are new, not violet.
+- Agent violet is only for AI-proposed work and agent identity: finding strength bars,
+  agent actor chips and tiles, unconfirmed agent marks. Selection and picked rows are
+  neutral.
+- The rail colours each section's icon by what the page is about (Inbox new, Discover
+  and Agents agent, Review accepted, Sources source, People person, Places and Case map
+  place, Stories story) through a `hue` key on the navigation entry; labels stay ink.
+- Maps and timelines: case map places are the place hue, bands of people at one place
+  at once the person hue, incident bands the incident hue, and claim points keep their
+  tier and author hues.
+
+Utilities: a role class (`.is-person`, `.is-place`, `.is-source`, `.is-incident`,
+`.is-story`, `.is-agent`, `.is-finding`, `.tier-accepted`, `.tier-corroborated`,
+`.tier-unconfirmed`, `.tier-rejected`, `.state-conflict`, `.state-negative`,
+`.state-sensitive`, `.state-due`, `.state-overdue`, `.state-new`, `.r-neutral`) sets
+`--r`; `.r-ink`, `.r-chip`, `.r-dot`, `.r-tile` and `.r-link` draw it. Rows get no
+role edge: the inset left edge already marks the selected row. Vuetify props take the
+role names (`color="person"`); `success`, `warning` and `error` alias accepted,
+conflict and negative. A Vuetify chip inside a chip group needs `base-color` as well
+as `color`, or it shows the hue only when selected.
 
 Ground (2026-10-24), tuned for long sessions: light is warm paper (bg #ecebe6, panel
 #fbfaf7, ink #1f2124, 15.5:1) instead of pure white; dark is lifted off near-black (bg
 #151619, panel #1c1d21, ink #d9dad6, 12:1) to cut halation. monitor.css, app.css and
 config.js mirror these values.
-
-| Role | Meaning | Light | Dark | Where | Non-colour pair |
-|---|---|---|---|---|---|
-| `--agent` | AI proposals, agent runs, findings, leads | #5a46c8 | #ab9ef7 | actor text, finding chips, strength bands, unconfirmed agent marks, a ring on confirmed agent marks | robot icon, "agent" or run name |
-| `--accepted` | a person accepted it | #0d6a58 | #7bd1ba | tier fills on chips, swatches, bboxes, map and timeline points | solid texture, the word accepted |
-| `--corroborated` | independent origins agree | = accepted | = accepted | tier outlines | outline texture |
-| unconfirmed | not yet decided | ink-2 / ink-3 | ink-2 / ink-3 | hatched marks in the author's hue | hatch, dashed edge |
-| `--conflict` | places or values disagree | #915c08 | #f6b669 | timeline forks, map fork lines, fork notes | fork icon, "conflict" |
-| `--negative` | rejected, erased, failed | #a04034 | #ea998b | rejected strike, failed chips and checks | line-through, cross, "failed" |
-| `--sensitive` | sensitive source | #964267 | #e9a3bd | sensitive chips, thumbnail hatch and lock | eye-off or lock icon, hatch, "sensitive" |
-| `--due` | needs your action, has a date | = conflict | = conflict | Needs you chips, assignee due | clock icon, "due" or "asks you" |
-| `--overdue` | past its due date | = negative | = negative | Needs you chips, Sources workload and assignee | alert icon, "overdue" |
-| `--new` | unread or new since last look | #0d6abb | #77b5fb | bell badge and unread icons, new chips | dot icon, "new" |
-| `--person` | person | ink-2 | ink-2 | search glyphs and group dots | user icon |
-| `--place` | place | ink-2 | ink-2 | search glyphs and group dots | pin icon |
-| `--source` | source file | ink-2 | ink-2 | thumbnail type icons, search glyphs | file-type icon |
-| `--incident` | incident | ink-2 | ink-2 | Stories incident bands, search glyphs | band label, alert icon |
-| `--story` | story | ink-2 | ink-2 | reserved for story links | story icon |
-
-Washes and lines per role are in shell.css. Utilities: a role class (`.is-person`,
-`.is-place`, `.is-source`, `.is-incident`, `.is-story`, `.is-finding`, `.tier-accepted`,
-`.tier-corroborated`, `.tier-unconfirmed`, `.tier-rejected`, `.state-conflict`,
-`.state-negative`, `.state-sensitive`, `.state-due`, `.state-overdue`, `.state-new`)
-sets `--r`; `.r-ink`, `.r-chip` and `.r-dot` draw it. Rows get no role edge: the
-inset left edge already marks the selected row. Vuetify props take the
-role names (`color="overdue"`); `success`, `warning` and `error` alias accepted,
-conflict and negative.
 
 Rule for tier against author: before a decision a mark shows its author (violet agent,
 ink person) on a hatch; once confirmed it shows its tier hue, and an agent-authored
