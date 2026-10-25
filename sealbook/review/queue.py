@@ -27,7 +27,7 @@ from sealbook.ledger.models import (
 from sealbook.monitor import data
 from sealbook.monitor import filter as mfilter
 from sealbook.people import data as people
-from sealbook.review import findings
+from sealbook.review import assist, findings
 
 BOXES = ("mine", "sent", "open")
 PENDING = (Tier.UNCONFIRMED, Tier.CORROBORATED)
@@ -554,8 +554,9 @@ def compare(a: list[dict], b: list[dict]) -> list[dict]:
 
 async def claim(db, user, sid: uuid.UUID) -> dict | None:
     """One claim as the decision pane shows it: the list item plus checks, run
-    provenance, other claims about the same person and prop, the thread, and for
-    identity proposals the basis compared field by field."""
+    provenance, other claims about the same person and prop, the thread, the
+    pre-review flags (assist.flags), and for identity proposals the basis compared
+    field by field."""
     found = await rows(db, user, [sid])
     if not found:
         return None
@@ -666,6 +667,7 @@ async def claim(db, user, sid: uuid.UUID) -> dict | None:
             )
         ]
     item["thread"] = thread
+    item["flags"] = await assist.flags(db, user, item, st, bool(readable))
     item["hidden_sources"] = hidden(item)
     # An agent's reason may name what its basis says, so it waits for the same reveal.
     if item["reasoning"] and item["hidden_sources"]:

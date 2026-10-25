@@ -80,6 +80,11 @@
 .rv-checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .rv-checks li { display: flex; gap: 6px; align-items: baseline; }
 .rv-checks .bad { color: rgb(var(--v-theme-warning)); font-weight: 550; }
+.rv-flags { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.rv-flags li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 2px 6px; align-items: baseline; line-height: 1.5; overflow-wrap: anywhere; }
+.rv-flags li > i { color: var(--conflict); font-size: 15px; }
+.rv-flags q { quotes: "\201C" "\201D"; color: var(--ink); font-weight: 550; }
+.rv-flags .go { grid-column: 2; justify-self: start; }
 .rv-kv { display: grid; grid-template-columns: 92px 1fr; gap: 4px 10px; margin: 0; }
 .rv-kv dt { color: var(--ink-3); }
 .rv-kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
@@ -325,6 +330,22 @@
             <div class="rv-sec">
               <h3>Checks</h3>
               <ul class="rv-checks"><li v-for="c in checks" :key="c.name"><v-icon :icon="c.ok === false ? 'ti ti-alert-triangle' : c.ok ? 'ti ti-check' : 'ti ti-help-circle'" size="15" :color="c.ok === false ? 'warning' : undefined"></v-icon><span :class="{bad: c.ok === false}">${ c.text }</span></li></ul>
+            </div>
+
+            <div class="rv-sec" v-if="claim.flags && claim.flags.length" role="region" aria-labelledby="rv-h-flags">
+              <h3 id="rv-h-flags">Before you decide</h3>
+              <ul class="rv-flags">
+                <li v-for="(f, i) in claim.flags" :key="i"><i class="ti ti-alert-triangle" aria-hidden="true"></i>
+                  <span v-if="f.kind === 'place'">The passage names <q dir="auto" class="is-place r-ink">${ f.quote }</q> (<a :href="f.cite.href">${ f.cite.label }</a>), and no claim from this source holds that place.</span>
+                  <span v-else-if="f.kind === 'differs'">An accepted claim gives another ${ label(claim.prop) }: <bdi dir="auto"><b>${ fmtDate(f.value) }</b></bdi><template v-if="f.cite"> in <bdi>${ f.file }</bdi> (<a :href="f.cite.href">${ f.cite.label }</a>)</template>.</span>
+                  <span v-else-if="f.kind === 'person'">Another person record in this case has the same full name, <a :href="'/people/' + f.person.id"><bdi dir="auto">${ f.person.name }</bdi></a>, named in <bdi>${ f.file }</bdi> (<a :href="f.cite.href">${ f.cite.label }</a>).<template v-if="f.proposal"> A proposal to join the two is open.</template></span>
+                  <span v-else-if="f.kind === 'date' && f.quote">It has no date of its own, but the same passage says <q dir="auto">${ f.quote }</q> (<a :href="f.cite.href">${ f.cite.label }</a>).</span>
+                  <span v-else-if="f.kind === 'date'">It has no date of its own. The date shown is the document's, ${ fmtDate(f.document) } (<a :href="f.cite.href"><bdi>${ f.cite.label }</bdi></a>), which may be when it was written, not when this happened.</span>
+                  <v-btn v-if="f.kind === 'place' && f.place" class="go" size="x-small" variant="outlined" prepend-icon="ti ti-map-pin" :href="'/places/' + f.place.id"><span>Open&nbsp;<bdi>${ f.place.name }</bdi></span></v-btn>
+                  <v-btn v-if="f.kind === 'person' && f.proposal" class="go" size="x-small" variant="outlined" prepend-icon="ti ti-users" :href="'/review?box=open&statement=' + f.proposal">Open the proposal</v-btn>
+                </li>
+              </ul>
+              <p class="text-caption rv-muted mt-2 mb-0">Found by rules when the claim opened. None of this accepts, rejects or changes anything.</p>
             </div>
 
             <div class="rv-sec">
