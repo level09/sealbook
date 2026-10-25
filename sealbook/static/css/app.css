@@ -152,3 +152,49 @@ a:not(.v-btn, .v-list-item, .v-tab, .v-chip) {
 a:not(.v-btn, .v-list-item, .v-tab, .v-chip):hover {
     opacity: 0.8;
 }
+
+/* Sheet columns (components/SheetColumns.js), on Add evidence and the evidence page.
+   A suggestion from header words and value shapes is neutral; only one from the
+   embedding model is agent violet. */
+.sheet-cols { min-width: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.sheet-cols .muted { color: var(--ink-3); }
+.sheet-cols > header { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: var(--raise); border-bottom: 1px solid var(--line); font-size: 12.5px; }
+.sheet-cols .says { padding: 10px 12px; font-size: 13px; color: var(--ink-2); margin: 0; max-width: 90ch; }
+.sheet-cols .says + .says { padding-top: 0; }
+.sheet-cols .scroll { overflow-x: auto; }
+.sheet-cols table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+.sheet-cols th, .sheet-cols td { padding: 6px 10px; border-top: 1px solid var(--line); text-align: start; vertical-align: top; white-space: nowrap; }
+.sheet-cols thead th { font-weight: 600; background: var(--panel); }
+.sheet-cols .map td { background: var(--raise); }
+.sheet-cols .map .v-select { min-width: 150px; }
+.sheet-cols .map .v-field { font-size: 12.5px; }
+.sheet-cols .note { font-size: 11.5px; display: flex; gap: 4px; align-items: flex-start; margin-top: 3px; white-space: normal; max-width: 220px; color: var(--ink-2); }
+.sheet-cols .note .ti { margin-top: 1px; flex: none; }
+.sheet-cols .note.sug { color: var(--agent); }
+.sheet-cols .note.due { color: var(--due); }
+.sheet-cols .ign { color: var(--ink-3); text-decoration: line-through; }
+.sheet-cols .blank { color: var(--ink-3); font-style: italic; }
+.sheet-cols footer { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 12px; border-top: 1px solid var(--line); }
+.sheet-cols .err { color: var(--negative); }
+.sheet-cols .ds { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 0 12px 10px; }
+.sheet-cols .ds .v-select, .sheet-cols .ds .v-text-field { max-width: 280px; min-width: 200px; }
+
+/* What happens next (components/SourceSteps.js): one row per step, the icon and the
+   word carry the state, colour only repeats it. */
+.steps { padding: 12px; }
+.steps > header { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.steps h3 { font-size: 13px; margin: 0; font-weight: 650; }
+.steps .muted { color: var(--ink-3); font-size: 12px; }
+.steps ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.steps li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 6px; font-size: 13px; }
+.steps li > .ti { margin-top: 2px; font-size: 15px; color: var(--ink-3); }
+.steps .st-word { font-size: 12px; color: var(--ink-3); }
+.steps .st-says { font-size: 12.5px; color: var(--ink-2); max-width: 70ch; }
+.steps .st-acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.steps .sheet-cols { margin-top: 8px; }
+.steps .st-done > .ti { color: var(--ink); }
+.steps .st-running > .ti, .steps .st-running .st-word { color: var(--agent); }
+.steps .st-you > .ti, .steps .st-you .st-word, .steps .st-model > .ti, .steps .st-model .st-word { color: var(--due); }
+.steps .st-failed > .ti, .steps .st-failed .st-word { color: var(--negative); }
+.steps .st-later, .steps .st-skipped { color: var(--ink-3); }
+.steps .st-skipped strong { font-weight: 500; }

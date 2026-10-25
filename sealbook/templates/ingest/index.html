@@ -223,15 +223,16 @@
                         <div v-if="view(it).msg" class="status" :class="view(it).tone" role="status">
                             <i :class="TONE[view(it).tone]" aria-hidden="true"></i>
                             <span><template v-if="view(it).tone === 'dup'">Same bytes as <a :href="'/evidence/' + it.sha" dir="auto">${ it.original.title }</a>, added ${ ago(it.original.at) } from ${ originWords(it.original.origin) }${ it.original.investigation && it.original.investigation !== caseSlug ? ' in ' + it.original.investigation : '' }. No second copy stored; this upload is logged on that source's custody record.</template><template v-else>${ view(it).msg }</template>
-                                <div v-if="view(it).tone === 'fail'" class="acts">
-                                    <v-btn size="x-small" variant="outlined" prepend-icon="ti ti-refresh" @click="retry(it)">Try again</v-btn>
-                                    <v-btn v-if="it.result || it.url" size="x-small" variant="text" prepend-icon="ti ti-download" @click="say('Save the page from your browser, then drop the file on this page')">Save it yourself and drop it here</v-btn>
+                                <div v-if="view(it).tone === 'fail' || view(it).side || view(it).read" class="acts">
+                                    <v-btn v-if="view(it).tone === 'fail' || view(it).side" size="x-small" variant="outlined" prepend-icon="ti ti-refresh" @click="retry(it)">Try again</v-btn>
+                                    <v-btn v-if="view(it).read" size="x-small" variant="outlined" prepend-icon="ti ti-player-play" @click="readNow(it)">Read it now</v-btn>
+                                    <v-btn v-if="(it.result || it.url) && view(it).tone === 'fail'" size="x-small" variant="text" prepend-icon="ti ti-download" @click="say('Save the page from your browser, then drop the file on this page')">Save it yourself and drop it here</v-btn>
                                 </div>
                             </span>
                         </div>
                     </div>
                     <ol class="track" :aria-label="'Stages for ' + it.name">
-                        <li v-for="s in stagesOf(it)" :key="s.k" :class="s.st" :aria-label="s.label + ': ' + WORD[s.st]">
+                        <li v-for="s in stagesOf(it)" :key="s.k" :class="s.st" :aria-label="s.label + ': ' + (s.word || WORD[s.st])">
                             <span class="bar"></span><span class="lbl"><i v-if="ICON[s.st]" :class="ICON[s.st]" aria-hidden="true"></i>${ s.label }</span>
                         </li>
                     </ol>

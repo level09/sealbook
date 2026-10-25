@@ -126,6 +126,8 @@
 .ae .track .run .lbl { color: var(--agent); }
 .ae .track .wait .bar { background: transparent; border: 1.5px dashed var(--due-line); height: 5px; }
 .ae .track .wait .lbl { color: var(--due); }
+.ae .track .you .bar { background: var(--due-wash); border: 1.5px solid var(--due-line); height: 5px; }
+.ae .track .you .lbl { color: var(--due); }
 .ae .track .fail .bar { background: var(--negative); }
 .ae .track .fail .lbl { color: var(--negative); }
 .ae .track .skip .bar { background: linear-gradient(var(--line-strong), var(--line-strong)) center/100% 1px no-repeat; }
@@ -134,24 +136,7 @@
 @media (prefers-reduced-motion: reduce) { .ae .track .run .bar, .ae .rec .dot { animation: none; } }
 
 /* sheet preview */
-.ae .sheet { min-width: 0; grid-column: 1 / -1; margin: 6px 0 4px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
-.ae .sheet > header { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: var(--raise); border-bottom: 1px solid var(--line); font-size: 12.5px; }
-.ae .sheet .says { padding: 10px 12px; font-size: 13px; color: var(--ink-2); margin: 0; max-width: 90ch; }
-.ae .sheet .scroll { overflow-x: auto; }
-.ae .sheet table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
-.ae .sheet th, .ae .sheet td { padding: 6px 10px; border-top: 1px solid var(--line); text-align: start; vertical-align: top; white-space: nowrap; }
-.ae .sheet thead th { font-weight: 600; background: var(--panel); }
-.ae .sheet .map td { background: var(--raise); }
-.ae .sheet .map .v-select { min-width: 150px; }
-.ae .sheet .map .v-field { font-size: 12.5px; }
-.ae .sheet .note { font-size: 11.5px; display: flex; gap: 4px; align-items: center; margin-top: 3px; white-space: nowrap; }
-.ae .sheet .note.sug { color: var(--agent); }
-.ae .sheet .note.ok { color: var(--ink-2); }
-.ae .sheet .ign { color: var(--ink-3); text-decoration: line-through; }
-.ae .sheet .blank { color: var(--ink-3); font-style: italic; }
-.ae .sheet footer { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 12px; border-top: 1px solid var(--line); }
-.ae .sheet .ds { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 0 12px 10px; }
-.ae .sheet .ds .v-select, .ae .sheet .ds .v-text-field { max-width: 280px; min-width: 200px; }
+.ae .sheet { min-width: 0; grid-column: 1 / -1; margin: 6px 0 4px; }
 
 .ae .addbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 10px 12px; border-top: 1px solid var(--line); background: var(--panel); }
 .ae .notebox { padding: 12px 12px 10px; background: var(--raise); border-bottom: 1px solid var(--line); }

@@ -29,6 +29,8 @@ body.dark-mode .evp {
 
 .ev { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, .95fr) minmax(0, 1.15fr); gap: 12px; align-items: start; }
 .ev.side { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+.ev.mapping { grid-auto-flow: row dense; }
+.ev.mapping > .ev-claims { grid-column: 1 / -1; }
 .ev-panel { background: var(--e-panel); border: 1px solid var(--e-line); border-radius: 8px; overflow: hidden; }
 .ev-panel > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--e-line); min-height: 42px; flex-wrap: wrap; }
 .ev-panel > header .muted { font-size: 12px; }

@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <div class="ev" :class="{side: other}">
+    <div class="ev" :class="{side: other, mapping: mapping}">
       <section class="ev-panel ev-stick" aria-label="Preview">
         <evidence-viewer ref="viewer" :item="it" :claims="claims" :marks="marks" :sel="sel" :focus="focusMs" :page="pdfPage" :read="read" :read-error="readError" :hl="hl" :highlight="excerpt?.match || ''" @select="pick" @revealed="revealed" @retry-read="loadRead"></evidence-viewer>
         <div v-if="connections.length" class="ev-conn">
@@ -41,7 +41,7 @@
         <evidence-viewer :item="other" :claims="otherClaims" :marks="otherMarks" :focus="otherAt" :read="otherRead" :read-error="otherReadError" @revealed="revealed" @retry-read="loadOtherRead"></evidence-viewer>
         <p v-if="otherCopy" class="ev-note pa-3">${ otherCopy.kind }: ${ otherCopy.why }. Here ${ ms(otherCopy.here[0]) }, there ${ ms(otherCopy.there[0]) }.</p>
       </section>
-      <section v-else class="ev-panel" aria-labelledby="ev-h-claims">
+      <section v-else class="ev-panel ev-claims" aria-labelledby="ev-h-claims">
         <header><h2 id="ev-h-claims">Claims</h2><span class="muted">${ claims.length } from this source</span>
           <span class="ev-legend"><span class="tier-accepted by-person"><span class="ev-sw"></span> accepted</span><span class="tier-corroborated by-person"><span class="ev-sw"></span> corroborated</span><span class="tier-unconfirmed by-agent"><span class="ev-sw"></span> unconfirmed</span></span></header>
         <div v-if="claims.length" role="listbox" aria-label="Claims, j and k to move">
@@ -60,12 +60,7 @@
             </div>
           </template>
         </div>
-        <ul v-if="it.reading.length && (readPending || !claims.length)" class="ev-reading ev-note pa-3 mb-0" role="status" aria-live="polite" aria-label="Reading this source">
-          <li v-for="r in it.reading" :key="r.tool" :title="r.model || null"><i class="ti" :class="{queued: 'ti-clock', running: 'ti-loader-2', done: 'ti-check', failed: 'ti-alert-triangle'}[r.status]" aria-hidden="true"></i> ${ r.label }: ${ readWords(r) }</li>
-        </ul>
-        <v-empty-state v-if="!claims.length" icon="ti ti-file-search" :title="readPending ? 'Reading this source' : 'No claims extracted yet'" :text="readPending ? 'Claims appear here when the run finishes.' : it.reading.some(r => r.status === 'done' && ['extract', 'extract_sheet'].includes(r.tool)) ? 'The model read this source and proposed no claims.' : 'The extractor reads ' + (it.kind === 'audio' ? 'transcripts' : it.kind === 'video' ? 'speech and on-screen text' : 'text') + ' once a model has processed this source.'">
-          <template #actions><v-btn variant="outlined" prepend-icon="ti ti-refresh" :loading="queueing" :disabled="readPending" @click="queue">Queue processing</v-btn></template>
-        </v-empty-state>
+        <source-steps v-if="!claims.length || stepsOpen" :key="it.sha256" :item="it" @changed="changed" @said="say"></source-steps>
       </section>
 
       <section class="ev-panel ev-intel" aria-labelledby="ev-h-intel">

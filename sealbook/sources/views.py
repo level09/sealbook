@@ -6,6 +6,7 @@ from quart_security import current_user
 
 from sealbook.collaboration.views import guard, no_store
 from sealbook.discovery.evidence import granted
+from sealbook.ingest import batch
 from sealbook.ledger.contracts import Refused
 from sealbook.sources import data, review
 
@@ -51,9 +52,17 @@ async def page():
 @bp.get("/api/sources")
 async def listing():
     found = await data.listing(g.db_session, _filter())
+    steps = await batch.source_steps(
+        g.db_session, {r["sha256"]: [r["sha256"]] for r in found["items"]}
+    )
     for r in found["items"]:
         # A held reveal means the tile may be fetched; otherwise the client keeps it locked.
         r["revealed"] = granted(r["sha256"]) or not r["sensitive"]
+        # What waits on a person or a model, so the next step shows from the list.
+        nxt = batch.attention(steps.get(r["sha256"], []))
+        r["next"] = (
+            {k: nxt[k] for k in ("state", "chip", "label", "words")} if nxt else None
+        )
     return output(found)
 
 

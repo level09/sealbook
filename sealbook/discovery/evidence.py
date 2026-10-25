@@ -712,6 +712,8 @@ async def reading(db, fam: list[str]) -> list[dict]:
 
 
 async def item(db, sha: str, user) -> dict | None:
+    from sealbook.ingest import batch
+
     blob = await source_blob(db, sha)
     if blob is None:
         return None
@@ -845,6 +847,7 @@ async def item(db, sha: str, user) -> dict | None:
         "pages": pages,
         "claims": claims,
         "reading": await reading(db, fam),
+        "steps": (await batch.source_steps(db, {sha: fam}, {sha: has_file}))[sha],
         # The one label rule for each person the claims are about.
         "people": await people_data.names(
             db,
