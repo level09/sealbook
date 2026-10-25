@@ -156,7 +156,7 @@
     <p>Drop in a photo, a scan or a recording. Sealbook takes its fingerprint, notes where it came from and reads it. The AI then suggests facts, each pointing at the exact words, part of the page or moment of audio behind it. Nothing counts as fact until a person accepts it.</p>
     <p>Accept a claim below. It turns solid, a seal is stamped, and this page gains a link right after this one.</p>
     <details class="how"><summary>How it works</summary>
-      <p>Pick one of the synthetic case files. Sealbook records its fingerprints and how it was acquired, checks its content credentials and reads its text. Then the AI proposes claims, each one pinned to a span, a region of a page or a stretch of audio. Nothing it proposes counts as fact until a person accepts it.</p>
+      <p>Pick one of the synthetic case files. Sealbook records its fingerprints and how it was acquired, checks its content credentials and reads its text. Then the AI proposes claims, each one pinned to a span, a region of a page or a stretch of audio. Nothing it proposes counts as fact until a person accepts it. Each source lists its steps and what it is waiting for, a person or a model, and once a batch is read Sealbook says when it looks like another case the uploader can open, recording it there only on a click.</p>
     </details>
   </div>
   <figure class="diagram" data-diagram="arrive"></figure>
@@ -167,9 +167,9 @@
   <div class="copy">
     <h2>A messy sheet</h2>
     <p class="job">Messy intake lists, read without guessing.</p>
-    <p>Lists from the field mix Arabic and Latin, write dates several ways and put several facts in one cell. Sealbook does not guess what a column means: a person names each one first. Every fact it then reads points back to its exact cell. When a newer version of the list arrives, only new and changed rows are read again.</p>
+    <p>Lists from the field mix Arabic and Latin, write dates several ways and put several facts in one cell. Sealbook suggests what each column holds from its header words and the shape of its values, with the reason, and a person confirms every column before anything is read. Every fact it then reads points back to its exact cell. When a newer version of the list arrives, only new and changed rows are read again.</p>
     <details class="how"><summary>How it works</summary>
-      <p>Intake lists arrive as spreadsheets with mixed scripts, dates in several forms and several facts in one cell. Sealbook stores the sheet as evidence and reads nothing until a person names a field for every column. Then each row is read, and every fact comes back as a proposal pinned to its cell, down to the characters.</p>
+      <p>Intake lists arrive as spreadsheets with mixed scripts, dates in several forms and several facts in one cell. Sealbook stores the sheet as evidence and suggests a field for each column from its header in Arabic or English and from its values: running numbers, dates, male or female, ages. It reads nothing until a person confirms a field for every column. Then each row is read, and every fact comes back as a proposal pinned to its cell, down to the characters.</p>
       <p>A later version of the same list is compared with the last one first, row by row, and only added and changed rows are read again.</p>
     </details>
   </div>
@@ -297,9 +297,9 @@
   <div class="copy">
     <h2>A page for every place and incident</h2>
     <p class="job">Everything known about a place, on one page.</p>
-    <p>Each place gets a page built from the evidence: its names in each script, every spelling the sources used, who was there and when, and every source behind it. Names Sealbook cannot place wait for an analyst to confirm. Each accepted incident gets a page too, with its people, places and a signed history that can be undone. Below are Branch 999 and the incident accepted there.</p>
+    <p>Each place gets a page built from the evidence: its names in each script, every spelling the sources used, who was there and when, and every source behind it. Names Sealbook cannot place yet each get a suggested place and the reason for it, and wait for an analyst to confirm. Each accepted incident gets a page too, with its people, places and a signed history that can be undone. Below are Branch 999 and the incident accepted there.</p>
     <details class="how"><summary>How it works</summary>
-      <p>Each place has a page built from the evidence: its names in each script, its kind, how precisely it is known and where its position came from, every spelling the sources used, the people placed there and when, the incidents and open findings that touch it, and every source behind it. Names the gazetteer cannot match wait in a list for an analyst to confirm.</p>
+      <p>Each place has a page built from the evidence: its names in each script, its kind, how precisely it is known and where its position came from, every spelling the sources used, the people placed there and when, the incidents and open findings that touch it, and every source behind it. Names the gazetteer cannot match wait in a list, each with a suggested place: one gazetteer candidate, the same spelling confirmed in another case the analyst can open, or an approximate area proposed by an agent from the quoted words. An analyst confirms each, or several at once with one signature.</p>
       <p>An accepted incident has a page too: its window and places, the people in it by role, the findings whose acceptance built it, and its signed history with undo. Below are Branch 999 and the incident accepted there.</p>
     </details>
   </div>
@@ -356,9 +356,9 @@
   <div class="copy">
     <h2>Review together</h2>
     <p class="job">Check each other's work, and sign every decision.</p>
-    <p>Ask a colleague to check a fact, or hand over a whole set of sources. Requests and replies land in one inbox, and the desk shows what changed while you were away. Before you sign a decision you see exactly what you are signing, and any decision can be undone, also with a signature. Private discussions stay private, and sensitive files stay covered until someone chooses to reveal them, which is logged.</p>
+    <p>Ask a colleague to check a fact, or hand over a whole set of sources. Requests and replies land in one inbox, and the desk shows what changed while you were away. Before you sign a decision you see exactly what you are signing, and any decision can be undone, also with a signature. Before you accept, Sealbook flags what reviewers usually catch by hand, and a person seen in two places at two times reads as a timeline, not a disagreement. Private discussions stay private, and sensitive files stay covered until someone chooses to reveal them, which is logged.</p>
     <details class="how"><summary>How it works</summary>
-      <p>Ask a colleague to check a claim, or assign a whole selection of sources at once. Requests, replies, mentions, assigned work and finished intake arrive as stored notifications in one inbox, and the desk shows what changed since you left. The discussion stays with the people in it and does not appear in general views, history or exports. Each decision shows the rows the passkey will sign before it asks, and a signed undo restores what came before.</p>
+      <p>Ask a colleague to check a claim, or assign a whole selection of sources at once. Requests, replies, mentions, assigned work and finished intake arrive as stored notifications in one inbox, and the desk shows what changed since you left. The discussion stays with the people in it and does not appear in general views, history or exports. Each decision shows the rows the passkey will sign before it asks, and a signed undo restores what came before. Under the checks, rules flag a place in the passage that no claim from the source holds, an accepted value of a one-value field that differs, two places on the same day too far apart to both hold, and another record with the same full name from another source; each flag cites the words and never decides.</p>
       <p>Sensitive sources stay covered until someone chooses to reveal them, and that reveal is logged. Opening any other source is logged as a view.</p>
     </details>
   </div>

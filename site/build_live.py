@@ -39,6 +39,9 @@ def live() -> dict:
         mock.patch.object(Config, "EMBEDDING_MODEL", None),
         mock.patch.object(Config, "RUN_MODELS", {}),
         mock.patch.object(Config, "SPEECH_MODEL", ""),
+        # Agents are off except where _watch runs them on the fixed answer, so the
+        # page never depends on a live model's answer.
+        mock.patch.object(Config, "AGENT_MODEL", ""),
         # Research queries are only proposed here; nothing is sent to a provider.
         mock.patch.object(Config, "BRAVE_API_KEY", ""),
         mock.patch.object(Config, "BLOB_DIR", blob_dir),

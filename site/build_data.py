@@ -1846,6 +1846,7 @@ LIVE = {
     "disagree": build_disagree,
     "entities": build_places_pages,
     "research": build_research,
+    "status": lambda live: build_status(),  # docs/status.md only
 }
 
 
