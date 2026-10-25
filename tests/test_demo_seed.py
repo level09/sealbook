@@ -13,6 +13,7 @@ from sqlalchemy import func, select
 from stk.user.models import Role, User
 
 from sealbook.agents import read
+from sealbook.casemap import data as casemap
 from sealbook.collaboration import service as collaboration
 from sealbook.collaboration.models import Assignment, Notification
 from sealbook.discovery.evidence import transcript_timeline
@@ -167,6 +168,9 @@ class DemoSeedTest(unittest.IsolatedAsyncioTestCase):
         branch = await s.scalar(select(Place.id).where(Place.name_en == "Branch 999"))
         place = await story(s, owner, "place", str(branch), case)
         self.assertGreaterEqual(len({p["subject"] for p in place["points"]}), 6)
+        # Case news reads every agent's stored output, the standing question's too.
+        news = await casemap.news(s, "case-demo-02")
+        self.assertTrue(any(i["kind"] == "agent" for i in news))
         # Evidence: a sheet with two versions and cell proposals, a transcript
         # with a time per line, and claims on the PDF's page text.
         versions = (await s.scalars(select(DatasetVersion))).all()

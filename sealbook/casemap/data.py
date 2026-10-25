@@ -576,7 +576,9 @@ async def agent_outputs(db, investigation: str) -> list[dict]:
     out = []
     for run in found:
         if run.tool in ("contradictions", "gaps", "standing"):
-            n = len(read.read_output(await db.get(Blob, run.output_hash))["items"])
+            output = read.read_output(await db.get(Blob, run.output_hash))
+            # Standing questions store their results as matches, the others as items.
+            n = len(output["matches" if run.tool == "standing" else "items"])
         else:
             n = proposed.get(run.id, 0)
         text, href = {
