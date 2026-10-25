@@ -34,7 +34,6 @@ from sealbook.anchor.service import (
     run_once,
     verify_anchors,
 )
-from sealbook.app import app as sealbook_app
 from sealbook.ledger import chain, merkle
 from sealbook.ledger.contracts import Prop, StatementIn
 from sealbook.ledger.models import Chain, Statement
@@ -125,7 +124,7 @@ class AnchorTest(unittest.IsolatedAsyncioTestCase):
         url = self.enterContext(
             throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
         )
-        config = build_alembic_config(sealbook_app, url, quiet=True)
+        config = build_alembic_config("sealbook", url, quiet=True)
         command.upgrade(config, "heads")
         self.url = make_url(url).set(drivername="postgresql+asyncpg")
         self.partner = Path(self.enterContext(tempfile.TemporaryDirectory()))

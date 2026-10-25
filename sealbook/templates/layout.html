@@ -188,7 +188,7 @@
 
 <!-- Navigation Data: each extension's app.navigation entries, in extension order.
      `badge` names a key of /api/nav/counts; `match` is the path that marks the item current. -->
-<script>const stkNavigation = {{ rail_navigation()|tojson }};</script>
+<script>const stkNavigation = {{ app_navigation()|tojson }};</script>
 
 <!-- stk Components -->
 <script src="{{ asset('js/components/index.js') }}"></script>

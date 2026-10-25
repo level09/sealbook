@@ -179,6 +179,8 @@ def harness(case, events, g, written):
         (gaps, "reported", mock.AsyncMock(return_value=set())),
         (gaps, "colleagues", mock.AsyncMock(return_value={})),
         (contradictions, "reported", mock.AsyncMock(return_value=set())),
+        # Runs here are built on the local route, whatever .env routes agents to.
+        (Config, "AGENT_ROUTE", "local"),
     ):
         stack.enter_context(mock.patch.object(target, attr, new))
     return stack

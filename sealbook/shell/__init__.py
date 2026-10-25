@@ -13,8 +13,6 @@ def init_app(app):
     register_assets(app)
     app.register_blueprint(bp_account)
     register_passkey_return(app)
-    # Sealbook's rail only: stk's Dashboard and Account sections are not shown.
-    app.jinja_env.globals["rail_navigation"] = lambda: app.navigation
 
     async def index():
         # No marketing page: analysts land on the Desk, everyone else signs in.

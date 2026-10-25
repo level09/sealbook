@@ -28,7 +28,6 @@ from stk.migrations import (
 from stk.user.models import User
 
 from sealbook import netguard
-from sealbook.app import app as sealbook_app
 from sealbook.app import create_app
 from sealbook.ingest import batch, service
 from sealbook.ledger.models import Acquisition, Blob, Principal, Run
@@ -61,7 +60,7 @@ class IngestTest(unittest.IsolatedAsyncioTestCase):
         url = self.enterContext(
             throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
         )
-        config = build_alembic_config(sealbook_app, url, quiet=True)
+        config = build_alembic_config("sealbook", url, quiet=True)
         command.upgrade(config, "heads")
         self.url = make_url(url).set(drivername="postgresql+asyncpg")
         self.tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
@@ -287,7 +286,7 @@ class IngestRoleTest(unittest.IsolatedAsyncioTestCase):
         url = self.enterContext(
             throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
         )
-        config = build_alembic_config(sealbook_app, url, quiet=True)
+        config = build_alembic_config("sealbook", url, quiet=True)
         command.upgrade(config, "heads")
         db_url = (
             make_url(url)

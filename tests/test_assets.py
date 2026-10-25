@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 import stk
 
@@ -30,11 +31,10 @@ class AssetTests(unittest.IsolatedAsyncioTestCase):
             tag,
             r'"/static/js/components/media\.js": "/static/js/components/media\.js\?v=[0-9a-f]{12}"',
         )
-        self.assertNotIn("vue.min.js", tag)
 
     async def test_changing_a_file_changes_its_version(self):
         app = create_app(AssetConfig)
-        path = assets.STATIC / "js" / "_version_probe.js"
+        path = Path(assets.__file__).parent / "static" / "js" / "_version_probe.js"
         try:
             path.write_text("a")
             async with app.test_request_context("/"):

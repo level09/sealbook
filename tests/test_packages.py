@@ -34,7 +34,6 @@ from stk.migrations import (
 from stk.user.models import Role, User
 
 from sealbook import blobs
-from sealbook.app import app as sealbook_app
 from sealbook.app import create_app
 from sealbook.ledger import attest, merkle
 from sealbook.ledger.contracts import Prop, Refused, StatementIn
@@ -183,7 +182,7 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
         url = self.enterContext(
             throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
         )
-        config = build_alembic_config(sealbook_app, url, quiet=True)
+        config = build_alembic_config("sealbook", url, quiet=True)
         command.upgrade(config, "heads")
         db_url = (
             make_url(url)

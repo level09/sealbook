@@ -20,7 +20,6 @@ from stk.migrations import (
 )
 
 from sealbook import blobs
-from sealbook.app import app as sealbook_app
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import (
     Blob,
@@ -89,7 +88,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         url = self.enterContext(
             throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
         )
-        config = build_alembic_config(sealbook_app, url, quiet=True)
+        config = build_alembic_config("sealbook", url, quiet=True)
         command.upgrade(config, "heads")
         self.url = make_url(url).set(drivername="postgresql+asyncpg")
         blob_dir = self.enterContext(tempfile.TemporaryDirectory())
