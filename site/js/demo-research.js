@@ -3,7 +3,7 @@
 (() => {
   const { h } = sealbook;
   const prop = (p) => ({ birth_date: "birth date", arrested_at: "arrest place", father_name: "father's name", detention_branch: "detention branch", last_seen: "last seen", seen_at: "seen at", transferred_to: "transferred to" }[p] || p.replace(/_/g, " "));
-  const KIND = { web: "web", images: "images", videos: "videos" };
+  const KIND = { web: "web", images: "images", videos: "videos", youtube: "a video site" };
 
   sealbook.onReady((data) => {
     const root = sealbook.mount("research");
@@ -34,7 +34,7 @@
         h("h3", { text: `Left out of the queries, ${r.left_out.length} of ${r.facts} facts` }), left,
         h("h3", { text: "The same case, marked sensitive" }),
         h("p", { class: "rs-refused" }, h("bdi", { text: r.refused })),
-        h("p", { class: "note", text: `The query proposal for the same person then returns ${r.refused_queries === 0 ? "nothing" : r.refused_queries}.` }))),
+        h("p", { class: "note", text: r.refused_queries === 0 ? "The query proposal for the same person then returns nothing." : `The proposal for the same person still lists ${r.refused_queries === 1 ? "one query" : `${r.refused_queries} queries`}, and sending is refused.` }))),
       h("p", { class: "note", text: "Proposed by the app's research code for the demo case; no query was sent and no search results are shown, since this page makes no third-party requests. Ticking boxes here changes this page only." }));
   });
 })();
