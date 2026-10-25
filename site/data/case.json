@@ -2918,11 +2918,11 @@
   "access_records": 16
  },
  "story": {
-  "title": "Yousef Khaled Al-Ali",
+  "title": "يوسف خالد علي",
   "rows": [
    {
     "key": "person:2c4aaac5-1d52-5a82-af2e-2c1881bbf308",
-    "label": "Yousef Khaled Al-Ali",
+    "label": "يوسف خالد علي",
     "named": true,
     "steps": [
      {
@@ -2932,8 +2932,8 @@
        "دوما"
       ],
       "ids": [
-       "6a189ba4-668d-428d-830c-23875216b077",
-       "7af387c4-c8f1-4d0c-bbf0-f22a859c5870"
+       "2d292b46-f581-42c0-b36b-366aacc6bffa",
+       "8682a495-c1d6-4e19-8aa4-a2665ca600c6"
       ],
       "fork": false,
       "gap_days": null
@@ -2944,8 +2944,8 @@
        "الفرع 999"
       ],
       "ids": [
-       "0c128996-548f-4231-a562-cff778fc6ec3",
-       "3c44858f-dc49-4760-84da-fef00fc390dd"
+       "8e0fa11b-bb03-478d-b7fb-6e8296f7f0d6",
+       "e58de6b1-f2a8-4b20-ae37-2b2da05900ed"
       ],
       "fork": false,
       "gap_days": 60
@@ -2957,8 +2957,8 @@
        "سجن ك المركزي"
       ],
       "ids": [
-       "44f6298b-795e-4ce2-abfc-85b96ad44da4",
-       "c02816c5-b361-460b-83df-45019fd2c2fc"
+       "11b8693c-fa32-402c-a9ad-9a6a7293b8f6",
+       "b3c18dd1-056e-4e26-ae2d-aa245bde2b64"
       ],
       "fork": false,
       "gap_days": 78
@@ -2975,27 +2975,16 @@
       "to": "2013-09-17",
       "days": 48
      }
-    ]
+    ],
+    "hint": null
    }
   ],
   "points": [
    {
-    "id": "7af387c4-c8f1-4d0c-bbf0-f22a859c5870",
-    "prop": "last_seen",
-    "place": "دوما",
-    "place_id": "ebda0540-f7de-41c3-a42a-ac5ff72dc54c",
-    "from": "2013-05-02",
-    "to": "2013-05-02",
-    "tier": "accepted",
-    "sensitive": false,
-    "file": "Missing person post, recapture",
-    "en": "Douma"
-   },
-   {
-    "id": "6a189ba4-668d-428d-830c-23875216b077",
+    "id": "8682a495-c1d6-4e19-8aa4-a2665ca600c6",
     "prop": "arrested_at",
     "place": "حرستا",
-    "place_id": "9daee800-7186-4455-bd94-83f55b4161fc",
+    "place_id": "bbe3b1d5-ed8c-4e68-80ef-db9dd0318af5",
     "from": "2013-05-02",
     "to": "2013-05-02",
     "tier": "accepted",
@@ -3004,10 +2993,22 @@
     "en": "Harasta"
    },
    {
-    "id": "3c44858f-dc49-4760-84da-fef00fc390dd",
+    "id": "2d292b46-f581-42c0-b36b-366aacc6bffa",
+    "prop": "last_seen",
+    "place": "دوما",
+    "place_id": "a5b79fb8-609c-477d-bb60-67f5cebd01d8",
+    "from": "2013-05-02",
+    "to": "2013-05-02",
+    "tier": "accepted",
+    "sensitive": false,
+    "file": "Missing person post, recapture",
+    "en": "Douma"
+   },
+   {
+    "id": "e58de6b1-f2a8-4b20-ae37-2b2da05900ed",
     "prop": "detained_at",
     "place": "الفرع 999",
-    "place_id": "9a22373f-fd9a-4551-9251-76dfb4c5f585",
+    "place_id": "49c6947e-27a1-4686-9cb2-f3e675b1bd81",
     "from": "2013-07-01",
     "to": "2013-07-31",
     "tier": "accepted",
@@ -3016,10 +3017,10 @@
     "en": "Branch 999"
    },
    {
-    "id": "0c128996-548f-4231-a562-cff778fc6ec3",
+    "id": "8e0fa11b-bb03-478d-b7fb-6e8296f7f0d6",
     "prop": "seen_at",
     "place": "الفرع 999",
-    "place_id": "9a22373f-fd9a-4551-9251-76dfb4c5f585",
+    "place_id": "49c6947e-27a1-4686-9cb2-f3e675b1bd81",
     "from": "2013-07-01",
     "to": "2013-07-31",
     "tier": "accepted",
@@ -3028,28 +3029,28 @@
     "en": "Branch 999"
    },
    {
-    "id": "44f6298b-795e-4ce2-abfc-85b96ad44da4",
-    "prop": "detained_at",
-    "place": "الفرع 999",
-    "place_id": "9a22373f-fd9a-4551-9251-76dfb4c5f585",
-    "from": "2013-09-17",
-    "to": "2013-09-17",
-    "tier": "accepted",
-    "sensitive": false,
-    "file": "Transfer order 4471",
-    "en": "Branch 999"
-   },
-   {
-    "id": "c02816c5-b361-460b-83df-45019fd2c2fc",
+    "id": "11b8693c-fa32-402c-a9ad-9a6a7293b8f6",
     "prop": "transferred_to",
     "place": "سجن ك المركزي",
-    "place_id": "a2c2043a-0826-496f-b855-bf035cd03d09",
+    "place_id": "c86d2dd5-de08-49e3-b989-4470da5a3dde",
     "from": "2013-09-17",
     "to": "2013-09-17",
     "tier": "accepted",
     "sensitive": false,
     "file": "Transfer order 4471",
     "en": "Central Prison K"
+   },
+   {
+    "id": "b3c18dd1-056e-4e26-ae2d-aa245bde2b64",
+    "prop": "detained_at",
+    "place": "الفرع 999",
+    "place_id": "49c6947e-27a1-4686-9cb2-f3e675b1bd81",
+    "from": "2013-09-17",
+    "to": "2013-09-17",
+    "tier": "accepted",
+    "sensitive": false,
+    "file": "Transfer order 4471",
+    "en": "Branch 999"
    }
   ],
   "pending": [
@@ -3086,7 +3087,7 @@
   ],
   "incidents": [],
   "places": {
-   "9daee800-7186-4455-bd94-83f55b4161fc": {
+   "bbe3b1d5-ed8c-4e68-80ef-db9dd0318af5": {
     "ar": "حرستا",
     "en": "Harasta",
     "kind": "populated",
@@ -3100,7 +3101,7 @@
     "geonames_id": 9900032,
     "admin2": null
    },
-   "a2c2043a-0826-496f-b855-bf035cd03d09": {
+   "c86d2dd5-de08-49e3-b989-4470da5a3dde": {
     "ar": "سجن ك المركزي",
     "en": "Central Prison K",
     "kind": "facility",
@@ -3114,7 +3115,7 @@
     "geonames_id": null,
     "admin2": null
    },
-   "9a22373f-fd9a-4551-9251-76dfb4c5f585": {
+   "49c6947e-27a1-4686-9cb2-f3e675b1bd81": {
     "ar": "الفرع 999",
     "en": "Branch 999",
     "kind": "facility",
@@ -3128,7 +3129,7 @@
     "geonames_id": null,
     "admin2": null
    },
-   "ebda0540-f7de-41c3-a42a-ac5ff72dc54c": {
+   "a5b79fb8-609c-477d-bb60-67f5cebd01d8": {
     "ar": "دوما",
     "en": "Douma",
     "kind": "populated",
@@ -9171,7 +9172,7 @@
    },
    {
     "id": "r2",
-    "label": "Yousef Khaled Al-Ali",
+    "label": "يوسف خالد علي",
     "named": true,
     "gaps": [
      {
@@ -9248,7 +9249,7 @@
    },
    {
     "id": "r13",
-    "label": "عمر حسن الزين",
+    "label": "عمر حسين الزين",
     "named": true,
     "gaps": []
    },
@@ -9300,7 +9301,7 @@
     "id": "c1",
     "row": "r1",
     "prop": "detained_at",
-    "place": "p6",
+    "place": "p1",
     "written": "Branch 999",
     "from": "2013-05-01",
     "to": "2013-05-31",
@@ -9312,7 +9313,7 @@
     "id": "c2",
     "row": "r2",
     "prop": "arrested_at",
-    "place": "p1",
+    "place": "p3",
     "written": "حرستا",
     "from": "2013-05-02",
     "to": "2013-05-02",
@@ -9322,21 +9323,9 @@
    },
    {
     "id": "c3",
-    "row": "r3",
-    "prop": "last_seen",
-    "place": "p2",
-    "written": "دوما",
-    "from": "2013-05-02",
-    "to": "2013-05-02",
-    "tier": "corroborated",
-    "file": "Missing person post, first capture",
-    "sensitive": false
-   },
-   {
-    "id": "c4",
     "row": "r2",
     "prop": "last_seen",
-    "place": "p2",
+    "place": "p4",
     "written": "دوما",
     "from": "2013-05-02",
     "to": "2013-05-02",
@@ -9345,11 +9334,23 @@
     "sensitive": false
    },
    {
+    "id": "c4",
+    "row": "r3",
+    "prop": "last_seen",
+    "place": "p4",
+    "written": "دوما",
+    "from": "2013-05-02",
+    "to": "2013-05-02",
+    "tier": "corroborated",
+    "file": "Missing person post, first capture",
+    "sensitive": false
+   },
+   {
     "id": "c5",
     "row": "r4",
-    "prop": "transferred_to",
-    "place": "p6",
-    "written": "الفرع 999",
+    "prop": "arrested_at",
+    "place": "p3",
+    "written": "حرستا",
     "from": "2013-05-12",
     "to": "2013-05-12",
     "tier": "unconfirmed",
@@ -9359,9 +9360,9 @@
    {
     "id": "c6",
     "row": "r4",
-    "prop": "arrested_at",
+    "prop": "transferred_to",
     "place": "p1",
-    "written": "حرستا",
+    "written": "الفرع 999",
     "from": "2013-05-12",
     "to": "2013-05-12",
     "tier": "unconfirmed",
@@ -9370,21 +9371,21 @@
    },
    {
     "id": "c7",
-    "row": "r2",
-    "prop": "seen_at",
-    "place": "p6",
+    "row": "r6",
+    "prop": "detained_at",
+    "place": "p1",
     "written": "الفرع 999",
     "from": "2013-07-01",
     "to": "2013-07-31",
     "tier": "accepted",
-    "file": "Witness clip, recorder 04",
-    "sensitive": true
+    "file": "Dormitory 4 roster, July 2013",
+    "sensitive": false
    },
    {
     "id": "c8",
     "row": "r2",
     "prop": "detained_at",
-    "place": "p6",
+    "place": "p1",
     "written": "الفرع 999",
     "from": "2013-07-01",
     "to": "2013-07-31",
@@ -9394,38 +9395,38 @@
    },
    {
     "id": "c9",
+    "row": "r7",
+    "prop": "detained_at",
+    "place": "p1",
+    "written": "الفرع 999",
+    "from": "2013-07-01",
+    "to": "2013-07-31",
+    "tier": "accepted",
+    "file": "Dormitory 4 roster, July 2013",
+    "sensitive": false
+   },
+   {
+    "id": "c10",
+    "row": "r2",
+    "prop": "seen_at",
+    "place": "p1",
+    "written": "الفرع 999",
+    "from": "2013-07-01",
+    "to": "2013-07-31",
+    "tier": "accepted",
+    "file": "Witness clip, recorder 04",
+    "sensitive": true
+   },
+   {
+    "id": "c11",
     "row": "r5",
     "prop": "detained_at",
-    "place": "p6",
+    "place": "p1",
     "written": "Branch 999",
     "from": "2013-07-01",
     "to": "2013-07-31",
     "tier": "accepted",
     "file": "Statement of a released detainee, October 2013",
-    "sensitive": false
-   },
-   {
-    "id": "c10",
-    "row": "r6",
-    "prop": "detained_at",
-    "place": "p6",
-    "written": "الفرع 999",
-    "from": "2013-07-01",
-    "to": "2013-07-31",
-    "tier": "accepted",
-    "file": "Dormitory 4 roster, July 2013",
-    "sensitive": false
-   },
-   {
-    "id": "c11",
-    "row": "r7",
-    "prop": "detained_at",
-    "place": "p6",
-    "written": "الفرع 999",
-    "from": "2013-07-01",
-    "to": "2013-07-31",
-    "tier": "accepted",
-    "file": "Dormitory 4 roster, July 2013",
     "sensitive": false
    },
    {
@@ -9444,7 +9445,7 @@
     "id": "c13",
     "row": "r9",
     "prop": "detained_at",
-    "place": "p6",
+    "place": "p1",
     "written": "Branch 999",
     "from": "2013-09-01",
     "to": "2013-09-30",
@@ -9455,9 +9456,9 @@
    {
     "id": "c14",
     "row": "r2",
-    "prop": "transferred_to",
-    "place": "p7",
-    "written": "سجن ك المركزي",
+    "prop": "detained_at",
+    "place": "p1",
+    "written": "الفرع 999",
     "from": "2013-09-17",
     "to": "2013-09-17",
     "tier": "accepted",
@@ -9467,9 +9468,9 @@
    {
     "id": "c15",
     "row": "r2",
-    "prop": "detained_at",
-    "place": "p6",
-    "written": "الفرع 999",
+    "prop": "transferred_to",
+    "place": "p2",
+    "written": "سجن ك المركزي",
     "from": "2013-09-17",
     "to": "2013-09-17",
     "tier": "accepted",
@@ -9480,7 +9481,7 @@
     "id": "c16",
     "row": "r10",
     "prop": "transferred_to",
-    "place": "p7",
+    "place": "p2",
     "written": "سجن ك المركزي",
     "from": "2013-11-12",
     "to": "2013-11-12",
@@ -9492,7 +9493,7 @@
     "id": "c17",
     "row": "r11",
     "prop": "arrested_at",
-    "place": "p3",
+    "place": "p5",
     "written": "حمص",
     "from": "2014-01-28",
     "to": "2014-01-28",
@@ -9504,7 +9505,7 @@
     "id": "c18",
     "row": "r12",
     "prop": "arrested_at",
-    "place": "p4",
+    "place": "p6",
     "written": "حلب",
     "from": "2014-02-03",
     "to": "2014-02-03",
@@ -9516,7 +9517,7 @@
     "id": "c19",
     "row": "r13",
     "prop": "arrested_at",
-    "place": "p2",
+    "place": "p4",
     "written": "دوما",
     "from": "2014-02-09",
     "to": "2014-02-09",
@@ -9527,20 +9528,8 @@
    {
     "id": "c20",
     "row": "r14",
-    "prop": "last_seen",
-    "place": "p4",
-    "written": "حلب",
-    "from": "2014-02-11",
-    "to": "2014-02-11",
-    "tier": "unconfirmed",
-    "file": "Appeal for Lina Omar Al-Najjar",
-    "sensitive": false
-   },
-   {
-    "id": "c21",
-    "row": "r14",
     "prop": "arrested_at",
-    "place": "p5",
+    "place": "p7",
     "written": "حي الجديدة",
     "from": "2014-02-11",
     "to": "2014-02-11",
@@ -9549,10 +9538,10 @@
     "sensitive": false
    },
    {
-    "id": "c22",
+    "id": "c21",
     "row": "r14",
     "prop": "last_seen",
-    "place": "p5",
+    "place": "p7",
     "written": "حي الجديدة",
     "from": "2014-02-11",
     "to": "2014-02-11",
@@ -9561,10 +9550,22 @@
     "sensitive": false
    },
    {
-    "id": "c23",
+    "id": "c22",
     "row": "r14",
-    "prop": "seen_at",
+    "prop": "last_seen",
     "place": "p6",
+    "written": "حلب",
+    "from": "2014-02-11",
+    "to": "2014-02-11",
+    "tier": "unconfirmed",
+    "file": "Appeal for Lina Omar Al-Najjar",
+    "sensitive": false
+   },
+   {
+    "id": "c23",
+    "row": "r15",
+    "prop": "detained_at",
+    "place": "p1",
     "written": "الفرع 999",
     "from": "2014-03-01",
     "to": "2014-03-31",
@@ -9574,9 +9575,9 @@
    },
    {
     "id": "c24",
-    "row": "r15",
-    "prop": "detained_at",
-    "place": "p6",
+    "row": "r14",
+    "prop": "seen_at",
+    "place": "p1",
     "written": "الفرع 999",
     "from": "2014-03-01",
     "to": "2014-03-31",
@@ -9588,7 +9589,7 @@
     "id": "c25",
     "row": "r16",
     "prop": "last_seen",
-    "place": "p6",
+    "place": "p1",
     "written": "Branch 999",
     "from": "2014-03-15",
     "to": "2014-03-15",
@@ -9600,7 +9601,7 @@
     "id": "c26",
     "row": "r17",
     "prop": "last_seen",
-    "place": "p7",
+    "place": "p2",
     "written": "سجن ك المركزي",
     "from": "2014-07-03",
     "to": "2014-07-03",
@@ -9624,7 +9625,7 @@
     "id": "c28",
     "row": "r19",
     "prop": "last_seen",
-    "place": "p6",
+    "place": "p1",
     "written": "Branch 999",
     "from": "2015-03-15",
     "to": "2015-03-15",
@@ -9647,61 +9648,6 @@
   ],
   "places": [
    {
-    "en": "Harasta",
-    "ar": "حرستا",
-    "lonlat": [
-     36.365,
-     33.558
-    ],
-    "precision_m": 3000,
-    "approximate": true,
-    "id": "p1"
-   },
-   {
-    "en": "Douma",
-    "ar": "دوما",
-    "lonlat": [
-     36.402,
-     33.572
-    ],
-    "precision_m": 3000,
-    "approximate": true,
-    "id": "p2"
-   },
-   {
-    "en": "Homs",
-    "ar": "حمص",
-    "lonlat": [
-     36.717,
-     34.733
-    ],
-    "precision_m": 3000,
-    "approximate": true,
-    "id": "p3"
-   },
-   {
-    "en": "Aleppo",
-    "ar": "حلب",
-    "lonlat": [
-     37.134,
-     36.202
-    ],
-    "precision_m": 3000,
-    "approximate": true,
-    "id": "p4"
-   },
-   {
-    "en": "Al Jadida Quarter",
-    "ar": "حي الجديدة",
-    "lonlat": [
-     37.155,
-     36.205
-    ],
-    "precision_m": 1000,
-    "approximate": true,
-    "id": "p5"
-   },
-   {
     "en": "Branch 999",
     "ar": "الفرع 999",
     "lonlat": [
@@ -9710,7 +9656,7 @@
     ],
     "precision_m": 250,
     "approximate": false,
-    "id": "p6"
+    "id": "p1"
    },
    {
     "en": "Central Prison K",
@@ -9721,21 +9667,76 @@
     ],
     "precision_m": 250,
     "approximate": false,
+    "id": "p2"
+   },
+   {
+    "en": "Harasta",
+    "ar": "حرستا",
+    "lonlat": [
+     36.365,
+     33.558
+    ],
+    "precision_m": 3000,
+    "approximate": true,
+    "id": "p3"
+   },
+   {
+    "en": "Douma",
+    "ar": "دوما",
+    "lonlat": [
+     36.402,
+     33.572
+    ],
+    "precision_m": 3000,
+    "approximate": true,
+    "id": "p4"
+   },
+   {
+    "en": "Homs",
+    "ar": "حمص",
+    "lonlat": [
+     36.717,
+     34.733
+    ],
+    "precision_m": 3000,
+    "approximate": true,
+    "id": "p5"
+   },
+   {
+    "en": "Aleppo",
+    "ar": "حلب",
+    "lonlat": [
+     37.134,
+     36.202
+    ],
+    "precision_m": 3000,
+    "approximate": true,
+    "id": "p6"
+   },
+   {
+    "en": "Al Jadida Quarter",
+    "ar": "حي الجديدة",
+    "lonlat": [
+     37.155,
+     36.205
+    ],
+    "precision_m": 1000,
+    "approximate": true,
     "id": "p7"
    }
   ],
   "bands": [
    {
     "people": [
-     "r1",
-     "r4"
+     "r4",
+     "r1"
     ],
     "places": [
-     "p6"
+     "p1"
     ],
     "members": [
-     "c1",
-     "c5"
+     "c6",
+     "c1"
     ],
     "proposed": false,
     "from": "2013-05-01",
@@ -9751,14 +9752,14 @@
      "r7"
     ],
     "places": [
-     "p6"
+     "p1"
     ],
     "members": [
-     "c7",
-     "c8",
-     "c10",
      "c9",
-     "c11"
+     "c11",
+     "c10",
+     "c7",
+     "c8"
     ],
     "proposed": true,
     "from": "2013-07-01",
@@ -9772,11 +9773,11 @@
      "r9"
     ],
     "places": [
-     "p6"
+     "p1"
     ],
     "members": [
-     "c15",
-     "c13"
+     "c13",
+     "c14"
     ],
     "proposed": true,
     "from": "2013-09-01",
@@ -9786,16 +9787,16 @@
    },
    {
     "people": [
-     "r16",
      "r14",
+     "r16",
      "r15"
     ],
     "places": [
-     "p6"
+     "p1"
     ],
     "members": [
-     "c24",
      "c25",
+     "c24",
      "c23"
     ],
     "proposed": true,
@@ -9807,9 +9808,9 @@
   ],
   "open_ends": [
    {
-    "row": "r16",
-    "after": "2014-03-15",
-    "label": "No record after 15 March 2014"
+    "row": "r2",
+    "after": "2013-09-17",
+    "label": "No record after 17 September 2013"
    },
    {
     "row": "r12",
@@ -9817,19 +9818,29 @@
     "label": "No record after 3 February 2014"
    },
    {
+    "row": "r4",
+    "after": "2013-05-12",
+    "label": "No record after 12 May 2013"
+   },
+   {
     "row": "r17",
     "after": "2014-07-03",
     "label": "No record after 3 July 2014"
    },
    {
-    "row": "r19",
-    "after": "2015-03-15",
-    "label": "No record after 15 March 2015"
-   },
-   {
     "row": "r6",
     "after": "2013-07-31",
     "label": "No record after 31 July 2013"
+   },
+   {
+    "row": "r9",
+    "after": "2013-09-30",
+    "label": "No record after 30 September 2013"
+   },
+   {
+    "row": "r16",
+    "after": "2014-03-15",
+    "label": "No record after 15 March 2014"
    },
    {
     "row": "r15",
@@ -9847,14 +9858,19 @@
     "label": "No record after 9 February 2014"
    },
    {
+    "row": "r1",
+    "after": "2013-05-31",
+    "label": "No record after 31 May 2013"
+   },
+   {
     "row": "r3",
     "after": "2013-05-02",
     "label": "No record after 2 May 2013"
    },
    {
-    "row": "r1",
-    "after": "2013-05-31",
-    "label": "No record after 31 May 2013"
+    "row": "r19",
+    "after": "2015-03-15",
+    "label": "No record after 15 March 2015"
    },
    {
     "row": "r11",
@@ -9862,26 +9878,12 @@
     "label": "No record after 28 January 2014"
    },
    {
-    "row": "r4",
-    "after": "2013-05-12",
-    "label": "No record after 12 May 2013"
-   },
-   {
     "row": "r8",
     "after": "2013-07-31",
     "label": "No record after 31 July 2013"
-   },
-   {
-    "row": "r9",
-    "after": "2013-09-30",
-    "label": "No record after 30 September 2013"
    }
   ],
   "pairs": [
-   [
-    "r16",
-    "r19"
-   ],
    [
     "r2",
     "r3"
@@ -9889,12 +9891,18 @@
    [
     "r12",
     "r11"
+   ],
+   [
+    "r16",
+    "r19"
    ]
   ],
   "unresolved": 3,
   "attribution": "GeoNames (CC BY 4.0)",
   "people": [
    "r1",
+   "r2",
+   "r3",
    "r4",
    "r5",
    "r6",
@@ -9907,6 +9915,115 @@
    "r20"
   ],
   "paths": [
+   {
+    "from": "r1",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "Salma Darwish was held at Branch 999, May 2013",
+      "kind": "at",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r1"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c1"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Dormitory 4 roster, July 2013",
+       "Witness clip, recorder 04",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: 31 days apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c8",
+       "c10",
+       "c14"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r1",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "Salma Darwish was held at Branch 999, May 2013",
+      "kind": "at",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r1"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c1"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Dormitory 4 roster, July 2013",
+       "Witness clip, recorder 04",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: 31 days apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c8",
+       "c10",
+       "c14"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
    {
     "from": "r1",
     "to": "r4",
@@ -9927,8 +10044,8 @@
       ],
       "places": [],
       "points": [
-       "c1",
-       "c5"
+       "c6",
+       "c1"
       ]
      }
     ]
@@ -9950,7 +10067,7 @@
        "r1"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
        "c1"
@@ -9968,10 +10085,10 @@
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      }
     ]
@@ -9993,7 +10110,7 @@
        "r1"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
        "c1"
@@ -10011,10 +10128,10 @@
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      }
     ]
@@ -10106,14 +10223,14 @@
        "r1"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
        "c1"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
       "kind": "at",
       "sources": [
        "Witness clip, recorder 04",
@@ -10126,16 +10243,16 @@
        "r2"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c7",
+       "c10",
        "c8",
-       "c15"
+       "c14"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -10146,14 +10263,14 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -10164,7 +10281,7 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
@@ -10189,7 +10306,7 @@
        "r1"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
        "c1"
@@ -10207,10 +10324,10 @@
        "r14"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c23"
+       "c24"
       ]
      }
     ]
@@ -10300,6 +10417,1300 @@
       "weak": null,
       "rows": [
        "r1"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "Faten is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r20"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r1",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "Salma Darwish was held at Branch 999, May 2013",
+      "kind": "at",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: 31 days apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r1"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c1"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r4",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r5",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي and Salim Haddad were held together at Branch 999, July 2013",
+      "kind": "with",
+      "sources": [
+       "Statement of a released detainee, October 2013",
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r5"
+      ],
+      "places": [],
+      "points": [
+       "c11",
+       "c10",
+       "c8"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r6",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي and Fadi Karam were held together at Branch 999, July 2013",
+      "kind": "with",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r6"
+      ],
+      "places": [],
+      "points": [
+       "c10",
+       "c7",
+       "c8"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r8",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "Omar Taha is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r8"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r10",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
+      "kind": "transfer",
+      "sources": [
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c15"
+      ]
+     },
+     {
+      "text": "طارق نبيل حداد was transferred to Central Prison K, 12 November 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r10"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c16"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r13",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
+      "kind": "at",
+      "sources": [
+       "Missing person post, recapture"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p4"
+      ],
+      "points": [
+       "c3"
+      ]
+     },
+     {
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
+      "kind": "at",
+      "sources": [
+       "Branch 999 detainee list, 12 February 2014"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 9 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r13"
+      ],
+      "places": [
+       "p4"
+      ],
+      "points": [
+       "c19"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r14",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "لينا عمر النجار was seen at Branch 999, March 2014",
+      "kind": "at",
+      "sources": [
+       "Testimony of Reem, Branch 999"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 5 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r14"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c24"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r17",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
+      "kind": "transfer",
+      "sources": [
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c15"
+      ]
+     },
+     {
+      "text": "ليلى فؤاد العلي was last seen at Central Prison K, 3 July 2014",
+      "kind": "at",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 9 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r17"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c26"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r18",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "Khaled M. is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r18"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r2",
+    "to": "r20",
+    "found": true,
+    "steps": [
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "Faten is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r20"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r1",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "Salma Darwish was held at Branch 999, May 2013",
+      "kind": "at",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: 31 days apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r1"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c1"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r4",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r5",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "يوسف خالد علي and Salim Haddad were held together at Branch 999, July 2013",
+      "kind": "with",
+      "sources": [
+       "Statement of a released detainee, October 2013",
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r5"
+      ],
+      "places": [],
+      "points": [
+       "c11",
+       "c10",
+       "c8"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r6",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "يوسف خالد علي and Fadi Karam were held together at Branch 999, July 2013",
+      "kind": "with",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r6"
+      ],
+      "places": [],
+      "points": [
+       "c10",
+       "c7",
+       "c8"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r8",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "Omar Taha is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r8"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r10",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
+      "kind": "transfer",
+      "sources": [
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c15"
+      ]
+     },
+     {
+      "text": "طارق نبيل حداد was transferred to Central Prison K, 12 November 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r10"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c16"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r13",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "kind": "at",
+      "sources": [
+       "Missing person post, first capture"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r3"
+      ],
+      "places": [
+       "p4"
+      ],
+      "points": [
+       "c4"
+      ]
+     },
+     {
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
+      "kind": "at",
+      "sources": [
+       "Branch 999 detainee list, 12 February 2014"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 9 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r13"
+      ],
+      "places": [
+       "p4"
+      ],
+      "points": [
+       "c19"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r14",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "لينا عمر النجار was seen at Branch 999, March 2014",
+      "kind": "at",
+      "sources": [
+       "Testimony of Reem, Branch 999"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 5 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r14"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c24"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r17",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
+      "kind": "transfer",
+      "sources": [
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c15"
+      ]
+     },
+     {
+      "text": "ليلى فؤاد العلي was last seen at Central Prison K, 3 July 2014",
+      "kind": "at",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 9 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r17"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c26"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r18",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "Khaled M. is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r18"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r3",
+    "to": "r20",
+    "found": true,
+    "steps": [
+     {
+      "text": "Yousef Khaled Al-Ali and يوسف خالد علي may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r3",
+       "r2"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
       ],
       "places": [],
       "points": []
@@ -10340,9 +11751,118 @@
       ],
       "places": [],
       "points": [
-       "c1",
-       "c5"
+       "c6",
+       "c1"
       ]
+     }
+    ]
+   },
+   {
+    "from": "r4",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r4",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
+      ],
+      "places": [],
+      "points": []
      }
     ]
    },
@@ -10363,10 +11883,10 @@
        "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c5"
+       "c6"
       ]
      },
      {
@@ -10381,10 +11901,10 @@
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      }
     ]
@@ -10406,10 +11926,10 @@
        "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c5"
+       "c6"
       ]
      },
      {
@@ -10424,10 +11944,10 @@
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      }
     ]
@@ -10519,14 +12039,14 @@
        "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c5"
+       "c6"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
       "kind": "at",
       "sources": [
        "Witness clip, recorder 04",
@@ -10539,16 +12059,16 @@
        "r2"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c7",
+       "c10",
        "c8",
-       "c15"
+       "c14"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -10559,14 +12079,14 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -10577,7 +12097,7 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
@@ -10602,10 +12122,10 @@
        "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c5"
+       "c6"
       ]
      },
      {
@@ -10620,10 +12140,10 @@
        "r14"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c23"
+       "c24"
       ]
      }
     ]
@@ -10750,10 +12270,10 @@
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      },
      {
@@ -10768,11 +12288,82 @@
        "r1"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
        "c1"
       ]
+     }
+    ]
+   },
+   {
+    "from": "r5",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "Salim Haddad and يوسف خالد علي were held together at Branch 999, July 2013",
+      "kind": "with",
+      "sources": [
+       "Statement of a released detainee, October 2013",
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r5",
+       "r2"
+      ],
+      "places": [],
+      "points": [
+       "c11",
+       "c10",
+       "c8"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r5",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "Salim Haddad and يوسف خالد علي were held together at Branch 999, July 2013",
+      "kind": "with",
+      "sources": [
+       "Statement of a released detainee, October 2013",
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r5",
+       "r2"
+      ],
+      "places": [],
+      "points": [
+       "c11",
+       "c10",
+       "c8"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
+      ],
+      "places": [],
+      "points": []
      }
     ]
    },
@@ -10793,10 +12384,10 @@
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      },
      {
@@ -10811,10 +12402,10 @@
        "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c5"
+       "c6"
       ]
      }
     ]
@@ -10828,8 +12419,8 @@
       "text": "Salim Haddad and Fadi Karam were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
-       "Dormitory 4 roster, July 2013",
-       "Statement of a released detainee, October 2013"
+       "Statement of a released detainee, October 2013",
+       "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
       "weak": null,
@@ -10839,8 +12430,8 @@
       ],
       "places": [],
       "points": [
-       "c10",
-       "c9"
+       "c11",
+       "c7"
       ]
      }
     ]
@@ -10862,32 +12453,32 @@
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -10895,7 +12486,7 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
@@ -10922,12 +12513,12 @@
     "found": true,
     "steps": [
      {
-      "text": "Salim Haddad and Yousef Khaled Al-Ali were held together at Branch 999, July 2013",
+      "text": "Salim Haddad and يوسف خالد علي were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
+       "Statement of a released detainee, October 2013",
        "Witness clip, recorder 04",
-       "Dormitory 4 roster, July 2013",
-       "Statement of a released detainee, October 2013"
+       "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
       "weak": null,
@@ -10937,13 +12528,13 @@
       ],
       "places": [],
       "points": [
-       "c7",
-       "c8",
-       "c9"
+       "c11",
+       "c10",
+       "c8"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -10954,10 +12545,10 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
@@ -10972,7 +12563,7 @@
        "r10"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c16"
@@ -10986,12 +12577,12 @@
     "found": true,
     "steps": [
      {
-      "text": "Salim Haddad and Yousef Khaled Al-Ali were held together at Branch 999, July 2013",
+      "text": "Salim Haddad and يوسف خالد علي were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
+       "Statement of a released detainee, October 2013",
        "Witness clip, recorder 04",
-       "Dormitory 4 roster, July 2013",
-       "Statement of a released detainee, October 2013"
+       "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
       "weak": null,
@@ -11001,13 +12592,13 @@
       ],
       "places": [],
       "points": [
-       "c7",
-       "c8",
-       "c9"
+       "c11",
+       "c10",
+       "c8"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -11018,14 +12609,14 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -11036,7 +12627,7 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
@@ -11061,10 +12652,10 @@
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      },
      {
@@ -11079,10 +12670,10 @@
        "r14"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c23"
+       "c24"
       ]
      }
     ]
@@ -11093,12 +12684,12 @@
     "found": true,
     "steps": [
      {
-      "text": "Salim Haddad and Yousef Khaled Al-Ali were held together at Branch 999, July 2013",
+      "text": "Salim Haddad and يوسف خالد علي were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
+       "Statement of a released detainee, October 2013",
        "Witness clip, recorder 04",
-       "Dormitory 4 roster, July 2013",
-       "Statement of a released detainee, October 2013"
+       "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
       "weak": null,
@@ -11108,13 +12699,13 @@
       ],
       "places": [],
       "points": [
-       "c7",
-       "c8",
-       "c9"
+       "c11",
+       "c10",
+       "c8"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -11125,10 +12716,10 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
@@ -11143,7 +12734,7 @@
        "r17"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c26"
@@ -11168,32 +12759,32 @@
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -11201,7 +12792,7 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
@@ -11239,32 +12830,32 @@
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -11272,7 +12863,7 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
@@ -11310,10 +12901,10 @@
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      },
      {
@@ -11328,11 +12919,80 @@
        "r1"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
        "c1"
       ]
+     }
+    ]
+   },
+   {
+    "from": "r6",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "Fadi Karam and يوسف خالد علي were held together at Branch 999, July 2013",
+      "kind": "with",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r6",
+       "r2"
+      ],
+      "places": [],
+      "points": [
+       "c10",
+       "c7",
+       "c8"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r6",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "Fadi Karam and يوسف خالد علي were held together at Branch 999, July 2013",
+      "kind": "with",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r6",
+       "r2"
+      ],
+      "places": [],
+      "points": [
+       "c10",
+       "c7",
+       "c8"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
+      ],
+      "places": [],
+      "points": []
      }
     ]
    },
@@ -11353,10 +13013,10 @@
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      },
      {
@@ -11371,10 +13031,10 @@
        "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c5"
+       "c6"
       ]
      }
     ]
@@ -11388,8 +13048,8 @@
       "text": "Fadi Karam and Salim Haddad were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
-       "Dormitory 4 roster, July 2013",
-       "Statement of a released detainee, October 2013"
+       "Statement of a released detainee, October 2013",
+       "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
       "weak": null,
@@ -11399,8 +13059,8 @@
       ],
       "places": [],
       "points": [
-       "c10",
-       "c9"
+       "c11",
+       "c7"
       ]
      }
     ]
@@ -11422,32 +13082,32 @@
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -11455,7 +13115,7 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
@@ -11482,7 +13142,7 @@
     "found": true,
     "steps": [
      {
-      "text": "Fadi Karam and Yousef Khaled Al-Ali were held together at Branch 999, July 2013",
+      "text": "Fadi Karam and يوسف خالد علي were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
        "Witness clip, recorder 04",
@@ -11496,13 +13156,13 @@
       ],
       "places": [],
       "points": [
+       "c10",
        "c7",
-       "c8",
-       "c10"
+       "c8"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -11513,10 +13173,10 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
@@ -11531,7 +13191,7 @@
        "r10"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c16"
@@ -11545,7 +13205,7 @@
     "found": true,
     "steps": [
      {
-      "text": "Fadi Karam and Yousef Khaled Al-Ali were held together at Branch 999, July 2013",
+      "text": "Fadi Karam and يوسف خالد علي were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
        "Witness clip, recorder 04",
@@ -11559,13 +13219,13 @@
       ],
       "places": [],
       "points": [
+       "c10",
        "c7",
-       "c8",
-       "c10"
+       "c8"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -11576,14 +13236,14 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -11594,7 +13254,7 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
@@ -11619,10 +13279,10 @@
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      },
      {
@@ -11637,10 +13297,10 @@
        "r14"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c23"
+       "c24"
       ]
      }
     ]
@@ -11651,7 +13311,7 @@
     "found": true,
     "steps": [
      {
-      "text": "Fadi Karam and Yousef Khaled Al-Ali were held together at Branch 999, July 2013",
+      "text": "Fadi Karam and يوسف خالد علي were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
        "Witness clip, recorder 04",
@@ -11665,13 +13325,13 @@
       ],
       "places": [],
       "points": [
+       "c10",
        "c7",
-       "c8",
-       "c10"
+       "c8"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -11682,10 +13342,10 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
@@ -11700,7 +13360,7 @@
        "r17"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c26"
@@ -11725,32 +13385,32 @@
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -11758,7 +13418,7 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
@@ -11796,32 +13456,32 @@
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "unconfirmed": true,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -11829,7 +13489,7 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
@@ -11879,6 +13539,171 @@
       "weak": null,
       "rows": [
        "r1"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r8",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "Omar Taha is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r8"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r8",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "Omar Taha is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r8"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
       ],
       "places": [],
       "points": []
@@ -11940,7 +13765,7 @@
       "points": []
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -11948,27 +13773,27 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
+      "unconfirmed": true,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
@@ -11978,15 +13803,15 @@
        "Statement of a released detainee, October 2013"
       ],
       "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      }
     ]
@@ -12011,7 +13836,7 @@
       "points": []
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -12019,27 +13844,27 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
+      "unconfirmed": true,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
@@ -12049,15 +13874,15 @@
        "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      }
     ]
@@ -12146,7 +13971,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -12164,7 +13989,7 @@
       "points": []
      },
      {
-      "text": "عمر حسن الزين is named in Branch 999 detainee list, 12 February 2014",
+      "text": "عمر حسين الزين is named in Branch 999 detainee list, 12 February 2014",
       "kind": "source",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -12228,7 +14053,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      }
     ]
@@ -12375,6 +14200,107 @@
    },
    {
     "from": "r10",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "طارق نبيل حداد was transferred to Central Prison K, 12 November 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r10"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c16"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
+      "kind": "transfer",
+      "sources": [
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c15"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r10",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "طارق نبيل حداد was transferred to Central Prison K, 12 November 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r10"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c16"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
+      "kind": "transfer",
+      "sources": [
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c15"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r10",
     "to": "r4",
     "found": true,
     "steps": [
@@ -12425,14 +14351,14 @@
        "r10"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c16"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -12443,19 +14369,19 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali and Salim Haddad were held together at Branch 999, July 2013",
+      "text": "يوسف خالد علي and Salim Haddad were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
+       "Statement of a released detainee, October 2013",
        "Witness clip, recorder 04",
-       "Dormitory 4 roster, July 2013",
-       "Statement of a released detainee, October 2013"
+       "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
       "weak": null,
@@ -12465,9 +14391,9 @@
       ],
       "places": [],
       "points": [
-       "c7",
-       "c8",
-       "c9"
+       "c11",
+       "c10",
+       "c8"
       ]
      }
     ]
@@ -12489,14 +14415,14 @@
        "r10"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c16"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -12507,14 +14433,14 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali and Fadi Karam were held together at Branch 999, July 2013",
+      "text": "يوسف خالد علي and Fadi Karam were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
        "Witness clip, recorder 04",
@@ -12528,9 +14454,9 @@
       ],
       "places": [],
       "points": [
+       "c10",
        "c7",
-       "c8",
-       "c10"
+       "c8"
       ]
      }
     ]
@@ -12587,14 +14513,14 @@
        "r10"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c16"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -12605,14 +14531,14 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -12623,14 +14549,14 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -12641,7 +14567,7 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
@@ -12698,7 +14624,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      }
     ]
@@ -12720,7 +14646,7 @@
        "r10"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c16"
@@ -12738,7 +14664,7 @@
        "r17"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c26"
@@ -12822,7 +14748,7 @@
     "found": true,
     "steps": [
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -12833,14 +14759,14 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -12851,14 +14777,14 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
       "kind": "at",
       "sources": [
        "Witness clip, recorder 04",
@@ -12871,12 +14797,12 @@
        "r2"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c7",
+       "c10",
        "c8",
-       "c15"
+       "c14"
       ]
      },
      {
@@ -12891,7 +14817,7 @@
        "r1"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
        "c1"
@@ -12901,11 +14827,11 @@
    },
    {
     "from": "r13",
-    "to": "r4",
+    "to": "r2",
     "found": true,
     "steps": [
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -12916,14 +14842,14 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -12934,14 +14860,100 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
+      ],
+      "points": [
+       "c3"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r13",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
+      "kind": "at",
+      "sources": [
+       "Branch 999 detainee list, 12 February 2014"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r13"
+      ],
+      "places": [
+       "p4"
+      ],
+      "points": [
+       "c19"
+      ]
+     },
+     {
+      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "kind": "at",
+      "sources": [
+       "Missing person post, first capture"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 9 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r3"
+      ],
+      "places": [
+       "p4"
       ],
       "points": [
        "c4"
       ]
+     }
+    ]
+   },
+   {
+    "from": "r13",
+    "to": "r4",
+    "found": true,
+    "steps": [
+     {
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
+      "kind": "at",
+      "sources": [
+       "Branch 999 detainee list, 12 February 2014"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r13"
+      ],
+      "places": [
+       "p4"
+      ],
+      "points": [
+       "c19"
+      ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
+      "kind": "at",
+      "sources": [
+       "Missing person post, recapture"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 9 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p4"
+      ],
+      "points": [
+       "c3"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
       "kind": "at",
       "sources": [
        "Witness clip, recorder 04",
@@ -12954,12 +14966,12 @@
        "r2"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c7",
+       "c10",
        "c8",
-       "c15"
+       "c14"
       ]
      },
      {
@@ -12974,10 +14986,10 @@
        "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c5"
+       "c6"
       ]
      }
     ]
@@ -12988,7 +15000,7 @@
     "found": true,
     "steps": [
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -12999,14 +15011,14 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -13017,19 +15029,19 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali and Salim Haddad were held together at Branch 999, July 2013",
+      "text": "يوسف خالد علي and Salim Haddad were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
+       "Statement of a released detainee, October 2013",
        "Witness clip, recorder 04",
-       "Dormitory 4 roster, July 2013",
-       "Statement of a released detainee, October 2013"
+       "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
       "weak": null,
@@ -13039,9 +15051,9 @@
       ],
       "places": [],
       "points": [
-       "c7",
-       "c8",
-       "c9"
+       "c11",
+       "c10",
+       "c8"
       ]
      }
     ]
@@ -13052,7 +15064,7 @@
     "found": true,
     "steps": [
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -13063,14 +15075,14 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -13081,14 +15093,14 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali and Fadi Karam were held together at Branch 999, July 2013",
+      "text": "يوسف خالد علي and Fadi Karam were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
        "Witness clip, recorder 04",
@@ -13102,9 +15114,9 @@
       ],
       "places": [],
       "points": [
+       "c10",
        "c7",
-       "c8",
-       "c10"
+       "c8"
       ]
      }
     ]
@@ -13115,7 +15127,7 @@
     "found": true,
     "steps": [
      {
-      "text": "عمر حسن الزين is named in Branch 999 detainee list, 12 February 2014",
+      "text": "عمر حسين الزين is named in Branch 999 detainee list, 12 February 2014",
       "kind": "source",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -13158,7 +15170,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13197,7 +15209,7 @@
     "found": true,
     "steps": [
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -13208,14 +15220,14 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -13226,14 +15238,14 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -13244,10 +15256,10 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
@@ -13262,7 +15274,7 @@
        "r10"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c16"
@@ -13276,7 +15288,7 @@
     "found": true,
     "steps": [
      {
-      "text": "عمر حسن الزين is named in Branch 999 detainee list, 12 February 2014",
+      "text": "عمر حسين الزين is named in Branch 999 detainee list, 12 February 2014",
       "kind": "source",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -13311,7 +15323,7 @@
     "found": true,
     "steps": [
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -13322,14 +15334,14 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -13340,14 +15352,14 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -13358,10 +15370,10 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
@@ -13376,7 +15388,7 @@
        "r17"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c26"
@@ -13390,7 +15402,7 @@
     "found": true,
     "steps": [
      {
-      "text": "عمر حسن الزين is named in Branch 999 detainee list, 12 February 2014",
+      "text": "عمر حسين الزين is named in Branch 999 detainee list, 12 February 2014",
       "kind": "source",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -13433,7 +15445,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13472,7 +15484,7 @@
     "found": true,
     "steps": [
      {
-      "text": "عمر حسن الزين is named in Branch 999 detainee list, 12 February 2014",
+      "text": "عمر حسين الزين is named in Branch 999 detainee list, 12 February 2014",
       "kind": "source",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -13515,7 +15527,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13565,10 +15577,10 @@
        "r14"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13583,11 +15595,120 @@
        "r1"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
        "c1"
       ]
+     }
+    ]
+   },
+   {
+    "from": "r14",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "لينا عمر النجار was seen at Branch 999, March 2014",
+      "kind": "at",
+      "sources": [
+       "Testimony of Reem, Branch 999"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r14"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c24"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 5 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r14",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "لينا عمر النجار was seen at Branch 999, March 2014",
+      "kind": "at",
+      "sources": [
+       "Testimony of Reem, Branch 999"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r14"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c24"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 5 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
+      ],
+      "places": [],
+      "points": []
      }
     ]
    },
@@ -13608,10 +15729,10 @@
        "r14"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13626,10 +15747,10 @@
        "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c5"
+       "c6"
       ]
      }
     ]
@@ -13651,10 +15772,10 @@
        "r14"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13669,10 +15790,10 @@
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      }
     ]
@@ -13694,10 +15815,10 @@
        "r14"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13712,10 +15833,10 @@
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      }
     ]
@@ -13741,7 +15862,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13795,7 +15916,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13848,7 +15969,7 @@
       "points": []
      },
      {
-      "text": "عمر حسن الزين is named in Branch 999 detainee list, 12 February 2014",
+      "text": "عمر حسين الزين is named in Branch 999 detainee list, 12 February 2014",
       "kind": "source",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -13884,7 +16005,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13938,7 +16059,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -13992,7 +16113,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -14062,6 +16183,107 @@
    },
    {
     "from": "r17",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "ليلى فؤاد العلي was last seen at Central Prison K, 3 July 2014",
+      "kind": "at",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r17"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c26"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
+      "kind": "transfer",
+      "sources": [
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 9 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c15"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r17",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "ليلى فؤاد العلي was last seen at Central Prison K, 3 July 2014",
+      "kind": "at",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r17"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c26"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
+      "kind": "transfer",
+      "sources": [
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 9 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p2"
+      ],
+      "points": [
+       "c15"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r17",
     "to": "r4",
     "found": true,
     "steps": [
@@ -14112,14 +16334,14 @@
        "r17"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c26"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -14130,19 +16352,19 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali and Salim Haddad were held together at Branch 999, July 2013",
+      "text": "يوسف خالد علي and Salim Haddad were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
+       "Statement of a released detainee, October 2013",
        "Witness clip, recorder 04",
-       "Dormitory 4 roster, July 2013",
-       "Statement of a released detainee, October 2013"
+       "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
       "weak": null,
@@ -14152,9 +16374,9 @@
       ],
       "places": [],
       "points": [
-       "c7",
-       "c8",
-       "c9"
+       "c11",
+       "c10",
+       "c8"
       ]
      }
     ]
@@ -14176,14 +16398,14 @@
        "r17"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c26"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -14194,14 +16416,14 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali and Fadi Karam were held together at Branch 999, July 2013",
+      "text": "يوسف خالد علي and Fadi Karam were held together at Branch 999, July 2013",
       "kind": "with",
       "sources": [
        "Witness clip, recorder 04",
@@ -14215,9 +16437,9 @@
       ],
       "places": [],
       "points": [
+       "c10",
        "c7",
-       "c8",
-       "c10"
+       "c8"
       ]
      }
     ]
@@ -14274,7 +16496,7 @@
        "r17"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c26"
@@ -14292,7 +16514,7 @@
        "r10"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c16"
@@ -14317,14 +16539,14 @@
        "r17"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
        "c26"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was transferred to Central Prison K, 17 September 2013",
+      "text": "يوسف خالد علي was transferred to Central Prison K, 17 September 2013",
       "kind": "transfer",
       "sources": [
        "Transfer order 4471"
@@ -14335,14 +16557,14 @@
        "r2"
       ],
       "places": [
-       "p7"
+       "p2"
       ],
       "points": [
-       "c14"
+       "c15"
       ]
      },
      {
-      "text": "Yousef Khaled Al-Ali was last seen at Douma, 2 May 2013",
+      "text": "يوسف خالد علي was last seen at Douma, 2 May 2013",
       "kind": "at",
       "sources": [
        "Missing person post, recapture"
@@ -14353,14 +16575,14 @@
        "r2"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
-       "c4"
+       "c3"
       ]
      },
      {
-      "text": "عمر حسن الزين was arrested at Douma, 9 February 2014",
+      "text": "عمر حسين الزين was arrested at Douma, 9 February 2014",
       "kind": "at",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -14371,7 +16593,7 @@
        "r13"
       ],
       "places": [
-       "p2"
+       "p4"
       ],
       "points": [
        "c19"
@@ -14428,7 +16650,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      }
     ]
@@ -14540,6 +16762,171 @@
    },
    {
     "from": "r18",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "Khaled M. is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r18"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r18",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "Khaled M. is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r18"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Witness clip, recorder 04",
+       "Dormitory 4 roster, July 2013",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c10",
+       "c8",
+       "c14"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r18",
     "to": "r4",
     "found": true,
     "steps": [
@@ -14593,7 +16980,7 @@
       "points": []
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -14601,27 +16988,27 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
+      "unconfirmed": true,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
@@ -14631,15 +17018,15 @@
        "Statement of a released detainee, October 2013"
       ],
       "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      }
     ]
@@ -14664,7 +17051,7 @@
       "points": []
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -14672,27 +17059,27 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
+      "unconfirmed": true,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
@@ -14702,15 +17089,15 @@
        "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      }
     ]
@@ -14834,7 +17221,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -14852,7 +17239,7 @@
       "points": []
      },
      {
-      "text": "عمر حسن الزين is named in Branch 999 detainee list, 12 February 2014",
+      "text": "عمر حسين الزين is named in Branch 999 detainee list, 12 February 2014",
       "kind": "source",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -14916,7 +17303,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      }
     ]
@@ -15028,6 +17415,171 @@
    },
    {
     "from": "r20",
+    "to": "r2",
+    "found": true,
+    "steps": [
+     {
+      "text": "Faten is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r20"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Dormitory 4 roster, July 2013",
+       "Witness clip, recorder 04",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c8",
+       "c10",
+       "c14"
+      ]
+     }
+    ]
+   },
+   {
+    "from": "r20",
+    "to": "r3",
+    "found": true,
+    "steps": [
+     {
+      "text": "Faten is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r20"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
+      "kind": "source",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": false,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [],
+      "points": []
+     },
+     {
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
+      "sources": [
+       "Family intake sheet, version 1"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r4"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c6"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي was held at Branch 999, 1 July 2013 to 17 September 2013",
+      "kind": "at",
+      "sources": [
+       "Dormitory 4 roster, July 2013",
+       "Witness clip, recorder 04",
+       "Transfer order 4471"
+      ],
+      "unconfirmed": false,
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
+      "rows": [
+       "r2"
+      ],
+      "places": [
+       "p1"
+      ],
+      "points": [
+       "c8",
+       "c10",
+       "c14"
+      ]
+     },
+     {
+      "text": "يوسف خالد علي and Yousef Khaled Al-Ali may be one person: a same-person proposal not yet reviewed",
+      "kind": "same",
+      "sources": [
+       "The proposal"
+      ],
+      "unconfirmed": true,
+      "weak": null,
+      "rows": [
+       "r2",
+       "r3"
+      ],
+      "places": [],
+      "points": []
+     }
+    ]
+   },
+   {
+    "from": "r20",
     "to": "r4",
     "found": true,
     "steps": [
@@ -15081,7 +17633,7 @@
       "points": []
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -15089,27 +17641,27 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
+      "unconfirmed": true,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
@@ -15119,15 +17671,15 @@
        "Statement of a released detainee, October 2013"
       ],
       "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
        "r5"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c9"
+       "c11"
       ]
      }
     ]
@@ -15152,7 +17704,7 @@
       "points": []
      },
      {
-      "text": "Rania Haddad is named in Family intake sheet, version 1",
+      "text": "سامر خليل النجار is named in Family intake sheet, version 1",
       "kind": "source",
       "sources": [
        "Family intake sheet, version 1"
@@ -15160,27 +17712,27 @@
       "unconfirmed": false,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [],
       "points": []
      },
      {
-      "text": "Rania Haddad was last seen at Branch 999, 15 March 2014",
-      "kind": "at",
+      "text": "سامر خليل النجار was transferred to Branch 999, 12 May 2013",
+      "kind": "transfer",
       "sources": [
        "Family intake sheet, version 1"
       ],
-      "unconfirmed": false,
+      "unconfirmed": true,
       "weak": null,
       "rows": [
-       "r16"
+       "r4"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c25"
+       "c6"
       ]
      },
      {
@@ -15190,15 +17742,15 @@
        "Dormitory 4 roster, July 2013"
       ],
       "unconfirmed": false,
-      "weak": "Not at the same time: about 7 months apart, so this is a shared place, not a shared cell",
+      "weak": "Not at the same time: about 2 months apart, so this is a shared place, not a shared cell",
       "rows": [
        "r6"
       ],
       "places": [
-       "p6"
+       "p1"
       ],
       "points": [
-       "c10"
+       "c7"
       ]
      }
     ]
@@ -15322,7 +17874,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      },
      {
@@ -15340,7 +17892,7 @@
       "points": []
      },
      {
-      "text": "عمر حسن الزين is named in Branch 999 detainee list, 12 February 2014",
+      "text": "عمر حسين الزين is named in Branch 999 detainee list, 12 February 2014",
       "kind": "source",
       "sources": [
        "Branch 999 detainee list, 12 February 2014"
@@ -15404,7 +17956,7 @@
       "places": [],
       "points": [
        "c25",
-       "c23"
+       "c24"
       ]
      }
     ]
