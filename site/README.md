@@ -70,14 +70,19 @@ cd site && npx wrangler@4 deploy
 
 Afterwards check that https://sealbook.org/build_data.py and /README.md return 404.
 
-The Worker needs the `INVITE_SALT` secret (`npx wrangler@4 secret put INVITE_SALT`).
-For local testing put `INVITE_SALT=...` in `site/.dev.vars`, apply `invites.sql` with
-`--local` and run `npx wrangler@4 dev --local`.
+The Worker needs two secrets: `INVITE_SALT` (`npx wrangler@4 secret put INVITE_SALT`)
+and `INVITE_TO`, the address that receives invite alerts
+(`npx wrangler@4 secret put INVITE_TO`). For local testing put both in
+`site/.dev.vars`, apply `invites.sql` with `--local` and run
+`npx wrangler@4 dev --local`; the email binding is then simulated and logs the message.
 
 ## Invite requests
 
-Each stored request also emails the address pinned in the `send_email` binding in
-`wrangler.jsonc`, sent from invites@sealbook.org with Reply-To set to the requester.
+Each stored request also emails the `INVITE_TO` address, sent from
+invites@sealbook.org with Reply-To set to the requester. The `send_email` binding in
+`wrangler.jsonc` allows only that sender and names no recipient, so no personal
+address is in the repository; the Worker sends only to `INVITE_TO`. Without the
+secret the request is still stored and the failed alert is logged.
 Sending needs sealbook.org onboarded once: `npx wrangler@4 email sending enable sealbook.org`.
 
 ```sh

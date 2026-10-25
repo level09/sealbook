@@ -31,15 +31,20 @@ async function invite(request, env, ctx) {
   await env.DB.prepare(
     "INSERT INTO invite (email, use_case, ip_hash) VALUES (?, ?, ?)",
   ).bind(row.email, row.use_case, ipHash).run();
-  // The row is stored first, so a failed alert loses nothing; the binding refuses any other recipient.
-  ctx.waitUntil(env.EMAIL.send({
-    to: "nidal@level09.com",
+  // The row is stored first, so a failed alert (or an unset INVITE_TO) loses nothing.
+  ctx.waitUntil(alert(env, row).catch((err) => console.error("invite alert failed", err.code, err.message)));
+  return reply(200, { ok: true });
+}
+
+// The recipient is the INVITE_TO secret, so no personal address sits in the repository.
+async function alert(env, row) {
+  await env.EMAIL.send({
+    to: env.INVITE_TO,
     from: { email: "invites@sealbook.org", name: "Sealbook site" },
     replyTo: { email: row.email, name: row.email },
     subject: `Invite request: ${row.email}`,
     text: `${row.email}\n\n${row.use_case || "(no note)"}\n\nReply to this email to answer them.`,
-  }).catch((err) => console.error("invite alert failed", err.code, err.message)));
-  return reply(200, { ok: true });
+  });
 }
 
 export default {
