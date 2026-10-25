@@ -10,7 +10,7 @@ license = {text = "MIT"}
 requires-python = ">=3.11"
 
 dependencies = [
-    "stkit>=17.0.2,<18",
+    "stkit>=17.1.0,<18",
     "asyncpg>=0.30.0",
     "httpx>=0.27.0",
     "jsonschema>=4.23",

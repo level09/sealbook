@@ -36,7 +36,7 @@ root causes are in [lessons.md](lessons.md).
 
 ## Found moving to stk 17 (2026-10-25)
 
-Sealbook now depends on `stkit>=17.0.2,<18` and edits no stk file. These are what
+Sealbook now depends on `stkit>=17.1.0,<18` and edits no stk file. These are what
 the move needed from the app side, and what stk 17.0.x could offer instead.
 
 | Gap | What Sealbook does | For stk |
