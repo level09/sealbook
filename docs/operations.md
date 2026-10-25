@@ -196,7 +196,7 @@ the run's output; a laptop needs about 35 to 50 s for a brief and about 20 s per
 linker candidate.
 
 To run the agents on OpenRouter instead, on a machine that holds only synthetic
-data, set `AGENT_ROUTE=cloud-zdr` and `AGENT_MODEL=qwen/qwen3.5-9b` (with
+data, set `AGENT_ROUTE=cloud-zdr` and `AGENT_MODEL=deepseek/deepseek-v4.1-flash` (compared in agent-eval.md) (with
 `OPENROUTER_API_KEY`), then allow that route per agent tool in the policy table,
 since agent runs have no document and fall under the sensitive row:
 

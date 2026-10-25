@@ -108,6 +108,25 @@ Also seen:
 contradiction rule layers at the values above; a change either way fails it until
 this page and the pins are updated together.
 
+## Hosted models compared, 2026-10-25
+
+Live mode against OpenRouter, reasoning off, the same planted case, one run each.
+Rule layer at the time offered 7 same-person pairs with a ceiling of 0.857.
+
+| Model | Linker recall | False merges | Contradiction precision | Gap recall | Linker s | Gap finder s | Price in/out per M tokens |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `qwen/qwen3.5-9b` | 0.714 | 0 | 1.0 | 1.0 | 22.5 | 42.3 | low |
+| `anthropic/claude-haiku-5.5` | 0.429 | 0 | 1.0 | 1.0 | 11.3 | 12.5 | $0.10 / $0.50 |
+| `deepseek/deepseek-v4-pro-0813` | 0.857 | 0 | 1.0 | 1.0 | 6.2 | 28.2 | $0.66 / $1.98 |
+| `deepseek/deepseek-v4.1-flash` | 0.857 | 0 | 1.0 | 1.0 | 3.9 | 4.8 | $0.02 / $1.00 |
+
+`deepseek/deepseek-v4.1-flash` meets every target at the rule layer's ceiling, fastest
+and among the cheapest, and answers through a zero-retention provider; it is the
+suggested `AGENT_MODEL` on the `cloud-zdr` route. Models that refuse to turn reasoning
+off (Claude Sonnet 5.5, Gemini 3.8 Flash, GLM 5.3) were not compared, because agents
+send `reasoning_effort: none`. One run per model on one synthetic case: a direction,
+not a benchmark.
+
 ## Known gaps
 
 - One synthetic case, 80 claims. The numbers say nothing about archive scale or
