@@ -10,6 +10,7 @@ from sealbook import blobs, netguard
 from sealbook.cases import service as cases
 from sealbook.ingest import batch as batches
 from sealbook.ingest import service
+from sealbook.ingest import suggest as suggestions
 from sealbook.ledger import write
 from sealbook.ledger.contracts import Sensitivity
 from sealbook.monitor.views import ROLES
@@ -128,6 +129,31 @@ async def peek():
 @bp_ingest.get("/batch/<batch>")
 async def batch_status(batch):
     return _json(await batches.status(g.db_session, batch))
+
+
+@bp_ingest.get("/batch/<batch>/case")
+async def batch_case(batch):
+    """Which case a read batch looks like, among the cases this person can open."""
+    return _json(await suggestions.suggestion(g.db_session, current_user.id, batch))
+
+
+@bp_ingest.post("/batch/<batch>/record")
+async def batch_record(batch):
+    """Record chosen sources of a batch in another case, on a click."""
+    item = ((await request.get_json(silent=True)) or {}).get("item", {})
+    chosen = item.get("sources")
+    if not isinstance(chosen, list) or not all(isinstance(s, str) for s in chosen):
+        abort(400, description="sources must be a list of fingerprints")
+    try:
+        out = await suggestions.record(
+            g.db_session, current_user, batch, str(item.get("case") or ""), chosen
+        )
+    except LookupError as exc:
+        abort(404, description=str(exc))
+    except ValueError as exc:
+        abort(400, description=str(exc))
+    await g.db_session.commit()
+    return _json(out)
 
 
 @bp_ingest.post("/run/<uuid:run_id>/retry")

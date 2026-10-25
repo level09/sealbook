@@ -253,7 +253,12 @@
         </div>
     </section>
 
-    <!-- 4. finish: the intake brief and what to do next -->
+    <!-- 4. which case the batch looks like, once it is read -->
+    <section v-if="phase === 'done'" class="panel" aria-label="Case suggestion">
+        <case-suggestion :batch="batch" @created="caseMade"></case-suggestion>
+    </section>
+
+    <!-- 5. finish: the intake brief and what to do next -->
     <section v-if="phase === 'done'" class="panel brief" aria-labelledby="h-brief">
         <header>
             <h2 id="h-brief" class="who"><span class="av" aria-hidden="true"><i class="ti ti-robot"></i></span>Intake brief</h2>

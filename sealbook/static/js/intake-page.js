@@ -5,6 +5,7 @@
    The browser takes each file's SHA-256 before upload; the server refuses the bytes
    if its own differs. Stage states come from GET /ingest/batch/<id>. */
 import {IntakeBrief} from '/static/js/components/IntakeBrief.js';
+import {CaseSuggestion} from '/static/js/components/CaseSuggestion.js';
 
 const KIND = {
   image: {label: 'Image', icon: 'ti ti-photo', read: 'text'},
@@ -306,6 +307,13 @@ export function mount(boot) {
           this.say(`Created ${data.item.name}`);
         } catch (e) { this.nc.error = err(e); }
         this.nc.busy = false;
+      },
+
+      // A case started from the suggestion: listed, but the batch keeps its case.
+      async caseMade(c) {
+        this.created.push(c.slug);
+        await this.loadCases();
+        this.caseList = [...new Set([...this.caseList, c.slug])].sort();
       },
 
       // --- staging ------------------------------------------------------------
@@ -626,6 +634,7 @@ export function mount(boot) {
   });
   app.component('sheet-columns', SheetColumns);
   app.component('intake-brief', IntakeBrief);
+  app.component('case-suggestion', CaseSuggestion);
   registerStkComponents(app);
   app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
 }
