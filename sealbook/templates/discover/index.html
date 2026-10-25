@@ -14,6 +14,8 @@
 .dv-q .v-list-item { border-top: 1px solid var(--line); outline: none; }
 .dv-q .v-list-item.sel, .dv-q .v-list-item:focus-visible { background: var(--wash); box-shadow: inset 2px 0 0 var(--ink); }
 .dv-q .v-list-item-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Full opacity so the kind's ink keeps AA; the muted ink-3 replaces the faded look. */
+.dv-q .v-list-item-subtitle { opacity: 1; color: var(--ink-3); }
 .dv-band { display: inline-flex; gap: 2px; vertical-align: middle; }
 .dv-band i { width: 14px; height: 6px; border-radius: 1px; background: var(--line-strong); }
 .dv-band.strong i, .dv-band.moderate i:nth-child(-n+2), .dv-band.weak i:first-child { background: var(--agent); }
@@ -25,7 +27,7 @@
 .dv-mem .v-card { padding: 10px 12px; }
 .dv-ex { font-size: 14px; line-height: 1.7; background: var(--raise); padding: 6px 8px; border-radius: 5px; margin: 6px 0; white-space: pre-wrap; }
 .dv-ex mark { background: var(--agent-wash); color: inherit; border-bottom: 1.5px solid var(--agent); padding: 0 1px; border-radius: 2px; }
-.dv-lock { font-size: 12px; background: var(--raise); padding: 6px 8px; border-radius: 5px; margin: 6px 0; color: var(--ink-3); }
+.dv-lock { font-size: 12px; background: var(--sensitive-wash); padding: 6px 8px; border-radius: 5px; margin: 6px 0; color: var(--sensitive); }
 .dv-chk td { vertical-align: middle; }
 .dv-chk .role { min-width: 150px; }
 .dv-done { border-color: var(--agent) !important; }
@@ -54,7 +56,7 @@
   <div class="dv-grid">
     <section class="dv-panel dv-q" aria-labelledby="h-q">
       <header><h2 id="h-q">Queue</h2>
-        <v-chip-group v-model="kinds" multiple filter aria-label="Kinds"><v-chip v-for="k in kindList" :key="k" :value="k" size="x-small" variant="outlined">${ kindLabel(k) }</v-chip></v-chip-group>
+        <v-chip-group v-model="kinds" multiple filter aria-label="Kinds"><v-chip v-for="k in kindList" :key="k" :value="k" size="x-small" variant="tonal" :color="hue(k).color" :base-color="hue(k).color" :prepend-icon="hue(k).icon">${ kindLabel(k) }</v-chip></v-chip-group>
         <span class="act d-flex ga-1 align-center" v-if="picked.length"><span class="text-caption">${ picked.length } selected</span><v-btn size="small" variant="text" prepend-icon="ti ti-user-plus" @click="assigning = true">Assign</v-btn></span>
       </header>
       <v-list density="compact" lines="three" class="py-0" aria-label="Findings">
@@ -63,7 +65,7 @@
           <v-list-item v-for="f in grp.items" :key="f.id" class="dv-row" :class="{ sel: cur && cur.id === f.id }" tabindex="-1" :data-key="f.id" @click="pick(f.id)">
             <template #prepend><v-checkbox-btn class="me-1" density="compact" :model-value="picked.includes(f.id)" :aria-label="'Select ' + f.reason" @click.stop @update:model-value="togglePick(f.id)"></v-checkbox-btn></template>
             <v-list-item-title class="text-body-2 font-weight-medium"><bdi dir="auto">${ f.reason }</bdi></v-list-item-title>
-            <v-list-item-subtitle><v-icon icon="ti ti-robot" size="13" color="agent"></v-icon> ${ f.label }, ${ plural(f.people.length, 'person', 'people') } from ${ plural(f.members.length, 'claim') }<span v-if="f.also.length">, also a ${ f.also[0].label.toLowerCase() }</span> <span class="dv-band ms-1" :class="f.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ f.band }</v-list-item-subtitle>
+            <v-list-item-subtitle><span class="r-ink" :class="hue(f.kind).cls"><v-icon :icon="hue(f.kind).icon" size="13"></v-icon> ${ f.label }</span>, ${ plural(f.people.length, 'person', 'people') } from ${ plural(f.members.length, 'claim') }<span v-if="f.also.length">, also a ${ f.also[0].label.toLowerCase() }</span> <span class="dv-band ms-1" :class="f.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ f.band }</v-list-item-subtitle>
           </v-list-item>
         </template>
       </v-list>
@@ -73,8 +75,8 @@
     </section>
 
     <section class="dv-panel" v-if="cur" aria-labelledby="h-f">
-      <header><v-chip color="agent" variant="tonal" prepend-icon="ti ti-robot" size="small">${ cur.label }</v-chip>
-        <v-chip v-for="a in cur.also" :key="a.id" variant="outlined" size="small" prepend-icon="ti ti-link" :title="'The same people, place and month are also proposed as a ' + a.label.toLowerCase()" @click="pick(a.id)">also a ${ a.label.toLowerCase() }</v-chip>
+      <header><v-chip :color="hue(cur.kind).color" variant="tonal" :prepend-icon="hue(cur.kind).icon" size="small">${ cur.label }</v-chip>
+        <v-chip v-for="a in cur.also" :key="a.id" variant="outlined" size="small" :color="hue(kindOf(a.id)).color" prepend-icon="ti ti-link" :title="'The same people, place and month are also proposed as a ' + a.label.toLowerCase()" @click="pick(a.id)">also a ${ a.label.toLowerCase() }</v-chip>
         <v-chip v-if="cur.new" variant="outlined" color="new" size="small" prepend-icon="ti ti-point-filled">new since you last looked</v-chip>
         <v-chip v-if="detail && detail.request" variant="outlined" size="small" prepend-icon="ti ti-message-question" :href="'/review?request=' + detail.request">review requested</v-chip>
         <span class="act d-flex ga-2 align-center"><span class="dv-band" :class="cur.band" aria-hidden="true"><i></i><i></i><i></i></span><span>${ cur.band } evidence</span></span></header>
@@ -83,13 +85,13 @@
 
       <div class="dv-mem" v-if="detail">
         <v-card v-for="g in persons" :key="g.cluster" border>
-          <div class="d-flex ga-2 align-baseline"><a :href="'/people/' + g.cluster.slice(7)" class="font-weight-bold"><bdi v-if="g.first.name" dir="auto">${ g.first.name }</bdi><span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> ${ memberName(g.first) }</span></a>
+          <div class="d-flex ga-2 align-center"><i class="ti r-tile is-person" :class="g.first.name ? 'ti-user' : 'ti-lock'" aria-hidden="true"></i><a :href="'/people/' + g.cluster.slice(7)" class="font-weight-bold"><bdi v-if="g.first.name" dir="auto">${ g.first.name }</bdi><span v-else title="Name from a sensitive source; reveal it on the person page">${ memberName(g.first) }</span></a>
             <span class="ms-auto dv-muted text-caption">${ plural(g.claims.length, 'supporting claim') }</span></div>
           <div v-for="m in g.claims" :key="m.statement" class="mt-2">
           <div class="text-caption"><span class="dv-sw me-1" :class="[m.tier, m.agent ? '' : 'human']" :title="m.tier + (m.agent ? ', by an agent' : ', by a person')"></span><strong>${ human(m.prop) }</strong> <bdi dir="auto">${ m.display }</bdi><span v-if="m.place.en && m.place.en !== m.display">, <a :href="'/places/' + m.place.id"><bdi dir="auto">${ m.place.en }</bdi></a></span><span v-if="m.when">, ${ m.when }</span><span v-if="m.inherited" class="dv-muted"> (date from the document)</span></div>
           <div v-if="m.excerpt" class="dv-ex" dir="auto">${ m.excerpt.before }<mark>${ m.excerpt.span }</mark>${ m.excerpt.after }</div>
-          <div v-else-if="m.sensitive" class="dv-lock"><i class="ti ti-eye-off"></i> Sensitive source. Open it to see the span and the name; opening is logged.</div>
-          <div class="text-caption dv-muted d-flex ga-2 align-center"><v-icon icon="ti ti-file" size="14"></v-icon><span class="flex-grow-1"><bdi dir="auto">${ m.file }</bdi>, ${ where(m.span) }</span><a class="text-no-wrap" :href="'/evidence/' + m.source">Open at span</a></div>
+          <div v-else-if="m.sensitive" class="dv-lock"><i class="ti ti-eye-off" aria-hidden="true"></i> Sensitive source. Open it to see the span and the name; opening is logged.</div>
+          <div class="text-caption dv-muted d-flex ga-2 align-center"><i class="ti ti-file r-tile is-source" aria-hidden="true"></i><span class="flex-grow-1"><bdi dir="auto">${ m.file }</bdi>, ${ where(m.span) }</span><a class="text-no-wrap" :href="'/evidence/' + m.source">Open at span</a></div>
           </div>
         </v-card>
       </div>
@@ -102,7 +104,7 @@
           <thead><tr><th style="width:40px"><v-checkbox-btn :model-value="keep.length === detail.members.length" :indeterminate="keep.length > 0 && keep.length < detail.members.length" aria-label="Keep all" @update:model-value="v => keep = v ? detail.members.map(m => m.statement) : []"></v-checkbox-btn></th><th>Person</th><th class="dv-hide-m">Supported by</th><th style="width:190px">Role</th></tr></thead>
           <tbody><tr v-for="(g, i) in persons" :key="g.cluster">
             <td><v-checkbox-btn :model-value="kept(g)" :indeterminate="!kept(g) && g.claims.some(m => keep.includes(m.statement))" :id="i === 0 ? 'dv-first' : null" :aria-label="'Keep ' + memberName(g.first)" @update:model-value="v => keepPerson(g, v)"></v-checkbox-btn></td>
-            <td><bdi dir="auto">${ memberName(g.first) }</bdi></td><td class="text-caption dv-hide-m"><template v-for="(m, j) in g.claims" :key="m.statement">${ j ? '; ' : '' }<bdi dir="auto">${ m.file }</bdi> (${ human(m.prop) })</template></td>
+            <td><span class="d-inline-flex ga-2 align-center"><i class="ti r-tile is-person" :class="g.first.name ? 'ti-user' : 'ti-lock'" aria-hidden="true"></i><bdi dir="auto">${ memberName(g.first) }</bdi></span></td><td class="text-caption dv-hide-m"><template v-for="(m, j) in g.claims" :key="m.statement">${ j ? '; ' : '' }<bdi dir="auto">${ m.file }</bdi> (${ human(m.prop) })</template></td>
             <td class="role"><v-select v-model="roles[g.cluster]" :items="ROLES" item-title="t" item-value="v" density="compact" hide-details variant="plain" :disabled="!g.claims.some(m => keep.includes(m.statement))" :aria-label="'Role of ' + memberName(g.first)"></v-select></td></tr></tbody>
         </table></div></div>
         <div class="px-3 pt-3 d-flex ga-2 flex-wrap">
@@ -193,6 +195,8 @@ window.app = Vue.createApp({
   methods: {
     plural, human,
     kindLabel: k => KINDS[k] || human(k),
+    hue: findingHue,
+    kindOf(id) { return this.items.find(f => f.id === id)?.kind; },
     span(w) { return w[0] === w[1] ? fmt(w[0]) : `${fmt(w[0])} to ${fmt(w[1])}`; },
     where(s) { return !s ? 'whole item' : 'start' in s ? `characters ${s.start} to ${s.end}` : s.page ? `region on page ${s.page}` : s.ms ? `${(s.ms[0] / 1000).toFixed(1)} s` : 'whole item'; },
     // The finding names people by identity cluster; a member's subject is one mention in it.

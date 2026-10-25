@@ -74,7 +74,7 @@ export const IntakeBrief = {
         <p v-if="!brief[s.key].length" class="ib-muted">{{ s.key === 'disagrees' ? 'Nothing in this batch disagrees with an accepted claim.' : 'Nothing the brief could cite.' }}</p>
         <ul :class="{'ib-next': s.key === 'next'}">
           <li v-for="(line, i) in brief[s.key]" :key="i">
-            <template v-if="line.locked.length"><i class="ti ti-lock" aria-hidden="true"></i> <span class="ib-muted">A line from a sensitive source, <bdi>{{ line.locked.map(x => x.title).join(', ') }}</bdi>.</span> <a :href="line.href">Show it on the source page</a></template>
+            <template v-if="line.locked.length"><i class="ti ti-lock r-ink state-sensitive" aria-hidden="true"></i> <span class="ib-muted">A line from a sensitive source, <bdi>{{ line.locked.map(x => x.title).join(', ') }}</bdi>.</span> <a :href="line.href">Show it on the source page</a></template>
             <template v-else>
               <a v-if="line.href && s.key === 'next'" :href="line.href" class="ib-act"><i class="ti ti-arrow-right" aria-hidden="true"></i> <span dir="auto">{{ line.text }}</span></a>
               <template v-else><span dir="auto">{{ line.text }}</span><a v-if="line.href" :href="line.href" class="ms-1">Open</a></template>

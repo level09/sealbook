@@ -64,7 +64,7 @@ export const NoticerPanel = {
     <p v-if="report?.failed && !busy" role="alert">The last check could not finish. Try again.</p>
     <p v-if="report && !report.items.length && !busy">{{ report.outcome?.reason || (sha ? 'Nothing found that resembles this source yet.' : 'No check yet. Press Check now to compare the whole case.') }}</p>
     <article v-for="item in items" :key="item.key || item.href" class="mt-3">
-      <p v-if="item.locked"><i class="ti ti-lock" aria-hidden="true"></i> {{ item.count === 1 ? 'One resemblance rests' : item.count + ' resemblances rest' }} on <a :href="item.href" dir="auto">{{ item.title }}</a>. Reveal it to read {{ item.count === 1 ? 'it' : 'them' }}.</p>
+      <p v-if="item.locked"><i class="ti ti-lock r-ink state-sensitive" aria-hidden="true"></i> {{ item.count === 1 ? 'One resemblance rests' : item.count + ' resemblances rest' }} on <a :href="item.href" dir="auto">{{ item.title }}</a>. Reveal it to read {{ item.count === 1 ? 'it' : 'them' }}.</p>
       <template v-else>
         <div><v-chip size="x-small" color="agent" variant="tonal" class="me-1">{{ item.kind }}</v-chip>
           <template v-if="!sha"><a :href="item.here.href" dir="auto">{{ item.here.title }}</a> and </template><a :href="other(item).href" dir="auto">{{ other(item).title }}</a><span v-if="other(item).case" class="text-medium-emphasis"> in {{ other(item).case }}</span></div>

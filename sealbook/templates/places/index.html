@@ -26,7 +26,7 @@
       <v-data-table-server class="en-table" :headers="shown" :items="items" :items-length="total || 0" :loading="loading" item-value="id" density="compact"
         :items-per-page="opts.itemsPerPage" :sort-by="opts.sortBy" must-sort :items-per-page-options="[25, 50, 100]" @update:options="load" @click:row="(_, {item}) => location.href = '/places/' + item.id">
         <template #item.name="{ item }"><a :href="'/places/' + item.id" @click.stop><bdi dir="auto">${ item.name_ar }</bdi></a><span v-if="item.name_en" class="en-muted"> · <bdi dir="auto">${ item.name_en }</bdi></span></template>
-        <template #item.kind="{ item }"><span class="r-chip is-place">${ item.kind_label }</span></template>
+        <template #item.kind="{ item }"><span class="r-chip r-neutral">${ item.kind_label }</span></template>
         <template #item.governorate="{ item }">${ item.governorate || '' }<span v-if="item.district && item.district !== item.governorate" class="en-muted">, ${ item.district }</span></template>
         <template #item.last="{ item }"><span v-if="item.from">${ fmtSpan(item.from, item.last) }</span><span v-else class="en-muted">no dated claim</span></template>
         <template #no-data><v-empty-state icon="ti ti-map-pin-off" :title="q ? 'No place has that name' : 'No claim resolves to a place yet'" text="Confirm unresolved names, or include places nothing resolves to."></v-empty-state></template>

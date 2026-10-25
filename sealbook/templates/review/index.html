@@ -21,22 +21,22 @@
 .rv-row:first-child { border-top: 0; }
 .rv-row:hover { background: var(--wash); }
 .rv-row.sel { background: var(--wash); box-shadow: inset 2px 0 0 var(--ink); }
-.rv-row.picked { background: var(--agent-wash); }
+.rv-row.picked { background: var(--wash); }
 .rv-row:focus-visible { box-shadow: inset 0 0 0 2px var(--ink); }
 .rv-row .pk { margin-top: 1px; }
 .rv-row .mv-thumb { border-radius: 4px; overflow: hidden; }
-.rv-row .tile { width: 64px; height: 44px; border-radius: 4px; background: var(--raise); border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink-3); font-size: 20px; }
+.rv-row .tile { width: 64px; height: 44px; border-radius: 4px; background: var(--r-wash, var(--raise)); border: 1px solid var(--line); display: grid; place-items: center; color: var(--r, var(--ink-3)); font-size: 20px; }
 .rv-s { font-size: 13.5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .rv-s .q { color: var(--ink-3); }
 .rv-s b { font-weight: 600; }
-.rv-mask { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-3); font-style: italic; }
+.rv-mask { display: inline-flex; align-items: center; gap: 4px; color: var(--sensitive); font-style: italic; }
 .rv-mask i { font-style: normal; }
 .rv-src { font-size: 12px; color: var(--ink-2); display: flex; gap: 4px; align-items: baseline; min-width: 0; }
 .rv-src .f { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rv-src .w { white-space: nowrap; color: var(--ink-3); }
 .rv-who { grid-column: 3; display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: center; font-size: 12px; color: var(--ink-3); }
 .rv-due { font-weight: 600; color: var(--ink-2); white-space: nowrap; }
-.rv-due.late { color: rgb(var(--v-theme-warning)); }
+.rv-due.late { color: var(--overdue); }
 
 /* tier texture; --c is author hue */
 .by-agent { --c: var(--agent); --cs: var(--agent-solid); }
@@ -81,7 +81,8 @@
 .rv-msg p { margin: 2px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .rv-done { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 14px; border-bottom: 1px solid var(--line); background: var(--raise); }
 .rv-need span { flex: 1 1 180px; }
-.rv-gate { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; margin: 10px 14px 0; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--raise); }
+.rv-gate { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; margin: 10px 14px 0; padding: 10px 12px; border: 1px solid var(--sensitive-line); border-radius: 6px; background: var(--sensitive-wash); }
+.rv-gate > .v-icon { color: var(--sensitive); }
 .rv-gate .t { flex: 1 1 260px; min-width: 0; overflow-wrap: anywhere; }
 .rv-need { display: flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; padding: 8px 10px; margin-top: 10px; border: 1px solid var(--line-strong); border-radius: 6px; }
 .rv-ev .ev-viewer { min-height: 200px; }
@@ -112,7 +113,7 @@
 .rv-empty { padding: 28px 18px; text-align: center; }
 .rv-empty h2 { font-size: 15px; font-weight: 600; margin: 8px 0 4px; }
 .rv-empty p { margin: 0 auto 12px; color: var(--ink-3); max-width: 44ch; }
-.rv-bulk { display: flex; gap: 6px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--agent-wash); flex-wrap: wrap; }
+.rv-bulk { display: flex; gap: 6px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--raise); flex-wrap: wrap; }
 @media (max-width: 1279px) { .rv-body { grid-template-columns: 1fr; } .rv-ev { border-inline-end: 0; border-bottom: 1px solid var(--line); } }
 @media (max-width: 959px) {
   .rv { padding: 12px 16px 72px; }
@@ -147,12 +148,12 @@
           <span v-if="it.kind === 'finding'" class="rv-sw tier-unconfirmed by-agent" title="Unconfirmed, proposed by an agent"></span>
           <v-checkbox-btn v-else-if="picked.length" class="pk" density="compact" :model-value="picked.includes(it.id)" :aria-label="'Select ' + sentence(it)" @click.stop @update:model-value="togglePick(it.id)"></v-checkbox-btn>
           <span v-else class="rv-sw" :class="['tier-' + it.tier, it.agent ? 'by-agent' : 'by-person']" :title="TIER[it.tier] + (it.agent ? ', proposed by an agent' : ', proposed by a person')"></span>
-          <template v-if="it.kind === 'finding'"><span class="tile"><i class="ti ti-users-group" aria-hidden="true"></i></span></template>
+          <template v-if="it.kind === 'finding'"><span class="tile" :class="hue(it.finding).cls"><i :class="hue(it.finding).icon" aria-hidden="true"></i></span></template>
           <media-thumb v-else-if="it.source" :key="it.source.sha256 + it.source.revealed" :locked="it.source.sensitive && !it.source.revealed" :sha="it.source.sha256" :mime="it.source.mime" :file="it.source.file" :link="false" :caption="false" :width="64" :height="44"></media-thumb>
-          <span v-else class="tile"><i class="ti ti-users" aria-hidden="true"></i></span>
+          <span v-else class="tile is-person"><i class="ti ti-users" aria-hidden="true"></i></span>
           <div style="min-width: 0">
             <div class="rv-s" dir="auto"><template v-for="(p, i) in parts(it)" :key="i"><span v-if="i" class="q">${ p && p.tight ? ' ' : ' · ' }</span><span v-if="p && p.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>${ p.t }</span><b v-else-if="p && p.strong"><bdi>${ p.t }</bdi></b><span v-else-if="p" :class="{q: p.quiet}"><bdi>${ p.t }</bdi></span></template></div>
-            <div class="rv-src" v-if="it.kind === 'finding'"><span class="f">${ KINDS[it.kind] || it.label }, ${ plural(new Set(it.members.map(m => m.cluster || m.subject)).size, 'person', 'people') }</span></div>
+            <div class="rv-src" v-if="it.kind === 'finding'"><span class="f"><span class="r-ink" :class="hue(it.finding).cls">${ it.label }</span>, ${ plural(new Set(it.members.map(m => m.cluster || m.subject)).size, 'person', 'people') }</span></div>
             <div class="rv-src" v-else-if="it.source"><span class="f"><bdi>${ it.source.file }</bdi>,</span><span class="w">${ it.where.label }</span></div>
           </div>
           <div class="rv-who" v-if="it.kind !== 'finding'">
@@ -233,8 +234,8 @@
             <!-- a proposed link between two people, two documents or a person and an incident: what it joins, then the statements it rests on -->
             <template v-else-if="claim.basis && claim.basis.length">
               <div class="rv-at" v-if="claim.document"><media-thumb :locked="claim.source.sensitive && !claim.source.revealed" :sha="claim.source.sha256" :mime="claim.source.mime" :file="claim.source.file" :width="80" :height="48" :caption="false"></media-thumb><span class="f"><bdi>${ claim.source.file }</bdi></span><i class="ti ti-arrows-left-right" aria-hidden="true"></i><media-thumb :locked="claim.document.sensitive && !claim.document.revealed" :sha="claim.document.sha256" :mime="claim.document.mime" :file="claim.document.file" :width="80" :height="48" :caption="false"></media-thumb><span class="f"><bdi>${ claim.document.file }</bdi></span></div>
-              <div class="rv-at" v-else-if="claim.incident"><v-icon icon="ti ti-alert-triangle" size="16"></v-icon><span class="f"><bdi>${ personName(claim.other) }</bdi></span><span class="rv-muted">in</span><a :href="'/incidents/' + claim.incident.id"><bdi>${ claim.incident.title || 'the incident' }</bdi></a></div>
-              <div class="rv-at" v-else><v-icon icon="ti ti-users" size="16"></v-icon><span class="f"><bdi>${ personName(claim.person) }</bdi></span><span class="rv-muted">and</span><span class="f"><bdi>${ personName(claim.other) }</bdi></span></div>
+              <div class="rv-at" v-else-if="claim.incident"><i class="ti ti-alert-triangle r-tile is-incident" aria-hidden="true"></i><span class="f"><bdi>${ personName(claim.other) }</bdi></span><span class="rv-muted">in</span><a :href="'/incidents/' + claim.incident.id"><bdi>${ claim.incident.title || 'the incident' }</bdi></a></div>
+              <div class="rv-at" v-else><i class="ti ti-users r-tile is-person" aria-hidden="true"></i><span class="f"><bdi>${ personName(claim.person) }</bdi></span><span class="rv-muted">and</span><span class="f"><bdi>${ personName(claim.other) }</bdi></span></div>
               <div class="rv-sec pb-0"><h3 class="ma-0">What it rests on</h3></div>
               <div class="rv-basis">
                 <div v-for="r in claim.basis" :key="r.id" class="rv-card">
@@ -253,7 +254,7 @@
             </template>
             <!-- one source at the exact span -->
             <template v-else-if="viewerItem">
-              <div class="rv-at"><v-icon :icon="ICON[claim.source.kind]" size="16"></v-icon><span class="f"><bdi>${ claim.source.file }</bdi></span><span class="rv-muted">${ claim.where.label }</span><v-spacer></v-spacer><a :href="'/evidence/' + claim.source.sha256 + (claim.where.ms ? '?at=' + claim.where.ms[0] : '')" class="text-no-wrap">Open at span</a></div>
+              <div class="rv-at"><i :class="ICON[claim.source.kind]" class="r-tile is-source" aria-hidden="true"></i><span class="f"><bdi>${ claim.source.file }</bdi></span><span class="rv-muted">${ claim.where.label }</span><v-spacer></v-spacer><a :href="'/evidence/' + claim.source.sha256 + (claim.where.ms ? '?at=' + claim.where.ms[0] : '')" class="text-no-wrap">Open at span</a></div>
               <p v-if="claim.excerpt && !['text', 'web'].includes(claim.source.kind)" class="rv-excerpt" dir="auto">${ claim.excerpt.before }<mark class="span" :class="'tier-' + claim.tier">${ claim.excerpt.span }</mark>${ claim.excerpt.after }</p>
               <claim-crop v-if="claim.source.kind === 'image' && claim.span && claim.span.bbox && claim.source.revealed" :src="'/api/evidence/' + claim.source.sha256 + '/content'" :bbox="claim.span.bbox" :tier="claim.tier" :agent="claim.agent" :alt="'Claimed region of ' + claim.source.file"></claim-crop>
               <evidence-viewer :key="claim.id + ':' + claim.source.revealed" :item="viewerItem" :claims="viewerClaims" :sel="claim.id" :focus="claim.where.ms ? claim.where.ms[0] : null" :page="claim.where.page || null" :read="read" :read-error="readError" :highlight="pdfHighlight" @revealed="revealed" @retry-read="loadRead"></evidence-viewer>
@@ -315,7 +316,7 @@
                 <template v-if="claim.corrects"><dt>Corrects</dt><dd dir="auto"><span v-if="claim.corrects.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ claim.corrects.value.text }</bdi>, by <actor-chip :actor="claim.corrects.proposer" size="sm"></actor-chip></dd></template>
               </dl>
               <p v-if="claim.reasoning" class="rv-quote" dir="auto">${ claim.reasoning }</p>
-              <p v-else-if="claim.reasoning_hidden" class="text-caption rv-muted mt-2 mb-0"><i class="ti ti-lock" aria-hidden="true"></i> The run's reason shows once the sensitive sources above are shown.</p>
+              <p v-else-if="claim.reasoning_hidden" class="text-caption rv-muted mt-2 mb-0"><i class="ti ti-lock r-ink state-sensitive" aria-hidden="true"></i> The run's reason shows once the sensitive sources above are shown.</p>
               <p v-else-if="claim.agent" class="text-caption rv-muted mt-2 mb-0">The run recorded no reasoning; it gives evidence kinds, never a confidence score.</p>
             </div>
 

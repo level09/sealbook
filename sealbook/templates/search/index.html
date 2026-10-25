@@ -49,7 +49,7 @@
             <span v-if="h.subtitle" class="sr-muted text-caption" dir="auto"> · ${ h.subtitle }</span>
             <div v-if="h.snippet" class="sr-snip" dir="auto"><template v-for="(p, i) in parts(h.snippet)" :key="i"><mark v-if="p.mark">${ p.text }</mark><template v-else>${ p.text }</template></template></div>
             <media-thumb v-if="h.sha256 && h.type !== 'passage'" :locked="!!h.masked" :sha="h.sha256" :kind="{frame: 'video', page_image: 'pdf', page: 'pdf', image: 'image', audio: 'audio'}[h.kind]" :file="h.title" :link="false" :caption="false" :width="120" :height="68" class="mt-1" style="display: flex"></media-thumb>
-            <div v-else-if="h.masked" class="sr-why"><i class="ti ti-eye-off"></i> ${ h.type === 'person' ? 'Name hidden: it comes from a sensitive source. Open the person to reveal it (logged).' : 'Text hidden until you reveal this source (logged)' }</div>
+            <div v-else-if="h.masked" class="sr-why"><i class="ti ti-eye-off r-ink state-sensitive" aria-hidden="true"></i> ${ h.type === 'person' ? 'Name hidden: it comes from a sensitive source. Open the person to reveal it (logged).' : 'Text hidden until you reveal this source (logged)' }</div>
             <div class="sr-why" dir="auto">${ why(h) }${ where(h) }</div>
           </span>
           <v-chip size="small" variant="outlined">${ kindLabel(h) }</v-chip>
@@ -68,7 +68,7 @@
             <img v-if="h.thumb" :src="h.thumb" class="sr-thumb" :alt="'Preview of ' + h.title">
             <media-thumb v-else-if="h.sha256 && h.type !== 'passage'" :locked="!!h.masked" :sha="h.sha256" :kind="{frame: 'video', page_image: 'pdf', page: 'pdf', image: 'image', audio: 'audio'}[h.kind]" :file="h.title" :link="false" :caption="false" :width="120" :height="68" class="mt-1" style="display: flex"></media-thumb>
             <div v-if="h.snippet" class="sr-snip" dir="auto">${ h.snippet.text }</div>
-            <div v-else-if="h.masked && h.type !== 'person'" class="sr-why"><i class="ti ti-eye-off"></i> Hidden until you reveal this source (logged)</div>
+            <div v-else-if="h.masked && h.type !== 'person'" class="sr-why"><i class="ti ti-eye-off r-ink state-sensitive" aria-hidden="true"></i> Hidden until you reveal this source (logged)</div>
             <div class="sr-why" dir="auto">${ why(h) }${ where(h) }</div>
           </span>
           <span class="sr-lead-label" :title="score(h) !== null ? 'Similarity ' + score(h).toFixed(2) + ' in the embedding space. Not a probability.' : 'Near by meaning. Not a probability.'"><i class="ti ti-robot"></i> ${ h.why.band ? h.why.band + ' lead' : 'lead' }</span>
@@ -122,8 +122,8 @@ const app = createApp({
   methods: {
     useCase(v) { this.investigation = v; this.go(); },
     total(t) { return this.result?.groups[t]?.total || 0; },
-    // Entity hue on the glyph; claims stay ink, everything from a file is a source.
-    ent: h => h.type === 'claim' ? '' : 'r-ink is-' + ({person: 'person', place: 'place', incident: 'incident', finding: 'finding'}[h.type] || 'source'),
+    // Entity hue on a tile behind the glyph; claims stay ink, everything from a file is a source.
+    ent: h => h.type === 'claim' ? '' : 'r-tile is-' + ({person: 'person', place: 'place', incident: 'incident', finding: 'finding'}[h.type] || 'source'),
     groupRole: t => t === 'claims' ? '' : 'r-dot is-' + ({people: 'person', places: 'place', incidents: 'incident', findings: 'finding'}[t] || 'source'),
     icon(h) {
       if (h.type === 'media') return {frame: 'ti ti-movie', audio: 'ti ti-wave-sine', image: 'ti ti-photo', page_image: 'ti ti-file-text'}[h.kind] || 'ti ti-photo';

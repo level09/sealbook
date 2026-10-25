@@ -93,7 +93,7 @@
       <section v-for="s in shown" :key="s.id" :id="s.id" class="en-panel gd-s" :aria-labelledby="'h-' + s.id">
         <header>
           <h2 :id="'h-' + s.id">${ s.title }</h2>
-          <span class="r-chip is-source">${ areaTitle(s.area) }</span>
+          <span class="r-chip r-neutral">${ areaTitle(s.area) }</span>
           <a class="gd-hash" :href="'#' + s.id" :aria-label="'Link to ' + s.title"><i class="ti ti-link" aria-hidden="true"></i></a>
         </header>
         <div class="en-body">
@@ -112,7 +112,7 @@
       </section>
 
       <section v-if="trustShown" id="why-the-record-holds" class="en-panel gd-s" aria-labelledby="h-trust">
-        <header><h2 id="h-trust">Why the record holds</h2><span class="r-chip is-source">Trust</span>
+        <header><h2 id="h-trust">Why the record holds</h2><span class="r-chip r-neutral">Trust</span>
           <a class="gd-hash" href="#why-the-record-holds" aria-label="Link to Why the record holds"><i class="ti ti-link" aria-hidden="true"></i></a></header>
         <div class="en-body">
           <p class="gd-who">Nothing in Sealbook asks you to trust the server. Each step below can be recomputed by anyone who holds the record.</p>

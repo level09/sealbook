@@ -45,7 +45,7 @@ window.app = entityPage(boot, {
         const r = this.e.relations;
         return [
           {key: 'people', title: 'People involved', icon: 'ti ti-user', role: 'is-person', empty: 'No person is involved in the accepted statements.',
-            items: r.people.map(p => ({id: p.person, href: `/people/${p.person}`, person: p.person, name: p.label, muted: !p.named, roles: p.roles,
+            items: r.people.map(p => ({id: p.person, href: `/people/${p.person}`, name: p.label, muted: !p.named, roles: p.roles,
               title: p.named ? null : 'Name from a sensitive source; reveal it on the person page',
               why: p.from ? `placed ${fmtSpan(p.from, p.to)} in ${plural(p.points, 'claim')}` : 'no dated, placed claim visible',
               chip: {cls: 'tier-accepted', text: 'accepted'}}))},

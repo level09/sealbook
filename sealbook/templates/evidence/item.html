@@ -10,7 +10,7 @@
   <template v-if="it">
     <nav class="ev-crumbs" aria-label="Breadcrumb"><span>${ it.investigation }</span> / <a href="/evidence">Evidence</a> / <span>${ it.title }</span></nav>
     <div class="ev-head">
-      <h1><v-icon :icon="ICON[it.kind]" size="20" class="me-1"></v-icon>${ it.title } <span class="muted font-weight-medium">${ [DOC[it.doc_type] !== it.title ? DOC[it.doc_type] : null, it.filename !== it.title ? it.filename : null].filter(Boolean).join(', ') }</span></h1>
+      <h1><i :class="ICON[it.kind]" class="r-tile is-source me-1" aria-hidden="true"></i>${ it.title } <span class="muted font-weight-medium">${ [DOC[it.doc_type] !== it.title ? DOC[it.doc_type] : null, it.filename !== it.title ? it.filename : null].filter(Boolean).join(', ') }</span></h1>
       <p class="mono muted" :title="it.sha256">${ short(it.sha256) }</p>
       <v-chip v-if="it.sensitive" color="sensitive" variant="outlined" size="small" prepend-icon="ti ti-eye-off">sensitive</v-chip>
       <div class="ms-auto d-flex ga-2 flex-wrap">
@@ -46,10 +46,10 @@
           <span class="ev-legend"><span class="tier-accepted by-person"><span class="ev-sw"></span> accepted</span><span class="tier-corroborated by-person"><span class="ev-sw"></span> corroborated</span><span class="tier-unconfirmed by-agent"><span class="ev-sw"></span> unconfirmed</span></span></header>
         <div v-if="claims.length" role="listbox" aria-label="Claims, j and k to move">
           <template v-for="g in groups" :key="g.subject">
-            <div class="ev-grp"><a v-if="g.subject.startsWith('person:')" :href="'/people/' + g.subject.slice(7)" @click.stop><bdi dir="auto">${ g.name }</bdi></a><bdi v-else dir="auto">${ g.name }</bdi></div>
+            <div class="ev-grp"><i v-if="g.subject.startsWith('person:')" class="ti ti-user r-tile is-person" aria-hidden="true"></i><a v-if="g.subject.startsWith('person:')" :href="'/people/' + g.subject.slice(7)" @click.stop><bdi dir="auto">${ g.name }</bdi></a><bdi v-else dir="auto">${ g.name }</bdi></div>
             <div v-for="c in g.claims" :key="c.id" class="ev-row ev-claim" role="option" :aria-selected="sel === c.id" :class="['tier-' + c.tier, c.actor.agent ? 'by-agent' : 'by-person', {sel: sel === c.id}]" tabindex="-1" :data-row="'claims:' + ordered.indexOf(c)" @click="pick(c.id)" @dblclick="openSpan(c)">
               <span class="ev-sw" aria-hidden="true"></span><span class="lbl">${ prop(c.prop) }</span>
-              <span class="val"><bdi v-if="c.value" dir="auto">${ c.value }</bdi><span v-else-if="c.erased" class="muted">erased</span><span v-else class="muted"><i class="ti ti-eye-off" aria-hidden="true"></i> masked, show the sensitive item to read</span></span>
+              <span class="val"><bdi v-if="c.value" dir="auto">${ c.value }</bdi><span v-else-if="c.erased" class="muted">erased</span><span v-else class="muted"><i class="ti ti-eye-off r-ink state-sensitive" aria-hidden="true"></i> masked, show the sensitive item to read</span></span>
               <span><v-chip v-if="threadFor(c)" size="x-small" prepend-icon="ti ti-message" @click.stop="openThread(threadFor(c))">${ threadFor(c).comments + 1 }</v-chip></span>
               <span class="meta">${ c.tier }, <span :class="{agent: c.actor.agent}"><i v-if="c.actor.agent && c.actor.kind !== 'import'" class="ti ti-robot" aria-hidden="true"></i> ${ byLabel(c) }</span><template v-if="c.span">, ${ spanLabel(c.span) }</template><template v-if="c.evidence?.length">, ${ c.evidence.join(', ').replace(/_/g, ' ') }</template></span>
               <span v-if="sel === c.id" class="acts d-flex ga-1 flex-wrap mt-1">

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {#- One layout for every entity page. A page fills crumbs, title, names, facts,
     actions and side, and its script gives entityPage() a `relations` computed:
-    [{key, title, icon, role, empty, items: [{id, href, name, person, why, chip: {cls, text}, title}]}]. -#}
+    [{key, title, icon, role, empty, items: [{id, href, name, why, chip: {cls, text}, title}]}]. -#}
 {% block css %}
 <link rel="stylesheet" href="{{ asset('maplibre/maplibre-gl.css') }}">
 <link rel="stylesheet" href="{{ asset('css/entity.css') }}">
@@ -44,10 +44,9 @@
           <header><h2 id="en-h-rel">Relations</h2><span class="en-muted text-caption">each with why it is related; tiers are textures elsewhere, words here</span></header>
           <div v-for="g in relations" :key="g.key" class="en-group">
             <h3><i :class="[g.icon, 'r-ink', g.role]" aria-hidden="true"></i>${ g.title } <span class="en-muted">${ g.items.length }</span></h3>
-            <component :is="r.href ? 'a' : 'div'" v-for="r in g.items" :key="r.id" class="en-rel" :href="r.href || undefined" :title="r.title || undefined">
+            <component :is="r.href ? 'a' : 'div'" v-for="r in g.items" :key="r.id" class="en-rel" :class="g.role" :href="r.href || undefined" :title="r.title || undefined">
               <span class="n">
-                <actor-chip v-if="r.person" :actor="{kind: 'human', name: r.name, key: r.person}" size="sm" bare></actor-chip>
-                <i v-else :class="[g.icon, 'r-ink', g.role]" aria-hidden="true"></i>
+                <i :class="[g.icon, 'r-tile']" aria-hidden="true"></i>
                 <bdi dir="auto" :class="{'en-muted': r.muted}">${ r.name }</bdi>
               </span>
               <span class="why" dir="auto"><span v-if="r.roles" class="en-roles me-2"><span v-for="x in r.roles" :key="x" class="r-chip is-person">${ human(x) }</span></span>${ r.why }</span>

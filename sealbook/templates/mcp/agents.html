@@ -11,6 +11,7 @@
         <div v-else-if="overview" class="ag-grid mb-6">
             <v-card v-for="a in overview.agents" :key="a.key" variant="outlined" class="pa-4" :class="{'ag-wide': a.key === 'noticer'}">
                 <div class="d-flex align-center flex-wrap ga-2">
+                    <i class="ti ti-robot r-tile is-agent" aria-hidden="true"></i>
                     <h3 style="font-size: 15px">${ a.name }</h3>
                     <v-spacer></v-spacer>
                     <v-chip size="small" variant="tonal" :color="{off: 'grey', checking: 'primary', paused: 'warning', watching: 'success', ready: 'grey'}[a.state]">${ stateWords[a.state] }</v-chip>

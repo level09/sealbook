@@ -71,7 +71,7 @@ export const GapFinder = {
     <p v-if="report?.failed" role="alert">Gap finder could not finish. Try again.</p>
     <p v-if="report && !items.length && !busy">{{ empty }}</p>
     <article v-for="(item, index) in rows" :key="index" class="mt-4">
-      <template v-if="item.folded"><p v-for="source in item.folded" :key="source.href"><i class="ti ti-lock" aria-hidden="true"></i> {{ source.count === 1 ? 'One suggestion rests' : source.count + ' suggestions rest' }} on <a :href="source.href" dir="auto">{{ source.title }}</a>. Reveal it to read {{ source.count === 1 ? 'it' : 'them' }}.</p></template>
+      <template v-if="item.folded"><p v-for="source in item.folded" :key="source.href"><i class="ti ti-lock r-ink state-sensitive" aria-hidden="true"></i> {{ source.count === 1 ? 'One suggestion rests' : source.count + ' suggestions rest' }} on <a :href="source.href" dir="auto">{{ source.title }}</a>. Reveal it to read {{ source.count === 1 ? 'it' : 'them' }}.</p></template>
       <template v-else>
         <h3 style="font-size: 14px"><a v-if="!person" :href="'/people/' + item.person.slice(7)">{{ item.name || 'Unnamed person' }}</a><span v-if="!person">: </span>{{ item.window_text }}</h3>
         <p v-if="item.maybe" class="text-medium-emphasis">May be the same person as <a :href="'/people/' + item.maybe.person.slice(7)" dir="auto">{{ item.maybe.name || 'an unnamed person' }}</a> {{ item.maybe.where }}. A proposal links the two records and awaits review.</p>

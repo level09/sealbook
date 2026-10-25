@@ -19,7 +19,6 @@ const TIER = {unconfirmed: 'Unconfirmed', corroborated: 'Corroborated', accepted
 const BOXES = [{v: 'mine', t: 'Asked of me'}, {v: 'sent', t: 'Sent by me'}, {v: 'open', t: 'All open'}, {v: 'findings', t: 'Findings'}];
 const RELATIONSHIPS = [{title: 'Same recording', value: 'same_recording'}, {title: 'Contains the other recording', value: 'contains'}, {title: 'Excerpt of the other recording', value: 'contained_in'}, {title: 'Related event, different recording', value: 'related'}];
 const CORRECTABLE = ['name', 'birth_date', 'place_of_birth', 'father_name', 'mother_name', 'arrested_at', 'detained_at', 'detention_branch', 'transferred_to', 'seen_at', 'last_seen', 'document_type', 'document_date', 'occupation', 'sex', 'age', 'event'];
-const KINDS = {shared_presence: 'Shared presence', candidate_incident: 'Candidate incident'};
 const ICON = {image: 'ti ti-photo', pdf: 'ti ti-file-type-pdf', audio: 'ti ti-volume', video: 'ti ti-video', web: 'ti ti-world', sheet: 'ti ti-table', text: 'ti ti-file-text'};
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -88,7 +87,7 @@ export function mount(boot) {
     },
     computed: {
       list() {
-        if (this.box === 'findings') return this.findings.map(f => ({...f, kind: 'finding'}));
+        if (this.box === 'findings') return this.findings.map(f => ({...f, finding: f.kind, kind: 'finding'}));
         // Due first, earliest first; undated keep the server's order (newest request, or by use).
         return this.items.map((it, i) => ({it, i})).sort((a, b) => (a.it.due || '9999').localeCompare(b.it.due || '9999') || a.i - b.i).map(x => x.it);
       },
@@ -133,6 +132,7 @@ export function mount(boot) {
       },
     },
     methods: {
+      hue: findingHue,
       fmtDate, span, ago, plural, label, sec,
       say(text) {this.snack = {show: true, text};},
       fail(err) {
@@ -417,7 +417,7 @@ export function mount(boot) {
       await this.openSel();
     },
   });
-  Object.assign(app.config.globalProperties, {ICON, KINDS, TIER});
+  Object.assign(app.config.globalProperties, {ICON, TIER});
   app.component('evidence-pair', EvidencePair).component('claim-crop', ClaimCrop);
   registerMediaViewers(app);
   registerStkComponents(app);

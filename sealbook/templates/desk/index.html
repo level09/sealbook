@@ -75,9 +75,9 @@
     <section class="desk-panel wide" aria-labelledby="h-fnd">
       <header><h2 id="h-fnd">Findings waiting</h2><span class="desk-muted text-caption">proposed by discovery, decided by people</span><v-btn class="act" size="small" variant="text" :href="DISCOVER" prepend-icon="ti ti-robot">Discover</v-btn></header>
       <v-data-table-server class="desk-table" :headers="hFnd" :items="fnd.items" :items-length="fnd.total" :loading="fnd.loading" density="compact" :items-per-page="fnd.perPage" :items-per-page-options="[10, 25, 50]" :row-props="rowProps(r => DISCOVER + '?f=' + r.key)" :hide-default-footer="fnd.total <= fnd.perPage" @update:options="o => load('fnd', o)" @click:row="clickRow">
-        <template #item.kind="{ item }"><v-chip size="small" color="agent" variant="tonal" prepend-icon="ti ti-robot">${ kindLabel(item.kind) }</v-chip></template>
+        <template #item.kind="{ item }"><v-chip size="small" :color="hue(item.kind).color" variant="tonal" :prepend-icon="hue(item.kind).icon">${ kindLabel(item.kind) }</v-chip></template>
         <template #item.between="{ item }">
-          <div class="desk-status show-m mb-1"><v-chip size="x-small" color="agent" variant="tonal" prepend-icon="ti ti-robot">${ kindLabel(item.kind) }</v-chip><span class="text-no-wrap desk-muted text-caption"><span class="desk-band" :class="item.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ item.band }</span></div>
+          <div class="desk-status show-m mb-1"><v-chip size="x-small" :color="hue(item.kind).color" variant="tonal" :prepend-icon="hue(item.kind).icon">${ kindLabel(item.kind) }</v-chip><span class="text-no-wrap desk-muted text-caption"><span class="desk-band" :class="item.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ item.band }</span></div>
           <span v-for="(p, i) in item.people" :key="p"><a :href="'/people/' + p" @click.stop><bdi v-if="fnd.names[p]" dir="auto">${ fnd.names[p] }</bdi><span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> ${ unnamed[p] }</span></a>${ i < item.people.length - 1 ? ', ' : '' }</span>
           <span v-if="!item.people.length" class="desk-muted">${ plural(item.members, 'claim') }</span>
           <span v-if="item.places.length" class="desk-muted"> at </span><span v-for="(pl, i) in item.places" :key="item.place_ids[i]"><a :href="'/places/' + item.place_ids[i]" @click.stop><bdi dir="auto">${ pl || 'an unnamed place' }</bdi></a>${ i < item.places.length - 1 ? ', ' : '' }</span>
@@ -98,14 +98,14 @@
       <v-data-table-server class="desk-table" :headers="hEv" :items="ev.items" :items-length="ev.total" :loading="ev.loading" density="compact" :items-per-page="ev.perPage" :items-per-page-options="[10, 25, 50]" :row-props="rowProps(r => '/evidence/' + r.sha256)" :hide-default-footer="ev.total <= ev.perPage" @update:options="o => load('ev', o)" @click:row="clickRow">
         <template #item.title="{ item }"><div class="desk-item" :class="{ 'desk-sens': item.sensitive }">
           <media-thumb :locked="!item.revealed" :sha="item.sha256" :mime="item.mime" :kind="item.type" :caption="false" :link="false" :width="56" :height="40"></media-thumb>
-          <div class="t"><div class="desk-trunc" dir="auto" :title="item.title"><i v-if="item.sensitive" class="ti ti-eye-off me-1" title="Sensitive, opening it is logged" aria-label="Sensitive"></i><a :href="'/evidence/' + item.sha256" :title="'SHA-256 ' + item.sha256" @click.stop>${ item.title }</a></div>
+          <div class="t"><div class="desk-trunc" dir="auto" :title="item.title"><i v-if="item.sensitive" class="ti ti-eye-off me-1 r-ink state-sensitive" title="Sensitive, opening it is logged" aria-label="Sensitive"></i><a :href="'/evidence/' + item.sha256" :title="'SHA-256 ' + item.sha256" @click.stop>${ item.title }</a></div>
             <div class="desk-muted text-caption"><i :class="typeIcon(item.type)" aria-hidden="true"></i> ${ docLabel(item) }<bdi v-if="item.file" dir="auto">, ${ item.file }</bdi></div>
-            <div class="desk-status show-m"><span class="desk-muted text-caption">${ ago(item.acquired_at) }, ${ item.by.name }</span><v-chip v-for="c in chips(item)" :key="c.t" size="x-small" :variant="c.v" :color="c.c">${ c.t }</v-chip></div></div>
+            <div class="desk-status show-m"><span class="desk-muted text-caption">${ ago(item.acquired_at) }, ${ item.by.name }</span><v-chip v-for="c in chips(item)" :key="c.t" size="x-small" :variant="c.v" :color="c.c" :prepend-icon="c.i">${ c.t }</v-chip></div></div>
         </div></template>
         <template #item.investigation="{ item }"><span class="desk-muted">${ item.investigation }</span></template>
         <template #item.acquired_at="{ item }"><span class="text-no-wrap" :title="item.acquired_at">${ ago(item.acquired_at) }</span><div class="desk-muted text-caption">${ item.by.name }</div></template>
         <template #item.status="{ item }"><div class="desk-status">
-          <v-chip v-for="c in chips(item)" :key="c.t" size="small" :variant="c.v" :color="c.c">${ c.t }</v-chip>
+          <v-chip v-for="c in chips(item)" :key="c.t" size="small" :variant="c.v" :color="c.c" :prepend-icon="c.i">${ c.t }</v-chip>
           <span v-if="item.status === 'processing'" class="desk-muted text-caption">processing</span>
           <span v-else-if="!chips(item).length" class="desk-muted text-caption">indexed</span>
         </div></template>
@@ -204,12 +204,13 @@ window.app = Vue.createApp({
     },
     plural, human,
     chips(r) {
-      return [r.new && {t: 'new', v: 'tonal', c: 'new'}, r.status === 'failed' && {t: 'failed', v: 'outlined', c: 'negative'},
+      return [r.new && {t: 'new', v: 'tonal', c: 'new', i: 'ti ti-point-filled'}, r.status === 'failed' && {t: 'failed', v: 'outlined', c: 'negative'},
         r.pending && {t: `needs review, ${r.pending}`, v: 'outlined', c: 'agent'}, r.findings && {t: plural(r.findings, 'finding'), v: 'tonal', c: 'agent'}].filter(Boolean);
     },
     typeIcon: t => ({image: 'ti ti-photo', pdf: 'ti ti-file-type-pdf', audio: 'ti ti-volume', video: 'ti ti-video', web: 'ti ti-world', text: 'ti ti-file-text'}[t] || 'ti ti-file'),
     docLabel(r) { const k = r.doc_type && r.doc_type !== 'unknown' ? human(r.doc_type) : null; const t = TYPE[r.type] || r.type; return [k !== r.title ? k : null, k?.toLowerCase() === t ? null : t].filter(Boolean).join(', '); },
     monthName: m => new Date(m + '-01T00:00:00Z').toLocaleDateString('en', {month: 'long', year: 'numeric', timeZone: 'UTC'}),
+    hue: findingHue,
     kindLabel: k => ({shared_presence: 'Same place and time', candidate_incident: 'Candidate incident'}[k] || human(k)),
     why(f) {
       const x = f.features;

@@ -14,7 +14,7 @@
 .ae .panel > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); min-height: 42px; flex-wrap: wrap; }
 .ae .panel > header .muted { font-size: 12px; }
 .ae .panel > header .act { margin-inline-start: auto; }
-.ae a:not(.v-btn) { color: inherit; }
+.ae a:where(:not(.v-btn)) { color: inherit; }
 
 /* case line: an explicit pick, never typed into existence */
 .ae .caseline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }

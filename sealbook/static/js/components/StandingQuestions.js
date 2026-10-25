@@ -57,7 +57,7 @@ export const StandingQuestions = {
         <p v-if="results[item.id].fixed" class="text-caption text-medium-emphasis">Fixed demo output, no model ran.</p>
         <div v-if="results[item.id].matches.length">
           <template v-for="(group, i) in results[item.id].matches" :key="i">
-            <p v-if="group.locked" class="mt-2"><i class="ti ti-lock" aria-hidden="true"></i> {{ group.count === 1 ? 'One match rests' : group.count + ' matches rest' }} on <a :href="group.href" dir="auto">{{ group.title }}</a>. Open it to read {{ group.count === 1 ? 'it' : 'them' }}.</p>
+            <p v-if="group.locked" class="mt-2"><i class="ti ti-lock r-ink state-sensitive" aria-hidden="true"></i> {{ group.count === 1 ? 'One match rests' : group.count + ' matches rest' }} on <a :href="group.href" dir="auto">{{ group.title }}</a>. Open it to read {{ group.count === 1 ? 'it' : 'them' }}.</p>
             <div v-else class="mt-2">
               <a v-if="group.person" :href="'/people/' + group.person" class="font-weight-medium" dir="auto">{{ group.name || 'Unnamed person' }}</a>
               <span v-else class="font-weight-medium">Not about a person</span>

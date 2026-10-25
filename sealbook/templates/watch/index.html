@@ -15,7 +15,7 @@
         <div v-if="!watches.length" class="text-medium-emphasis">You are not watching anyone yet.</div>
         <v-card v-for="w in watches" :key="w.person" class="mb-4">
             <v-card-title class="d-flex align-center pa-4">
-                <i class="ti ti-eye mr-2"></i>
+                <i class="ti ti-user r-tile is-person mr-2" aria-hidden="true"></i>
                 <bdi v-if="w.name" dir="auto">${ w.name }</bdi>
                 <span v-else-if="w.names.length"><template v-for="(c, i) in w.names" :key="c.statement"><span v-if="i"> / </span><span v-bind="cell(c)">${ show(c) }</span></template></span>
                 <span v-else title="Name from a sensitive source"><i class="ti ti-lock" aria-hidden="true"></i> Unnamed person</span>
@@ -26,8 +26,8 @@
                 <v-list-item v-for="p in w.proposals" :key="p.id">
                     <v-list-item-title>
                         <bdi v-if="p.mention_name" dir="auto">${ p.mention_name }</bdi><span v-else>Unnamed person</span>
-                        <v-chip size="x-small" class="ml-2">${ p.tier }</v-chip>
-                        <v-chip size="x-small" class="ml-1"><i class="ti ti-robot mr-1"></i>matcher</v-chip>
+                        <span class="r-chip ml-2" :class="'tier-' + p.tier">${ p.tier }</span>
+                        <span class="r-chip is-agent ml-1"><i class="ti ti-robot" aria-hidden="true"></i>matcher</span>
                     </v-list-item-title>
                     <v-list-item-subtitle v-if="p.evidence">
                         Name <span v-bind="cell(p.evidence.name[0])">${ show(p.evidence.name[0]) }</span>

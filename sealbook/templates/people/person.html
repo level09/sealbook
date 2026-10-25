@@ -29,8 +29,8 @@
 <div class="mon ppl" ref="mon">
     <div class="ppl-head">
         <a href="/people" class="muted"><i class="ti ti-arrow-left"></i> People</a>
-        <h1 v-if="title" dir="auto">${ title }</h1>
-        <h1 v-else>Unnamed person</h1>
+        <h1 v-if="title" dir="auto"><i class="ti ti-user r-tile is-person me-2" aria-hidden="true"></i>${ title }</h1>
+        <h1 v-else><i class="ti ti-user r-tile is-person me-2" aria-hidden="true"></i>Unnamed person</h1>
         <span v-if="p && p.members.length > 1" class="muted">${ p.members.length } records joined as one person by accepted decisions</span>
         <span class="bar-spacer"></span>
         <a :href="storyHref" class="ppl-tag"><i class="ti ti-timeline"></i> Open story</a>
@@ -66,7 +66,7 @@
                         <i class="swatch" :class="'t-' + r.tier" :title="r.tier"></i>
                         <span class="when">${ r.when || 'undated' }</span>
                         <span dir="auto">${ label(r) }</span>
-                        <span class="ppl-tag">${ r.tier }</span>
+                        <span class="r-chip" :class="'tier-' + r.tier">${ r.tier }</span>
                         <a v-if="r.source" :href="r.source.href" class="muted" dir="auto" @click.stop :title="r.actor.label + (r.actor.detail ? ', ' + r.actor.detail : '')">${ r.source.title }</a>
                         <span v-else class="muted">${ r.actor.label }</span>
                     </button>
@@ -81,7 +81,7 @@
                     <div v-if="s.gap_days > p.gap_days" class="ppl-gap">No evidence for ${ s.gap_days } days</div>
                     <button v-for="id in s.ids" :key="id" class="ppl-line" @click="open(id)">
                         <span class="when">${ s.date }</span>
-                        <span dir="auto">${ point(id) }</span>
+                        <span v-if="points[id]" dir="auto">${ propLabel(points[id].prop) }: <span class="r-ink is-place">${ points[id].place }</span></span><span v-else>unmapped place</span>
                         <span v-if="s.fork" class="ppl-fork" title="Sources place the person in two places on this day"><i class="ti ti-alert-triangle"></i> sources disagree</span>
                     </button>
                 </template>
@@ -212,7 +212,7 @@ const app = createApp({
     },
     words(props) { return props.map(x => x.replace(/_/g, ' ')).join(', '); },
     who(person) { return this.p.names[person] || 'Unnamed person'; },
-    point(id) { const pt = this.points[id]; return pt ? `${PROP[pt.prop] || pt.prop.replace(/_/g, ' ')}: ${pt.place}` : 'unmapped place'; },
+    propLabel: prop => PROP[prop] || prop.replace(/_/g, ' '),
     async load() {
       try {
         this.p = (await axios.get(`/api/people/${boot.person}`, {params: {projection: this.projection}})).data;

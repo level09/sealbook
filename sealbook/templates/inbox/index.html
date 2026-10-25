@@ -17,12 +17,12 @@
 .ibx-row:hover, .ibx-row:focus-visible { background: var(--wash); }
 .ibx-row.sel { background: var(--wash); box-shadow: inset 2px 0 0 var(--ink); }
 .ibx-row .ic { color: var(--ink-3); margin-top: 2px; }
-.ibx-row.unread .ic { color: var(--agent); }
+.ibx-row.unread .ic { color: var(--new); }
 .ibx-row .t { min-width: 0; flex: 1; }
 .ibx-row .t1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
 .ibx-row.unread .t1 { font-weight: 650; }
 .ibx-row .t2 { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ibx-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--agent); flex: none; margin-top: 7px; }
+.ibx-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--new); flex: none; margin-top: 7px; }
 .ibx-about { padding: 12px; background: var(--raise); border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: flex-start; }
 .ibx-about .t { min-width: 0; flex: 1; }
 .ibx-msg { padding: 10px 12px; border-bottom: 1px solid var(--line); }
@@ -54,7 +54,7 @@
         <div v-for="(r, i) in shown" :key="r.key" :id="'ibx-' + i" class="ibx-row" :class="{ sel: sel === r.key, unread: r.unread }" role="option" :aria-selected="sel === r.key" tabindex="-1" @click="pick(r, true)">
           <v-icon :icon="r.icon" size="18" class="ic"></v-icon>
           <div class="t"><div class="t1" dir="auto">${ r.title }</div><div class="t2" dir="auto">${ r.sub }, ${ ago(r.at) }</div></div>
-          <v-chip v-if="r.due" size="x-small" variant="outlined" :color="r.due.late ? 'error' : undefined">${ r.due.text }</v-chip>
+          <v-chip v-if="r.due" size="x-small" variant="outlined" :color="r.due.late ? 'overdue' : 'due'" :prepend-icon="r.due.late ? 'ti ti-alert-triangle' : 'ti ti-clock'">${ r.due.text }</v-chip>
           <span v-if="r.unread" class="ibx-dot" aria-label="Unread"></span>
         </div>
       </div>
@@ -73,7 +73,7 @@
             <div class="t">
               <div class="text-caption ibx-muted">Review request on a ${ cur.req.proposal.prop === 'finding' ? 'finding' : 'claim' }</div>
               <div><strong dir="auto">${ sentence(cur.req) }</strong>
-                <v-chip size="x-small" variant="outlined" class="ms-1">${ cur.req.proposal.tier }</v-chip></div>
+                <span class="r-chip ms-1" :class="'tier-' + cur.req.proposal.tier">${ cur.req.proposal.tier }</span></div>
               <div class="text-caption ibx-muted"><template v-if="doc(cur.req)">In <a :href="srcHref(cur.req)">${ doc(cur.req).title }</a><template v-if="spanLabel(cur.req.proposal.span)">, ${ spanLabel(cur.req.proposal.span) }</template>,</template>
                 proposed by <actor-chip v-if="cur.req.proposal.actor" :actor="{kind: cur.req.proposal.actor.kind, name: cur.req.proposal.actor.label, detail: cur.req.proposal.actor.detail}"></actor-chip></div>
               <div class="d-flex ga-2 mt-2 flex-wrap">
@@ -113,7 +113,7 @@
           <div class="t">
             <div class="text-caption ibx-muted d-flex flex-wrap ga-1 align-center"><actor-chip :actor="{kind: 'human', name: myName, role: 'assignee'}" :you="true"></actor-chip><template v-if="cur.a.investigation"> in ${ cur.a.investigation }</template></div>
             <div><strong dir="auto">${ cur.title }</strong></div>
-            <div class="d-flex ga-2 mt-1 flex-wrap"><v-chip v-if="cur.due" size="x-small" variant="outlined" :color="cur.due.late ? 'error' : undefined">${ cur.due.text }</v-chip><v-chip size="x-small" variant="outlined">${ cur.a.priority } priority</v-chip></div>
+            <div class="d-flex ga-2 mt-1 flex-wrap"><v-chip v-if="cur.due" size="x-small" variant="outlined" :color="cur.due.late ? 'overdue' : 'due'" :prepend-icon="cur.due.late ? 'ti ti-alert-triangle' : 'ti ti-clock'">${ cur.due.text }</v-chip><v-chip size="x-small" variant="outlined">${ cur.a.priority } priority</v-chip></div>
             <v-btn class="mt-2" size="small" color="primary" variant="flat" prepend-icon="ti ti-arrow-right" :href="cur.href">Open it</v-btn>
           </div>
         </div>

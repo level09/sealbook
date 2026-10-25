@@ -20,7 +20,7 @@
             <v-list>
                 <v-list-item v-if="!shown.length">${ empty }</v-list-item>
                 <v-list-item v-for="h in shown" :key="h.person" :href="'/people/' + h.person">
-                    <template #prepend><i class="ti ti-user me-3"></i></template>
+                    <template #prepend><i class="ti ti-user r-tile is-person me-3" aria-hidden="true"></i></template>
                     <v-list-item-title>
                         <bdi v-if="h.name" dir="auto">${ h.name }</bdi>
                         <span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> Unnamed person</span>

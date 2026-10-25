@@ -33,6 +33,7 @@ a.en-rel:hover { background: var(--wash); }
 a.en-rel:focus-visible { outline-offset: -2px; }
 .en-rel .n { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 550; }
 .en-rel .n > bdi, .en-rel .n > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.en-rel .n > bdi:not(.en-muted) { color: var(--r, inherit); }
 .en-rel .why { color: var(--ink-2); font-size: 12.5px; min-width: 0; }
 .en-rel > .r-chip { justify-self: end; }
 .en-rel .ti { font-size: 15px; }
