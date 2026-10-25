@@ -118,7 +118,11 @@ once, a suggested document type (the sparkle icon; your pick shows a person icon
 and Sensitive by default. Drop `register_page.png` from `acceptance/data` to see
 the duplicate: after Add it names the source it repeats, when and from where, and
 stores nothing new. A spreadsheet with title rows above its header (any XLSX with
-a heading line) shows where the header was found and a column preview to confirm.
+a heading line) shows where the header was found and a column preview to confirm,
+each column pre-filled with its reason ("header says التاريخ and values look like
+dates") even with no model running. Add it without confirming and its row, its
+Sources chip and its evidence page all say the columns wait for you; confirm them
+on the evidence page and the panel shows what the rows wait for next.
 Search the web proposes queries from case-demo-02's ordinary names; nothing is sent
 until you pick one. With no model set up for a sensitive item, its row says it is
 waiting for a model and why. Then open `/sources`
