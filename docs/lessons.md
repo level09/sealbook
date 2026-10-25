@@ -153,15 +153,15 @@ Do not turn this file into a second task list.
   new required columns on existing rows need defaults, and batch foreign keys need
   constraint names. The evidence application uses PostgreSQL.
 
-## Working with agents and shared trees
+## Parallel work in one repository
 
-- Several agents committing in one working tree sweep each other's staged files:
+- Several contributors committing in one working tree sweep each other's staged files:
   `git add <path>` plus `git commit` commits the whole index, including what another
-  agent staged. Commit with explicit paths, `git commit -m "..." -- <paths>`, which
+  contributor staged. Commit with explicit paths, `git commit -m "..." -- <paths>`, which
   records only those paths whatever else is staged. Commits 710d231 and bbc3a69 each
   carried another task's work this way, the second while recording this lesson.
 - An uncommitted edit to a shared file (`stk/cli/__init__.py`, `stk/cli/main.py`)
-  vanished mid-task while another agent worked in the tree, and `stk discover` was
+  vanished mid-task while someone else worked in the tree, and `stk discover` was
   briefly unregistered. Commit each edit soon after making it, with explicit paths
   (`git commit -m ... -- <paths>`), and check `git diff -- <paths>` right before
   committing so a reverted or foreign hunk is seen, not assumed.
@@ -173,23 +173,23 @@ Do not turn this file into a second task list.
   map point, because nothing confirmed places yet. When a projection gains a human
   gate, give the scenario, the seeds and the local database a product path through
   that gate in the same change, and run the acceptance file, not only unit tests.
-- After a migration lands, the owner's local database stays on the old revision until
+- After a migration lands, a developer's local database stays on the old revision until
   someone runs `uv run stk db upgrade`; pages then look emptier rather than failing.
   Report the upgrade with the commit. Seeds are additive and refuse an existing case,
-  so a changed seed needs a rebuild of the local demo, and a rebuild drops the owner's
+  so a changed seed needs a rebuild of the local demo, and a rebuild drops the local admin
   login: back it up (`pg_dump`) and restore the admin row.
 - `uv run alembic` in this repo can read a different config than `stk db`. Use
   `uv run stk db current|upgrade` for the app database.
-- A file another agent has edited cannot be committed whole. Committing
+- A file someone else has edited cannot be committed whole. Committing
   `EvidenceViewer.js` after one's own edit swept another task's hunks, which imported
   an untracked `focus.js`, so HEAD no longer loaded on a clean checkout. Before
   committing a shared file, read `git diff -- <path>`; when foreign hunks are there,
   build the blob with only your change and stage it with `git update-index
   --cacheinfo`, or apply your hunk with `git apply --cached`. Never chain a commit
   after a heredoc script that may fail: a failed rebuild left the amend to run on
-  another agent's newer commit.
+  a newer commit by someone else.
 - A temporary index copied from `.git/index` and reset to HEAD goes stale the moment
-  another agent commits. Commit 33230c6 was built on such an index while 4b2270c
+  someone else commits. Commit 33230c6 was built on such an index while 4b2270c
   landed, so it silently reverted that commit's docs (restored in b7509dd). Build
   the temporary index with `git read-tree HEAD` right before staging, record HEAD,
   and commit only if HEAD is still that commit; then point the real index at the
@@ -198,7 +198,7 @@ Do not turn this file into a second task list.
 
 ## Design work
 
-- Mockups that nobody puts in front of the owner do not count as approved, and a goal
+- Mockups that nobody puts in front of the maintainers do not count as approved, and a goal
   worded "backend only" kept the approved redesign out of the app. Publish or link
   mockups the moment they exist, ask for the decision, and once approved build the
   real screens before more backend.
@@ -281,7 +281,7 @@ Do not turn this file into a second task list.
 - Whisper writes Damascene suffixes in MSA spelling (إنّو as انه, بحرستا as بحرسته).
   Score word error after folding, and expect exact place-name search to miss
   dialect spellings.
-- Browsers keep static files. After a deploy the owner's browser ran an old
+- Browsers keep static files. After a deploy a returning browser ran an old
   `components/index.js` that referenced a deleted component and every page stayed
   on the boot frame until a hard reload. Static URLs now carry `?v=<content hash>`
   (`asset()` in `sealbook/assets.py`), versioned responses are `immutable`, unversioned
@@ -380,8 +380,8 @@ covers in the text it was read from (`span_blob`).
 - Killing `uv run stk run` left its server child listening, and the restarted server
   failed on the busy port while the old one kept serving a cached template. Stop a
   dev server you started by its port (`lsof -tiTCP:<port> -sTCP:LISTEN`), never by a
-  pattern that could match the owner's server.
-- A temporary index built with `git read-tree HEAD` goes stale when another agent
+  pattern that could match another developer's server.
+- A temporary index built with `git read-tree HEAD` goes stale when someone else
   commits before yours: the first version of 7488624 carried the previous
   `acceptance/check_workflow.py` and silently reverted 932be80 (amended before push), and the real index
   then showed every committed path as a staged reversal. Read the tree, stage and
@@ -628,7 +628,7 @@ covers in the text it was read from (`span_blob`).
   matcher had already proposed it; the linker's duplicate check found the open
   same_as and kept quiet. Check existing proposals before calling a missing link a
   gap.
-- Another agent's commit carried this work's `display()` branch for `Prop.RELATION`
+- A parallel commit carried this work's `display()` branch for `Prop.RELATION`
   before the prop itself was committed, so HEAD briefly referenced a missing enum
   member. Committing a whole file with someone else's uncommitted hunks has the same
   failure as the stale temporary index above; commit shared files by hunk.
@@ -636,7 +636,7 @@ covers in the text it was read from (`span_blob`).
   `TestCase.run`, so the database tests silently never ran. Never name a test
   method `run`.
 - A patched blob for a shared file (`worker.py`, HEAD plus this work's two lines) was
-  built from HEAD before another agent committed to that file, then committed after.
+  built from HEAD before someone else committed to that file, then committed after.
   The commit silently reverted 3cbf813's extraction prompt; it was restored in the
   next commit. Build a patched blob from HEAD in the same command that commits it,
   and diff the commit against its parent for lines you did not write.
@@ -727,19 +727,13 @@ covers in the text it was read from (`span_blob`).
   `reveal_required`), though the person had just looked at its columns. The page now
   records the logged reveal first, as the evidence page does, then confirms.
 
-## Agents on a task queue, the Guide and parallel builders (2026-10-24)
+## Agents on a task queue and the Guide (2026-10-24)
 
-- Three headless builders ran in parallel worktrees and all stopped together at a
-  usage limit, each about 90% done with no report. The briefs were saved as files,
-  so other workers could read the brief, the diff and the failing tests and finish.
-  Keep every delegated brief on disk, and check `git status` in each worktree
-  before assuming a job produced nothing.
 - Worktrees have no `.env` and no `instance/blobs`. Tests need the env (link the
   main `.env`, it is ignored); search and the sense check need the source bytes
   (`BLOB_DIR` pointing at the main checkout's blobs).
 - New tests used `@example.invalid` users; `/_test/login` accepts only
-  `@example.com`, so login failed and the CSRF token lookup errored. Two builders
-  hit this independently.
+  `@example.com`, so login failed and the CSRF token lookup errored.
 - A test appended to the end of a file landed inside a module-level helper, not
   the test class, and never ran. Run a new test by its full name once and see it
   reported before trusting a green suite.
@@ -759,9 +753,8 @@ covers in the text it was read from (`span_blob`).
   dropped the handle text. Results in `models.md`.
 - A long smooth scroll on the showcase site landed about 1,000 px short: demos it
   passed rendered and pushed the target down. Section jumps are instant.
-- Dropping columns on the remote invite database was refused by the agent's
-  permission check even with the owner's go; the owner ran it. Plan remote schema
-  changes as a command for the owner.
+- Plan remote schema changes (such as dropping columns on the invite database) as a
+  reviewed command that a maintainer runs against the named environment.
 
 ## Paper documents for the demo case (2026-10-24)
 
@@ -790,8 +783,8 @@ covers in the text it was read from (`span_blob`).
   (row, letterhead, label), never the first hit anywhere: the stamp repeats the date.
 ## Agents page and Noticer (2026-10-24)
 
-- The "Connected agents" page listed only MCP assistants, so the owner saw an empty
-  page while six agents worked for him. Name a page after what a person expects to
+- The "Connected agents" page listed only MCP assistants, so an analyst saw an empty
+  page while six agents worked for them. Name a page after what a person expects to
   find there, and show the app's own agents first.
 - A lone first name matched half the case through the normaliser's ordered match
   ("سامر" against "خليل سمير القاضي"). Name variants need two names on each side.

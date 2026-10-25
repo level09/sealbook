@@ -2,8 +2,8 @@
 
 Read [docs/README.md](docs/README.md), then the current state, decisions, and lessons
 linked there. Update those documents when behavior or a known limitation changes.
-Keep pending work distinct from implemented behavior. Preserve the existing local
-changes from this chat; they are not committed.
+Keep pending work distinct from implemented behavior. Preserve uncommitted local
+changes you did not make.
 
 Use `uv` for Python, `rg` for search, and `bat -P` for file reads. Match the async
 Quart, SQLAlchemy, Vue Options API and no-build frontend conventions in

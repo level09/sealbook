@@ -30,9 +30,9 @@ root causes are in [lessons.md](lessons.md).
   errors and broken values in visible text. Smoke tests pass pages that read badly; this
   catches them. The rule functions are generic; the page list and deny list are per app.
 - **Graceful shutdown defaults and the `{item: {...}}` envelope**, above.
-- **Working with several coding agents in one repository**: one worktree per agent and
-  merges by one owner; temporary index tricks are not enough (see lessons, "Working with
-  agents and shared trees").
+- **Parallel work in one repository**: one worktree per line of work and merges by
+  one maintainer; temporary index tricks are not enough (see lessons, "Parallel work
+  in one repository").
 
 ## Found moving to stk 17 (2026-10-25)
 

@@ -96,7 +96,7 @@ real handwritten records, field audio and archive scale.
 
 ## Speech to text model
 
-Owner decision 2026-10-24: [faster-whisper](https://github.com/SYSTRAN/faster-whisper)
+Decision 2026-10-24: [faster-whisper](https://github.com/SYSTRAN/faster-whisper)
 1.2.1 (CTranslate2 4.8.3) with Whisper large-v3-turbo
 (`mobiuslabsgmbh/faster-whisper-large-v3-turbo`, revision
 `0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf`, `model.bin` sha256 `e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da`,

@@ -21,8 +21,8 @@ behavior and remaining limits.
   colleague corrections, private discussion and targeted live notifications.
 - Apply signed same-recording decisions and corrections to source support, with
   reversible projections and actor index refresh.
-- Organize architecture, operations, decisions, research, lessons and handoff state
-  under [docs/](docs/README.md). Keep original requirements as dated design history.
+- Organize architecture, operations, decisions, research, lessons and current state
+  under [docs/](docs/README.md). Keep the design document with its dated requirements.
 - Add located Arabic text/PDF search, current-model coverage, bounded indexing,
   acquisition cursors and model-reference drift checks.
 - Use one 768-dimensional local EmbeddingGemma 2 space for text passages, actor

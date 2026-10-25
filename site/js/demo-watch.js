@@ -169,7 +169,7 @@
     }
 
     root.append(tabs, pane,
-      h("p", { class: "note", text: "Shown here: the app's own agent code, run once each on the demo case with the demo's fixed answer, so no model ran and the wording is templated. Read back through the app's endpoints as the owner reads them, after the same reveals as the brief above." }));
+      h("p", { class: "note", text: "Shown here: the app's own agent code, run once each on the demo case with the demo's fixed answer, so no model ran and the wording is templated. Read back through the app's endpoints as the person who asked reads them, after the same reveals as the brief above." }));
     buttons[0].click();
   });
 })();

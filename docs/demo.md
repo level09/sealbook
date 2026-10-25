@@ -126,7 +126,7 @@ for what is already in the case: photos, three scans (the register page, the
 detainee list, the dormitory roster), four PDFs (the transfer order, the
 documentation note, the released detainee's statement, Reem's testimony), three
 recordings, two video clips, web posts and the two intake sheets.
-Filter by assignee to see the workload strip: the owner, analyst-2 and analyst-3
+Filter by assignee to see the workload strip: the admin, analyst-2 and analyst-3
 each have open items, one of analyst-3's is done, one of analyst-2's is overdue.
 The open findings column counts findings whose members come from that source.
 

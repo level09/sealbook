@@ -63,7 +63,7 @@ session links). Run that command once in an existing clone.
 
 ### Worktrees
 
-Parallel work happens in git worktrees under `../sealbook-wt/`. A worktree has no
+Parallel work can use git worktrees. A worktree has no
 `.env` and no `instance/blobs`: link the main `.env` (ignored by git) and start the
 server with `BLOB_DIR` set to the main checkout's `instance/blobs`, or search and
 the sense check fail on missing source bytes.

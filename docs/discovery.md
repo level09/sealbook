@@ -99,7 +99,7 @@ every three seconds and overlapping audio windows of up to 30 seconds with a
 25-second hop. Search returns page/time locations. Typed nested media input and
 distinct image/audio probes reject a server that ignores the media content.
 Semantic search is independent of PDQ and audio landmark reuse detection. No live weights
-have been installed or measured by this chat. See [models.md](models.md).
+have been installed or measured. See [models.md](models.md).
 
 Text, PDF and media jobs process bounded batches and queue continuations with a
 short delay so new evidence can run. Coverage shows completed/total work and
