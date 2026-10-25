@@ -10,7 +10,7 @@ connected-workflow build. Keep this table aligned with code and tests.
 | Model/preprocessing drift protection | Implemented | Reference changes are refused without rebuild; new configuration generations exclude old vectors |
 | Progressive indexing with coverage | Implemented | Bounded continuation jobs, acquisition cursor and visible current-generation coverage; fingerprint decode remains per file |
 | Exact identifiers and weaker discovery leads | Implemented | Literal IDs rank first; incidental substrings cannot exhaust the candidate cap; semantic leads are labeled |
-| Semantic image/audio retrieval | Implemented, synthetic evaluation done | EmbeddingGemma 2 on local Ollama in the single 768-dimensional space; canaries, signed recipe and raw outputs tested; synthetic set recall@5 0.94 |
+| Semantic image/audio retrieval | Implemented, synthetic evaluation done | Gemini Embedding 2 on OpenRouter (zero retention) by default, EmbeddingGemma 2 on a private Ollama server optional, in the single 768-dimensional space; canaries, signed recipe and raw outputs tested; synthetic set recall@5 0.94 |
 
 ## Further connected chunks
 

@@ -1,6 +1,8 @@
 # Local embedding model selection
 
-Research checked 2026-10-23. EmbeddingGemma 2 runs locally through Ollama.
+Since 2026-10-25 the default is Gemini Embedding 2 on OpenRouter's zero-retention route,
+one item per call (decisions.md); the research below, checked 2026-10-23, covers
+EmbeddingGemma 2 on a private Ollama server, which stays supported.
 One 768-dimensional space serves text passages, actor profiles and media; there
 is no separate text model. It has been measured on the synthetic set below, not
 on Syrian evidence.

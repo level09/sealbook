@@ -73,8 +73,9 @@ infer that running the web server schedules or validates those services.
 
 | Setting | Meaning |
 | --- | --- |
-| `EMBEDDING_MODEL` | EmbeddingGemma 2 server alias for text, actor and media vectors; unset disables semantic search |
-| `EMBEDDING_URL` | Local Ollama base URL, for example `http://127.0.0.1:11434`; no fallback |
+| `EMBEDDING_ROUTE` | `cloud-zdr` (default, OpenRouter with zero retention) or `local` (a private Ollama-style server at `EMBEDDING_URL`); no fallback between them |
+| `EMBEDDING_MODEL` | Model for text, actor and media vectors; default `google/gemini-embedding-2`, `embeddinggemma-2` on a private server; empty disables semantic search |
+| `EMBEDDING_URL` | Private server base URL when `EMBEDDING_ROUTE=local`, for example `http://127.0.0.1:11434` |
 | `EMBEDDING_API_KEY` | Optional credential for that service |
 | `EMBEDDING_REVISION` | Pin weights, projector and runtime build in one revision string |
 | `INDEX_BATCH_CHUNKS` | Text chunks per job, default 32 |
@@ -140,7 +141,10 @@ policy row to `{local}` so nothing falls back to a hosted model.
 | `EMBEDDING_ROUTE` | `cloud-zdr` (default): `EMBEDDING_MODEL` on OpenRouter, default `google/gemini-embedding-2`, one item per call; `local`: an Ollama-style `/api/embed` server at `EMBEDDING_URL` |
 | `MODEL_CLOUD` | OpenRouter model for ordinary sources |
 
-Checked here on 2026-10-24 (Apple M2, 16 GB, Ollama 0.40.5): `gemma4:12b-it-qat`,
+Checked here on 2026-10-25: `google/gemma-4-31b-it` on the zero-retention route read the
+demo register scan, Arabic headers, names, mothers, places and dates, almost exactly in
+8 s; `nvidia/nemotron-3.5-super-vl` took 1.5 s and misread several names. For a private
+endpoint, checked on 2026-10-24 (Apple M2, 16 GB, Ollama 0.40.5): `gemma4:12b-it-qat`,
 `qwen3.5:9b` and `qwen3.5:2b` all report vision. On the demo register scan gemma4
 read the layout and printed text in 40 to 70 s and misread several handwritten
 place and mother names; qwen3.5:9b took 134 s with similar errors; qwen3.5:2b
@@ -151,10 +155,11 @@ a photo's poster text in 4 s. Both local thinking models are called with
 `reasoning_effort: none`.
 
 ```dotenv
+# Default: nothing to set but OPENROUTER_API_KEY (MODEL_CLOUD_ZDR=google/gemma-4-31b-it).
+# A private endpoint instead, which every source then uses:
 ROUTE_LOCAL_BASE_URL=http://127.0.0.1:11434/v1
 ROUTE_LOCAL_TIMEOUT=900
 MODEL_LOCAL=gemma4:12b-it-qat
-MODEL_CLOUD=google/gemini-3.1-flash-lite
 ```
 
 Restart the app and every worker after changing these. On an evidence page with no
@@ -192,10 +197,11 @@ downloaded model on the witness clip and checks word error below 0.35.
 
 ## Proactive agents
 
-The intake brief and the linker call `AGENT_MODEL` (default `qwen3.5:9b`) on the
-local route, `ROUTE_LOCAL_BASE_URL`, an OpenAI-compatible server. With Ollama:
-`ollama pull qwen3.5:9b` and `ROUTE_LOCAL_BASE_URL=http://127.0.0.1:11434/v1` for
-the app and the worker. Unset, no agent run is queued and the brief panel names the
+The agents call `AGENT_MODEL` (default `deepseek/deepseek-v4.1-flash`, compared in
+agent-eval.md) on `AGENT_ROUTE` (default `cloud-zdr`, OpenRouter with zero retention,
+which `sealbook_0002` allows for every agent tool). A private endpoint instead:
+`AGENT_ROUTE=local`, `ROUTE_LOCAL_BASE_URL` and a model it serves, for the app and the
+worker. Unset, no agent run is queued and the brief panel names the
 missing setting. Each run's model, seconds and tokens show under its brief and in
 the run's output; a laptop needs about 35 to 50 s for a brief and about 20 s per
 linker candidate.

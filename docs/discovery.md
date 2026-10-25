@@ -88,9 +88,9 @@ identity merges or proof of corroboration. Changed or erased profiles are exclud
 from semantic results until the index is refreshed.
 
 Text passages, actor profiles and media share one 768-dimensional EmbeddingGemma 2
-space served by local Ollama, so one query can return passages, pages, frames
+space, served by Gemini Embedding 2 on OpenRouter's zero-retention route by default or EmbeddingGemma 2 on a private Ollama server, so one query can return passages, pages, frames
 and audio windows. The server must expose `/embeddings` and report the model it
-served. No cloud fallback is used. A changed model alias requires an
+served. Neither route falls back to the other. A changed model alias requires an
 explicit rebuild when reference vectors drift. These probes detect changes on a
 fixed non-sensitive sample, not every possible weight or tokenizer change.
 

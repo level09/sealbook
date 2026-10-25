@@ -175,7 +175,7 @@ it as challenge, review cards dry-run through it) then `commit`.
   capability, document type, sensitivity and partner may use; the model never picks.
   Sensitivity is set on the acquisition at intake (human or deterministic rule) before any
   model sees the bytes, and defaults to sensitive. Partners can be pinned to `local`.
-  No fallback between routes: local down means the run fails and waits. Each run records
+  No fallback between routes: a route that is down fails the run, which waits. Since 2026-10-25 `cloud-zdr` is the default and `local` is a private endpoint a deployment may add (decisions.md). Each run records
   route, endpoint, provider served and model served. Verify which OpenRouter response field
   carries provider and model before relying on it. EU-only processing needs OpenRouter
   enterprise. Synthetic data runs on `cloud` so the pipeline is testable
