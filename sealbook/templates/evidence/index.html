@@ -8,7 +8,7 @@
     <form @submit.prevent="search">
       <v-row align="center"><v-col cols="12" md="6"><v-text-field v-model="query" label="Name, phrase or investigative question" hide-details></v-text-field></v-col><v-col cols="12" md="3"><v-select v-model="investigation" :items="cases" item-title="title" item-value="value" label="Investigation" hide-details @update:model-value="loadMatches"></v-select></v-col><v-col cols="12" md="3"><v-btn type="submit" :disabled="!query.trim() || busy" :loading="busy" color="primary">Search evidence</v-btn></v-col></v-row>
       <v-switch v-if="embeddings" v-model="semantic" label="Include semantic discovery leads" color="primary" hide-details class="mt-3"></v-switch>
-      <p v-else class="text-body-small text-medium-emphasis mt-3">Keyword search is available. Configure a local embedding model to add semantic search.</p>
+      <p v-else class="text-body-small text-medium-emphasis mt-3">Keyword search is available. Search by meaning needs an embedding model.</p>
     </form>
   </v-card>
   <v-alert type="info" variant="tonal" class="mb-4" role="status">${!coverage ? 'Checking how much of this filter is processed.' : coverage.complete ? 'Processing is complete for this filter.' : 'Processing is incomplete for this filter. No results does not establish that evidence is absent.'}</v-alert>

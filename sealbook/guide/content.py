@@ -246,8 +246,8 @@ SCENARIOS = [
             "Leads by meaning follow the exact hits, labelled close, related or loose.",
         ],
         "ai": [
-            "Leads by meaning across text, pictures, frames and sound, computed "
-            "on this server."
+            "Leads by meaning across text, pictures, frames and sound, from an "
+            "embedding model that keeps no copy."
         ],
         "you": [
             "Whether a lead matters. A lead is never accepted and search never "
@@ -261,7 +261,7 @@ SCENARIOS = [
             },
             {"label": "Search Branch 999", "href": "/search?q=Branch%20999"},
         ],
-        "needs": "Search by meaning needs the local embedding model; exact search "
+        "needs": "Search by meaning needs the embedding model; exact search "
         "works without it.",
     },
     {

@@ -40,7 +40,7 @@ export const StandingQuestions = {
   },
   template: `<div aria-live="polite">
     <p v-if="error" role="alert">{{ error }}</p>
-    <p v-if="off" class="text-medium-emphasis">Standing questions are off until the local model is set up.</p>
+    <p v-if="off" class="text-medium-emphasis">Standing questions are off until an agent model is set up.</p>
     <form v-if="investigation" @submit.prevent="ask" class="d-flex ga-2 align-start mb-3">
       <v-textarea v-model="question" label="What should I watch for in this case?" rows="2" auto-grow maxlength="300" hide-details variant="outlined"></v-textarea>
       <v-btn type="submit" :disabled="question.trim().length < 3 || off" :loading="busy">Watch for this</v-btn>

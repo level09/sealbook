@@ -79,7 +79,7 @@ async def search():
             current_app.logger.warning("semantic search failed: %s", exc)
             semantic = {
                 "status": "failed",
-                "message": f"Local embedding service failed: {exc}",
+                "message": f"The embedding model did not answer: {exc}",
             }
     # Same grant as evidence.granted: a logged, unexpired reveal in this session.
     revealed = {

@@ -91,7 +91,7 @@ async def search():
         if not Config.EMBEDDING_MODEL:
             abort(
                 503,
-                description="Configure a local embedding model to use semantic search",
+                description="Semantic search needs an embedding model (EMBEDDING_MODEL)",
             )
         try:
             embedding = await embeddings.query(db, query, Config.EMBEDDING_MODEL)
@@ -101,7 +101,7 @@ async def search():
             current_app.logger.warning("semantic search failed: %s", exc)
             semantic = {
                 "status": "failed",
-                "message": f"Local embedding service failed: {exc}",
+                "message": f"The embedding model did not answer: {exc}",
             }
     named = await people_data.search(db, query)
     hits = await service.search(
