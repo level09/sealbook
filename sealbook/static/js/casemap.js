@@ -77,8 +77,8 @@ export const CaseTimeline = {
         <g v-for="t in ticks" :key="t.x"><line :x1="t.x" :x2="t.x" y1="18" :y2="H" stroke="var(--line)"/><text :x="t.x + 3" y="12" font-size="10.5" fill="var(--ink-3)">[[ t.label ]]</text></g>
         <g v-for="b in laid" :key="b.id" class="cm-band" tabindex="0" role="button" :aria-label="b.title" @click="$emit('band', b.id)" @keydown.enter="$emit('band', b.id)">
           <title>[[ b.title ]]</title>
-          <rect :x="b.x" :y="b.y" :width="b.w" :height="b.h" fill="var(--new-wash)" opacity=".7"/>
-          <rect v-for="y in b.rows" :key="y" :x="b.x" :y="y - 11" :width="b.w" height="22" rx="3" fill="var(--new-wash)" :stroke="sel === b.id ? 'var(--new)' : 'var(--new-line)'" :stroke-width="sel === b.id ? 2 : 1"/>
+          <rect :x="b.x" :y="b.y" :width="b.w" :height="b.h" fill="var(--person-wash)" opacity=".7"/>
+          <rect v-for="y in b.rows" :key="y" :x="b.x" :y="y - 11" :width="b.w" height="22" rx="3" fill="var(--person-wash)" :stroke="sel === b.id ? 'var(--person)' : 'var(--person-line)'" :stroke-width="sel === b.id ? 2 : 1"/>
         </g>
       </g>
       <g v-for="(r, i) in laidRows" :key="r.key" :opacity="path && !path.people.has(r.key) ? .35 : 1">
@@ -99,7 +99,7 @@ export const CaseTimeline = {
           </g>
         </g>
       </g>
-      <g clip-path="url(#cm-clip)"><text v-for="b in laid.filter(b => b.text)" :key="'t' + b.id" :x="b.x + 2" :y="b.labelY" font-size="10.5" fill="var(--new)" v-bind="HALO" style="pointer-events: none">[[ b.label ]]</text></g>
+      <g clip-path="url(#cm-clip)"><text v-for="b in laid.filter(b => b.text)" :key="'t' + b.id" :x="b.x + 2" :y="b.labelY" font-size="10.5" fill="var(--person)" v-bind="HALO" style="pointer-events: none">[[ b.label ]]</text></g>
       <line v-if="cursor && win" clip-path="url(#cm-clip)" :x1="x(cursor)" :x2="x(cursor)" y1="16" :y2="H" stroke="var(--ink)" stroke-width="1.5"/>
     </svg></div>`,
   computed: {
@@ -442,8 +442,8 @@ export const caseMapPage = boot => ({
         // An approximate place is drawn at least as large as its uncertainty and never with a hard rim, so it never reads as a point.
         this.map.addLayer({id: 'places', type: 'circle', source: 'places', paint: {
           'circle-radius': ['interpolate', ['exponential', 2], ['zoom'], ...[4, 6, 8, 10, 12, 14].flatMap(z => [z, ['max', ['get', 'r'], ['*', ['get', 'r0'], 2 ** z]]])],
-          'circle-color': this.ink(c), 'circle-opacity': ['case', ['get', 'approximate'], .16, ['>', ['get', 'n'], 0], .85, .12],
-          'circle-stroke-color': this.ink(c), 'circle-stroke-width': ['case', ['get', 'selected'], 3, ['get', 'approximate'], .8, 1.5],
+          'circle-color': this.ink(c, '--place'), 'circle-opacity': ['case', ['get', 'approximate'], .16, ['>', ['get', 'n'], 0], .85, .12],
+          'circle-stroke-color': this.ink(c, '--place'), 'circle-stroke-width': ['case', ['get', 'selected'], 3, ['get', 'approximate'], .8, 1.5],
           'circle-stroke-opacity': ['case', ['get', 'approximate'], .45, 1]}});
         this.map.addLayer({id: 'dots', type: 'circle', source: 'dots', paint: {'circle-radius': 4, 'circle-color': c.seq, 'circle-stroke-color': c.bg, 'circle-stroke-width': 1.5}});
         this.map.on('click', 'places', e => this.pickPlace(e.features[0].properties.id));
@@ -453,8 +453,11 @@ export const caseMapPage = boot => ({
         this.drawMap(true);
       });
     },
-    // Map paint cannot read CSS variables: the path hue is read once per theme.
-    ink(c) { return ['case', ['get', 'path'], getComputedStyle(document.body).getPropertyValue('--new').trim(), c.seq]; },
+    // Map paint cannot read CSS variables: the path and kind hues are read once per theme.
+    ink(c, kind) {
+      const css = getComputedStyle(document.body), hue = n => css.getPropertyValue(n).trim();
+      return ['case', ['get', 'path'], hue('--new'), kind ? hue(kind) : c.seq];
+    },
     arrowHead(color) {
       const s = 24, cv = document.createElement('canvas'); cv.width = cv.height = s;
       const g = cv.getContext('2d'); g.fillStyle = color; g.beginPath(); g.moveTo(s / 2, 2); g.lineTo(s - 4, s - 4); g.lineTo(s / 2, s - 9); g.lineTo(4, s - 4); g.closePath(); g.fill();
@@ -469,8 +472,8 @@ export const caseMapPage = boot => ({
       this.map.setPaintProperty('dots', 'circle-color', c.seq);
       this.map.setPaintProperty('dots', 'circle-stroke-color', c.bg);
       this.map.setPaintProperty('moves', 'line-color', this.ink(c));
-      this.map.setPaintProperty('places', 'circle-color', this.ink(c));
-      this.map.setPaintProperty('places', 'circle-stroke-color', this.ink(c));
+      this.map.setPaintProperty('places', 'circle-color', this.ink(c, '--place'));
+      this.map.setPaintProperty('places', 'circle-stroke-color', this.ink(c, '--place'));
       this.map.removeImage('head'); this.map.addImage('head', this.arrowHead(c.seq));
       recolor(this.map, {border: c.border, ink: c.seq, muted: c.muted});
       recolorBasemap(this.map, {bg: c.bg, land: c.land, border: c.border, muted: c.muted});
