@@ -20,7 +20,8 @@ def init_app(app):
         # No marketing page: analysts land on the Desk, everyone else signs in.
         return redirect("/desk" if current_user.is_authenticated else "/login")
 
-    # ponytail: replaces stk's own "/" view in place; stk has no hook for a landing page.
+    # ponytail: swaps stk's "/" view in place, as stk has no landing-page hook;
+    # use that hook once stk ships one.
     app.view_functions["public.index"] = index
 
     def _is_api_request():

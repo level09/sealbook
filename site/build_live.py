@@ -13,7 +13,6 @@ import uuid
 from datetime import datetime
 from unittest import mock
 
-import stk
 import stk.extensions as ext
 from alembic import command
 from sqlalchemy import func, select
@@ -52,7 +51,7 @@ def live() -> dict:
             .render_as_string(hide_password=False)
         )
 
-        class SiteConfig(stk.TestingConfig, Config):
+        class SiteConfig(Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None
