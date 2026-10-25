@@ -1,7 +1,7 @@
 # Discovery and collaborative review
 
-Source files: `stk/discovery/`, `stk/collaboration/`, `stk/ledger/origins.py`,
-`stk/review/views.py`. Configuration and commands are in [operations.md](operations.md).
+Source files: `sealbook/discovery/`, `sealbook/collaboration/`, `sealbook/ledger/origins.py`,
+`sealbook/review/views.py`. Configuration and commands are in [operations.md](operations.md).
 
 ## How the parts connect
 
@@ -141,7 +141,7 @@ the same rule. Indexed frames are served by `GET /api/evidence/<sha>/segments/<i
 only for their own source; `GET /api/evidence/<sha>/content?raw=1` returns PDF bytes
 for the pdf.js viewer. An erased source returns 404 on the page and every API.
 
-Viewers are reusable ES modules in `stk/static/js/components/` (image, video,
+Viewers are reusable ES modules in `sealbook/static/js/components/` (image, video,
 audio, PDF on vendored pdf.js 4.10.38, thumbnail tile), registered with
 `registerMediaViewers(app)` from `components/media.js`. Every request on the page
 times out after 15 seconds and shows a Retry in place. Monitor document clicks and

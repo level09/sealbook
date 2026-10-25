@@ -86,7 +86,7 @@ payload     commitment, salt, value, value_key, idem_key        -- erasable valu
 chain       seq, kind, ref, row_hash, prev_hash, hash           -- one global order
 ```
 
-As built in wave 0 (`stk/ledger/`): one `chain` table links statements, acquisitions and
+As built in wave 0 (`sealbook/ledger/`): one `chain` table links statements, acquisitions and
 sealed runs in a single order, instead of `prev_hash` on each table. Value fingerprints
 (`value_key`, `idem_key`) live in `payload`, so erasure removes them with the value. Tiers
 are a rebuildable `statement_tier` projection written by `gate()`, never a statement field.
@@ -273,8 +273,8 @@ Mechanics (no build step, no new dependencies):
 ## Colour roles (implemented 2026-10-24)
 
 Paper and ink stay the ground; colour names a role, never decorates. Tokens live in
-`stk/static/css/shell.css` (inks mirrored for Vuetify colour props in
-`stk/static/js/config.js`). Each role has an ink for text and glyphs (AA 4.5:1 on panel,
+`sealbook/static/css/shell.css` (inks mirrored for Vuetify colour props in
+`sealbook/static/js/config.js`). Each role has an ink for text and glyphs (AA 4.5:1 on panel,
 page and its own wash in both themes), a `-wash` for chip grounds and a `-line` for
 edges and marks (3:1 on panel). Picked in OKLCH, stored as hex for MapLibre and canvas.
 Primary actions stay ink. Colour is never the only cue: each role rides on the texture,

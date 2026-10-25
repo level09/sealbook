@@ -23,7 +23,7 @@ into the service container. The PostGIS image is published for amd64 only, so on
 ARM Mac it runs under emulation.
 
 ```sh
-uv sync --extra dev
+uv sync
 uv run stk --help
 uv run stk doctor
 uv run stk inspect context --json
@@ -63,7 +63,7 @@ unknown tool.
 
 To measure tiles at scale, create a database whose name contains `scale`, migrate
 it, then `SQLALCHEMY_DATABASE_URI=postgresql+asyncpg:///<name> uv run python -m
-stk.maps.scale --count 100000` (`--measure-only` to time again). It writes ledger
+sealbook.maps.scale --count 100000` (`--measure-only` to time again). It writes ledger
 rows directly, so never point it at a real database.
 
 Anchoring requires its own configured services and partner root directories. Do not
@@ -303,9 +303,9 @@ settings matter once `.env` configures OCR: the demo seed tests run intake brief
 linker runs, which would otherwise wait on the real local model.
 An isolated `STK_TEST_REDIS_URL` enables the real Redis session test.
 
-`stk verify` runs ruff, `checks.py`, and migration drift. It does not run the full
+`stk verify` runs ruff, stk's checks (`python -m stk.checks`) against the app, and migration drift. It does not run the full
 unit suite. `stk db check` migrates a disposable database and compares models; it
-does not upgrade the working database. `checks.py` starts the configured app, so
+does not upgrade the working database. The checks start the configured app, so
 know its database environment before running it.
 
 `stk smoke` uses a disposable database of the configured dialect. It checks

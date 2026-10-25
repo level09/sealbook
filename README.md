@@ -18,7 +18,7 @@ pg_trgm; it does not run its evidence migrations on SQLite.
 
 ```bash
 ./setup.sh                  # deps + secure .env
-uv run stk create-db        # database via Alembic
+uv run stk db upgrade       # stk's migrations, then Sealbook's
 uv run stk install          # admin user
 uv run stk run              # localhost:5000
 uv run stk verify --json    # gate before every merge

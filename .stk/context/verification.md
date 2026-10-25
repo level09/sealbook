@@ -13,7 +13,7 @@ remedy under any failure.
 Default checks:
 - `uv run python -m unittest discover -s tests`
 - `uv run ruff check .`
-- `uv run python checks.py`
+- `uv run python -m stk.checks`
 - `uv run stk verify`
 
 For frontend-touching changes, also run:
@@ -51,7 +51,7 @@ uv run stk smoke
 Install the dev dependency and Chromium once per machine:
 
 ```bash
-uv sync --extra dev
+uv sync
 uv run playwright install chromium
 ```
 

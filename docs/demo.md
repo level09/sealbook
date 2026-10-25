@@ -343,7 +343,7 @@ and refuses if any of them exists; `--full` is not required. Every person is
 invented, and each person is written in two or three spellings across a case. The
 documents are short synthetic texts in Arabic and English (a few are web posts), each
 with claims pinned to the exact words, dated and placed at GeoNames fixture places
-(plus Raqqa and three invented facilities in `stk/monitor/seed_places.tsv`). Some
+(plus Raqqa and three invented facilities in `sealbook/monitor/seed_places.tsv`). Some
 claims are accepted by the simulated signed reviews, one place per case is rejected
 with its reason, the rest are open proposals. Work is assigned across analyst-2 to
 analyst-5 with different loads, and two review requests per case notify the analysts.

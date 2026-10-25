@@ -21,7 +21,7 @@ root causes are in [lessons.md](lessons.md).
 
 ## Pieces worth upstreaming
 
-- **Static asset versioning with one import map** (`stk/assets.py`): `asset()` adds a
+- **Static asset versioning with one import map** (`sealbook/assets.py`): `asset()` adds a
   content hash, versioned responses are `immutable`, unversioned ones `no-cache`, and
   module imports are rewritten by one import map in the layout. Fixes stale JS after
   deploys without a build step.
@@ -33,3 +33,19 @@ root causes are in [lessons.md](lessons.md).
 - **Working with several coding agents in one repository**: one worktree per agent and
   merges by one owner; temporary index tricks are not enough (see lessons, "Working with
   agents and shared trees").
+
+## Found moving to stk 17 (2026-10-25)
+
+Sealbook now depends on `stkit>=17.0.1,<18` and edits no stk file. These are what
+the move needed from the app side, and what stk 17.0.x could offer instead.
+
+| Gap | What Sealbook does | For stk |
+| --- | --- | --- |
+| `stk verify` runs a check that `GET /` returns 200; an app whose `/` redirects (Sealbook sends analysts to the Desk and visitors to sign in) fails verify with no opt-out | Keeps the redirect; this one check fails | Accept a redirect to a page that renders, or let the app skip named checks |
+| No way to replace stk's own `/` view | `sealbook/shell` swaps `app.view_functions["public.index"]` | A landing-page setting or hook |
+| The layout's `stk_navigation()` always wraps app entries in stk's Dashboard, Account and Administration sections | `sealbook/shell` adds a `rail_navigation()` global returning `app.navigation` only | Expose the app's entries on their own |
+| App commands land under "Other" in `stk --help` | Accepted | Let an extension name the section of its commands |
+| `stk db revision` writes `pgvector.sqlalchemy.bit.BIT`, `pgvector.sqlalchemy.halfvec.HALFVEC` and app `UserDefinedType` columns by module path with no import, and drops column-level `CheckConstraint`s (an Alembic limitation) | `sealbook_0001` imports pgvector's types, spells PostGIS types out locally and adds the three checks by hand | Import the modules of rendered types; warn about column-level checks |
+| `build_alembic_config(app, url)` needs an app, so a test that migrates a throwaway database before it builds its own app must import the module-level app | Tests import `sealbook.app.app` for that | Accept the app's import name or migrations directory |
+| `url_for('static')` versions each file, but ES modules import each other by plain path, so a nested module stays stale after a deploy | `sealbook/assets.py` keeps one import map of versioned module URLs | Ship the import map with the layout |
+| `stk.Config` no longer has `PROJECT_ROOT`, which apps used for paths under `instance/` | `sealbook/settings.py` defines its own | Expose the app's root or instance path in config |

@@ -5,22 +5,32 @@ The evidence application requires PostgreSQL; SQLite supports only isolated
 framework tests. Start with [architecture.md](architecture.md), [operations.md](operations.md)
 and [lessons.md](lessons.md). The conventions below are inherited from stk.
 
+stk is a dependency (`stkit>=17.0.1,<18`), not a fork. Sealbook's code is the
+`sealbook/` package: `sealbook/app.py` composes `Stk(__name__, config=Config,
+extensions=[...])` and `sealbook/settings.py` holds `class Config(stk.Config)`.
+Paths under `stk/` below name files in the installed stk package; never edit them.
+Each module in `sealbook/` with routes or commands is an extension whose
+`init_app(app)` registers its blueprints and commands and appends its rail entry to
+`app.navigation`. The `extensions` list in `sealbook/app.py` puts rail modules
+first, in rail order. Templates and static files resolve from `sealbook/templates`
+and `sealbook/static` first, then stk's; `stk/<name>` reaches an original.
+
 ## Commands
 
 Everything runs through one command, `stk`, grouped by purpose in `stk --help`.
-It bakes in the app factory, so `QUART_APP` is never needed. `quart <command>`
+It finds the app from `[tool.stk] app` in `pyproject.toml`, so `QUART_APP` is never needed. `quart <command>`
 still works for anything registered on `app.cli`.
 
 ```bash
 ./setup.sh                        # First-time setup (venv, deps, .env)
-uv sync --extra dev               # Install with dev tools
+uv sync                           # Install, dev tools included
 uv run stk --help                 # Command map, grouped by purpose
 uv run stk run                    # Dev server at localhost:5000
 uv run stk run --port 5001        # Alt port (macOS 5000 conflict)
-uv run stk create-db              # Apply all migrations (upgrade to head)
+uv run stk db upgrade             # stk's migrations, then Sealbook's
 uv run stk install                # Create admin user
 uv run ruff check --fix . && uv run ruff format .  # Lint + format
-uv run python checks.py           # Sanity checks (not pytest)
+uv run python -m stk.checks       # Sanity checks against the app (not pytest)
 docker compose up --build         # Full stack (Redis, PostgreSQL, Nginx)
 ```
 
@@ -93,17 +103,17 @@ with a rule, page and match pattern and a reason. Rule changes come with a case 
 ### Database Migrations (Alembic)
 
 ```bash
-uv run stk db upgrade [revision]              # Apply migrations (default: head)
+uv run stk db upgrade [revision]              # Apply migrations (default: heads)
 uv run stk db downgrade <revision>            # Rollback (e.g. -1 for one step)
-uv run stk db revision -m "description"       # Autogenerate new revision
+uv run stk db revision -m "description"       # Autogenerate in Sealbook's lineage
 uv run stk db revision -m "desc" --empty      # Empty revision for manual SQL
 uv run stk db current                         # Show current revision
 uv run stk db history                         # Show migration history
-uv run stk db stamp head                      # Adopt Alembic on existing DB
+uv run stk db stamp heads                     # Adopt Alembic on existing DB
 uv run stk db check                           # Fail if models drifted from migrations
 ```
 
-Migration config lives in `stk/migrations.py`. Alembic env in `alembic/env.py`. Revisions in `alembic/versions/`. SQLite uses batch mode automatically for ALTER TABLE support.
+Two lineages share one version table. stk's revisions ship in the package (`stk_0001`, branch `stk`); Sealbook's live in `sealbook/migrations/` (branch `sealbook`) and each depends on stk's head. `sealbook_0001` is the whole schema as of the move to stk 17, with the extensions, append-only triggers and reference rows that autogenerate cannot see; a database built by the stk 16 fork's 28 revisions is not upgraded. Autogenerate leaves out column-level `CheckConstraint`s and writes custom column types by their module path: check both in a new revision. SQLite uses batch mode automatically for ALTER TABLE support.
 
 SQLite migration traps, each hit while building an app on stk:
 - DDL is not transactional there: a failed upgrade leaves the tables it already created. Fix the revision, drop only those new empty tables, then upgrade again.
@@ -135,7 +145,7 @@ All relationships must use `lazy="selectin"` for async compatibility. Selectin l
 
 ### CLI Commands
 
-Sync click commands wrapping `asyncio.run()` live in the `stk/cli/` package: `agent.py` (inspect, verify, smoke, report, shell, new), `database.py` (create-db, db group, migration drift), `users.py` (install, create, add-role, reset, sessions, browser-token), plus `reports.py` and `smoke.py` for the machine-readable builders behind them. Quart CLI doesn't support async click commands. All commands re-exported from `stk/cli/__init__.py` are auto-registered via `register_commands()` in `app.py`.
+Sync click commands wrapping `asyncio.run()` (`stk.cli.base.run_async`). Quart CLI doesn't support async click commands. stk's own commands live in its `stk/cli/` package. Sealbook's live beside their module (`sealbook/runs/cli.py` for `worker`, `sealbook/discovery/cli.py`, `sealbook/places/cli.py`, `sealbook/monitor/seed.py` for `demo-seed`, and so on), and each extension's `init_app` adds them with `app.cli.add_command`. `stk --help` lists them under Other.
 
 ### Blueprints
 
@@ -193,7 +203,7 @@ No Celery. `stk/tasks.py` provides:
 
 ### Frontend
 
-Vue 3 + Vuetify loaded from static files (no build step). **Options API** (`data()`, `methods`, `mounted()`), NOT Composition API. Versions are pinned in `stk/static/VERSIONS.txt` and refreshed with `./vendor.sh`; see `.stk/context/frontend.md` before bumping Vuetify.
+Vue 3 + Vuetify loaded from static files (no build step). **Options API** (`data()`, `methods`, `mounted()`), NOT Composition API. Versions are pinned in `sealbook/static/VERSIONS.txt` and refreshed with `./vendor.sh`; see `.stk/context/frontend.md` before bumping Vuetify.
 
 - **Delimiters:** `${}` via `config.delimiters` (avoids Jinja `{{}}` conflicts)
 - **Layout mixin:** Every app uses `mixins: [layoutMixin]` for the shell (case switcher, search, Cmd-K palette, rail, hint bar, theme), WebSocket and notifications; its contract is in `.stk/context/frontend.md`
@@ -201,7 +211,7 @@ Vue 3 + Vuetify loaded from static files (no build step). **Options API** (`data
 - **Vuetify init:** `createVuetify(config.vuetifyConfig)` (config is in `static/js/config.js`)
 - **Icons:** Tabler Icons (`ti ti-pencil`, `ti ti-plus`, etc.), NOT Material Design Icons
 - **Server data:** Pass via `<script type="application/json" id="...">{{ data|tojson|safe }}</script>` placed in `{% block js %}`, never in `{% block content %}`: Vue strips `<script>` tags inside the `#app` mount element, so `getElementById(...)` returns null.
-- **Navigation:** Rail entries in `static/js/navigation.js` with `role: 'admin'` for access control
+- **Navigation:** Rail entries are `app.navigation.append({...})` in each extension's `init_app` (`title`, `icon`, `to`, `match`, optional `badge` naming a key of `/api/nav/counts`, `role: 'admin'` for access control). The layout reads them through `rail_navigation()`, without stk's Dashboard and Account sections
 - **JSON responses:** List endpoints use `orjson` via `import orjson as json` and `Response(json.dumps(data), content_type="application/json")`
 - **Request body:** Frontend sends mutations as `{item: {...}}`, extract with `json_data.get("item", {})`
 - **Template globals:** Vue template expressions cannot see page globals (a `const labels = {...}` in a script is undefined inside `${...}` and directives). Expose shared helpers with `app.config.globalProperties.labels = labels` before mount. The production Vue build fails such lookups silently (the cell renders nothing, columns shift), so `stk smoke` cannot catch it; check the rendered table.
@@ -214,6 +224,7 @@ Vue 3 + Vuetify loaded from static files (no build step). **Options API** (`data
 - WebSocket connections release their DB session early to avoid pool starvation.
 - Session backend: Redis if `REDIS_URL` is set, otherwise cookie-based.
 - `DISABLE_MULTIPLE_SESSIONS` config controls single-session enforcement.
-- Renaming the product: set `APP_NAME` / `APP_TAGLINE` / `APP_DESCRIPTION` and replace `stk/templates/_brand.html` and the favicon. Never edit names across templates.
+- Renaming the product: set `APP_NAME` / `APP_TAGLINE` / `APP_DESCRIPTION` and replace `sealbook/templates/_brand.html` and the favicon. Never edit names across templates.
 - Brand files (app lockups, favicons, docs logos, the site header mark) come from `docs/logo/build.py`. Change the seal there and rerun it; do not hand-edit the generated SVGs. The app shows `sealbook-dark.svg` under `body.dark-mode` instead of filtering the light file.
 - Tests: Config subclasses inherit everything `.env` sets (`load_dotenv` runs at import). Pin every env-driven switch a test depends on in the test config (e.g. a provider key that changes request auth), or a developer's `.env` silently changes the code path.
+- Test configs are `class TestConfig(stk.TestingConfig, Config)` and build their app with `sealbook.app.create_app(TestConfig)`. Postgres tests migrate a throwaway database with `build_alembic_config(sealbook_app, url, quiet=True)` to `heads`: two lineages, so `head` is ambiguous.

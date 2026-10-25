@@ -4,29 +4,36 @@ Sealbook requires PostgreSQL. Quart serves async routes, SQLAlchemy manages
 request-scoped sessions, Alembic owns schema changes, and Vue/Vuetify runs without
 a frontend build. The supported evidence deployment is one process.
 
+Sealbook is an app on the stk package (`stkit` 17), not a fork of it. stk supplies
+the Quart app class, accounts, passkeys, MFA, sessions, CSRF, WebSockets, the `stk`
+command and its first migration. `sealbook/app.py` composes the modules below as
+extensions, each with `init_app(app)`; `sealbook/shell` adds what every page shares
+(versioned assets and the import map, the rail, `/security`, `/admin` and the rail
+counts, the `/` redirect to the Desk, the passkey return path, the missing-file 404).
+
 | Module | Responsibility |
 | --- | --- |
-| `stk/ledger` | Typed statements, salted payload commitments, signatures, chain, trust gate and source-origin groups |
-| `stk/cases` | Case records: the list people pick from, creation on purpose with a close-name warning, and the check intake runs so no case appears by typing |
-| `stk/ingest` | Content-addressed bytes, acquisitions, hashes, C2PA and URL capture; the Add evidence page with per-item type, sensitivity and origin, type suggestions, the browser fingerprint check and batch progress |
-| `stk/runs` | Durable PostgreSQL run queue, route policy, worker, raw outputs and typed events |
-| `stk/discovery` | Located text/PDF/media segments, separate text and media vectors, coverage, fingerprints and search |
-| `stk/sheets` | CSV and XLSX intake: parsing into cells, datasets with remembered column mappings, version diffs and the `extract_sheet` run that proposes claims pinned to cells |
-| `stk/thumbs` | Derived pictures per source (thumbnails, video strip, PDF pages, audio peaks) made by a sealed `thumbnail` run and served under the source's own access rules |
-| `stk/collaboration` | Participant-only requests/discussion, stored notifications (titles and links only, then pushed live), work assignment with an append-only event log |
-| `stk/review` | Passkey options and commit, assignment checks, acceptance/rejection/undo |
-| `stk/people`, `stk/watch` | Person projections, identity candidates, erasure and watch subscriptions |
-| `stk/monitor` | Shared filters, masked evidence display, review cards, the SSE feed and the admin-only worker telemetry page (`/monitor/runs`) |
-| `stk/casemap` | The case map (`/case-map`): who was where over time and on a map for one case, held-together bands, open ends, the bounded path search and case news. A projection over the story view, discovery's shared presence, the gap finder's rule and the agent reader's case; writes only access records |
-| `stk/packages`, `stk/anchor` | Cited disclosure, attestations, receipts and offline verification |
-| `stk/places` | PostGIS gazetteer: geometry with precision and provenance, kind ladder, dated names, COD-AB boundary sets, point-in-polygon governorate and district, claim-to-place resolution |
-| `stk/entities` | Place and incident pages on one layout: story, relations, paged evidence, threads and signed history, read through the story view's rules; the places index and unresolved names |
-| `stk/maps` | Claim vector tiles, per-reader map models, offline basemap serving and `stk basemap`, the `geotag` intake tool for embedded photo and video locations |
-| `stk/research` | Web research: query proposals from shareable values, Brave Search client, local Chromium capture (Playwright), yt-dlp, per-user result store, per-case switches and the `capture` run tool that feeds normal intake |
-| `stk/agents` | Proactive agents on the local route for a named person. The intake brief, contradiction hunter, gap finder, Noticer and standing questions store cited reports shown through masking and write only their access record to the ledger; the linker proposes through the normal review path. Tasks coalesce evidence wakes and scheduled checks into runs, back off after empty checks, and pause after access loss or three failures. The Agents page (`overview.py`, served at `/agents/` by `stk/mcp`) shows every agent and outside assistant working for a person. Only humans decide facts |
-| `stk/mcp` | Per-user delegated agent reads and proposals; no acceptance tool |
-| `stk/guide` | The in-app Guide: scenario text as data and a read-only proof of one claim's row, chain link, Merkle path and receipts for the browser to recompute; writes only its access record |
-| `stk/user`, `stk/websocket.py` | Session/MFA security and bounded recipient-specific connections |
+| `sealbook/ledger` | Typed statements, salted payload commitments, signatures, chain, trust gate and source-origin groups |
+| `sealbook/cases` | Case records: the list people pick from, creation on purpose with a close-name warning, and the check intake runs so no case appears by typing |
+| `sealbook/ingest` | Content-addressed bytes, acquisitions, hashes, C2PA and URL capture; the Add evidence page with per-item type, sensitivity and origin, type suggestions, the browser fingerprint check and batch progress |
+| `sealbook/runs` | Durable PostgreSQL run queue, route policy, worker, raw outputs and typed events |
+| `sealbook/discovery` | Located text/PDF/media segments, separate text and media vectors, coverage, fingerprints and search |
+| `sealbook/sheets` | CSV and XLSX intake: parsing into cells, datasets with remembered column mappings, version diffs and the `extract_sheet` run that proposes claims pinned to cells |
+| `sealbook/thumbs` | Derived pictures per source (thumbnails, video strip, PDF pages, audio peaks) made by a sealed `thumbnail` run and served under the source's own access rules |
+| `sealbook/collaboration` | Participant-only requests/discussion, stored notifications (titles and links only, then pushed live), work assignment with an append-only event log |
+| `sealbook/review` | Passkey options and commit, assignment checks, acceptance/rejection/undo |
+| `sealbook/people`, `sealbook/watch` | Person projections, identity candidates, erasure and watch subscriptions |
+| `sealbook/monitor` | Shared filters, masked evidence display, review cards, the SSE feed and the admin-only worker telemetry page (`/monitor/runs`) |
+| `sealbook/casemap` | The case map (`/case-map`): who was where over time and on a map for one case, held-together bands, open ends, the bounded path search and case news. A projection over the story view, discovery's shared presence, the gap finder's rule and the agent reader's case; writes only access records |
+| `sealbook/packages`, `sealbook/anchor` | Cited disclosure, attestations, receipts and offline verification |
+| `sealbook/places` | PostGIS gazetteer: geometry with precision and provenance, kind ladder, dated names, COD-AB boundary sets, point-in-polygon governorate and district, claim-to-place resolution |
+| `sealbook/entities` | Place and incident pages on one layout: story, relations, paged evidence, threads and signed history, read through the story view's rules; the places index and unresolved names |
+| `sealbook/maps` | Claim vector tiles, per-reader map models, offline basemap serving and `stk basemap`, the `geotag` intake tool for embedded photo and video locations |
+| `sealbook/research` | Web research: query proposals from shareable values, Brave Search client, local Chromium capture (Playwright), yt-dlp, per-user result store, per-case switches and the `capture` run tool that feeds normal intake |
+| `sealbook/agents` | Proactive agents on the local route for a named person. The intake brief, contradiction hunter, gap finder, Noticer and standing questions store cited reports shown through masking and write only their access record to the ledger; the linker proposes through the normal review path. Tasks coalesce evidence wakes and scheduled checks into runs, back off after empty checks, and pause after access loss or three failures. The Agents page (`overview.py`, served at `/agents/` by `sealbook/mcp`) shows every agent and outside assistant working for a person. Only humans decide facts |
+| `sealbook/mcp` | Per-user delegated agent reads and proposals; no acceptance tool |
+| `sealbook/guide` | The in-app Guide: scenario text as data and a read-only proof of one claim's row, chain link, Merkle path and receipts for the browser to recompute; writes only its access record |
+| `stk/user`, `stk/websocket.py` (in stk) | Session/MFA security and bounded recipient-specific connections |
 
 ## Evidence and projections
 

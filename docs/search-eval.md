@@ -3,7 +3,7 @@
 `acceptance/eval_search.py` runs a battery of analyst queries against the local
 demo database (`sealbook`, both demo cases seeded, `stk enrich` and `stk worker`
 run) through the same functions the endpoints call: `service.search` and
-`service.actor_search` behind `POST /api/evidence/search`, and `stk.search.find`
+`service.actor_search` behind `POST /api/evidence/search`, and `sealbook.search.find`
 behind `POST /api/search`. It is read-only: each query runs in a transaction that
 is rolled back.
 
@@ -72,7 +72,7 @@ as by the cause below; the "after" passes ran with lighter load.
 | After the code fixes | 0.88 | 0.94 | 2 | 0.89 | 311 ms median |
 | After also enriching case-demo-01 | 0.94 | 1.00 | 0 | 0.89 | 364 / 872 ms |
 
-Grouped `/api/search` (`stk.search.find`, all groups): p50 441 ms, p95 616 ms.
+Grouped `/api/search` (`sealbook.search.find`, all groups): p50 441 ms, p95 616 ms.
 
 What changed for the analyst, query by query:
 

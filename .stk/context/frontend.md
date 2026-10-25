@@ -1,17 +1,17 @@
 # stk Frontend Reference
 
 Canonical lookup for Vuetify/Vue component surface actually used in this codebase.
-Every prop and pattern below is sourced from stk/templates/ or stk/static/js/ — not from memory.
+Every prop and pattern below is sourced from sealbook/templates/ or sealbook/static/js/ — not from memory.
 
 ## Pinned Versions
 
-Authoritative list: `stk/static/VERSIONS.txt`. Bump a version in `vendor.sh`, run
+Authoritative list: `sealbook/static/VERSIONS.txt`. Bump a version in `vendor.sh`, run
 `./vendor.sh`, then `uv run stk smoke`.
 
-- **Vue**: 3.5.40 production build (`stk/static/js/vue.min.js`)
-- **Vuetify**: 4.1.6 (`stk/static/js/vuetify.min.js` + `stk/static/css/vuetify.min.css`)
-- **Axios**: 1.18.1 (`stk/static/js/axios.min.js`)
-- **Tabler Icons**: 3.45.0, self-hosted (`stk/static/icons/`), woff2 only
+- **Vue**: 3.5.40 production build (`sealbook/static/js/vue.min.js`)
+- **Vuetify**: 4.1.6 (`sealbook/static/js/vuetify.min.js` + `sealbook/static/css/vuetify.min.css`)
+- **Axios**: 1.18.1 (`sealbook/static/js/axios.min.js`)
+- **Tabler Icons**: 3.45.0, self-hosted (`sealbook/static/icons/`), woff2 only
 
 ## Typography (Material Design 3)
 
@@ -31,12 +31,12 @@ ones apply no styling at all and produce no console error, so nothing will warn 
 | `text-caption`  | `text-body-small`     | .75rem   |
 | `text-overline` | `text-label-small`    | .6875rem |
 
-The font-family overrides in `stk/static/css/app.css` select on the MD3 names, so a
+The font-family overrides in `sealbook/static/css/app.css` select on the MD3 names, so a
 stray MD2 class also loses the Plus Jakarta Sans / Inter treatment.
 
 Never reintroduce the Vue development build. Vue 3.5's production reactivity loops
 forever on state mutated inside a computed, where the dev build only warns; that is
-what `filterNavByRole` in `stk/static/js/components/index.js` must stay pure for.
+what `filterNavByRole` in `sealbook/static/js/components/index.js` must stay pure for.
 
 ## Boilerplate: App Init
 
@@ -105,11 +105,11 @@ axios.get(`/api/things?page=${this.options.page}&per_page=${this.options.itemsPe
 
 ## layoutMixin Contract
 
-Defined inline in `stk/templates/layout.html`, together with the shell markup (top bar,
+Defined inline in `sealbook/templates/layout.html`, together with the shell markup (top bar,
 rail, hint bar, palette, help) and its CSS in `static/css/shell.css`. Page data wins over
 mixin data on a name clash, so the mixin keeps distinct names.
 
-**data:** `navItems` (from `navigation.js`), `notes`, `notesNext`, `bellOpen`, `moreOpen`, `navCounts`
+**data:** `navItems` (the extensions' `app.navigation` entries, via `rail_navigation()`), `notes`, `notesNext`, `bellOpen`, `moreOpen`, `navCounts`
 (`/api/nav/counts`), `caseSel` and `caseList` (case switcher, `/api/monitor/investigations`),
 `shellQ`, `palOpen`, `palQ`, `palI`, `palRecords`, `shellHelp`, `isDark`, `shellHints`, `shellKeys`.
 
@@ -447,9 +447,10 @@ components; pages call it before mount. The bell is part of the shell in `layout
 
 ---
 
-## Navigation Entry Shape (`static/js/navigation.js`)
+## Navigation Entry Shape (`app.navigation`)
 
-A flat list in rail order: `{title, icon, to, match?, badge?, role?}`. `match` is the path
+Each extension's `init_app` appends its entry; the list is in extension order, which
+`sealbook/app.py` keeps in rail order: `{title, icon, to, match?, badge?, role?}`. `match` is the path
 that marks the item current; a stand-in for a page that does not exist yet leaves it out.
 `badge` names a key of `/api/nav/counts`; `role` is a single string filtered by
 `filterNavByRole(navItems, userRoles)`. The first five items form the mobile bottom bar.

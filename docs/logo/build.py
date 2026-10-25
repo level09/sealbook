@@ -105,9 +105,9 @@ favicon = svg(
 )
 
 files = {
-    "stk/static/img/sealbook.svg": lockup(*LIGHT),
-    "stk/static/img/sealbook-dark.svg": lockup(*DARK),
-    "stk/static/img/sealbook-mark.svg": favicon,
+    "sealbook/static/img/sealbook.svg": lockup(*LIGHT),
+    "sealbook/static/img/sealbook-dark.svg": lockup(*DARK),
+    "sealbook/static/img/sealbook-mark.svg": favicon,
     "site/favicon.svg": favicon,
     "docs/favicon.svg": favicon,
     "docs/logo/light.svg": lockup(*LIGHT),
