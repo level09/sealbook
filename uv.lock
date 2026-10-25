@@ -202,15 +202,15 @@ wheels = [
 
 [[package]]
 name = "authlib"
-version = "1.7.2"
+version = "1.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
     { name = "joserfc" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/36/98/7d93f30d029643c0275dbc0bd6d5a6f670661ee6c9a94d93af7ab4887600/authlib-1.7.2.tar.gz", hash = "sha256:2cea25fefcd4e7173bdf1372c0afc265c8034b23a8cd5dcb6a9164b826c64231", size = 176511, upload-time = "2026-05-06T08:10:23.116Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c9/dc/087c08741a98d234c9b98beef8a28d3c309f814d14b6156422c5815bf6d6/authlib-1.9.1.tar.gz", hash = "sha256:5c7d9848f47cac340f060f76ae0bc09b59f5c8e89cc1bb032d4370a0c55b5974", size = 182700, upload-time = "2026-10-14T14:17:52.307Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fb/95/adcb68e20c34162e9135f370d6e31737719c2b6f94bc953fe7ed1f10fe21/authlib-1.7.2-py2.py3-none-any.whl", hash = "sha256:3e1faedc9d87e7d56a164eca3ccb6ace0d61b94abe83e92242f8dc8bba9b4a9f", size = 259548, upload-time = "2026-05-06T08:10:21.436Z" },
+    { url = "https://files.pythonhosted.org/packages/39/44/a46089266de32a0d809023b6bf31b80a1f26a46954446a7ce695a565cbea/authlib-1.9.1-py2.py3-none-any.whl", hash = "sha256:8b9be8b1e5174dcbf5520e984f1a22dc2edae5b6e40a61d4cedbf86b97e9e69b", size = 266042, upload-time = "2026-10-14T14:17:50.695Z" },
 ]
 
 [[package]]
@@ -847,6 +847,19 @@ wheels = [
 ]
 
 [[package]]
+name = "httpcore2"
+version = "2.16.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "h11" },
+    { name = "truststore" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c0/61/afa9d6b7452f9eca73f73d45324eb0bb52f098fd5e6049bf6b8263be9b4e/httpcore2-2.16.0.tar.gz", hash = "sha256:c72cd0413563b17e1cd8354677dff887466f8ec2551679759e93126534428643", size = 69886, upload-time = "2026-10-21T07:09:45.31Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/af/c2/ce417c397afa5181f0e3c6ff01a4d01639414e1adef08730d97571297151/httpcore2-2.16.0-py3-none-any.whl", hash = "sha256:5c4358319f2602d984ad93182c9fee5160f22e9da7babdda870a5e7c4e2dc34f", size = 85070, upload-time = "2026-10-21T07:09:42.802Z" },
+]
+
+[[package]]
 name = "httpx"
 version = "0.28.1"
 source = { registry = "https://pypi.org/simple" }
@@ -859,6 +872,32 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
+]
+
+[[package]]
+name = "httpx2"
+version = "2.16.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio", marker = "sys_platform != 'emscripten'" },
+    { name = "httpcore2", marker = "sys_platform != 'emscripten'" },
+    { name = "httpx2-jsfetch", marker = "python_full_version >= '3.12' and sys_platform == 'emscripten'" },
+    { name = "idna" },
+    { name = "truststore", marker = "sys_platform != 'emscripten'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/43/73/5ca2cedf5e4e50423d1c258877865a6b62793633b561c58499f8aeb33b7e/httpx2-2.16.0.tar.gz", hash = "sha256:0d54c98128e8f2ff7fbbde0fca8c359e5f032edeaaaac443cdb7f31f685bcd7f", size = 103116, upload-time = "2026-10-21T07:09:46.348Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7b/3d/2e4bc4fd1ef9770871669adb348d612a6e4786b303a23f9935b81c48dd60/httpx2-2.16.0-py3-none-any.whl", hash = "sha256:fd2c5d7909e8d86fe92d53020c310ca0e4e431b838c207c5754b9bbf0308d49a", size = 97880, upload-time = "2026-10-21T07:09:44.01Z" },
+]
+
+[[package]]
+name = "httpx2-jsfetch"
+version = "1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/c4/0e5636363151a2a1795e0a77617168b9ca438e1748ec05fc9b5687f93d64/httpx2_jsfetch-1.0.tar.gz", hash = "sha256:70a0e3eabfef7cce5ad9c629f7d01ca05e418f586646f4ddf14782e4c1454c60", size = 6872, upload-time = "2026-08-07T00:13:07.492Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9b/43/832f631d32e4f1211caa2ba368317739fe71f0b8530e4c9d15dc454bac2a/httpx2_jsfetch-1.0-py3-none-any.whl", hash = "sha256:cb916b707601e69a07721aabc8f3f6659be3a6893bc1ff5c6f9e02241df2da32", size = 6382, upload-time = "2026-08-07T00:13:06.567Z" },
 ]
 
 [[package]]
@@ -1891,7 +1930,7 @@ wheels = [
 
 [[package]]
 name = "quart-security"
-version = "2.0.1"
+version = "2.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosmtplib" },
@@ -1900,7 +1939,7 @@ dependencies = [
     { name = "cbor2" },
     { name = "cryptography" },
     { name = "email-validator" },
-    { name = "httpx" },
+    { name = "httpx2" },
     { name = "libpass", extra = ["bcrypt"] },
     { name = "pyotp" },
     { name = "qrcode", extra = ["pil"] },
@@ -1909,9 +1948,9 @@ dependencies = [
     { name = "webauthn" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/de/e2b0f19adf6dc2f781551264a0041f4683386c7dee5927d6f702d8a04433/quart_security-2.0.1.tar.gz", hash = "sha256:fa0fe168a819483229aa7d7292af84506c89fef0efd7d32b92e9314a96ea7d0b", size = 35667, upload-time = "2026-10-06T12:59:04.506Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2b/88/43c45890dd40db6fa5e57d09705b35c42f3a36981997ab3269a2c33403a0/quart_security-2.0.3.tar.gz", hash = "sha256:74be1c5177afca54cc90bafd10d7ae69a1f4923e1786ff106fb9990dd8f7eb5c", size = 35687, upload-time = "2026-10-25T10:39:02.875Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ab/2d/ac5e2c7bfe78b3103d5dc78db8139bf0a1d2867553b2f64cf87355eed1b1/quart_security-2.0.1-py3-none-any.whl", hash = "sha256:6a90561b3cbd05a1769985358a3e453caf8683b89b3fd12374c95314f93fb5ef", size = 41794, upload-time = "2026-10-06T12:59:03.231Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/b5/798c32a417ecba01152a4633cc4552b7ae0a4d70285f003ea7e5f1799e61/quart_security-2.0.3-py3-none-any.whl", hash = "sha256:08ac07b53242b70b519515299e89912cca2c21fabf12a6d25b87f6e4c8601268", size = 41815, upload-time = "2026-10-25T10:39:01.684Z" },
 ]
 
 [[package]]
@@ -2127,117 +2166,59 @@ name = "sealbook"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "aiosmtplib" },
-    { name = "aiosqlite" },
-    { name = "alembic" },
     { name = "asn1crypto" },
     { name = "asyncpg" },
-    { name = "authlib" },
-    { name = "bcrypt" },
-    { name = "blinker" },
-    { name = "click" },
-    { name = "cryptography" },
-    { name = "email-validator" },
     { name = "faster-whisper" },
     { name = "httpx" },
-    { name = "jinja2" },
-    { name = "joserfc" },
     { name = "jsonschema" },
-    { name = "libpass" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "openpyxl" },
-    { name = "orjson" },
     { name = "pdqhash" },
     { name = "pgvector" },
-    { name = "pillow" },
     { name = "playwright" },
-    { name = "psycopg2-binary" },
     { name = "pypdf" },
     { name = "pypdfium2" },
-    { name = "python-dotenv" },
-    { name = "qrcode" },
-    { name = "quart" },
-    { name = "quart-security" },
-    { name = "quart-session" },
-    { name = "rich" },
-    { name = "sqlalchemy", extra = ["asyncio"] },
-    { name = "uvicorn" },
-    { name = "webauthn" },
-    { name = "wtforms" },
+    { name = "stkit" },
     { name = "yt-dlp" },
 ]
 
 [package.optional-dependencies]
-asgi = [
-    { name = "hypercorn" },
-]
-dev = [
-    { name = "pre-commit" },
-    { name = "ptpython" },
-    { name = "ruff" },
-]
 full = [
-    { name = "asyncpg" },
-    { name = "redis" },
+    { name = "stkit", extra = ["full"] },
 ]
 
 [package.dev-dependencies]
 dev = [
     { name = "pypdf" },
+    { name = "stkit", extra = ["dev"] },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "aiosmtplib", specifier = ">=5.0.0" },
-    { name = "aiosqlite", specifier = ">=0.20.0" },
-    { name = "alembic", specifier = ">=1.16.0" },
     { name = "asn1crypto", specifier = ">=1.5.1" },
     { name = "asyncpg", specifier = ">=0.30.0" },
-    { name = "asyncpg", marker = "extra == 'full'", specifier = ">=0.30.0" },
-    { name = "authlib", specifier = ">=1.7.2,<2" },
-    { name = "bcrypt", specifier = ">=4.3.0" },
-    { name = "blinker", specifier = ">=1.9.0" },
-    { name = "click", specifier = ">=8.3.1" },
-    { name = "cryptography", specifier = ">=45.0.5" },
-    { name = "email-validator", specifier = ">=2.2.0" },
     { name = "faster-whisper", specifier = "==1.2.1" },
     { name = "httpx", specifier = ">=0.27.0" },
-    { name = "hypercorn", marker = "extra == 'asgi'", specifier = ">=0.17.0" },
-    { name = "jinja2", specifier = ">=3.1.6" },
-    { name = "joserfc", specifier = ">=1.7.1,<2" },
     { name = "jsonschema", specifier = ">=4.23" },
-    { name = "libpass", specifier = ">=1.9.0" },
     { name = "numpy", specifier = ">=2,<3" },
     { name = "openpyxl", specifier = "==3.1.5" },
-    { name = "orjson", specifier = ">=3.10.18" },
     { name = "pdqhash", specifier = ">=0.2,<1" },
     { name = "pgvector", specifier = ">=0.4,<1" },
-    { name = "pillow", specifier = ">=12.3.0" },
     { name = "playwright", specifier = ">=1.60.0" },
-    { name = "pre-commit", marker = "extra == 'dev'" },
-    { name = "psycopg2-binary", specifier = ">=2.9.10" },
-    { name = "ptpython", marker = "extra == 'dev'", specifier = ">=3.0.30" },
     { name = "pypdf", specifier = ">=6.21,<7" },
     { name = "pypdfium2", specifier = ">=5,<6" },
-    { name = "python-dotenv", specifier = ">=1.1.1" },
-    { name = "qrcode", specifier = ">=8.2" },
-    { name = "quart", specifier = ">=0.20.0" },
-    { name = "quart-security", specifier = ">=2.0.1,<3" },
-    { name = "quart-session", specifier = ">=3.0.0" },
-    { name = "redis", marker = "extra == 'full'", specifier = ">=7.1.0" },
-    { name = "rich", specifier = ">=14.0.0" },
-    { name = "ruff", marker = "extra == 'dev'" },
-    { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.41" },
-    { name = "uvicorn", specifier = ">=0.40.0" },
-    { name = "webauthn", specifier = ">=2.6.0" },
-    { name = "wtforms", specifier = ">=3.2.1" },
+    { name = "stkit", specifier = ">=17.0.1,<18" },
+    { name = "stkit", extras = ["full"], marker = "extra == 'full'" },
     { name = "yt-dlp", specifier = "==2026.10.21" },
 ]
-provides-extras = ["full", "dev", "asgi"]
+provides-extras = ["full"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pypdf", specifier = ">=6.21.1" }]
+dev = [
+    { name = "pypdf", specifier = ">=6.21.1" },
+    { name = "stkit", extras = ["dev"] },
+]
 
 [[package]]
 name = "shellingham"
@@ -2296,6 +2277,55 @@ asyncio = [
 ]
 
 [[package]]
+name = "stkit"
+version = "17.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiosmtplib" },
+    { name = "aiosqlite" },
+    { name = "alembic" },
+    { name = "authlib" },
+    { name = "bcrypt" },
+    { name = "blinker" },
+    { name = "click" },
+    { name = "cryptography" },
+    { name = "email-validator" },
+    { name = "httpx2" },
+    { name = "jinja2" },
+    { name = "joserfc" },
+    { name = "libpass" },
+    { name = "orjson" },
+    { name = "pillow" },
+    { name = "psycopg2-binary" },
+    { name = "python-dotenv" },
+    { name = "qrcode" },
+    { name = "quart" },
+    { name = "quart-security" },
+    { name = "quart-session" },
+    { name = "rich" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+    { name = "uvicorn" },
+    { name = "webauthn" },
+    { name = "wtforms" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/27/81/3c2d3290834f0be896ebe15bad1ff60646044c7fba82ffc274e18514c6d4/stkit-17.0.1.tar.gz", hash = "sha256:172cc9dff7be6b9198c528e5c9898ff56169d2dc272493a16f5127d807a28ca9", size = 1610692, upload-time = "2026-10-25T10:42:37.43Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b6/a8/69b9d99e75a8e16ecfed2655cb734b01bbcb38e2f4ce908ff30243fae3cd/stkit-17.0.1-py3-none-any.whl", hash = "sha256:67ef27d119070da4394aa7757a948f77f9fa0f5349772b48ef0c1fda3a95400e", size = 1526659, upload-time = "2026-10-25T10:42:35.734Z" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "playwright" },
+    { name = "pre-commit" },
+    { name = "ptpython" },
+    { name = "ruff" },
+]
+full = [
+    { name = "asyncpg" },
+    { name = "redis" },
+]
+
+[[package]]
 name = "tokenizers"
 version = "0.23.3"
 source = { registry = "https://pypi.org/simple" }
@@ -2339,6 +2369,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/0d/ea/b2a5bd54b28a324dae8211928b2d730b6547500342c7e6c6dea08bd0a485/tqdm-4.70.1.tar.gz", hash = "sha256:cefd0eca11b2a37a3aee776544d4f4ae913f02688135b5556b8788dfa474afc4", size = 171846, upload-time = "2026-09-11T07:25:16.601Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/03/921a3d3c75785aca9ebfbfcabfbc3a1be12e2ab5265deb026d55a5a3f83e/tqdm-4.70.1-py3-none-any.whl", hash = "sha256:c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73", size = 80199, upload-time = "2026-09-11T07:25:14.599Z" },
+]
+
+[[package]]
+name = "truststore"
+version = "0.10.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ee/9f/c5201d42a484c061e528825fc8e2d565f5abd50a4ced6fb7d29c4ec99b2b/truststore-0.10.5.tar.gz", hash = "sha256:30d36967ccaded5cbb38d602c433f53600036c79d502f4533a49b60a03bbefcd", size = 28091, upload-time = "2026-10-12T22:27:31.808Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/e9/3a7820be2bb0fe53b6bc9c3be26d3d1158004e4c3ab953aa6840b955b1e9/truststore-0.10.5-py3-none-any.whl", hash = "sha256:9aaaedaefaf06d8b206278cf8b5012bc897f485a874503501e12d776df78951c", size = 19017, upload-time = "2026-10-12T22:27:30.377Z" },
 ]
 
 [[package]]
@@ -2444,14 +2483,14 @@ wheels = [
 
 [[package]]
 name = "wtforms"
-version = "3.2.2"
+version = "3.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markupsafe" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e9/91/ed9b517da898e3fb747566aa3c12a734bd64ea7449a0d25ec74ce8f8b8eb/wtforms-3.2.2.tar.gz", hash = "sha256:7b00c73f8670f35d4edb0293dcd81b980528bee72fd662b182aaba27ae570b93", size = 139583, upload-time = "2026-05-03T05:53:44.147Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ef/5b/588dc20774f4cebeac23908a87e493f2f6fb2a4c54756675cd59afb8cc72/wtforms-3.3.1.tar.gz", hash = "sha256:9d10ccb5740290c9ae6673522d87bcae3b669cf0cb4e4584aee229b4694af10c", size = 172349, upload-time = "2026-10-24T07:19:37.624Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/76/bb225c8300f3a0ba28e01df51419c6c9574a297c43d71b29048e03b65deb/wtforms-3.2.2-py3-none-any.whl", hash = "sha256:72b90d5d921bd3119252069cf0301e9c13915f9e52792652bc91c5dda4b79e56", size = 158656, upload-time = "2026-05-03T05:53:46.072Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/67/0f56cd0f8ac699259476fc9a520aa6b09b0e7e4da776f91c48f6965dc486/wtforms-3.3.1-py3-none-any.whl", hash = "sha256:2f4728ef3f67173c22590e60e845937598af7455474330fdb84354a609d67ec1", size = 171964, upload-time = "2026-10-24T07:19:35.892Z" },
 ]
 
 [[package]]

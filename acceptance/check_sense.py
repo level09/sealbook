@@ -21,8 +21,8 @@ from urllib.parse import quote
 
 from playwright.async_api import TimeoutError as PlaywrightTimeout
 
-from stk.ledger.contracts import Prop
-from stk.runs.worker import TOOLS
+from sealbook.ledger.contracts import Prop
+from sealbook.runs.worker import TOOLS
 
 ROOT = Path(__file__).resolve().parent.parent
 ALLOW = Path(__file__).with_name("sense_allow.json")
@@ -481,9 +481,9 @@ async def person_counts(page, base, case, hrefs):
 
 async def crawl(base, user, case):
     from playwright.async_api import async_playwright
-
     from stk.agent_login import create_agent_login_token
-    from stk.app import create_app
+
+    from sealbook.app import create_app
 
     app = create_app()
     async with async_playwright() as p:

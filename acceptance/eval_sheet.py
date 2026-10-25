@@ -14,11 +14,11 @@ import asyncio
 import sys
 from collections import Counter
 
+import stk.extensions as ext
 from sqlalchemy import select
 
-import stk.extensions as ext
-from stk.app import create_app
-from stk.ledger.models import Payload, Run, Statement
+from sealbook.app import create_app
+from sealbook.ledger.models import Payload, Run, Statement
 
 POSITION = {
     "arrested_at",

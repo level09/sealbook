@@ -11,19 +11,19 @@ from io import BytesIO
 from pathlib import Path
 
 import numpy as np
+import stk.extensions as ext
 import uvicorn
 from PIL import Image
 from playwright.async_api import async_playwright, expect
 from sqlalchemy import select
-
-import stk.extensions as ext
-from stk import blobs
 from stk.agent_login import create_agent_login_token
-from stk.discovery import service
-from stk.ledger.models import Acquisition
-from stk.ledger.write import record_acquisition
-from stk.runs.worker import work_once
-from stk.settings import Config
+
+from sealbook import blobs
+from sealbook.discovery import service
+from sealbook.ledger.models import Acquisition
+from sealbook.ledger.write import record_acquisition
+from sealbook.runs.worker import work_once
+from sealbook.settings import Config
 from tests.test_review import ReviewTest
 
 case = ReviewTest(methodName="test_correction_is_pending_and_reviewer_receives_it")

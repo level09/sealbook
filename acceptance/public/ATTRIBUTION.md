@@ -96,7 +96,7 @@ Commons page says.
 - Date (DateTimeOriginal): 2012-04-05
 - Commons description: "Destruction in the Bab Dreeb area of Homs, Syria (2012)."
 - SHA-1: 5d1e1b1ca35bc2cd76a05ea73899d068ef29f7e8
-- Use: extra photo in the app demo seed (`stk/monitor/seed_full.py`). No people.
+- Use: extra photo in the app demo seed (`sealbook/monitor/seed_full.py`). No people.
 
 ## raqqa_destroyed_2017.png
 

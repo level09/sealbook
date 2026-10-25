@@ -1,6 +1,6 @@
 """Regenerate site/data/case.json and site/media/ from the synthetic case files.
 
-Every value is read from acceptance/, stk/monitor/seed.py, docs/ or the recorded
+Every value is read from acceptance/, sealbook/monitor/seed.py, docs/ or the recorded
 EmbeddingGemma 2 run, or measured here with the app's own discovery code.
 Run: uv run python site/build_data.py
 """
@@ -24,12 +24,13 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 import stk.cli  # noqa: E402, F401  (seed.py imports stk.cli, which imports seed)
-from stk.discovery import audio, compute, embeddings  # noqa: E402
-from stk.discovery import media as frames  # noqa: E402
-from stk.discovery.compute import _image as pdq  # noqa: E402
-from stk.discovery.models import DIMENSIONS  # noqa: E402
-from stk.monitor import seed  # noqa: E402
-from stk.settings import Config  # noqa: E402
+
+from sealbook.discovery import audio, compute, embeddings  # noqa: E402
+from sealbook.discovery import media as frames  # noqa: E402
+from sealbook.discovery.compute import _image as pdq  # noqa: E402
+from sealbook.discovery.models import DIMENSIONS  # noqa: E402
+from sealbook.monitor import seed  # noqa: E402
+from sealbook.settings import Config  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).parent))
 import build_live  # noqa: E402
@@ -879,7 +880,7 @@ def video_search(clips: list[dict]) -> dict | None:
 
 def source_name(key: str) -> str:
     """A demo source key as the reader sees it: the file name where the seed has one."""
-    from stk.monitor.seed_full import FILES
+    from sealbook.monitor.seed_full import FILES
 
     return Path(FILES[key][0]).name if key in FILES else key
 
@@ -972,7 +973,7 @@ def build_connections(live: dict) -> dict:
                 },
             }
         )
-    from stk.ledger.offline_sigs import GESTURE_DOMAIN
+    from sealbook.ledger.offline_sigs import GESTURE_DOMAIN
 
     return {
         "case": "case-demo-02",
@@ -1026,7 +1027,7 @@ def build_story(live: dict) -> dict:
         max(y for _, y in lonlats) + pad,
     )
     admin = json.loads(
-        (ROOT / "stk/places/fixtures/codab/syr_admin2.geojson").read_text()
+        (ROOT / "sealbook/places/fixtures/codab/syr_admin2.geojson").read_text()
     )
 
     def touches(geom) -> bool:
@@ -1048,7 +1049,7 @@ def build_story(live: dict) -> dict:
         for f in admin["features"]
         if touches(f["geometry"])
     ]
-    source = (ROOT / "stk/places/fixtures/codab/SOURCE.txt").read_text()
+    source = (ROOT / "sealbook/places/fixtures/codab/SOURCE.txt").read_text()
     return {
         "title": st["title"],
         "rows": st["rows"],
@@ -1630,7 +1631,7 @@ def build_speech() -> dict:
     model, as the `transcribe` worker tool does, and score it against the script."""
     import time
 
-    from stk import speech
+    from sealbook import speech
     from tests.test_speech import wer, words
 
     clip = DATA / "witness_clip.ogg"
@@ -1730,7 +1731,7 @@ def build_status() -> dict:
         (
             "Grouped search",
             ev,
-            r"Grouped `/api/search` \(`stk.search.find`, all groups\): (p50 \d+ ms, p95 \d+ ms)",
+            r"Grouped `/api/search` \(`sealbook.search.find`, all groups\): (p50 \d+ ms, p95 \d+ ms)",
         ),
         (
             "Retrieval gold set",

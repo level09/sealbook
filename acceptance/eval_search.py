@@ -15,14 +15,14 @@ import json
 import sys
 import time
 
+import stk.extensions as ext
 from sqlalchemy import select
 
-import stk.extensions as ext
-from stk.app import create_app
-from stk.discovery import embeddings, service
-from stk.ledger.contracts import Prop
-from stk.ledger.models import Acquisition, Payload, Statement
-from stk.settings import Config
+from sealbook.app import create_app
+from sealbook.discovery import embeddings, service
+from sealbook.ledger.contracts import Prop
+from sealbook.ledger.models import Acquisition, Payload, Statement
+from sealbook.settings import Config
 
 C1, C2 = "case-demo-01", "case-demo-02"
 # (query, case or None for all cases, expected source files, expected person names, why)
@@ -272,8 +272,8 @@ ENTITIES = [
 
 
 async def entities():
-    """Grouped answers through stk.search.find, the function behind /api/search."""
-    from stk.search import find
+    """Grouped answers through sealbook.search.find, the function behind /api/search."""
+    from sealbook.search import find
 
     create_app()
     out, times = [], []

@@ -31,24 +31,31 @@ from unittest import mock
 
 import httpx
 import orjson
+import stk
+import stk.extensions as ext
+from alembic import command
 from quart.datastructures import FileStorage
 from quart_security import hash_password
 from sqlalchemy import delete, func, select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import DBAPIError
-
-import stk.extensions as ext
-from alembic import command
-from stk import netguard
 from stk.agent_login import create_agent_login_token
-from stk.anchor import service as anchor
-from stk.anchor.models import Batch
-from stk.app import create_app
-from stk.blobs import blob_path
-from stk.cases.service import ensure as ensure_case
-from stk.ingest.service import recheck_url
-from stk.ledger import chain, merkle
-from stk.ledger.models import (
+from stk.migrations import (
+    build_alembic_config,
+    throwaway_database_url,
+)
+from stk.user.models import Role, User, roles_users
+
+from sealbook import netguard
+from sealbook.anchor import service as anchor
+from sealbook.anchor.models import Batch
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.blobs import blob_path
+from sealbook.cases.service import ensure as ensure_case
+from sealbook.ingest.service import recheck_url
+from sealbook.ledger import chain, merkle
+from sealbook.ledger.models import (
     Acquisition,
     Blob,
     Chain,
@@ -59,17 +66,11 @@ from stk.ledger.models import (
     Statement,
     StatementTier,
 )
-from stk.ledger.write import row_dict, verify_db
-from stk.migrations import (
-    build_alembic_config,
-    get_database_url,
-    throwaway_database_url,
-)
-from stk.people.cli import erase_cmd
-from stk.places import cli as places
-from stk.runs.worker import locate, work_once
-from stk.settings import Config
-from stk.user.models import Role, User, roles_users
+from sealbook.ledger.write import row_dict, verify_db
+from sealbook.people.cli import erase_cmd
+from sealbook.places import cli as places
+from sealbook.runs.worker import locate, work_once
+from sealbook.settings import Config
 from tests.passkey import SoftPasskey
 from tests.test_anchor import FakeTsa
 from tests.test_mcp import client_metadata, pkce
@@ -81,7 +82,7 @@ CASE = json.loads((HERE / "case.json").read_text())
 CASE_SLUG = "case-v0"  # the case intake files into
 DOCS = {d["key"]: d for d in CASE["documents"]}
 TIMED = HERE / "timed_comparison.json"
-POSTGRES = make_url(get_database_url()).get_backend_name() == "postgresql"
+POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 
 PUBLIC_IP = "93.184.215.14"
 CALENDAR, TSA = "https://calendar.test", "https://tsa.test/tsr"
@@ -238,17 +239,17 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
 
     @classmethod
     def setUpClass(cls):
-        url = cls.enterClassContext(throwaway_database_url(sync=True))
-        config = build_alembic_config()
-        config.config_file_name = None
-        config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(config, "head")
+        url = cls.enterClassContext(
+            throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        )
+        config = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(config, "heads")
         tmp = Path(cls.enterClassContext(tempfile.TemporaryDirectory()))
         cls.tmp, cls.partner = tmp, tmp / "partner"
         cls.partner.mkdir()
         cert, key = make_signing_cert(tmp)
 
-        class AcceptanceConfig(Config):
+        class AcceptanceConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = (
                 make_url(url)
                 .set(drivername="postgresql+asyncpg")
@@ -285,7 +286,7 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
         )
         cls.enterClassContext(
             mock.patch(
-                "stk.mcp.oauth.fetch_client_metadata", side_effect=client_metadata
+                "sealbook.mcp.oauth.fetch_client_metadata", side_effect=client_metadata
             )
         )
         cls.app = create_app(AcceptanceConfig)
@@ -1238,7 +1239,7 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
             "HOME": str(self.tmp),
         }
         cli = subprocess.run(
-            [sys.executable, "-m", "stk.ledger.verify_package", str(out)],
+            [sys.executable, "-m", "sealbook.ledger.verify_package", str(out)],
             capture_output=True,
             text=True,
             env=env

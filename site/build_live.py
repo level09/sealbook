@@ -13,16 +13,18 @@ import uuid
 from datetime import datetime
 from unittest import mock
 
-from sqlalchemy import func, select
-from sqlalchemy.engine import make_url
-
+import stk
 import stk.extensions as ext
 from alembic import command
-from stk.app import create_app
-from stk.ledger import offline_sigs
-from stk.ledger.models import Acquisition, Payload, Statement
+from sqlalchemy import func, select
+from sqlalchemy.engine import make_url
 from stk.migrations import build_alembic_config, throwaway_database_url
-from stk.settings import Config
+
+from sealbook.app import app as sealbook_app
+from sealbook.app import create_app
+from sealbook.ledger import offline_sigs
+from sealbook.ledger.models import Acquisition, Payload, Statement
+from sealbook.settings import Config
 
 CASE = "case-demo-02"
 PASSWORD = "SiteBuild-Throwaway-1!"  # throwaway database, dropped after the build
@@ -31,7 +33,7 @@ QUERIES = ["Branch 999", "يوسف خالد العلي", "Harasta", "تسعمي�
 
 def live() -> dict:
     with (
-        throwaway_database_url(sync=True) as url,
+        throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True) as url,
         tempfile.TemporaryDirectory() as blob_dir,
         # No model calls: the demo's three fixed-output runs stand in, and they are
         # labelled as such on the page.
@@ -42,17 +44,15 @@ def live() -> dict:
         mock.patch.object(Config, "BRAVE_API_KEY", ""),
         mock.patch.object(Config, "BLOB_DIR", blob_dir),
     ):
-        cfg = build_alembic_config()
-        cfg.config_file_name = None
-        cfg.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
-        command.upgrade(cfg, "head")
+        cfg = build_alembic_config(sealbook_app, url, quiet=True)
+        command.upgrade(cfg, "heads")
         db_url = (
             make_url(url)
             .set(drivername="postgresql+asyncpg")
             .render_as_string(hide_password=False)
         )
 
-        class SiteConfig(Config):
+        class SiteConfig(stk.TestingConfig, Config):
             SQLALCHEMY_DATABASE_URI = db_url
             TESTING = True
             SESSION_TYPE = None
@@ -71,11 +71,11 @@ async def _run(app) -> dict:
 
 async def _read(app) -> dict:
     from quart_security import hash_password
-
-    from stk.monitor.seed import seed
-    from stk.monitor.seed_full import L1, R1, seed_full
-    from stk.runs.worker import work_once
     from stk.user.models import Role, User
+
+    from sealbook.monitor.seed import seed
+    from sealbook.monitor.seed_full import L1, R1, seed_full
+    from sealbook.runs.worker import work_once
 
     async with ext.async_session_factory() as s, s.begin():
         owner = User(
@@ -310,9 +310,9 @@ async def _watch(get, send) -> dict:
     """The four agents that keep checking, run by the worker's own code on the demo's
     fixed answer, then read back through the endpoints the Agents page, Desk and
     People call, as their owner reads them."""
-    from stk.agents import tasks
-    from stk.agents.read import FIXED
-    from stk.runs.worker import work_once
+    from sealbook.agents import tasks
+    from sealbook.agents.read import FIXED
+    from sealbook.runs.worker import work_once
 
     with (
         mock.patch.object(Config, "AGENT_MODEL", FIXED),
@@ -393,9 +393,9 @@ async def _casemap(get) -> dict:
 
 async def _cited(s, run_id: str) -> dict:
     """Per brief line, the claims it cites: prop and the source it was read from."""
-    from stk.agents.read import read_output
-    from stk.ledger.models import Blob, Run
-    from stk.monitor import filter as mfilter
+    from sealbook.agents.read import read_output
+    from sealbook.ledger.models import Blob, Run
+    from sealbook.monitor import filter as mfilter
 
     run = await s.get(Run, uuid.UUID(run_id))
     sections = read_output(await s.get(Blob, run.output_hash))["sections"]
@@ -446,9 +446,9 @@ async def _batches(s) -> list[dict]:
 
 
 async def _link_runs(s) -> list[dict]:
-    from stk.agents import linker
-    from stk.agents.read import read_output
-    from stk.ledger.models import Blob, Run
+    from sealbook.agents import linker
+    from sealbook.agents.read import read_output
+    from sealbook.ledger.models import Blob, Run
 
     runs = (
         await s.scalars(
@@ -508,7 +508,7 @@ async def _gestures(s) -> list[dict]:
 
 
 async def _places(s, ids) -> dict:
-    from stk.places.models import AdminArea, Place
+    from sealbook.places.models import AdminArea, Place
 
     out = {}
     for p in (await s.scalars(select(Place).where(Place.id.in_(ids)))).all():
@@ -529,7 +529,7 @@ async def _places(s, ids) -> dict:
 
 async def _names(s) -> dict:
     """Every name written for a person or place subject in the case, as recorded."""
-    from stk.places.models import Place
+    from sealbook.places.models import Place
 
     out: dict[str, list] = {}
     rows = await s.execute(
@@ -548,7 +548,7 @@ async def _names(s) -> dict:
 
 
 async def _versions(s) -> list[dict]:
-    from stk.sheets.models import Dataset, DatasetVersion
+    from sealbook.sheets.models import Dataset, DatasetVersion
 
     rows = await s.execute(
         select(DatasetVersion, Dataset.name, Acquisition.context["file"].astext)

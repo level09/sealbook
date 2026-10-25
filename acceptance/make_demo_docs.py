@@ -311,7 +311,7 @@ def pdf(browser, html, name, facts):
             }
         )
     return {
-        "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as stk.discovery.indexing.pdf_pages",
+        "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as sealbook.discovery.indexing.pdf_pages",
         "text_len": len(text),
         "facts": out,
     }
@@ -322,7 +322,7 @@ def pdf(browser, html, name, facts):
 
 def ocr_request(image: bytes):
     """The request the worker's ocr tool sends, for the cloud route's model."""
-    from stk.runs.worker import OCR_PROMPT
+    from sealbook.runs.worker import OCR_PROMPT
 
     url = f"data:image/jpeg;base64,{base64.b64encode(image).decode()}"
     return OCR_PROMPT, {
@@ -341,15 +341,15 @@ def ocr_request(image: bytes):
 
 
 def prompt_hash():
-    from stk.ledger import chain
-    from stk.runs.worker import OCR_PROMPT
+    from sealbook.ledger import chain
+    from sealbook.runs.worker import OCR_PROMPT
 
     return chain.sha256(chain.canon([OCR_PROMPT]))
 
 
 def record_ocr(name: str, image: bytes) -> dict:
-    from stk.ledger.contracts import Route
-    from stk.runs import routes
+    from sealbook.ledger.contracts import Route
+    from sealbook.runs import routes
 
     _, body = ocr_request(image)
     served = asyncio.run(routes.chat(Route.CLOUD, body))

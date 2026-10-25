@@ -107,7 +107,7 @@ docs/status.md, docs/search-eval.md and docs/models.md.
     "places": {"<id>": {"ar": "...", "en": "...", "kind": "...", "lonlat": [lon, lat], "precision_m": 3000,
                         "geo_source": "geonames|cod-ab|analyst|...", "source": "...", "geonames_id": 0, "admin2": null}},
     "map": {"box": [x0, y0, x1, y1], "areas": [{"name": "...", "name_ar": "...", "pcode": "...", "rings": [[[lon, lat]]]}],
-            "boundaries": "credit line from stk/places/fixtures/codab/SOURCE.txt"},
+            "boundaries": "credit line from sealbook/places/fixtures/codab/SOURCE.txt"},
     "attribution": "GeoNames (CC BY 4.0)"
   },
   "sheet": {                             // GET /api/evidence/<sha>/sheet and /api/sheets/<acq>/proposals
