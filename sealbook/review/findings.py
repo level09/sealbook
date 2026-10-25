@@ -574,7 +574,12 @@ async def undo(db, user, gesture: str, only: list[str] | None, author) -> list:
 async def describe(db, statements: list[StatementIn]) -> list[dict]:
     """Each statement of a gesture as a reviewer reads it before signing."""
     places = await _places(
-        db, {s.value["place"] for s in statements if s.prop == Prop.OCCURRED_AT}
+        db,
+        {
+            s.value["place"]
+            for s in statements
+            if s.prop in (Prop.OCCURRED_AT, Prop.LOCATED_AT)
+        },
     )
     named = await people.names(
         db,
@@ -597,6 +602,10 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
             place = places.get(v["place"], {})
             name = place.get("en") or place.get("ar") or short(v["place"])
             return f"{name}, {data.when(s.valid_from, s.valid_to)}"
+        if s.prop == Prop.LOCATED_AT:
+            place = places.get(v["place"], {})
+            name = place.get("en") or place.get("ar") or short(v["place"])
+            return f"“{v['name']}” is {name}"
         if s.prop == Prop.INVOLVED:
             who = short(v["person"])
             if name := named.get(v["person"].removeprefix("person:")):

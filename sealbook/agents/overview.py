@@ -4,6 +4,7 @@ and their recent runs. Reads run rows and stored outcomes; changes nothing."""
 from sqlalchemy import select
 
 from sealbook.agents import (
+    approximate,
     brief,
     contradictions,
     gaps,
@@ -66,6 +67,16 @@ AGENTS = (
         "Gaps on People",
     ),
     (
+        "approximate",
+        approximate.TOOL,
+        approximate.AGENT,
+        "Suggests an approximate place for a name the gazetteer does not have, "
+        "from the words around it.",
+        "When you ask on Places, and when evidence arrives if it keeps checking.",
+        "/places",
+        "Suggestions under Unresolved names",
+    ),
+    (
         "noticer",
         noticer.TOOL,
         noticer.AGENT,
@@ -84,6 +95,7 @@ NOUN = {
     contradictions.TOOL: ("disagreement", "disagreements"),
     gaps.TOOL: ("place to look", "places to look"),
     noticer.TOOL: ("resemblance", "resemblances"),
+    approximate.TOOL: ("approximate place", "approximate places"),
 }
 SETUP = {
     "ROUTE_LOCAL_BASE_URL": "ROUTE_LOCAL_BASE_URL to the local model server",

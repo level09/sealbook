@@ -203,7 +203,7 @@ since agent runs have no document and fall under the sensitive row:
 ```sql
 insert into policy (capability, doc_type, sensitivity, routes, auto_accept)
 select t, '*', '*', array['local', 'cloud-zdr'], false
-from unnest(array['brief', 'link', 'standing', 'contradictions', 'gaps', 'notice']) t;
+from unnest(array['brief', 'link', 'standing', 'contradictions', 'gaps', 'notice', 'approximate']) t;
 ```
 
 Without those rows every agent run fails with "route cloud-zdr not allowed".

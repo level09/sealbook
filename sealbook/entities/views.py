@@ -11,6 +11,7 @@ from sealbook.entities import data
 from sealbook.ledger.write import principal_for_user
 from sealbook.monitor.views import ROLES
 from sealbook.people import data as people
+from sealbook.places import suggest
 
 bp_entities = Blueprint("entities", __name__)
 PER_PAGE = 25
@@ -96,7 +97,10 @@ async def places_table():
 
 @bp_entities.get("/api/places/unresolved")
 async def places_unresolved():
-    return _json({"items": await data.unresolved(g.db_session, _filter())})
+    db, f = g.db_session, _filter()
+    items = await data.unresolved(db, f)
+    await suggest.annotate(db, current_user, items, f["investigation"])
+    return _json({"items": items})
 
 
 @bp_entities.get("/places/<uuid:place_id>")
