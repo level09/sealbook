@@ -137,7 +137,7 @@ import {registerMediaViewers} from '/static/js/components/media.js';
 import {IntakeBrief} from '/static/js/components/IntakeBrief.js';
 
 const ME = {{ current_user.id | tojson }}, MY_NAME = {{ (current_user.name or current_user.email) | tojson }};
-// ponytail: local stand-in for the shared ActorChip (stk/static/js/components/ActorChip.js); swap when it lands.
+// ponytail: local stand-in for the shared ActorChip (sealbook/static/js/components/ActorChip.js); swap when it lands.
 const ActorChip = {
   props: {name: String, kind: {type: String, default: 'human'}, role: String, me: Boolean},
   delimiters: ['[[', ']]'],

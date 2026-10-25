@@ -186,8 +186,9 @@
 <script src="{{ asset('js/axios.min.js') }}"></script>
 <script>axios.defaults.headers.common["X-CSRFToken"] = document.querySelector('meta[name="csrf-token"]').content;</script>
 
-<!-- Navigation Data -->
-<script src="{{ asset('js/navigation.js') }}"></script>
+<!-- Navigation Data: each extension's app.navigation entries, in extension order.
+     `badge` names a key of /api/nav/counts; `match` is the path that marks the item current. -->
+<script>const stkNavigation = {{ rail_navigation()|tojson }};</script>
 
 <!-- stk Components -->
 <script src="{{ asset('js/components/index.js') }}"></script>
