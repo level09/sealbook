@@ -9,6 +9,7 @@ def init_app(app):
         {
             "title": "Inbox",
             "icon": "ti ti-inbox",
+            "hue": "state-new",
             "to": "/inbox",
             "match": "/inbox",
             "badge": "notifications",

@@ -6,6 +6,7 @@ def init_app(app):
         {
             "title": "Sources",
             "icon": "ti ti-files",
+            "hue": "is-source",
             "to": "/sources",
             "match": "/sources",
         }

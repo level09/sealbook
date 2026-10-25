@@ -6,6 +6,7 @@ def init_app(app):
         {
             "title": "Stories",
             "icon": "ti ti-timeline",
+            "hue": "is-story",
             "to": "/stories",
             "match": "/stories",
         }

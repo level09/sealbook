@@ -6,6 +6,7 @@ def init_app(app):
         {
             "title": "Agents",
             "icon": "ti ti-robot-face",
+            "hue": "is-agent",
             "to": "/agents/",
             "match": "/agents",
         }

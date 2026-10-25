@@ -20,6 +20,7 @@ def init_app(app):
         {
             "title": "Places",
             "icon": "ti ti-map-pin",
+            "hue": "is-place",
             "to": "/places",
             "match": "/places",
         }

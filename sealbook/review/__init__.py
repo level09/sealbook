@@ -6,6 +6,7 @@ def init_app(app):
         {
             "title": "Review",
             "icon": "ti ti-checklist",
+            "hue": "tier-accepted",
             "to": "/review",
             "match": "/review",
             "badge": "review",

@@ -91,7 +91,7 @@
     {% if current_user.is_authenticated %}
     <v-navigation-drawer v-if="!isMobile" permanent width="188" class="sb-rail">
         <v-list nav density="compact" aria-label="Sections">
-            <v-list-item v-for="n in railItems" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :aria-current="n.current ? 'page' : null">
+            <v-list-item v-for="n in railItems" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null">
                 <template #append v-if="n.count"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
             </v-list-item>
         </v-list>
@@ -99,12 +99,12 @@
         <template #append><div class="pa-3 text-caption text-medium-emphasis">${ caseLabel }</div></template>
     </v-navigation-drawer>
     <v-bottom-navigation v-else grow density="compact" aria-label="Sections">
-        <v-btn v-for="n in railItems.slice(0, 4)" :key="n.title" :href="n.to" :active="n.current"><v-icon :icon="n.icon"></v-icon><span>${ n.title }</span></v-btn>
+        <v-btn v-for="n in railItems.slice(0, 4)" :key="n.title" :href="n.to" :class="n.hue && ['sb-nav-icon', n.hue]" :active="n.current"><v-icon :icon="n.icon"></v-icon><span>${ n.title }</span></v-btn>
         <v-btn :active="railItems.slice(4).some(n => n.current)" aria-label="More sections" @click="moreOpen = true"><v-icon icon="ti ti-dots"></v-icon><span>More</span></v-btn>
     </v-bottom-navigation>
     <v-bottom-sheet v-model="moreOpen">
         <v-list nav density="compact" aria-label="More sections">
-            <v-list-item v-for="n in railItems.slice(4)" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :aria-current="n.current ? 'page' : null"></v-list-item>
+            <v-list-item v-for="n in railItems.slice(4)" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null"></v-list-item>
             <v-list-item href="/ingest/" prepend-icon="ti ti-upload" title="Add evidence"></v-list-item>
         </v-list>
     </v-bottom-sheet>

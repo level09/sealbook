@@ -5,5 +5,11 @@ def init_app(app):
     app.register_blueprint(bp_people)
     app.cli.add_command(erase_cmd)
     app.navigation.append(
-        {"title": "People", "icon": "ti ti-users", "to": "/people", "match": "/people"}
+        {
+            "title": "People",
+            "icon": "ti ti-users",
+            "hue": "is-person",
+            "to": "/people",
+            "match": "/people",
+        }
     )

@@ -6,6 +6,7 @@ def init_app(app):
         {
             "title": "Case map",
             "icon": "ti ti-map-2",
+            "hue": "is-place",
             "to": "/case-map",
             "match": "/case-map",
         }
