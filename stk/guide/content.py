@@ -15,8 +15,9 @@ AREAS = [
 ]
 
 AGENTS_OFF = (
-    "Agents run on the local model route only. Without ROUTE_LOCAL_BASE_URL and "
-    "AGENT_MODEL they say they are off and why."
+    "Agents run on the agent model route, the local one unless an administrator "
+    "allows another. Without a model and that route's settings they say they are "
+    "off and why."
 )
 
 SCENARIOS = [
@@ -141,7 +142,8 @@ SCENARIOS = [
             "recompressed copy is matched by its picture fingerprint.",
             "A location in the photo's EXIF or C2PA data becomes a proposal, never "
             "finer than 50 m.",
-            "Open the source: each claim sits on the box or the line it came from.",
+            "Open the source: each claim sits on the box or the line it came from. "
+            "The Read tab shows the text read from a scan, to check against the page.",
         ],
         "ai": [
             "Text read from the image and claims read from it.",
@@ -489,7 +491,7 @@ SCENARIOS = [
             {"label": "Watching", "href": "/watch"},
             {"label": "Standing questions on the Desk", "href": "/desk"},
         ],
-        "needs": "Standing questions need the local model route. A check that "
+        "needs": "Standing questions need the agent model route. A check that "
         "fails three times in a row pauses and tells you.",
     },
     {
