@@ -95,6 +95,7 @@
 .rv-rel .m { grid-column: 2 / -1; font-size: 12px; color: var(--ink-3); }
 .rv-rel .st { font-size: 12px; white-space: nowrap; }
 .rv-rel .st.differ { color: rgb(var(--v-theme-warning)); font-weight: 600; }
+.rv-rel .st.quiet { color: var(--ink-3); }
 .rv-msg { padding: 6px 0; border-top: 1px solid var(--line); }
 .rv-msg:first-of-type { border-top: 0; }
 .rv-msg p { margin: 2px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -369,7 +370,7 @@
               <div v-for="r in claim.related" :key="r.id" class="rv-rel">
                 <span class="rv-sw" :class="['tier-' + r.tier, r.agent ? 'by-agent' : 'by-person']" :title="TIER[r.tier]"></span>
                 <span class="v" dir="auto"><span v-if="r.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ fmtDate(r.value.text) }</bdi><span class="rv-muted" v-if="r.from"> · ${ span(r.from, r.to) }</span></span>
-                <span class="st" :class="{differ: !r.value.masked && !claim.value.masked && r.value.text !== valueText(claim)}">${ r.value.masked || claim.value.masked ? '' : r.value.text === valueText(claim) ? 'agrees' : 'differs' }</span>
+                <span class="st" :class="{differ: ['differs', 'conflicts'].includes(r.relation), quiet: ['earlier', 'later', 'same time'].includes(r.relation)}" :title="RELATION_TIP[r.relation] || null">${ r.relation || '' }</span>
                 <span class="m"><template v-if="r.source"><a :href="'/evidence/' + r.source.sha256"><bdi>${ r.source.file }</bdi></a>, ${ r.where.label }, </template>${ TIER[r.tier].toLowerCase() }, <actor-chip :actor="r.proposer" size="sm"></actor-chip></span>
               </div>
             </div>

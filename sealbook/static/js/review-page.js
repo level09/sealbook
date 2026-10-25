@@ -15,6 +15,8 @@ const api = axios.create({timeout: TIMEOUT});
 const PROP = {name: 'name', father_name: "father's name", mother_name: "mother's name", birth_date: 'born', place_of_birth: 'born in', arrested_at: 'arrested at', last_seen: 'last seen', detention_branch: 'held by branch', transferred_to: 'transferred to', seen_at: 'seen at', detained_at: 'detained at', sex: 'sex', age: 'age', occupation: 'occupation', event: 'event', document_date: 'document date', document_type: 'document type', same_as: 'same person', not_same: 'different people', media_match: 'same recording', located_at: 'place confirmed', photographed_at: 'photographed at', filmed_at: 'filmed at', finding: 'finding', relation: 'relation', involved: 'involved in'};
 // A proposed relation reads as the question the reviewer answers.
 const RELATION_ASK = {family: 'Family?', cellmate: 'Cellmates?', command: 'Command relation?', contains: 'Contains the other document?', contained_in: 'Excerpt of the other document?', related: 'Related documents?'};
+// What each relation label means, as a tooltip (sealbook/review/assist.py relation()).
+const RELATION_TIP = {earlier: 'Before this claim: part of the timeline, not a disagreement', later: 'After this claim: part of the timeline, not a disagreement', 'same time': 'Overlapping dates; not enough to say both cannot be true', agrees: 'Same value, or a place inside the other', differs: 'Only one value can be true', conflicts: 'Places too far apart to both hold on the same day'};
 const TIER = {unconfirmed: 'Unconfirmed', corroborated: 'Corroborated', accepted: 'Accepted', rejected: 'Rejected'};
 const BOXES = [{v: 'mine', t: 'Asked of me'}, {v: 'sent', t: 'Sent by me'}, {v: 'open', t: 'All open'}, {v: 'findings', t: 'Findings'}];
 const RELATIONSHIPS = [{title: 'Same recording', value: 'same_recording'}, {title: 'Contains the other recording', value: 'contains'}, {title: 'Excerpt of the other recording', value: 'contained_in'}, {title: 'Related event, different recording', value: 'related'}];
@@ -428,7 +430,7 @@ export function mount(boot) {
       await this.openSel();
     },
   });
-  Object.assign(app.config.globalProperties, {ICON, TIER});
+  Object.assign(app.config.globalProperties, {ICON, TIER, RELATION_TIP});
   app.component('evidence-pair', EvidencePair).component('claim-crop', ClaimCrop);
   registerMediaViewers(app);
   registerStkComponents(app);

@@ -33,6 +33,7 @@ from sealbook.monitor.data import (
     Context,
     display,
     map_layer,
+    places_apart,
     statement_rows,
 )
 from sealbook.monitor.filter import statement_clause
@@ -326,6 +327,13 @@ async def names(session: AsyncSession, people, groups=None) -> dict[str, str]:
     }
 
 
+def _same_day_apart(a: dict, b: dict, places: dict, prop: str) -> bool:
+    if not (a["from"] and a["from"] == a["to"] == b["from"] == b["to"]):
+        return False
+    pa, pb = places.get(uuid.UUID(a["id"])), places.get(uuid.UUID(b["id"]))
+    return places_apart(prop, pa, pb) if pa and pb else True
+
+
 def _overlap(a: dict, b: dict) -> bool:
     return a["from"] <= b["to"] and b["from"] <= a["to"]
 
@@ -394,6 +402,11 @@ def disagreements(
                 ):
                     continue
                 if a["from"] and b["from"] and not _overlap(a, b):
+                    continue
+                # Places at overlapping dates (a month and a day in it) can both be
+                # true: only one exact day at two places too far apart is a
+                # disagreement, and a quarter and its city never are.
+                if prop in LOCATED and not _same_day_apart(a, b, places, prop):
                     continue
                 if any({a["id"], b["id"]} <= ids for ids in shown):
                     continue

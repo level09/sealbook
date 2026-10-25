@@ -546,6 +546,24 @@ def _apart(a: dict, b: dict) -> bool:
     return True
 
 
+def places_apart(prop: str, a, b) -> bool:
+    """Two resolved places (Place rows) that cannot both hold on one day, by the rule
+    above: a quarter and its city do not; two towns farther apart than their
+    precision do."""
+
+    def point(p):
+        lonlat = [float(p.lon), float(p.lat)] if p.lon is not None else None
+        return {
+            "place_id": str(p.id),
+            "place": "",
+            "prop": prop,
+            "lonlat": lonlat,
+            "precision_m": p.precision_m,
+        }
+
+    return _apart(point(a), point(b))
+
+
 def _metres(a, b) -> float:
     """Great-circle distance between two [lon, lat] points."""
     (lon1, lat1), (lon2, lat2) = (map(math.radians, p) for p in (a, b))

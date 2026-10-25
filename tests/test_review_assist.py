@@ -106,6 +106,38 @@ class FlagRules(unittest.TestCase):
         # Unresolved places never conflict on their spelling alone.
         self.assertEqual(assist.contradicted(mine, [apart], {}.get), [])
 
+    def test_seen_in_other_places_at_other_times_is_a_timeline(self):
+        # Seen in Aleppo on 3 Sep; in its quarter in July and mid September.
+        city = place("Aleppo", 37.16, 36.20, 8000)
+        quarter = place("Jdeideh", 37.155, 36.205, 300)
+        mine = row(Prop.SEEN_AT, "Aleppo", tier=Tier.UNCONFIRMED, day="2016-09-03")
+        july = {
+            **row(Prop.SEEN_AT, "Jdeideh"),
+            "from": "2016-07-20",
+            "to": "2016-07-24",
+        }
+        sept = {
+            **row(Prop.SEEN_AT, "Jdeideh"),
+            "from": "2016-09-10",
+            "to": "2016-09-15",
+        }
+        month = {
+            **row(Prop.SEEN_AT, "Jdeideh"),
+            "from": "2016-09-01",
+            "to": "2016-09-30",
+        }
+        same = row(Prop.SEEN_AT, "Jdeideh", day="2016-09-03")
+        places = {mine["id"]: city, same["id"]: quarter}
+        got = [assist.relation(mine, r, places.get) for r in (july, sept, month, same)]
+        self.assertEqual(got, ["earlier", "later", "same time", "agrees"])
+        self.assertEqual(
+            assist.contradicted(mine, [july, sept, month, same], places.get), []
+        )
+        born = row(Prop.BIRTH_DATE, "1990", tier=Tier.UNCONFIRMED)
+        self.assertEqual(
+            assist.relation(born, row(Prop.BIRTH_DATE, "1991"), {}.get), "differs"
+        )
+
     def test_same_name(self):
         mine = [claim("person:a", "Najla Fares al-Omar", source="s1")]
         twin = claim("person:b", "Najla  Fares al-Omar", source="s1")

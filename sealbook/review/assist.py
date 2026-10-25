@@ -21,7 +21,7 @@ from sealbook.discovery.models import Segment
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import Blob, Payload, Statement, StatementTier
 from sealbook.ledger.write import current_clause
-from sealbook.monitor.data import LOCATED, POSITION, _apart
+from sealbook.monitor.data import LOCATED, POSITION, places_apart
 from sealbook.people import data as people
 from sealbook.places import normalise, resolve
 from sealbook.review import queue
@@ -101,46 +101,43 @@ def dates_near(text: str, lo: int, hi: int) -> list[tuple[str, int, int]]:
     return [(m[0], m.start(), m.end()) for m in DATE.finditer(text, lo, hi)]
 
 
-def apart(prop: str, a, b) -> bool:
-    """Two resolved places that cannot both hold on one day, by the monitor's rule:
-    different places farther apart than the larger of their precisions."""
-
-    def point(p):
-        lonlat = [float(p.lon), float(p.lat)] if p.lon is not None else None
-        return {"place_id": str(p.id), "place": "", "prop": prop, "lonlat": lonlat}
-
-    pa, pb = point(a), point(b)
-    pa["precision_m"], pb["precision_m"] = a.precision_m, b.precision_m
-    return _apart(pa, pb)
+def relation(item: dict, r: dict, place_of) -> str | None:
+    """How a claim of the same kind relates to `item`, for the reviewer. A one-value
+    field agrees or differs. Anything dated is earlier, later or at the same time: a
+    person seen in two places at two times is a timeline, not a disagreement. Two
+    positions conflict only on the same single day, with both places resolved and
+    farther apart than their precision (a quarter and its city agree). None when it
+    cannot be told (a masked or undated value). Pure."""
+    prop, mine, theirs = item["prop"], item["value"]["text"], r["value"]["text"]
+    if mine is None or theirs is None:
+        return None
+    if prop in SINGLE:
+        return "agrees" if read.same_value(prop, mine, theirs) else "differs"
+    a0, b0 = item["from"], r["from"]
+    if not (a0 and b0):
+        return None
+    a1, b1 = item["to"] or a0, r["to"] or b0
+    if b1 < a0:
+        return "earlier"
+    if b0 > a1:
+        return "later"
+    if prop in POSITION and a0 == a1 == b0 == b1:
+        a, b = place_of(item["id"]), place_of(r["id"])
+        if a and b:
+            return "conflicts" if places_apart(prop, a, b) else "agrees"
+    return "same time"
 
 
 def contradicted(item: dict, related: list[dict], place_of) -> list[dict]:
-    """Accepted claims of the same kind as `item` whose value differs. A one-value
-    prop always compares. A position compares only on the same single day, with both
-    places resolved and farther apart than their precision (a quarter and its city
-    agree).
-    Masked values never compare. `item` and `related` are review rows; `place_of`
-    maps a claim id to its resolved place or None. Pure.
+    """Accepted claims of the same kind that differ from or conflict with `item`.
     ponytail: positions only on one exact day; the contradiction hunter reads ranges."""
-    prop, mine = item["prop"], item["value"]["text"]
-    if mine is None or not (prop in SINGLE or prop in POSITION):
-        return []
-    day = item["from"] if item["from"] and item["from"] == item["to"] else None
-    out = []
-    for r in related:
-        text = r["value"]["text"]
-        if r["tier"] != Tier.ACCEPTED or text is None or r["prop"] != prop:
-            continue
-        if prop in POSITION:
-            a, b = place_of(item["id"]), place_of(r["id"])
-            if not (day and r["from"] == day == r["to"] and a and b) or not apart(
-                prop, a, b
-            ):
-                continue
-        elif read.same_value(prop, mine, text):
-            continue
-        out.append(r)
-    return out
+    return [
+        r
+        for r in related
+        if r["tier"] == Tier.ACCEPTED
+        and r["prop"] == item["prop"]
+        and relation(item, r, place_of) in ("differs", "conflicts")
+    ]
 
 
 def same_name(mine: list[read.Claim], others: list[read.Claim], blocked) -> dict:
@@ -234,13 +231,17 @@ async def flags(db, user, item: dict, st: Statement, readable: bool) -> list[dic
     """The flags for one claim as `queue.claim` built it (`related` included)."""
     src = item["source"]
     out: list[dict] = []
-    if not src or st.prop in queue.LINKS or st.prop == Prop.MEDIA_MATCH:
-        return out
-    sha, investigation = src["sha256"], src["investigation"]
-    cite = Cites(db)
+    investigation = src["investigation"] if src else None
     # ponytail: reads the whole case per claim opened, as the agents do; cache per
     # investigation and ledger head if Review on a large case gets slow.
     case = await read.case(db, investigation) if investigation else None
+    places = {str(k): v for k, v in case.places.items()} if case else {}
+    for r in item["related"]:
+        r["relation"] = relation(item, r, places.get)
+    if not src or st.prop in queue.LINKS or st.prop == Prop.MEDIA_MATCH:
+        return out
+    sha = src["sha256"]
+    cite = Cites(db)
 
     text = None
     if readable and st.span and "start" in st.span and "row" not in st.span:
@@ -276,7 +277,6 @@ async def flags(db, user, item: dict, st: Statement, readable: bool) -> list[dic
 
     # Rows from another case are shown only if the reviewer may open that case.
     cases = {}
-    places = {str(k): v for k, v in case.places.items()} if case else {}
     for r in contradicted(item, item["related"], places.get):
         other = (r["source"] or {}).get("investigation")
         if other not in cases:

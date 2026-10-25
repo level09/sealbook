@@ -159,8 +159,8 @@ class ForksTest(unittest.TestCase):
         found = self._forks(
             [a, b],
             {
-                a["id"]: SimpleNamespace(id=uuid.uuid4()),
-                b["id"]: SimpleNamespace(id=uuid.uuid4()),
+                a["id"]: SimpleNamespace(id=uuid.uuid4(), lon=None, precision_m=None),
+                b["id"]: SimpleNamespace(id=uuid.uuid4(), lon=None, precision_m=None),
             },
         )
         [f] = found
@@ -205,15 +205,14 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
 
             steps = view["track"]["steps"]
             self.assertGreaterEqual(len(steps), 4)
-            # Each disagreement once: P3's unmapped Homs sighting against P1's
-            # branch as one seen_at pair. Last seen in Douma and arrested in
+            # Each disagreement once. P3's Homs sighting on 10 July and P1 seen at
+            # the branch some day in July can both be true, so they are a
+            # timeline, not a disagreement. Last seen in Douma and arrested in
             # Harasta on one day is a sequence, not a disagreement.
             pairs = [frozenset(x["id"] for x in f["sides"]) for f in view["forks"]]
             self.assertEqual(len(pairs), len(set(pairs)))
             self.assertNotIn("position", {f["kind"] for f in view["forks"]})
-            [homs] = [f for f in view["forks"] if f["from"] == "2013-07-10"]
-            self.assertEqual(homs["prop"], "seen_at")
-            self.assertIn("حمص", {x["value"] for x in homs["sides"]})
+            self.assertFalse([f for f in view["forks"] if f["from"] == "2013-07-10"])
             self.assertTrue(view["gaps"])
             self.assertTrue(all(g["days"] > data.GAP_DAYS for g in view["gaps"]))
 
