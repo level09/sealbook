@@ -288,6 +288,9 @@ class Context:
         first = acqs[0] if acqs else None
         return {
             "sha256": sha,
+            # The acquired file behind derived text (OCR, PDF page text, transcript),
+            # which carries the case and sensitivity; `sha` itself otherwise.
+            "source_sha256": src,
             "file": (
                 (first.context.get("file") or first.context.get("filename"))
                 if first

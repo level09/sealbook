@@ -62,10 +62,11 @@ async def _investigations(db: AsyncSession, shas: set[str]) -> dict[str, set[str
 async def usable(db: AsyncSession, rows: list[dict], blocked: set[str]) -> list[dict]:
     """Rows whose value may leave the building: shown to this reader, not erased,
     from an ordinary source, no acquisition of it in a blocked case."""
-    shas = {r["doc"]["sha256"] for r in rows if r.get("doc")}
+    # Cases hang off the acquired file, not off text derived from it.
+    shas = {r["doc"]["source_sha256"] for r in rows if r.get("doc")}
     cases = await _investigations(db, shas)
     return [
-        r | {"cases": sorted(cases.get(r["doc"]["sha256"], set()) - {""})}
+        r | {"cases": sorted(cases.get(r["doc"]["source_sha256"], set()) - {""})}
         for r in rows
         if r.get("doc")
         and not r["doc"]["sensitive"]
@@ -73,7 +74,7 @@ async def usable(db: AsyncSession, rows: list[dict], blocked: set[str]) -> list[
         and not r["erased"]
         and r["display"]
         and r["tier"] in (Tier.ACCEPTED, Tier.CORROBORATED)
-        and not cases.get(r["doc"]["sha256"], set()) & blocked
+        and not cases.get(r["doc"]["source_sha256"], set()) & blocked
     ]
 
 

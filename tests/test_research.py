@@ -582,6 +582,12 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
                     s, b"Closed case: Samir Haddad", "text/plain", Config.BLOB_DIR
                 )
             ).sha256
+            # Text read from the closed case's file: a derived blob, no acquisition.
+            derived = (
+                await blobs.put(
+                    s, b"Read from the file: Rami Haddad", "text/plain", Config.BLOB_DIR
+                )
+            ).sha256
             for case in ("case-r", "case-closed"):
                 await ensure_case(s, case)
             for sha, case, sens in (
@@ -604,6 +610,7 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
                 (ordinary, NAME, len("Witness list: ")),
                 (self.sha, SECRET, text.index(SECRET)),  # sensitive source
                 (hidden, "Samir Haddad", len("Closed case: ")),  # blocked case
+                (derived, "Rami Haddad", len("Read from the file: ")),  # derived
             ):
                 await append(
                     s,
@@ -620,6 +627,16 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
                     ),
                     sign=self.key.sig,
                 )
+            await append(
+                s,
+                StatementIn(
+                    subject=f"blob:{derived}",
+                    prop=Prop.DERIVED_FROM,
+                    value={"blob": hidden},
+                    author_id=self.human.id,
+                ),
+                sign=self.key.sig,
+            )
             admin = await s.scalar(
                 select(User).where(User.email == "admin@example.com")
             )
@@ -666,6 +683,7 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         dumped = orjson.dumps(body).decode()
         self.assertNotIn(SECRET, dumped)  # sensitive source
         self.assertNotIn("Samir", dumped)  # case with research off
+        self.assertNotIn("Rami", dumped)  # text read from that case's file
         self.assertEqual(body["queries"][0]["people"], [self.person])
         self.assertEqual(body["queries"][0]["why"][0]["value"], NAME)
         self.assertEqual(self.web.requests, [])  # proposing sends nothing
