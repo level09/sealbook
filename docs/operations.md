@@ -207,6 +207,15 @@ missing setting. Each run's model, seconds and tokens show under its brief and i
 the run's output; a laptop needs about 35 to 50 s for a brief and about 20 s per
 linker candidate.
 
+Every agent call sends `AGENT_REASONING` as `reasoning_effort`: `none` (default),
+`minimal`, `low`, `medium`, `high`, `xhigh` or `max`, the values OpenRouter accepts.
+Another value stops the app at startup. Models that refuse to turn reasoning off
+(Claude Sonnet 5.5, Gemini 3.8 Flash, GLM 5.3) need a level other than `none`. Each
+model run records the effort it sent in its sealed inputs as `reasoning`; the
+prompt hash does not change with it. A reply whose content is empty or missing
+(only a reasoning field came back) counts as invalid, like any answer that breaks
+the schema, and gets the one retry.
+
 To run the agents on OpenRouter instead, on a machine that holds only synthetic
 data, set `AGENT_ROUTE=cloud-zdr` and `AGENT_MODEL=deepseek/deepseek-v4.1-flash` (compared in agent-eval.md) (with
 `OPENROUTER_API_KEY`), then allow that route per agent tool in the policy table,

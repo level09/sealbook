@@ -2,13 +2,17 @@
 throwaway Postgres. Citation validation, masking for a reader without the reveal,
 duplicate and rejected-link suppression, and determinism."""
 
+import os
 import re
+import subprocess
+import sys
 import unittest
 import uuid
 from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest import mock
 
+import httpx
 import orjson
 import stk.app  # noqa: F401  (registers the CLI before the seed module loads)
 import stk.extensions as ext
@@ -29,7 +33,7 @@ from sealbook.agents import (
     standing,
 )
 from sealbook.agents.read import FIXED, Claim, Handles
-from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.contracts import Prop, Route, Tier
 from sealbook.ledger.models import Blob, Principal, Run, Statement
 from sealbook.ledger.write import principal_for_user, record_acquisition, verify_db
 from sealbook.monitor.seed import Seeder
@@ -236,7 +240,9 @@ class AskTest(unittest.IsolatedAsyncioTestCase):
         }
         self.c = SimpleNamespace(
             s=None,
-            run=SimpleNamespace(model_requested="synthetic-model", raw_output_ref=None),
+            run=SimpleNamespace(
+                model_requested="synthetic-model", inputs={}, raw_output_ref=None
+            ),
             emit=mock.AsyncMock(),
         )
         self.put = self.enterContext(
@@ -347,6 +353,75 @@ class AskTest(unittest.IsolatedAsyncioTestCase):
         self.model(first, "still not json")
         got = await self.ask()
         self.assertEqual((got["answer"], got["valid"]), (first, True))
+
+
+class ReasoningTest(unittest.IsolatedAsyncioTestCase):
+    """One model call through the local route on a fake transport: the configured
+    reasoning effort is sent and recorded, and a reasoning model's reply parses."""
+
+    SCHEMA = {
+        "type": "object",
+        "properties": {"ok": {"type": "boolean"}},
+        "required": ["ok"],
+    }
+
+    async def ask(self, message: dict, effort="high"):
+        sent = []
+
+        def reply(request):
+            sent.append(orjson.loads(request.content))
+            choice = {"finish_reason": "stop", "message": message}
+            return httpx.Response(200, json={"model": "m", "choices": [choice]})
+
+        async def call(body):
+            return await routes.chat(
+                Route.LOCAL, {"model": "m", **body}, httpx.MockTransport(reply)
+            )
+
+        c = SimpleNamespace(
+            s=None,
+            run=SimpleNamespace(
+                model_requested="m", inputs={"for_user": 1}, raw_output_ref=None
+            ),
+            call=call,
+            emit=mock.AsyncMock(),
+        )
+        with (
+            mock.patch.object(Config, "AGENT_REASONING", effort),
+            mock.patch.dict("os.environ", {"ROUTE_LOCAL_BASE_URL": "http://fake/v1"}),
+            mock.patch.object(
+                read.blobs,
+                "put",
+                mock.AsyncMock(return_value=SimpleNamespace(sha256="x")),
+            ),
+        ):
+            got = await read.ask(c, "t", "system", {}, self.SCHEMA, None)
+        return got, sent, c.run.inputs
+
+    async def test_effort_is_sent_and_recorded(self):
+        got, sent, inputs = await self.ask(
+            {"content": '\n  {"ok": true}', "reasoning": "Thinking it through."}
+        )
+        self.assertEqual([b["reasoning_effort"] for b in sent], ["high"])
+        self.assertEqual(inputs, {"for_user": 1, "reasoning": "high"})
+        self.assertEqual((got["valid"], got["answer"]), (True, {"ok": True}))
+
+    async def test_reasoning_without_content_is_invalid_and_retried(self):
+        for message in ({"reasoning": '{"ok": true}'}, {"content": None}):
+            got, sent, _ = await self.ask(message)
+            self.assertEqual(len(sent), 2)
+            self.assertEqual((got["valid"], got["answer"]), (False, None))
+
+    def test_unknown_effort_fails_at_startup(self):
+        env = {**os.environ, "AGENT_REASONING": "extreme"}
+        done = subprocess.run(
+            [sys.executable, "-c", "import sealbook.settings"],
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn("AGENT_REASONING='extreme'", done.stderr)
 
 
 @unittest.skipUnless(POSTGRES, "agents need Postgres (set SQLALCHEMY_DATABASE_URI)")

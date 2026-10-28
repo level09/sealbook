@@ -149,6 +149,15 @@ class Config(stk.Config):
     # turns them off.
     AGENT_ROUTE = os.environ.get("AGENT_ROUTE", "cloud-zdr")
     AGENT_MODEL = os.environ.get("AGENT_MODEL", "deepseek/deepseek-v4.1-flash")
+    # Sent as reasoning_effort on every agent call. "none" keeps answers short and
+    # fast; models that refuse to turn reasoning off need another level. The values
+    # are OpenRouter's (docs, reasoning tokens, checked 2026-10-28).
+    REASONING_EFFORTS = ("none", "minimal", "low", "medium", "high", "xhigh", "max")
+    AGENT_REASONING = os.environ.get("AGENT_REASONING", "none")
+    if AGENT_REASONING not in REASONING_EFFORTS:
+        raise ValueError(
+            f"AGENT_REASONING={AGENT_REASONING!r} is not one of {REASONING_EFFORTS}"
+        )
 
     # Package export signs its cover with c2patool (ES256 cert chain and key, PEM).
     C2PA_SIGN_CERT = os.environ.get("C2PA_SIGN_CERT")

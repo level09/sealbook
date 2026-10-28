@@ -4,6 +4,8 @@
   uv run python acceptance/eval_agents.py --live --trials 3 --out instance/eval.json
   ROUTE_LOCAL_BASE_URL=http://127.0.0.1:11434/v1 AGENT_MODEL=qwen3.5:9b \
     ROUTE_LOCAL_TIMEOUT=900 uv run python acceptance/eval_agents.py --live --route local
+  uv run python acceptance/eval_agents.py --live --model anthropic/claude-sonnet-5.5 \
+    --reasoning low
 
 Fixed mode runs the agents on their fixed answer (`read.FIXED`), which proposes
 every candidate, so its numbers are the rule-built candidate layer. Live mode asks
@@ -466,11 +468,19 @@ def spread(values):
 
 
 async def evaluate(
-    live=False, route=None, trials=1, path=CASE, log=None, transport=None
+    live=False,
+    route=None,
+    trials=1,
+    path=CASE,
+    log=None,
+    transport=None,
+    model=None,
+    reasoning=None,
 ) -> dict:
     """`log`, a list, receives each model call and drop event."""
     route = Route(route or Config.AGENT_ROUTE)
-    model = Config.AGENT_MODEL if live else read.FIXED
+    model = (model or Config.AGENT_MODEL) if live else read.FIXED
+    reasoning = reasoning or Config.AGENT_REASONING
     need = "ROUTE_LOCAL_BASE_URL" if route is Route.LOCAL else "OPENROUTER_API_KEY"
     if live and not (os.environ.get(need) and model):
         return {
@@ -480,10 +490,11 @@ async def evaluate(
         }
     spec, case, events, keys = load(path)
     log = [] if log is None else log
-    runs = [
-        await trial(spec, case, events, keys, model, route, log, n, transport)
-        for n in range(trials)
-    ]
+    with mock.patch.object(Config, "AGENT_REASONING", reasoning):
+        runs = [
+            await trial(spec, case, events, keys, model, route, log, n, transport)
+            for n in range(trials)
+        ]
     metrics = {
         name: spread([r[agent][field] for r in runs])
         for name, (agent, field) in (
@@ -500,6 +511,8 @@ async def evaluate(
         "mode": "live" if live else "fixed",
         "route": route,
         "model": model,
+        # The fixed answer sends nothing to a model, so no effort applies.
+        "reasoning": reasoning if live else None,
         "served": [
             {"model_served": m, "provider": p}
             for m, p in sorted(
@@ -572,11 +585,27 @@ def main():
     p.add_argument(
         "--out", type=Path, help="also write the report here, calls to .jsonl"
     )
+    p.add_argument("--model", help="live model (default AGENT_MODEL)")
+    p.add_argument(
+        "--reasoning",
+        choices=Config.REASONING_EFFORTS,
+        default=Config.AGENT_REASONING,
+        help="reasoning_effort sent on each call (default AGENT_REASONING)",
+    )
     args = p.parse_args()
     if args.trials < 1:
         p.error("--trials must be at least 1")
     log = []
-    report = asyncio.run(evaluate(args.live, args.route, args.trials, log=log))
+    report = asyncio.run(
+        evaluate(
+            args.live,
+            args.route,
+            args.trials,
+            log=log,
+            model=args.model,
+            reasoning=args.reasoning,
+        )
+    )
     text = json.dumps(report, ensure_ascii=False, indent=2, default=str)
     if args.out:
         args.out.write_text(text + "\n", encoding="utf-8")

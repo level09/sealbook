@@ -111,4 +111,5 @@ def content(served: Served) -> str:
     choice = served.data["choices"][0]
     if choice.get("finish_reason") not in ("stop", None):
         raise RouteError(f"model stopped early: {choice.get('finish_reason')}")
-    return choice["message"]["content"] or ""
+    # A reasoning model can answer in its reasoning field alone, with no content.
+    return choice["message"].get("content") or ""

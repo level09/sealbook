@@ -356,7 +356,7 @@ async def ask(
         "temperature": 0,
         # Thinking models spend the context (and minutes) deliberating on any route;
         # the answer here is a short structured judgement over what we hand them.
-        "reasoning_effort": "none",
+        "reasoning_effort": Config.AGENT_REASONING,
     }
     usage = {}
     if c.run.model_requested == FIXED:
@@ -370,6 +370,8 @@ async def ask(
         await c.emit("model_called", calls=1)
         errors = invalid(answer, schema)
     else:
+        # Sealed with the run, so a run says how hard its model was asked to think.
+        c.run.inputs = {**c.run.inputs, "reasoning": Config.AGENT_REASONING}
         served = await c.call(body)
         usage = served.data.get("usage") or {}
         text = routes.content(served)

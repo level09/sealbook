@@ -14,6 +14,8 @@ uv run python acceptance/eval_agents.py --live --trials 3 \
   --out instance/eval_agents.json                          # AGENT_MODEL on AGENT_ROUTE
 ROUTE_LOCAL_BASE_URL=http://127.0.0.1:11434/v1 AGENT_MODEL=qwen3.5:9b \
   ROUTE_LOCAL_TIMEOUT=900 uv run python acceptance/eval_agents.py --live --route local
+uv run python acceptance/eval_agents.py --live \
+  --model anthropic/claude-sonnet-5.5 --reasoning low      # a model that must reason
 uv run python acceptance/make_agent_case.py                # regenerate the case
 ```
 
@@ -26,9 +28,13 @@ true}` and the cloud timeout applies. It reports `"skipped"` with the reason whe
 the route's endpoint or key (`ROUTE_LOCAL_BASE_URL` for `local`,
 `OPENROUTER_API_KEY` otherwise) or `AGENT_MODEL` is empty. A worktree needs the
 main `.env` linked for `SECRET_KEY` (see [development.md](development.md)).
+`--model` overrides `AGENT_MODEL` and `--reasoning` overrides `AGENT_REASONING`, the
+`reasoning_effort` sent on each call (default `none`).
 
 The report holds:
 
+- `model` and `reasoning`: what was asked for (`reasoning` is null in fixed mode,
+  which calls no model).
 - `served`: each model and provider that answered, and per run in `runs`.
 - `metrics`: mean, min and max of each score over `--trials` runs (default 1).
   Recall and precision targets read the mean; the false-merge target is pass^k,
@@ -160,8 +166,9 @@ Rule layer at the time offered 7 same-person pairs with a ceiling of 0.857.
 and among the cheapest, and answers through a zero-retention provider; it is the
 suggested `AGENT_MODEL` on the `cloud-zdr` route. Models that refuse to turn reasoning
 off (Claude Sonnet 5.5, Gemini 3.8 Flash, GLM 5.3) were not compared, because agents
-send `reasoning_effort: none`. One run per model on one synthetic case: a direction,
-not a benchmark.
+then always sent `reasoning_effort: none`. `--reasoning` now lets them run; they are
+still to be compared. One run per model on one synthetic case: a direction, not a
+benchmark.
 
 ## Known gaps
 
