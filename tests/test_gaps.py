@@ -275,7 +275,7 @@ class GapToolTest(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        async def ask(c, name, system, payload, schema, fixed):
+        async def ask(c, name, system, payload, schema, fixed, check=None):
             return {
                 "answer": fixed(payload),
                 "raw": None,

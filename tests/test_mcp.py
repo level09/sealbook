@@ -29,7 +29,7 @@ from stk.user.models import Role, User, roles_users
 
 from sealbook import blobs
 from sealbook.app import create_app
-from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.contracts import EvidenceKind, Prop, StatementIn
 from sealbook.ledger.models import Principal, Statement
 from sealbook.ledger.write import (
     append,
@@ -568,9 +568,15 @@ class McpTest(unittest.IsolatedAsyncioTestCase):
         statement = proposed["results"][0]["statement"]
         found = await self.call(token, "read", {"target": "search", "query": "الاحمد"})
         [hit] = found["hits"]
+        self.assertEqual(hit["value"], "محمد الأحمد")
+        self.assertEqual(hit["tier"], "unconfirmed")
+        self.assertTrue(hit["source"])
         self.assertEqual(hit["id"], statement)
-        self.assertEqual(hit["neighbours"]["blob"], f"blob:{self.sha}")
-        self.assertTrue(hit["neighbours"]["author"].startswith("principal:"))
+        self.assertEqual(hit["subject"], subject)
+        self.assertEqual(hit["blob"], f"blob:{self.sha}")
+        missed = await self.call(token, "read", {"target": "search", "query": "زيدون"})
+        self.assertEqual(missed["hits"], [])
+        self.assertIn("another spelling", missed["hint"])
         history = await self.call(token, "read", {"target": "history", "ref": subject})
         self.assertEqual([s["id"] for s in history["statements"]], [statement])
         self.assertIsNone(history["head"])
@@ -587,9 +593,73 @@ class McpTest(unittest.IsolatedAsyncioTestCase):
                 .scalars()
                 .all()
             )
-        self.assertEqual(len(access), 5)
+        self.assertEqual(len(access), 6)
         self.assertTrue(all(a.author_id != self.human.id for a in access))
         self.assertIn(subject, {a.subject for a in access})
+
+    async def test_reads_mask_personal_values_from_a_sensitive_source(self):
+        """An analyst sees a name read from a sensitive source only after a logged
+        reveal; MCP has no reveal, so every read shape keeps it masked."""
+        async with ext.async_session_factory() as db, db.begin():
+            sha = (
+                await blobs.put(
+                    db, b"synthetic sensitive register", "text/plain", Config.BLOB_DIR
+                )
+            ).sha256
+            await record_acquisition(
+                db,
+                blob_sha256=sha,
+                origin="device:test-scanner",
+                collector_id=self.human.id,
+                at=datetime.now(UTC),
+                context={},
+                sensitivity="sensitive",
+                doc_type="register",
+            )
+            subject = f"person:{uuid.uuid4()}"
+            for prop, value in (
+                (Prop.NAME, {"text": "سامر الخطيب", "lang": "ar"}),
+                (Prop.DETENTION_BRANCH, {"text": "Branch 215", "lang": "en"}),
+            ):
+                await append(
+                    db,
+                    StatementIn(
+                        subject=subject,
+                        prop=prop,
+                        value=value,
+                        author_id=self.human.id,
+                        span_blob=sha,
+                        span={"start": 0, "end": 9},
+                        evidence=(EvidenceKind.HANDWRITTEN_ENTRY,),
+                    ),
+                )
+            name = await db.scalar(
+                select(Statement.id).where(
+                    Statement.subject == subject, Statement.prop == Prop.NAME
+                )
+            )
+        token = (await self.connect())["access_token"]
+        reads = [
+            {"target": "search", "query": "الخطيب"},
+            {"target": "fetch", "ref": f"statement:{name}"},
+            {"target": "fetch", "ref": f"blob:{sha}"},
+            {"target": "fetch", "ref": subject},
+            {"target": "history", "ref": subject},
+        ]
+        for args in reads:
+            out = json.dumps(await self.call(token, "read", args), ensure_ascii=False)
+            self.assertNotIn("سامر", out, args)
+        found = await self.call(token, "read", {"target": "search", "query": "الخطيب"})
+        [hit] = found["hits"]
+        self.assertEqual((hit["id"], hit["value"]), (f"statement:{name}", None))
+        self.assertTrue(hit["masked"])
+        person = await self.call(token, "read", {"target": "fetch", "ref": subject})
+        shown = {s["prop"]: s for s in person["statements"]}
+        self.assertTrue(shown["name"]["masked"])
+        self.assertIsNone(shown["name"]["value"])
+        # Only personal values are masked, as on the monitor.
+        self.assertFalse(shown["detention_branch"]["masked"])
+        self.assertEqual(shown["detention_branch"]["value"]["text"], "Branch 215")
 
     async def test_identity_needs_more_than_names(self):
         token = (await self.connect())["access_token"]

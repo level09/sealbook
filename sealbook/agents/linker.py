@@ -41,7 +41,7 @@ from sealbook.settings import Config
 
 TOOL = "link"
 AGENT = "Linker"
-PROMPT_VERSION = "linker-1"
+PROMPT_VERSION = "linker-2"
 CAP = 12  # candidates of each kind per run, strongest first
 PER_CALL = 4
 BUDGET_SECONDS = LEASE.total_seconds() - 90
@@ -68,11 +68,11 @@ SYSTEM = (
     "people maybe related. Rules: a shared name alone never makes the same person; "
     "names in Arabic and Latin script, or a shorter form of a name, can be the same "
     "name; a difference in birth date or a parent's name rules out the same person. "
-    "For each candidate set propose to true only when its claims support the link, "
-    "set kind (same_person for m, involved for v, contains or contained_in or "
-    "related for r, family or cellmate or command for x), list in basis the claim "
-    "handles that carry it, and write why in one sentence naming what agrees and "
-    "what differs. Use only the data given."
+    "For each candidate first write why in one sentence naming what agrees and what "
+    "differs and list in basis the claim handles that carry it, then set kind "
+    "(same_person for m, involved for v, contains or contained_in or related for "
+    "r, family or cellmate or command for x) and set propose to true only when its "
+    f"claims support the link. Use only the data given. {read.DATA_ONLY}"
 )
 SCHEMA = {
     "type": "object",
@@ -84,13 +84,13 @@ SCHEMA = {
             "items": {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["h", "propose", "kind", "why", "basis"],
+                "required": ["h", "why", "basis", "kind", "propose"],
                 "properties": {
                     "h": {"type": "string"},
-                    "propose": {"type": "boolean"},
-                    "kind": {"enum": list(KINDS)},
                     "why": {"type": "string"},
                     "basis": {"type": "array", "items": {"type": "string"}},
+                    "kind": {"enum": list(KINDS)},
+                    "propose": {"type": "boolean"},
                 },
             },
         }
@@ -609,7 +609,15 @@ async def link(c) -> str:
         if time.monotonic() - started > BUDGET_SECONDS:
             deferred += part
             continue
-        got = await read.ask(c, "links", SYSTEM, payload(part), SCHEMA, fixed_answer)
+        got = await read.ask(
+            c,
+            "links",
+            SYSTEM,
+            payload(part),
+            SCHEMA,
+            fixed_answer,
+            lambda a, part=part: validate(a, part, h, case.claims)[1],
+        )
         asked["valid"] &= got["valid"]
         asked["raw"].append(got["raw"])
         asked["seconds"] = round(asked["seconds"] + got["seconds"], 1)

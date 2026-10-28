@@ -241,7 +241,7 @@ class ReportTest(unittest.IsolatedAsyncioTestCase):
             ),
         )
 
-        async def ask(c, name, system, payload, schema, fixed):
+        async def ask(c, name, system, payload, schema, fixed, check=None):
             await asyncio.sleep(ask_delay)
             return {
                 "answer": fixed(payload),

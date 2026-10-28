@@ -124,7 +124,7 @@ class StandingPassTest(unittest.IsolatedAsyncioTestCase):
             "synthetic", [claim], {"s1": {"title": "Synthetic source"}}, {}, {}
         )
 
-        async def ask(c, name, system, payload, schema, fixed):
+        async def ask(c, name, system, payload, schema, fixed, check=None):
             self.assertNotIn(str(claim.id), str(payload))
             self.assertNotIn(str(task.id), str(payload))
             return {

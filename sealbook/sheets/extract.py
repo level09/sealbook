@@ -10,6 +10,7 @@ import uuid
 import orjson
 
 from sealbook import blobs
+from sealbook.agents import read
 from sealbook.discovery import service as discovery
 from sealbook.ledger import chain, write
 from sealbook.ledger.contracts import (
@@ -70,7 +71,7 @@ SYSTEM = (
     "Only those six kinds are events; an arrest or detention is a position fact, not "
     "an event. For every position and event fact, date is the date copied exactly as "
     "written in the row, usually the whole date column cell, or null when the row has "
-    "none. norm, kind and date are null where they do not apply."
+    "none. norm, kind and date are null where they do not apply. " + read.DATA_ONLY
 )
 
 SCHEMA = {

@@ -298,7 +298,7 @@ async def find_gaps():
         return _json(
             {
                 "reason": "off",
-                "message": "Gap finder needs a local model. Ask an administrator to enable it.",
+                "message": "Gap finder needs an agent model. Ask an administrator to enable it.",
             },
             409,
         )
@@ -354,7 +354,7 @@ async def check_notice():
         return _json(
             {
                 "reason": "off",
-                "message": "The noticer needs a local model. Ask an administrator to set it up.",
+                "message": "The noticer needs an agent model. Ask an administrator to set it up.",
             },
             409,
         )
@@ -566,7 +566,7 @@ async def check_task(tid):
         return _json({"message": "Resume this before checking it."}, 409)
     if missing():
         return _json(
-            {"message": "Agents are off until the local model is set up."},
+            {"message": "Agents are off until the agent model is set up."},
             409,
         )
     await tasks.wake(db, task.id, f"manual:{uuid.uuid4()}", "manual", {})

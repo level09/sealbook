@@ -214,6 +214,7 @@ class ValidateTest(unittest.TestCase):
             "why": "First and Second give one name and one birth year.",
             "next": "Compare the two records.",
             "cite": ["c1", "c2", "c3", "c4"],
+            "quote": "Ari Example",
         } | kw
 
     def check(self, *items):
@@ -237,6 +238,7 @@ class ValidateTest(unittest.TestCase):
             "text": self.item(why="c1 matches c3."),
             "leak": self.item(why="Ask Mira Secretname."),
             "empty": self.item(next=" "),
+            "quote": self.item(quote="Ari Example was born"),
         }
         for reason, bad in cases.items():
             with self.subTest(reason=reason):
@@ -256,7 +258,10 @@ class ValidateTest(unittest.TestCase):
         )
         [names], _, _ = self.check(self.item(cite=["s1", "c1", "c3"]))
         self.assertIsNone(names["link"])  # names alone never make one person
-        [copied], _, _ = self.check(self.item(kind="copied wording", cite=["s1", "s2"]))
+        # Cited sources alone offer no words, so there is nothing to quote.
+        [copied], _, _ = self.check(
+            self.item(kind="copied wording", cite=["s1", "s2"], quote="")
+        )
         self.assertEqual(copied["link"], {"shape": "document"})
         [place], _, _ = self.check(self.item(kind="related place or time"))
         self.assertIsNone(place["link"])
@@ -519,6 +524,22 @@ class NoticerRunTest(unittest.IsolatedAsyncioTestCase):
             (st.prop, author.name, tier), (Prop.RELATION, "Noticer", "unconfirmed")
         )
         self.assertEqual((proposal.tool, proposal.status), ("notice_link", "done"))
+        cards = (
+            await (
+                await client.get(
+                    "/api/agents/overview", query_string={"investigation": CASE}
+                )
+            ).get_json()
+        )["agents"]
+        self.assertEqual(
+            next(a for a in cards if a["key"] == "noticer")["agreement"]["rows"],
+            [
+                {
+                    "label": "Version 2, the demo answer with no model",
+                    "text": "0 accepted, 0 rejected, 1 open",
+                }
+            ],
+        )
         again = await client.post("/api/agents/notice/link", json=body, headers=headers)
         self.assertEqual(again.status_code, 409)
         shown = await (

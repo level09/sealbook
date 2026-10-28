@@ -291,6 +291,8 @@ async def _claims(db, needles, f, ctx_for):
             {
                 "type": "incident" if incident else "claim",
                 "id": str(st.id),
+                "subject": st.subject,
+                "sha256": sha,
                 "title": None if masked else data.display(value),
                 "prop": st.prop,
                 "subtitle": doc["title"] if doc else None,

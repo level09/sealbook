@@ -9,7 +9,7 @@ import uuid
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from jsonschema import Draft202012Validator
-from sqlalchemy import Text, cast, func, or_, select
+from sqlalchemy import Text, cast, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sealbook.ledger import chain, write
@@ -33,6 +33,9 @@ from sealbook.ledger.models import (
     StatementTier,
 )
 from sealbook.mcp.oauth import Caller
+from sealbook.monitor import data
+from sealbook.monitor import filter as mfilter
+from sealbook.search import find
 
 UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 SHA256 = "[0-9a-f]{64}"
@@ -61,9 +64,12 @@ TOOLS = [
         "description": (
             "Read evidence under your user's permissions. Every call is recorded "
             "on the ledger as an access by you on behalf of your user.\n"
-            "target=search: text match on statement values (names, places, "
-            "branches, dates); needs query. Returns statements with subject, "
-            "tier and neighbour ids (blob, run, author, related statements).\n"
+            "target=search: the app's search over claim values and source "
+            "text, exact matches first, any Arabic spelling; needs query. Each hit "
+            "leads with the value or passage, its tier and source title, then the "
+            "ids to fetch next.\n"
+            "A personal value from a sensitive source comes back masked: value "
+            "null, masked true. Only a human can reveal it in the app.\n"
             "target=fetch: one item by ref (statement:<uuid>, blob:<sha256> or "
             "person:<uuid>) with its neighbours and its subject head.\n"
             "target=history: every statement on a subject (ref) in ledger order, "
@@ -345,14 +351,21 @@ def _ref(kind: str, ident) -> str | None:
     return f"{kind}:{ident}" if ident is not None else None
 
 
-def _brief(st: Statement, value, tier) -> dict:
+def _brief(ctx: data.Context, st: Statement, value, tier) -> dict:
+    # MCP has no reveal, so a value the monitor masks stays masked here.
+    masked = ctx.masked(st)
     return {
         "id": _ref("statement", st.id),
         "subject": st.subject,
         "prop": st.prop,
-        "value": value,
+        "value": None if masked else value,
+        "masked": masked,
         "tier": tier,
     }
+
+
+async def _context(db: AsyncSession, rows) -> data.Context:
+    return await data.Context.load(db, blobs=[data.Context.blob_of(r[0]) for r in rows])
 
 
 def _rows():
@@ -381,40 +394,45 @@ async def _related(db: AsyncSession, subjects: set[str]) -> dict[str, list[str]]
 
 
 async def _search(db: AsyncSession, query: str, limit: int) -> dict:
-    # ponytail: substring match over norm-or-text, newest first. The real
-    # search (pg_trgm, pgvector, Arabic name normaliser, ranking) replaces this.
-    text_value = func.coalesce(
-        Payload.value["norm"].astext, Payload.value["text"].astext
+    """The app's search, exact matches first and Arabic folded, under the same
+    masking with nothing revealed."""
+    found = await find.find(
+        db, query, mfilter.EMPTY, types=("claims", "passages", "sources"), limit=limit
     )
-    rows = (
-        await db.execute(
-            _rows()
-            .where(
-                Statement.prop.in_(FACT_PROPS),
-                StatementTier.tier != Tier.REJECTED,
-                text_value.icontains(query, autoescape=True),
-            )
-            .order_by(Statement.recorded_at.desc())
-            .limit(limit)
-        )
-    ).all()
-    related = await _related(db, {st.subject for st, _, _ in rows})
     hits = []
-    for st, value, tier in rows:
-        own = _ref("statement", st.id)
-        others = [r for r in related.get(st.subject, []) if r != own]
+    for item in found["groups"]["claims"]["items"]:
         hits.append(
-            _brief(st, value, tier)
-            | {
-                "neighbours": {
-                    "blob": _ref("blob", st.span_blob),
-                    "run": _ref("run", st.run_id),
-                    "author": _ref("principal", st.author_id),
-                    "statements": others[:RELATED_CAP],
-                }
+            {
+                "kind": item["type"],
+                "value": item["title"],
+                "prop": item["prop"],
+                "tier": item["tier"],
+                "source": item["subtitle"],
+                "masked": item["masked"],
+                "matched": item["why"]["matched"],
+                "id": _ref("statement", item["id"]),
+                "subject": item["subject"],
+                "blob": _ref("blob", item["sha256"]),
             }
         )
-    return {"target": "search", "query": query, "hits": hits}
+    for group in ("passages", "sources"):
+        for item in found["groups"][group]["items"]:
+            hits.append(
+                {
+                    "kind": item["type"],
+                    "source": item["title"],
+                    "passage": (item.get("snippet") or {}).get("text"),
+                    "masked": item["masked"],
+                    "location": item.get("location"),
+                    "matched": item["why"].get("matched"),
+                    "id": _ref("blob", item["sha256"]),
+                    "segment": item.get("id") if group == "passages" else None,
+                }
+            )
+    result = {"target": "search", "query": query, "hits": hits[:limit]}
+    if not hits:
+        result["hint"] = "No match. Try another spelling or fewer words."
+    return result
 
 
 async def _principal(db: AsyncSession, pid) -> dict:
@@ -436,11 +454,12 @@ async def _fetch_statement(db: AsyncSession, sid: uuid.UUID) -> dict:
     about = (
         await db.execute(_rows().where(Statement.subject == f"statement:{sid}"))
     ).all()
+    ctx = await _context(db, [row, *about])
     related = (await _related(db, {st.subject})).get(st.subject, [])
     reason = await db.scalar(
         select(StatementTier.reason).where(StatementTier.statement_id == sid)
     )
-    return _brief(st, value, tier) | {
+    return _brief(ctx, st, value, tier) | {
         "tier_reason": reason,
         "span": {"blob": _ref("blob", st.span_blob), "span": st.span}
         if st.span_blob
@@ -459,7 +478,7 @@ async def _fetch_statement(db: AsyncSession, sid: uuid.UUID) -> dict:
         }
         if run
         else None,
-        "about": [_brief(*r) for r in about],
+        "about": [_brief(ctx, *r) for r in about],
         "related": [r for r in related if r != _ref("statement", sid)][:RELATED_CAP],
         "head": await write.subject_head(db, st.subject),
     }
@@ -476,17 +495,22 @@ async def _fetch_blob(db: AsyncSession, sha: str) -> dict:
             .order_by(Acquisition.at)
         )
     ).scalars()
-    spans = await db.execute(
-        _rows()
-        .where(Statement.span_blob == sha)
-        .order_by(Statement.recorded_at)
-        .limit(LIST_CAP)
-    )
-    about = await db.execute(
-        _rows()
-        .where(Statement.subject == f"blob:{sha}")
-        .order_by(Statement.recorded_at)
-    )
+    spans = (
+        await db.execute(
+            _rows()
+            .where(Statement.span_blob == sha)
+            .order_by(Statement.recorded_at)
+            .limit(LIST_CAP)
+        )
+    ).all()
+    about = (
+        await db.execute(
+            _rows()
+            .where(Statement.subject == f"blob:{sha}")
+            .order_by(Statement.recorded_at)
+        )
+    ).all()
+    ctx = await _context(db, spans + about)
     return {
         "id": _ref("blob", sha),
         "md5": blob.md5,
@@ -501,8 +525,8 @@ async def _fetch_blob(db: AsyncSession, sha: str) -> dict:
             }
             for a in acquisitions
         ],
-        "statements": [_brief(*r) for r in spans.all()],
-        "about": [_brief(*r) for r in about.all()],
+        "statements": [_brief(ctx, *r) for r in spans],
+        "about": [_brief(ctx, *r) for r in about],
         "head": await write.subject_head(db, f"blob:{sha}"),
     }
 
@@ -516,16 +540,19 @@ async def _fetch_person(db: AsyncSession, ref: str) -> dict:
     if not rows:
         raise ToolError(f"{ref} has no statements")
     person = ref.removeprefix("person:")
-    links = await db.execute(
-        _rows().where(
-            Statement.prop.in_([Prop.SAME_AS, Prop.NOT_SAME]),
-            or_(Statement.subject == ref, Payload.value["person"].astext == person),
+    links = (
+        await db.execute(
+            _rows().where(
+                Statement.prop.in_([Prop.SAME_AS, Prop.NOT_SAME]),
+                or_(Statement.subject == ref, Payload.value["person"].astext == person),
+            )
         )
-    )
+    ).all()
+    ctx = await _context(db, rows + links)
     return {
         "id": ref,
-        "statements": [_brief(*r) for r in rows],
-        "identity": [_brief(*r) for r in links.all()],
+        "statements": [_brief(ctx, *r) for r in rows],
+        "identity": [_brief(ctx, *r) for r in links],
         "blobs": sorted(
             {_ref("blob", st.span_blob) for st, _, _ in rows if st.span_blob}
         ),
@@ -534,30 +561,34 @@ async def _fetch_person(db: AsyncSession, ref: str) -> dict:
 
 
 async def _history(db: AsyncSession, ref: str) -> dict:
-    rows = await db.execute(
-        select(Statement, Payload.value, StatementTier.tier, Chain.seq)
-        .join(
-            Chain, (Chain.kind == "statement") & (Chain.ref == cast(Statement.id, Text))
+    rows = (
+        await db.execute(
+            select(Statement, Payload.value, StatementTier.tier, Chain.seq)
+            .join(
+                Chain,
+                (Chain.kind == "statement") & (Chain.ref == cast(Statement.id, Text)),
+            )
+            .outerjoin(Payload, Payload.commitment == Statement.commitment)
+            .outerjoin(StatementTier, StatementTier.statement_id == Statement.id)
+            .where(
+                Statement.subject == ref,
+                Statement.prop.not_in(PRIVATE_PROPS | {Prop.ACCESS}),
+            )
+            .order_by(Chain.seq)
         )
-        .outerjoin(Payload, Payload.commitment == Statement.commitment)
-        .outerjoin(StatementTier, StatementTier.statement_id == Statement.id)
-        .where(
-            Statement.subject == ref,
-            Statement.prop.not_in(PRIVATE_PROPS | {Prop.ACCESS}),
-        )
-        .order_by(Chain.seq)
-    )
+    ).all()
+    ctx = await _context(db, rows)
     return {
         "id": ref,
         "statements": [
-            _brief(st, value, tier)
+            _brief(ctx, st, value, tier)
             | {
                 "seq": seq,
                 "author": _ref("principal", st.author_id),
                 "based_on": st.based_on,
                 "recorded_at": st.recorded_at.isoformat(),
             }
-            for st, value, tier, seq in rows.all()
+            for st, value, tier, seq in rows
         ],
         "head": await write.subject_head(db, ref),
     }

@@ -1,7 +1,11 @@
 """The Agents page: every agent working for one person in a case, in plain words,
 and their recent runs. Reads run rows and stored outcomes; changes nothing."""
 
-from sqlalchemy import select
+from collections import Counter
+
+from sqlalchemy import cast, select
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import aliased
 
 from sealbook.agents import (
     approximate,
@@ -15,7 +19,8 @@ from sealbook.agents import (
     tasks,
 )
 from sealbook.agents.models import AgentTask
-from sealbook.ledger.models import Acquisition, Blob, Run
+from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.models import Acquisition, Blob, Run, Statement, StatementTier
 
 # (key, tool, name, what it does, when it runs, where results show, link words)
 AGENTS = (
@@ -104,6 +109,13 @@ SETUP = {
 }
 
 
+# Agents whose proposals a person accepts or rejects: the linker's links and the
+# links the Noticer proposes on a click. The others advise; nothing is decided.
+DECIDABLE = (linker.TOOL, noticer.LINK_TOOL)
+VERDICT = {"human_accept": "accepted", "human_reject": "rejected"}
+OPEN = (Tier.UNCONFIRMED, Tier.CORROBORATED)
+
+
 def plural(n: int, one: str, many: str) -> str:
     return f"{'One' if n == 1 else n} {one if n == 1 else many}"
 
@@ -185,7 +197,8 @@ async def recent(db, user_id: int, limit: int = 60) -> list[tuple[Run, str]]:
 
 
 async def _outcome(db, run: Run) -> dict | None:
-    if run.status == "done" and run.output_hash:
+    # A link the Noticer proposes seals its result's hash; no blob holds it.
+    if run.status == "done" and run.output_hash and run.tool != noticer.LINK_TOOL:
         return read.read_output(await db.get(Blob, run.output_hash))
     return None
 
@@ -213,6 +226,7 @@ async def overview(db, user, investigation: str, missing: list[str]) -> dict:
             .order_by(AgentTask.created_at, AgentTask.id)
         )
     )
+    agree = await agreement(db, investigation)
     cards = []
     for key, tool, name, does, when, href, where in AGENTS:
         mine = [r for r in here if TOOLS[r.tool][0] == key]
@@ -234,6 +248,7 @@ async def overview(db, user, investigation: str, missing: list[str]) -> dict:
                 "href": href,
                 "where": where,
                 "keep": key if key in tasks.KINDS and key != "standing" else None,
+                "agreement": agreed([x for x in agree if x["agent"] == key]),
             }
         )
     return {
@@ -244,10 +259,97 @@ async def overview(db, user, investigation: str, missing: list[str]) -> dict:
     }
 
 
+async def agreement(db, investigation: str | None = None) -> list[dict]:
+    """Analyst decisions on agent proposals, all time, counted by case, agent,
+    prompt version and served model. Counts only, never values. A link the Noticer
+    proposes counts under the check that showed it."""
+    shown = aliased(Run)
+    q = (
+        select(
+            Run.inputs["investigation"].astext,
+            Run.tool,
+            shown.prompt_hash,
+            shown.model_served,
+            Run.prompt_hash,
+            Run.model_served,
+            StatementTier.tier,
+            StatementTier.reason,
+        )
+        .select_from(Statement)
+        .join(Run, Run.id == Statement.run_id)
+        .outerjoin(shown, shown.id == cast(Run.inputs["report"].astext, UUID))
+        .join(StatementTier, StatementTier.statement_id == Statement.id)
+        .where(Run.tool.in_(DECIDABLE), Statement.prop != Prop.ACCESS)
+    )
+    if investigation:
+        q = q.where(Run.inputs["investigation"].astext == investigation)
+    # ponytail: counted in Python, one row per proposal; group in SQL if a case
+    # holds enough agent proposals for this to be slow.
+    counts = Counter()
+    for case, tool, sh, sm, h, model, tier, reason in (await db.execute(q)).all():
+        verdict = VERDICT.get(reason) or ("open" if tier in OPEN else None)
+        if verdict:
+            counts[case, TOOLS[tool][0], sh or h, sm or model, verdict] += 1
+    versions = {h: await _version(db, h) for h in {k[2] for k in counts}}
+    table = {}
+    for (case, key, h, model, verdict), n in counts.items():
+        row = table.setdefault(
+            (case, key, versions[h], model),
+            {"case": case, "agent": key, "version": versions[h], "model": model}
+            | dict.fromkeys(("accepted", "rejected", "open"), 0),
+        )
+        row[verdict] += n
+    return [table[k] for k in sorted(table)]
+
+
+async def _version(db, prompt_hash: str) -> str:
+    """The readable prompt version a finished run with this prompt stored."""
+    out = await db.scalar(
+        select(Run.output_hash)
+        .where(
+            Run.tool.in_([linker.TOOL, noticer.TOOL]),
+            Run.prompt_hash == prompt_hash,
+            Run.output_hash.is_not(None),
+        )
+        .limit(1)
+    )
+    return read.read_output(await db.get(Blob, out))["version"]
+
+
+def agreed(rows: list[dict]) -> dict | None:
+    """The card's sentence, and a line per prompt version and model."""
+    if not rows:
+        return None
+    a, r, o = (sum(x[k] for x in rows) for k in ("accepted", "rejected", "open"))
+    if a + r:
+        text = f"Analysts accepted {a} of {a + r} decided " + (
+            "proposal" if a + r == 1 else "proposals"
+        )
+        text += f" ({o} open)." if o else "."
+    else:
+        text = f"{plural(o, 'proposal waits', 'proposals wait')} for a decision."
+    return {
+        "text": text,
+        "rows": [
+            {
+                "label": f"Version {x['version'].rsplit('-', 1)[-1]}, "
+                + (
+                    "the demo answer with no model"
+                    if x["model"] == read.FIXED
+                    else x["model"]
+                ),
+                "text": f"{x['accepted']} accepted, {x['rejected']} rejected, "
+                f"{x['open']} open",
+            }
+            for x in rows
+        ],
+    }
+
+
 def _state(key: str, runs: list[Run], mine: list[AgentTask], off: bool):
     """(state, the sentence beside it): off, checking, paused, watching or ready."""
     if off:
-        return "off", "Off until a local model is set up."
+        return "off", "Off until the agent model is set up."
     if any(r.status in tasks.ACTIVE for r in runs):
         return "checking", "Checking now."
     if key in ("brief", "linker"):

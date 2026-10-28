@@ -138,6 +138,7 @@ policy row to `{local}` so nothing falls back to a hosted model.
 | `MODEL_LOCAL` | Private endpoint model for OCR and extraction; it must accept images |
 | `OPENROUTER_API_KEY` | Key for both cloud routes |
 | `MODEL_CLOUD_ZDR` | OpenRouter model, sent with `provider.zdr` so only zero-retention providers serve it; default `google/gemma-4-31b-it` |
+| `ROUTE_CLOUD_ZDR_PROVIDERS` | Empty by default, which pins nothing: any zero-retention provider may serve. Set to comma-separated OpenRouter provider slugs (`deepinfra,google-vertex/us-east5`) and every `cloud-zdr` chat and embedding call also sends them as `provider.only`; a response whose served provider is not on the list fails the run or search. OpenRouter reports a display name ("DeepInfra"), not a slug, so a name matches when it equals a pin's base slug (before the first `/`) after both are lowercased and cut to letters and digits. A provider whose display name does not fold to its slug always fails; pick another provider or clear the pin |
 | `EMBEDDING_ROUTE` | `cloud-zdr` (default): `EMBEDDING_MODEL` on OpenRouter, default `google/gemini-embedding-2`, one item per call; `local`: an Ollama-style `/api/embed` server at `EMBEDDING_URL` |
 | `MODEL_CLOUD` | OpenRouter model for ordinary sources |
 | `ANTHROPIC_API_KEY` | Key for the `anthropic` route (agents only, not zero retention; see Proactive agents) |
@@ -198,7 +199,7 @@ downloaded model on the witness clip and checks word error below 0.35.
 
 ## Proactive agents
 
-The agents call `AGENT_MODEL` (default `deepseek/deepseek-v4.1-flash`, compared in
+The agents call `AGENT_MODEL` (default `deepseek/deepseek-v4.1-flash-1017`, compared in
 agent-eval.md) on `AGENT_ROUTE` (default `cloud-zdr`, OpenRouter with zero retention,
 which `sealbook_0002` allows for every agent tool). A private endpoint instead:
 `AGENT_ROUTE=local`, `ROUTE_LOCAL_BASE_URL` and a model it serves, for the app and the
@@ -207,8 +208,17 @@ missing setting. Each run's model, seconds and tokens show under its brief and i
 the run's output; a laptop needs about 35 to 50 s for a brief and about 20 s per
 linker candidate.
 
+Every agent call sends `AGENT_REASONING` as `reasoning_effort`: `none` (default),
+`minimal`, `low`, `medium`, `high`, `xhigh` or `max`, the values OpenRouter accepts.
+Another value stops the app at startup. Models that refuse to turn reasoning off
+(Claude Sonnet 5.5, Gemini 3.8 Flash, GLM 5.3) need a level other than `none`. Each
+model run records the effort it sent in its sealed inputs as `reasoning`; the
+prompt hash does not change with it. A reply whose content is empty or missing
+(only a reasoning field came back) counts as invalid, like any answer that breaks
+the schema, and gets the one retry.
+
 To run the agents on OpenRouter instead, on a machine that holds only synthetic
-data, set `AGENT_ROUTE=cloud-zdr` and `AGENT_MODEL=deepseek/deepseek-v4.1-flash` (compared in agent-eval.md) (with
+data, set `AGENT_ROUTE=cloud-zdr` and `AGENT_MODEL=deepseek/deepseek-v4.1-flash-1017` (compared in agent-eval.md) (with
 `OPENROUTER_API_KEY`), then allow that route per agent tool in the policy table,
 since agent runs have no document and fall under the sensitive row:
 

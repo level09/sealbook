@@ -109,6 +109,16 @@ class Config(stk.Config):
     ]
     ANCHOR_INTERVAL_SECONDS = int(os.environ.get("ANCHOR_INTERVAL_SECONDS", "3600"))
 
+    # OpenRouter provider slugs allowed to serve cloud-zdr calls, comma-separated
+    # ("deepinfra,google-vertex"). Chat and embedding calls send them as
+    # provider.only, and a response served by any other provider fails the call.
+    # Empty (the default) pins nothing: any zero-retention provider may serve.
+    ROUTE_CLOUD_ZDR_PROVIDERS = [
+        p.strip()
+        for p in os.environ.get("ROUTE_CLOUD_ZDR_PROVIDERS", "").split(",")
+        if p.strip()
+    ]
+
     # Seconds one local model call may take. A laptop reads a register page at a few
     # tokens a second; the run lease grows with it (stk.ledger.queue).
     ROUTE_LOCAL_TIMEOUT = int(os.environ.get("ROUTE_LOCAL_TIMEOUT", "120"))
@@ -138,7 +148,16 @@ class Config(stk.Config):
     # policy table must also allow the route for each agent tool. Empty AGENT_MODEL
     # turns them off.
     AGENT_ROUTE = os.environ.get("AGENT_ROUTE", "cloud-zdr")
-    AGENT_MODEL = os.environ.get("AGENT_MODEL", "deepseek/deepseek-v4.1-flash")
+    AGENT_MODEL = os.environ.get("AGENT_MODEL", "deepseek/deepseek-v4.1-flash-1017")
+    # Sent as reasoning_effort on every agent call. "none" keeps answers short and
+    # fast; models that refuse to turn reasoning off need another level. The values
+    # are OpenRouter's (docs, reasoning tokens, checked 2026-10-28).
+    REASONING_EFFORTS = ("none", "minimal", "low", "medium", "high", "xhigh", "max")
+    AGENT_REASONING = os.environ.get("AGENT_REASONING", "none")
+    if AGENT_REASONING not in REASONING_EFFORTS:
+        raise ValueError(
+            f"AGENT_REASONING={AGENT_REASONING!r} is not one of {REASONING_EFFORTS}"
+        )
 
     # Package export signs its cover with c2patool (ES256 cert chain and key, PEM).
     C2PA_SIGN_CERT = os.environ.get("C2PA_SIGN_CERT")
