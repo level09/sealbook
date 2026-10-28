@@ -29,6 +29,7 @@ from sealbook.agents import (
     standing,
 )
 from sealbook.agents.read import FIXED, Claim, Handles
+from sealbook.cases import service as cases
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import Blob, Principal, Run, Statement
 from sealbook.ledger.write import principal_for_user, record_acquisition, verify_db
@@ -598,6 +599,36 @@ class AgentRunTest(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn("same_person", [w["kind"] for w in after["written"]])
         async with ext.async_session_factory() as s:
             self.assertEqual(await verify_db(s), [])
+
+    async def test_agents_page_counts_decisions_on_proposals(self):
+        _, out = await self.agent("link")
+        n = len(out["written"])
+        self.assertGreaterEqual(n, 3)
+        async with ext.async_session_factory() as s:
+            await cases.ensure(s, CASE)
+            self.seed.s = s
+            for w, verdict in zip(out["written"], ("accept", "reject"), strict=False):
+                st = await s.get(Statement, uuid.UUID(w["statement"]))
+                await self.seed.review(self.human, st, verdict, "read the basis")
+            await s.commit()
+        client = self.app.test_client()
+        await self.login(client)
+        got = await client.get(f"/api/agents/overview?investigation={CASE}")
+        cards = {c["key"]: c for c in (await got.get_json())["agents"]}
+        self.assertEqual(
+            cards["linker"]["agreement"],
+            {
+                "text": f"Analysts accepted 1 of 2 decided proposals ({n - 2} open).",
+                "rows": [
+                    {
+                        "label": "Version 1, the demo answer with no model",
+                        "text": f"1 accepted, 1 rejected, {n - 2} open",
+                    }
+                ],
+            },
+        )
+        self.assertIsNone(cards["brief"]["agreement"])
+        self.assertIsNone(cards["gaps"]["agreement"])
 
     async def test_find_links_runs_for_the_person_who_asked(self):
         client = self.app.test_client()
