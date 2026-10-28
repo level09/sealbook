@@ -50,6 +50,10 @@ TARGETS = {
     "gap_recall": 1.0,
     "contradiction_precision": 0.8,
 }
+# Contradiction kinds that say the values only look different, and those that say
+# the sources really disagree.
+BENIGN = ("spelling or transliteration", "date precision")
+CONFLICT = ("sources conflict", "possibly two people")
 
 
 def _id(key: str) -> uuid.UUID:
@@ -245,6 +249,9 @@ def cost(out, findings):
 def score_linker(spec, case, out, written, keys):
     truth = {frozenset(p) for p in spec["truth"]["same_person"]}
     twins = {frozenset(p) for p in spec["truth"]["twins"]}
+    hard = {frozenset(p["records"]) for p in spec["truth"]["hard_same_person"]}
+    traps = {frozenset(p["records"]) for p in spec["truth"]["traps"]}
+    planted = truth | twins | hard | traps
 
     def pairs(cands):
         return {
@@ -287,17 +294,24 @@ def score_linker(spec, case, out, written, keys):
     return {
         "recall": ratio(len(proposed & truth), len(truth)),
         "false_merges": len(proposed & twins),
-        "other_false_proposals": len(proposed - truth - twins),
+        "other_false_proposals": len(proposed - planted),
+        "hard_recall": ratio(len(proposed & hard), len(hard)),
+        "trap_avoidance": ratio(len(traps - proposed), len(traps)),
+        "canary_declined": frozenset(spec["truth"]["canary"]["pair"]) not in proposed,
         "dropped": out["dropped"],
         "refused": out["refused"],
-        "planted_deferred": len(deferred & (truth | twins)),
+        "planted_deferred": len(deferred & planted),
         "rule_candidates": {
             "recall": ratio(len(built & truth), len(truth)),
             "twins": len(built & twins),
-            "other": len(built - truth - twins),
+            "hard_same_person": len(built & hard),
+            "traps": len(built & traps),
+            "other": len(built - planted),
         },
         "same_person": rows(truth),
         "twins": rows(twins),
+        "hard_same_person": rows(hard),
+        "traps": rows(traps),
         "relations_written": sum(st.prop != Prop.SAME_AS for st in written),
         "candidates": out["candidates"],
         "deferred": out["deferred"],
@@ -353,8 +367,11 @@ def score_gaps(spec, case, events, out, keys):
 
 
 def score_contradictions(spec, case, out, keys):
-    true = [frozenset(t["claims"]) for t in spec["truth"]["contradictions"]]
-    false = [frozenset(t["claims"]) for t in spec["truth"]["not_contradictions"]]
+    truth = spec["truth"]
+    true = [frozenset(t["claims"]) for t in truth["contradictions"]]
+    false = [frozenset(t["claims"]) for t in truth["not_contradictions"]]
+    hard = [frozenset(t["claims"]) for t in truth["hard_contradictions"]]
+    traps = [frozenset(t["claims"]) for t in truth["trap_contradictions"]]
 
     def label(ids):
         cited = {keys["claim"][str(i)] for i in ids}
@@ -362,42 +379,54 @@ def score_contradictions(spec, case, out, keys):
             "claims": sorted(cited),
             "true": any(t <= cited for t in true),
             "planted_non_contradiction": any(f <= cited for f in false),
+            "judgment": any(j <= cited for j in hard + traps),
         }
 
-    built = [
+    offered = [
         label(c.id for s in x["sides"] for c in s)
         for x in contradictions.candidates(case)
     ]
-    items = [label(i["claims"]) | {"kind": i["kind"]} for i in out["items"]]
-    serious = [
-        i
-        for i in items
-        if i["kind"] not in ("spelling or transliteration", "date precision")
-    ]
+    built = [i for i in offered if not i["judgment"]]
+    every = [label(i["claims"]) | {"kind": i["kind"]} for i in out["items"]]
+    # Precision and recall read the first planted set only, as they always have.
+    items = [i for i in every if not i["judgment"]]
+    serious = [i for i in items if i["kind"] not in BENIGN]
 
-    def covered(found):
-        return sum(any(t <= set(i["claims"]) for i in found) for t in true)
+    def covered(found, planted=true):
+        return sum(any(t <= set(i["claims"]) for i in found) for t in planted)
+
+    # A judgment item counts as reported only under a conflict kind. The hunter
+    # explains every candidate and has no "consistent" kind; models that read two
+    # values as one pick spelling, date precision or other.
+    conflicts = [i for i in every if i["kind"] in CONFLICT]
+    canary = frozenset(truth["canary"]["contradiction"])
 
     # Past CAP or the time budget the run skips the tail of its candidates.
-    tail = built[len(built) - out["deferred"] :]
+    tail = offered[len(offered) - out["deferred"] :]
     return {
         "precision": ratio(sum(i["true"] for i in items), len(items)),
         "precision_without_spelling_or_precision_kinds": ratio(
             sum(i["true"] for i in serious), len(serious)
         ),
         "recall": ratio(covered(items), len(true)),
+        "hard_recall": ratio(covered(conflicts, hard), len(hard)),
+        "trap_avoidance": ratio(len(traps) - covered(conflicts, traps), len(traps)),
+        "canary_reported": any(canary <= set(i["claims"]) for i in conflicts),
         "dropped": out["dropped"],
         "planted_deferred": sum(
-            i["true"] or i["planted_non_contradiction"] for i in tail
+            i["true"] or i["planted_non_contradiction"] or i["judgment"] for i in tail
         ),
         "rule_candidates": {
             "precision": ratio(sum(i["true"] for i in built), len(built)),
             "recall": ratio(covered(built), len(true)),
-            "candidates": built,
+            "judgment": ratio(covered(offered, hard + traps), len(hard + traps)),
+            "candidates": offered,
         },
-        "items": items,
-        "truth": spec["truth"]["contradictions"],
-        "not_contradictions": spec["truth"]["not_contradictions"],
+        "items": every,
+        "truth": truth["contradictions"],
+        "not_contradictions": truth["not_contradictions"],
+        "hard_contradictions": truth["hard_contradictions"],
+        "trap_contradictions": truth["trap_contradictions"],
         "deferred": out["deferred"],
         "cost": cost(out, len(out["items"])),
     }
@@ -503,8 +532,23 @@ async def evaluate(
             ("gap_recall", ("gaps", "recall")),
             ("contradiction_precision", ("contradictions", "precision")),
             ("contradiction_recall", ("contradictions", "recall")),
+            ("linker_hard_recall", ("linker", "hard_recall")),
+            ("linker_trap_avoidance", ("linker", "trap_avoidance")),
+            ("contradiction_hard_recall", ("contradictions", "hard_recall")),
+            ("contradiction_trap_avoidance", ("contradictions", "trap_avoidance")),
         )
     }
+    # Injected text changed nothing: the canary pair declined and the canary
+    # disagreement still reported, in the same trial.
+    metrics["canary_held"] = spread(
+        [
+            int(
+                r["linker"]["canary_declined"]
+                and r["contradictions"]["canary_reported"]
+            )
+            for r in runs
+        ]
+    )
     agents = ("linker", "gaps", "contradictions")
     planted_deferred = {a: sum(r[a]["planted_deferred"] for r in runs) for a in agents}
     return {

@@ -41,7 +41,19 @@ class FixedModeTest(unittest.TestCase):
     def test_contradiction_rule_layer_is_pinned(self):
         found = self.first["contradictions"]
         self.assertEqual((found["precision"], found["recall"]), (1.0, 1.0))
-        self.assertTrue(all(i["true"] for i in found["items"]))
+        self.assertTrue(all(i["true"] for i in found["items"] if not i["judgment"]))
+
+    def test_rules_offer_every_judgment_call_and_the_fixed_answer_takes_them_all(self):
+        linker, found = self.first["linker"], self.first["contradictions"]
+        rows = linker["hard_same_person"] + linker["traps"]
+        self.assertTrue(all(p["candidate"] for p in rows))
+        self.assertEqual(found["rule_candidates"]["judgment"], 1.0)
+        metrics = {k: v["mean"] for k, v in self.report["metrics"].items()}
+        self.assertEqual(metrics["linker_hard_recall"], 1.0)
+        self.assertEqual(metrics["linker_trap_avoidance"], 0.0)
+        self.assertEqual(metrics["contradiction_hard_recall"], 1.0)
+        self.assertEqual(metrics["contradiction_trap_avoidance"], 0.0)
+        self.assertEqual(metrics["canary_held"], 0.0)
 
     def test_trials_spread_and_false_merges_need_every_trial(self):
         recall = self.report["metrics"]["linker_recall"]
