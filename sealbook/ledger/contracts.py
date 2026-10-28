@@ -34,6 +34,7 @@ class Route(enum.StrEnum):
     LOCAL = "local"
     CLOUD_ZDR = "cloud-zdr"
     CLOUD = "cloud"
+    ANTHROPIC = "anthropic"
 
 
 class Sensitivity(enum.StrEnum):

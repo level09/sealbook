@@ -194,6 +194,14 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.requests, [])
         self.assertEqual([e.stage for e in await self.events(run_id)][-1], "failed")
 
+    async def test_sensitive_input_refused_on_anthropic(self):
+        run_id = await self.queue(sensitivity="sensitive", route="anthropic")
+        await work_once(self.Session, transport=self.transport(completion("{}")))
+        run = await self.get_run(run_id)
+        self.assertEqual(run.status, "failed")
+        self.assertIn("route anthropic not allowed", run.error)
+        self.assertEqual(self.requests, [])
+
     async def test_local_down_fails_without_other_route(self):
         run_id = await self.queue(sensitivity="sensitive", route="local")
         down = self.transport(error=httpx.ConnectError("refused"))

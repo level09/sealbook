@@ -40,15 +40,15 @@ SCOPE = re.compile(
 
 def missing() -> list[str]:
     """Settings the agents still need; empty when they can run."""
+    route_setting = {
+        "local": "ROUTE_LOCAL_BASE_URL",
+        "anthropic": "ANTHROPIC_API_KEY",
+    }.get(Config.AGENT_ROUTE, "OPENROUTER_API_KEY")
     return [
         name
         for name, value in (
             ("AGENT_MODEL", Config.AGENT_MODEL),
-            (
-                ("ROUTE_LOCAL_BASE_URL", os.environ.get("ROUTE_LOCAL_BASE_URL"))
-                if Config.AGENT_ROUTE == "local"
-                else ("OPENROUTER_API_KEY", os.environ.get("OPENROUTER_API_KEY"))
-            ),
+            (route_setting, os.environ.get(route_setting)),
         )
         if not value
     ]

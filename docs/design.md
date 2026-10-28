@@ -171,7 +171,8 @@ it as challenge, review cards dry-run through it) then `commit`.
   Record the model actually served, not just the one requested.
 - **Model routes.** One OpenAI-compatible client; a route is a base URL plus key. Routes:
   `local` (vLLM or Ollama on self-hosted hardware), `cloud-zdr` (OpenRouter with ZDR enforced
-  account-wide, not per request), `cloud`. The policy table decides which routes a
+  account-wide, not per request), `cloud`, and `anthropic` (the native Messages API,
+  translated to and from the same chat shape, not zero retention). The policy table decides which routes a
   capability, document type, sensitivity and partner may use; the model never picks.
   Sensitivity is set on the acquisition at intake (human or deterministic rule) before any
   model sees the bytes, and defaults to sensitive. Partners can be pinned to `local`.

@@ -3,10 +3,12 @@
   uv run python acceptance/eval_agents.py                 # fixed answer, no model
   ROUTE_LOCAL_BASE_URL=http://127.0.0.1:11434/v1 AGENT_MODEL=qwen3.5:9b \
     ROUTE_LOCAL_TIMEOUT=900 uv run python acceptance/eval_agents.py --live
+  AGENT_MODEL=claude-opus-5-5 uv run python acceptance/eval_agents.py --live \
+    --route anthropic                                     # needs ANTHROPIC_API_KEY
 
 Fixed mode runs the agents on their fixed answer (`read.FIXED`), which proposes
 every candidate, so its numbers are the rule-built candidate layer. Live mode asks
-the local model. Both run the real run functions (`linker.link`, `gaps.gaps`,
+the model on `--route` (default local). Both run the real run functions (`linker.link`, `gaps.gaps`,
 `contradictions.contradictions`, `brief.brief`) on the case held in memory: their
 database reads return the planted case and their writes are captured, nothing
 else is patched. Prints one JSON report. See docs/agent-eval.md.
@@ -117,14 +119,14 @@ def load(path=CASE):
 class Ctx:
     """What the worker hands a run: the run row, events, and the model route."""
 
-    def __init__(self, model: str, inputs: dict):
+    def __init__(self, model: str, inputs: dict, route: Route):
         self.s = None
         self.sign = None
         self.events = []
         self.run = SimpleNamespace(
             id=uuid.uuid4(),
             principal_id=PRINCIPAL,
-            route="local",
+            route=route,
             model_requested=model,
             inputs=inputs,
             endpoint=None,
@@ -139,14 +141,14 @@ class Ctx:
 
     async def call(self, body: dict) -> routes.Served:
         served = await routes.chat(
-            Route.LOCAL, {"model": self.run.model_requested, **body}
+            self.run.route, {"model": self.run.model_requested, **body}
         )
         self.run.model_served = served.model
         self.run.raw_output_ref = hashlib.sha256(served.raw).hexdigest()
         return served
 
 
-def harness(case, events, g, written):
+def harness(case, events, g, written, route):
     """Replace each run's database reads with the planted case and capture its
     writes. The agents' candidate, model and validation code runs unchanged."""
 
@@ -179,8 +181,8 @@ def harness(case, events, g, written):
         (gaps, "reported", mock.AsyncMock(return_value=set())),
         (gaps, "colleagues", mock.AsyncMock(return_value={})),
         (contradictions, "reported", mock.AsyncMock(return_value=set())),
-        # Runs here are built on the local route, whatever .env routes agents to.
-        (Config, "AGENT_ROUTE", "local"),
+        # Runs here are built on --route, whatever .env routes agents to.
+        (Config, "AGENT_ROUTE", route),
     ):
         stack.enter_context(mock.patch.object(target, attr, new))
     return stack
@@ -375,22 +377,26 @@ def score_brief(spec, out, keys):
     }
 
 
-async def evaluate(live: bool = False, path=CASE) -> dict:
+async def evaluate(live: bool = False, path=CASE, route=Route.LOCAL) -> dict:
     model = Config.AGENT_MODEL if live else read.FIXED
-    if live and not (os.environ.get("ROUTE_LOCAL_BASE_URL") and model):
+    setting = {
+        Route.LOCAL: "ROUTE_LOCAL_BASE_URL",
+        Route.ANTHROPIC: "ANTHROPIC_API_KEY",
+    }.get(route, "OPENROUTER_API_KEY")
+    if live and not (os.environ.get(setting) and model):
         return {
             "mode": "live",
-            "skipped": "ROUTE_LOCAL_BASE_URL and AGENT_MODEL must both be set for live mode",
+            "skipped": f"{setting} and AGENT_MODEL must both be set for live mode",
         }
     spec, case, events, keys = load(path)
     inputs = {"investigation": case.investigation, "for_user": 1}
     written = []
-    with harness(case, events, batch(spec, case), written):
-        link_out = await linker.link(Ctx(model, inputs))
-        gap_out = await gaps.gaps(Ctx(model, inputs))
-        contra_out = await contradictions.contradictions(Ctx(model, inputs))
+    with harness(case, events, batch(spec, case), written, route):
+        link_out = await linker.link(Ctx(model, inputs, route))
+        gap_out = await gaps.gaps(Ctx(model, inputs, route))
+        contra_out = await contradictions.contradictions(Ctx(model, inputs, route))
         brief_out = await brief.brief(
-            Ctx(model, {"batch": "agent-eval", "for_user": 1})
+            Ctx(model, {"batch": "agent-eval", "for_user": 1}, route)
         )
     report = {
         "mode": "live" if live else "fixed",
@@ -416,10 +422,11 @@ async def evaluate(live: bool = False, path=CASE) -> dict:
 
 def main():
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    p.add_argument("--live", action="store_true", help="ask the local model")
+    p.add_argument("--live", action="store_true", help="ask the model on --route")
+    p.add_argument("--route", type=Route, choices=list(Route), default=Route.LOCAL)
     p.add_argument("--out", type=Path, help="also write the report here")
     args = p.parse_args()
-    report = asyncio.run(evaluate(args.live))
+    report = asyncio.run(evaluate(args.live, route=args.route))
     text = json.dumps(report, ensure_ascii=False, indent=2, default=str)
     if args.out:
         args.out.write_text(text + "\n", encoding="utf-8")

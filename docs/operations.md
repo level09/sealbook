@@ -140,6 +140,7 @@ policy row to `{local}` so nothing falls back to a hosted model.
 | `MODEL_CLOUD_ZDR` | OpenRouter model, sent with `provider.zdr` so only zero-retention providers serve it; default `google/gemma-4-31b-it` |
 | `EMBEDDING_ROUTE` | `cloud-zdr` (default): `EMBEDDING_MODEL` on OpenRouter, default `google/gemini-embedding-2`, one item per call; `local`: an Ollama-style `/api/embed` server at `EMBEDDING_URL` |
 | `MODEL_CLOUD` | OpenRouter model for ordinary sources |
+| `ANTHROPIC_API_KEY` | Key for the `anthropic` route (agents only, not zero retention; see Proactive agents) |
 
 Checked here on 2026-10-25: `google/gemma-4-31b-it` on the zero-retention route read the
 demo register scan, Arabic headers, names, mothers, places and dates, almost exactly in
@@ -219,6 +220,18 @@ from unnest(array['brief', 'link', 'standing', 'contradictions', 'gaps', 'notice
 
 Without those rows every agent run fails with "route cloud-zdr not allowed".
 
+To run the agents on Anthropic models directly, set `AGENT_ROUTE=anthropic`,
+`ANTHROPIC_API_KEY` and `AGENT_MODEL` to an Anthropic model id such as
+`claude-opus-5-5`. Calls go to the Messages API with the schema as strict structured
+output, at low effort (thinking cannot be turned off on Opus 5.5) and at most 16,000
+output tokens; a refusal or a cut-off answer fails the run. This route is not zero
+retention: the standard API keeps inputs and outputs unless your organisation has a
+zero data retention agreement with Anthropic. No default policy row allows it, so it
+is refused for sensitive sources and agents until an admin adds rows, as above with
+`array['anthropic']`. Do that only for data that may leave under that retention, or
+once such an agreement is in place. `uv run python acceptance/eval_agents.py --live
+--route anthropic` scores a model on the planted case.
+
 ## Web research and capture
 
 Built and tested against synthetic recorded responses only; it stays off until the
@@ -295,7 +308,7 @@ failing. The capture run records the version it used.
 ## Verification
 
 ```sh
-export OPENROUTER_API_KEY='' ROUTE_LOCAL_BASE_URL='' MODEL_LOCAL='' MODEL_CLOUD='' ROUTE_LOCAL_TIMEOUT=120
+export OPENROUTER_API_KEY='' ROUTE_LOCAL_BASE_URL='' MODEL_LOCAL='' MODEL_CLOUD='' ROUTE_LOCAL_TIMEOUT=120 ANTHROPIC_API_KEY=''
 uv run python -m unittest discover -s tests
 uv run python -m unittest acceptance.test_v0
 uv run stk verify --json
