@@ -249,6 +249,7 @@ OpenRouter billed for the three trials.
 | `deepseek/deepseek-v4-pro-0813` | failed | | | | | | | | | | |
 | `google/gemini-3.8-flash` | 0.857 | 0 | 1.0 | 1.0 / 1.0 | 0.0 | 0.556 (0.333 to 0.667) | 1.0 | 0.444 (0.333 to 0.667) | 1.0 | 49,364 / 11,059 | $0.079 |
 | `google/gemini-4-argon` | 0.857 | 0 | 1.0 | 1.0 / 1.0 | 0.0 | 0.667 | 1.0 | 1.0 | 1.0 | 56,812 / 14,105 | $0.255 |
+| `claude-opus-5-5` (route `anthropic`, effort low) | 0.666 (0.571 to 0.714) | 0 | 1.0 | 1.0 / 1.0 | 0.167 (0.0 to 0.5) | 0.667 | 1.0 | 1.0 | 1.0 | 71,316 / 20,136 | $0.69 |
 
 Served by Fireworks, InferenceNet, Ionstream and Wafer (DeepSeek Flash) and Google
 (Gemini). Dropped, summed over trials: linker 10 declined, 3 `unknown`, 1 `kind`
@@ -282,6 +283,12 @@ they show:
   ones `sources conflict`. Gemini 3.8 Flash explained the non-conflicts as
   consistent but mostly labelled them `sources conflict`. DeepSeek Flash labelled
   the 16-year birth estimate `date precision` and the transfer a conflict.
+
+`claude-opus-5-5` ran later the same day on the native `anthropic` route (thinking
+cannot be turned off, so effort `low`), billed to Anthropic credits: 39 calls where
+the others made 24, the extra ones corrective retries. It matched Argon on
+contradictions but declined 16 linker candidates, including true pairs, and 5 more
+went `unknown`; validation dropped 8 gap lines for naming a sensitive value.
 
 On judgment, `google/gemini-4-argon` is the strongest here and the dearest, about
 34 times DeepSeek Flash. DeepSeek Flash stays the default: it fails the father and
