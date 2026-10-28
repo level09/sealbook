@@ -10,20 +10,42 @@ agents' own code. No app code changed for this, and no database is touched.
 
 ```sh
 uv run python acceptance/eval_agents.py                    # fixed mode
+uv run python acceptance/eval_agents.py --live --trials 3 \
+  --out instance/eval_agents.json                          # AGENT_MODEL on AGENT_ROUTE
 ROUTE_LOCAL_BASE_URL=http://127.0.0.1:11434/v1 AGENT_MODEL=qwen3.5:9b \
-  ROUTE_LOCAL_TIMEOUT=900 uv run python acceptance/eval_agents.py --live
-uv run python acceptance/eval_agents.py --out instance/eval_agents.json
+  ROUTE_LOCAL_TIMEOUT=900 uv run python acceptance/eval_agents.py --live --route local
 uv run python acceptance/make_agent_case.py                # regenerate the case
 ```
 
 Fixed mode asks the fixed answer (`sealbook-demo-fixed-output`), which proposes
 every candidate it is given, so its numbers are the rule-built candidate layer and
 need no model. `tests/test_agent_eval.py` runs it in the unit suite. Live mode asks
-the local model on the local route, as a worker would; it reports
-`"skipped"` with the reason when `ROUTE_LOCAL_BASE_URL` or `AGENT_MODEL` is empty.
-A worktree needs the main `.env` linked for `SECRET_KEY` (see
-[development.md](development.md)), and the timeout above, or the runs' time budget
-(lease less 90 s) defers candidates.
+`AGENT_MODEL` through `routes.chat` on `--route` (`local`, `cloud-zdr` or `cloud`,
+default `AGENT_ROUTE`), as the worker does: `cloud-zdr` sends `provider: {zdr:
+true}` and the cloud timeout applies. It reports `"skipped"` with the reason when
+the route's endpoint or key (`ROUTE_LOCAL_BASE_URL` for `local`,
+`OPENROUTER_API_KEY` otherwise) or `AGENT_MODEL` is empty. A worktree needs the
+main `.env` linked for `SECRET_KEY` (see [development.md](development.md)).
+
+The report holds:
+
+- `served`: each model and provider that answered, and per run in `runs`.
+- `metrics`: mean, min and max of each score over `--trials` runs (default 1).
+  Recall and precision targets read the mean; the false-merge target is pass^k,
+  zero false merges in every trial.
+- `dropped`: the agents' drop counts by reason, summed over trials.
+- `limits`: the call timeout, the run lease, and each agent's candidate cap, calls
+  per batch and time budget (lease less 90 s). `deferred` gives each agent's
+  deferred candidates per trial.
+- `complete`: false when a planted linker pair or contradiction was cut by the cap
+  or the time budget, so it was neither found nor missed in that run.
+  `planted_deferred` counts them per agent. Gap recall scores detection, which no
+  limit cuts, so deferred planted gaps are counted but leave the run complete.
+
+With `--out`, a JSONL file beside the report (`instance/eval_agents.jsonl` above)
+holds each model call's request body and raw response and every drop event, one
+per line with its trial and agent. Fixed mode makes no calls, so it logs drops
+only.
 
 ## The planted case
 
@@ -104,9 +126,23 @@ Also seen:
 - The four gap lines dropped as `handle` matched the check for handles and
   identifiers in the suggestion text.
 
+## Fixed mode since the cross-script compare
+
+Commit 9754276 compares names across scripts by consonant key. Fixed mode now
+measures linker recall 0.857 (6 of 7 same-person pairs are candidates, all
+proposed), 1 false merge, and contradiction precision 1.0 (3 of 3, recall 1.0).
+The family statement pair (خالد against Khaled) is now a candidate, and فاطمة
+against Fatima is no longer reported as a disagreement by the hunter or the brief,
+whose only disagreement line (1983 against 1979) is true and which drops nothing.
+Still missed: the English
+post against the Arabic register (`yousef_post`, `yousef_reg`), where nothing but
+the name agrees. The Al-Khatib namesake pair still reaches the model. The 12 gap
+slots still defer three of the four planted gaps. The 2026-10-24 table above, live
+column included, predates this change.
+
 `tests/test_agent_eval.py` asserts the gap target and pins the linker and
-contradiction rule layers at the values above; a change either way fails it until
-this page and the pins are updated together.
+contradiction rule layers at the values in this section; a change either way fails
+it until this page and the pins are updated together.
 
 ## Hosted models compared, 2026-10-25
 
