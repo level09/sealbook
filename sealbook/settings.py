@@ -148,7 +148,7 @@ class Config(stk.Config):
     # policy table must also allow the route for each agent tool. Empty AGENT_MODEL
     # turns them off.
     AGENT_ROUTE = os.environ.get("AGENT_ROUTE", "cloud-zdr")
-    AGENT_MODEL = os.environ.get("AGENT_MODEL", "deepseek/deepseek-v4.1-flash")
+    AGENT_MODEL = os.environ.get("AGENT_MODEL", "deepseek/deepseek-v4.1-flash-1017")
     # Sent as reasoning_effort on every agent call. "none" keeps answers short and
     # fast; models that refuse to turn reasoning off need another level. The values
     # are OpenRouter's (docs, reasoning tokens, checked 2026-10-28).

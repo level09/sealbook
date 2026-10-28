@@ -198,7 +198,7 @@ downloaded model on the witness clip and checks word error below 0.35.
 
 ## Proactive agents
 
-The agents call `AGENT_MODEL` (default `deepseek/deepseek-v4.1-flash`, compared in
+The agents call `AGENT_MODEL` (default `deepseek/deepseek-v4.1-flash-1017`, compared in
 agent-eval.md) on `AGENT_ROUTE` (default `cloud-zdr`, OpenRouter with zero retention,
 which `sealbook_0002` allows for every agent tool). A private endpoint instead:
 `AGENT_ROUTE=local`, `ROUTE_LOCAL_BASE_URL` and a model it serves, for the app and the
@@ -217,7 +217,7 @@ prompt hash does not change with it. A reply whose content is empty or missing
 the schema, and gets the one retry.
 
 To run the agents on OpenRouter instead, on a machine that holds only synthetic
-data, set `AGENT_ROUTE=cloud-zdr` and `AGENT_MODEL=deepseek/deepseek-v4.1-flash` (compared in agent-eval.md) (with
+data, set `AGENT_ROUTE=cloud-zdr` and `AGENT_MODEL=deepseek/deepseek-v4.1-flash-1017` (compared in agent-eval.md) (with
 `OPENROUTER_API_KEY`), then allow that route per agent tool in the policy table,
 since agent runs have no document and fall under the sensitive row:
 

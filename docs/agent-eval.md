@@ -190,7 +190,8 @@ Cost is the three trials at the served zero-retention price.
 Five of six models sit at the rule layer's ceiling on every target, so this case no
 longer separates strong models; it needs planted judgment calls the rules admit but
 a careful reader declines. Sonnet declined more true same-person pairs and named
-sensitive values in five gap lines, which validation dropped. No corrective retry
+sensitive values in five gap lines, which validation dropped. `deepseek/deepseek-v4.1-flash-1017` is the default
+`AGENT_MODEL` since this run. No corrective retry
 fired in any run. The served provider comes back as a display name ("Google",
 "Sail Research"), which is what `ROUTE_CLOUD_ZDR_PROVIDERS` matches against.
 
