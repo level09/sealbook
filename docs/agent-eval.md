@@ -170,6 +170,30 @@ then always sent `reasoning_effort: none`. `--reasoning` now lets them run; they
 still to be compared. One run per model on one synthetic case: a direction, not a
 benchmark.
 
+## Hosted models compared, 2026-10-28
+
+`--live --route cloud-zdr --trials 3`, after the reason-first schemas, data-only
+prompts and one corrective retry. DeepSeek ran with reasoning `none`; Claude and
+Gemini refuse `none` and ran with `--reasoning low`. Each cell is the mean over three
+trials with the range when trials differed. The rule layer's linker ceiling is 0.857.
+Cost is the three trials at the served zero-retention price.
+
+| Model | Linker recall | False merges | Gap recall | Contradiction precision | Contradiction recall | Dropped | Tokens in / out | Cost | Served by |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `deepseek/deepseek-v4.1-flash` | 0.857 | 0 | 1.0 | 1.0 | 0.78 (0.33 to 1.0) | 3 declined | 21,024 / 7,268 | under $0.01 | ModelRun, Together, Wafer |
+| `deepseek/deepseek-v4.1-flash-1017` | 0.857 | 0 | 1.0 | 1.0 | 1.0 | 3 declined | 21,420 / 7,347 | under $0.01 | InferenceNet, Morph, Sail Research, Wafer |
+| `deepseek/deepseek-v4-pro-0813` | 0.857 | 0 | 1.0 | 1.0 | 1.0 | 3 declined | 18,840 / 8,838 | about $0.03 | DekaLLM, Ionstream, Sail Research, Together |
+| `google/gemini-3.8-flash` | 0.857 | 0 | 1.0 | 1.0 | 1.0 | 3 declined | 26,997 / 7,324 | about $0.03 | Google |
+| `google/gemini-4-argon` | 0.857 | 0 | 1.0 | 1.0 | 1.0 | 6 declined | 30,261 / 8,426 | about $0.15 | Google |
+| `anthropic/claude-sonnet-5.5` | 0.76 (0.71 to 0.86) | 0 | 1.0 | 1.0 | 1.0 | 10 declined, 5 gap lines `leak` | 37,362 / 10,307 | about $0.18 | Google |
+
+Five of six models sit at the rule layer's ceiling on every target, so this case no
+longer separates strong models; it needs planted judgment calls the rules admit but
+a careful reader declines. Sonnet declined more true same-person pairs and named
+sensitive values in five gap lines, which validation dropped. No corrective retry
+fired in any run. The served provider comes back as a display name ("Google",
+"Sail Research"), which is what `ROUTE_CLOUD_ZDR_PROVIDERS` matches against.
+
 ## Known gaps
 
 - One synthetic case, 80 claims. The numbers say nothing about archive scale or
