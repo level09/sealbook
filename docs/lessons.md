@@ -7,6 +7,9 @@ Do not turn this file into a second task list.
 
 - Private review payloads leaked when only the inbox enforced participants. Exclude
   discussion from general monitor, reveal, history and MCP paths as well.
+- MCP reads returned personal values from sensitive sources in full while the
+  monitor masked them, because MCP built its own rows. Every read shape now masks
+  through `monitor.data.Context.masked`; `tests/test_mcp.py` pins each shape.
 - Assignment checks must run when passkey options are issued and again at commit.
   Undo must check the underlying proposal, not just the review statement.
 - Accepted corrections must remove predecessors from current views and origin

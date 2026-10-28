@@ -351,12 +351,21 @@ class Context:
             "detail": run.model_served if run else None,
         }
 
-    def statement(self, st: Statement, tier: str, reason: str, value) -> dict:
-        sha = st.span_blob or (
+    @staticmethod
+    def blob_of(st: Statement) -> str | None:
+        return st.span_blob or (
             st.subject.removeprefix("blob:") if st.subject.startswith("blob:") else None
         )
+
+    def masked(self, st: Statement) -> bool:
+        """Personal data from a sensitive (or unknown) source stays masked."""
+        sha = self.blob_of(st)
+        return st.prop in PERSONAL and (sha is None or self.doc(sha)["sensitive"])
+
+    def statement(self, st: Statement, tier: str, reason: str, value) -> dict:
+        sha = self.blob_of(st)
         doc = self.doc(sha) if sha else None
-        masked = st.prop in PERSONAL and (doc is None or doc["sensitive"])
+        masked = self.masked(st)
         own = st.valid_from is not None
         lo, hi = (
             (st.valid_from, st.valid_to or st.valid_from)
