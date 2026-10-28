@@ -71,6 +71,7 @@ export const NoticerPanel = {
         <p class="mt-1" dir="auto">{{ item.why }}</p>
         <p class="mt-1 text-medium-emphasis" dir="auto">Next: {{ item.next }}</p>
         <details class="mt-1"><summary>What it rests on</summary>
+          <div v-if="item.quote" dir="auto">“{{ item.quote }}”</div>
           <div v-for="(s, i) in item.signals" :key="'s' + i" dir="auto">{{ s }}</div>
           <div v-for="(c, i) in item.claims" :key="'c' + i"><span dir="auto">{{ c.field }}: {{ c.value }}</span><span v-if="c.when">, {{ c.when }}</span>. <a :href="c.href" dir="auto">{{ c.title }}</a></div>
         </details>
