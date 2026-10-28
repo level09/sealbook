@@ -138,6 +138,7 @@ policy row to `{local}` so nothing falls back to a hosted model.
 | `MODEL_LOCAL` | Private endpoint model for OCR and extraction; it must accept images |
 | `OPENROUTER_API_KEY` | Key for both cloud routes |
 | `MODEL_CLOUD_ZDR` | OpenRouter model, sent with `provider.zdr` so only zero-retention providers serve it; default `google/gemma-4-31b-it` |
+| `ROUTE_CLOUD_ZDR_PROVIDERS` | Empty by default, which pins nothing: any zero-retention provider may serve. Set to comma-separated OpenRouter provider slugs (`deepinfra,google-vertex/us-east5`) and every `cloud-zdr` chat and embedding call also sends them as `provider.only`; a response whose served provider is not on the list fails the run or search. OpenRouter reports a display name ("DeepInfra"), not a slug, so a name matches when it equals a pin's base slug (before the first `/`) after both are lowercased and cut to letters and digits. A provider whose display name does not fold to its slug always fails; pick another provider or clear the pin |
 | `EMBEDDING_ROUTE` | `cloud-zdr` (default): `EMBEDDING_MODEL` on OpenRouter, default `google/gemini-embedding-2`, one item per call; `local`: an Ollama-style `/api/embed` server at `EMBEDDING_URL` |
 | `MODEL_CLOUD` | OpenRouter model for ordinary sources |
 
