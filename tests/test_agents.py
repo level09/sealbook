@@ -621,7 +621,7 @@ class AgentRunTest(unittest.IsolatedAsyncioTestCase):
                 "text": f"Analysts accepted 1 of 2 decided proposals ({n - 2} open).",
                 "rows": [
                     {
-                        "label": "Version 1, the demo answer with no model",
+                        "label": "Version 2, the demo answer with no model",
                         "text": f"1 accepted, 1 rejected, {n - 2} open",
                     }
                 ],

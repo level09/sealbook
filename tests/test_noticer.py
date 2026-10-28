@@ -535,7 +535,7 @@ class NoticerRunTest(unittest.IsolatedAsyncioTestCase):
             next(a for a in cards if a["key"] == "noticer")["agreement"]["rows"],
             [
                 {
-                    "label": "Version 1, the demo answer with no model",
+                    "label": "Version 2, the demo answer with no model",
                     "text": "0 accepted, 0 rejected, 1 open",
                 }
             ],
