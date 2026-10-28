@@ -137,7 +137,7 @@ async def _post_hosted(inputs, references, model, transport):
                         "model": model,
                         "input": [_part(item)],
                         "dimensions": DIMENSIONS,
-                        "provider": {"zdr": True},
+                        "provider": routes.zdr_provider(),
                     },
                 )
                 response.raise_for_status()
@@ -145,6 +145,8 @@ async def _post_hosted(inputs, references, model, transport):
 
         responses = await asyncio.gather(*(one(x) for x in inputs + references))
     bodies = [r.json() for r in responses]
+    for body in bodies:
+        routes.check_pinned(body.get("provider"))
     served = {b.get("model") for b in bodies}
     if len(served) != 1 or None in served:
         raise ValueError("embedding responses name no single served model")

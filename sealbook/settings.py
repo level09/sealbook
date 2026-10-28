@@ -109,6 +109,16 @@ class Config(stk.Config):
     ]
     ANCHOR_INTERVAL_SECONDS = int(os.environ.get("ANCHOR_INTERVAL_SECONDS", "3600"))
 
+    # OpenRouter provider slugs allowed to serve cloud-zdr calls, comma-separated
+    # ("deepinfra,google-vertex"). Chat and embedding calls send them as
+    # provider.only, and a response served by any other provider fails the call.
+    # Empty (the default) pins nothing: any zero-retention provider may serve.
+    ROUTE_CLOUD_ZDR_PROVIDERS = [
+        p.strip()
+        for p in os.environ.get("ROUTE_CLOUD_ZDR_PROVIDERS", "").split(",")
+        if p.strip()
+    ]
+
     # Seconds one local model call may take. A laptop reads a register page at a few
     # tokens a second; the run lease grows with it (stk.ledger.queue).
     ROUTE_LOCAL_TIMEOUT = int(os.environ.get("ROUTE_LOCAL_TIMEOUT", "120"))

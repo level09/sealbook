@@ -41,6 +41,7 @@ from sealbook.ledger.models import (
 from sealbook.monitor import data
 from sealbook.monitor import filter as mfilter
 from sealbook.people import data as people_data
+from sealbook.runs.routes import RouteError
 from sealbook.settings import Config
 
 bp = Blueprint("discovery", __name__)
@@ -96,7 +97,7 @@ async def search():
         try:
             embedding = await embeddings.query(db, query, Config.EMBEDDING_MODEL)
             semantic = {"status": "ok"}
-        except (httpx.HTTPError, ValueError, KeyError) as exc:
+        except (httpx.HTTPError, ValueError, KeyError, RouteError) as exc:
             # Exact matches still answer; the failure is shown, never silent.
             current_app.logger.warning("semantic search failed: %s", exc)
             semantic = {
