@@ -247,7 +247,7 @@ async def overview(db, user, investigation: str, missing: list[str]) -> dict:
 def _state(key: str, runs: list[Run], mine: list[AgentTask], off: bool):
     """(state, the sentence beside it): off, checking, paused, watching or ready."""
     if off:
-        return "off", "Off until a local model is set up."
+        return "off", "Off until the agent model is set up."
     if any(r.status in tasks.ACTIVE for r in runs):
         return "checking", "Checking now."
     if key in ("brief", "linker"):

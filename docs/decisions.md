@@ -59,7 +59,7 @@ Scheduled checks back off by two after each empty result, capped at eight interv
 Compute the next check from completion time: missed schedules are skipped, never
 replayed. Failed checks release their wakes and wait five minutes. Three consecutive
 failures pause the task and notify its owner; access loss pauses at once. This bounds
-repeated local model failures without losing evidence or hiding the last good report.
+repeated model failures without losing evidence or hiding the last good report.
 A task-settled run event makes completion idempotent and lets the next poll recover
 after a worker stops between sealing and task settlement.
 

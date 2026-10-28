@@ -20,7 +20,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from sealbook import blobs, speech
-from sealbook.agents import tasks
+from sealbook.agents import read, tasks
 from sealbook.agents.approximate import approximate
 from sealbook.agents.brief import brief
 from sealbook.agents.contradictions import contradictions
@@ -133,7 +133,8 @@ EXTRACT_SYSTEM = (
     "detention_branch the security branch holding the person, transferred_to where "
     "they were moved, seen_at and last_seen where they were seen; each quotes the "
     "place. A person's mother and father are facts about that person, not people of "
-    "their own. List each fact once and stop when every fact is listed."
+    "their own. List each fact once and stop when every fact is listed. "
+    + read.DATA_ONLY
 )
 VALID = r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
 

@@ -103,11 +103,11 @@ def failure_reason(error):
     if kind == "AccessLost":
         return "The owner of this check no longer has access to this case."
     if "Timeout" in kind:
-        return "The local model did not answer in time."
+        return "The agent model did not answer in time."
     if kind == "ConnectError":
-        return "The local model could not be reached."
+        return "The agent model could not be reached."
     if kind == "RouteError":
-        return "The local model route could not complete the check."
+        return "The agent model route could not complete the check."
     if kind == "LookupError":
         return "The check could not load its case or owner."
     return "The check could not finish."
