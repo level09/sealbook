@@ -22,13 +22,12 @@ from sealbook.settings import Config
 
 TOOL = "approximate"
 AGENT = "Place finder"
-PROMPT_VERSION = "approximate-1"
+PROMPT_VERSION = "approximate-2"
 CAP = 24
 PER_CALL = 4
 PASSAGES = 3  # claims read per name
 PLACES = 6  # known places offered per name
 RADIUS_KM = (0.1, 50.0)
-MIN_QUOTE = 8
 BUDGET_SECONDS = LEASE.total_seconds() - 90
 SYSTEM = (
     "You help an analyst place names that the gazetteer does not have. Each "
@@ -36,11 +35,11 @@ SYSTEM = (
     "around it with claim handles, and known places those passages name, with "
     "place handles. Answer for a candidate only when one passage says where the "
     "named place is relative to one of the known places. Give the name handle, the "
-    "claim handle of that passage, the place handle, a radius in kilometres that "
-    "covers where the named place could be, and quote the exact words of that "
-    "passage that say so, copied character for character and naming the known "
-    "place. Leave out a candidate the passages do not locate. Do not add places or "
-    "facts absent from the passages."
+    "claim handle of that passage, the exact words of that passage that say so, "
+    "copied character for character and naming the known place, then the place "
+    "handle and a radius in kilometres that covers where the named place could be. "
+    "Leave out a candidate the passages do not locate. Do not add places or "
+    f"facts absent from the passages. {read.DATA_ONLY}"
 )
 SCHEMA = {
     "type": "object",
@@ -52,13 +51,13 @@ SCHEMA = {
             "items": {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["name", "claims", "place", "radius_km", "quote"],
+                "required": ["name", "claims", "quote", "place", "radius_km"],
                 "properties": {
                     "name": {"type": "string"},
                     "claims": {"type": "array", "items": {"type": "string"}},
+                    "quote": {"type": "string", "minLength": 1, "maxLength": 300},
                     "place": {"type": "string"},
                     "radius_km": {"type": "number"},
-                    "quote": {"type": "string", "minLength": 1, "maxLength": 300},
                 },
             },
         }
@@ -183,9 +182,7 @@ def validate(answer, cands, h, norms_of) -> tuple[list, dict]:
         words = item["quote"].strip()
         folded = normalise(words)
         cited = [h.ref[r] for r in refs]
-        if len(folded) < MIN_QUOTE or not any(
-            folded in normalise(cand["passages"][i]) for i in cited
-        ):
+        if not read.quoted(words, [cand["passages"][i] for i in cited]):
             dropped["quote"] += 1
             continue
         if not any(n in folded for n in norms_of.get(place, ())):
@@ -273,7 +270,13 @@ async def approximate(c) -> str:
         try:
             got = await asyncio.wait_for(
                 read.ask(
-                    c, TOOL, SYSTEM, payload(part, h, case.docs), SCHEMA, fixed_answer
+                    c,
+                    TOOL,
+                    SYSTEM,
+                    payload(part, h, case.docs),
+                    SCHEMA,
+                    fixed_answer,
+                    lambda a, part=part: validate(a, part, h, norms_of)[1],
                 ),
                 BUDGET_SECONDS - (time.monotonic() - started),
             )

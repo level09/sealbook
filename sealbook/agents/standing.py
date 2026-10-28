@@ -18,11 +18,11 @@ from sealbook.settings import Config
 TOOL = "standing"
 PER_CALL = 12
 BUDGET_SECONDS = LEASE.total_seconds() - max(90, Config.ROUTE_LOCAL_TIMEOUT + 15)
-VERSION = "standing-2"
+VERSION = "standing-3"
 SCREEN = (
     "Screen these claims for a standing question. Prefer false positives. Return "
     "every claim handle that might help answer it, including context. This is only "
-    "a screen, not a finding. Use only the supplied handles."
+    "a screen, not a finding. Use only the supplied handles. " + read.DATA_ONLY
 )
 JUDGE = (
     "Read these claims against the standing question. Propose only matches the "
@@ -33,7 +33,7 @@ JUDGE = (
     "kept everything that might help. Each match "
     "must cite at least one supplied claim handle in claims. Write why as one "
     "short plain sentence using only cited values. Do not put handles in why. "
-    "A match is a proposal for human review, never an accepted fact."
+    "A match is a proposal for human review, never an accepted fact. " + read.DATA_ONLY
 )
 SCREEN_SCHEMA = {
     "type": "object",
@@ -170,12 +170,12 @@ async def standing(c):
     dropped = {}
     cost = {"seconds": 0.0, "prompt_tokens": 0, "completion_tokens": 0}
 
-    async def ask(name, system, claims, schema, fixed):
+    async def ask(name, system, claims, schema, fixed, check):
         p = {
             "question": task.spec["question"],
             "claims": [claim_view(h, claim, case.docs) for claim in claims],
         }
-        got = await read.ask(c, name, system, p, schema, fixed)
+        got = await read.ask(c, name, system, p, schema, fixed, check)
         raw.append(got["raw"])
         for key in cost:
             cost[key] += got[key] or 0
@@ -187,17 +187,18 @@ async def standing(c):
         if time.monotonic() - started > BUDGET_SECONDS:
             deferred.extend(part)
             continue
+        allowed = {h("c", claim.id) for claim in part}
         answer = await ask(
             "standing_screen",
             SCREEN,
             part,
             SCREEN_SCHEMA,
             lambda p: {"maybe": [claim["h"] for claim in p["claims"]]},
+            lambda a, ok=allowed: {"unknown": len(set(a["maybe"]) - ok)},
         )
         screened += len(part)
         if answer is None:
             continue
-        allowed = {h("c", claim.id) for claim in part}
         unknown = set(answer["maybe"]) - allowed
         dropped["unknown"] = dropped.get("unknown", 0) + len(unknown)
         survivors = [claim for claim in part if h("c", claim.id) in answer["maybe"]]
@@ -207,7 +208,14 @@ async def standing(c):
         if time.monotonic() - started > BUDGET_SECONDS:
             deferred.extend(survivors)
             continue
-        answer = await ask("standing_matches", JUDGE, survivors, SCHEMA, fixed_answer)
+        answer = await ask(
+            "standing_matches",
+            JUDGE,
+            survivors,
+            SCHEMA,
+            fixed_answer,
+            lambda a, part=survivors: validate(a, part, h, case.claims, set(seen))[1],
+        )
         if answer is None:
             continue
         found, counts = validate(answer, survivors, h, case.claims, seen)
@@ -233,7 +241,7 @@ async def standing(c):
         else (
             "Some claims still need checking."
             if deferred
-            else "The local model did not return a usable answer."
+            else "The model did not return a usable answer."
             if dropped.get("invalid")
             else "No new claims matched this question."
         )

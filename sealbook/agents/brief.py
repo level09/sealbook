@@ -44,7 +44,7 @@ from sealbook.settings import Config
 
 TOOL = "brief"
 AGENT = "Intake brief"
-PROMPT_VERSION = "intake-brief-1"
+PROMPT_VERSION = "intake-brief-2"
 MAX_NEXT = 5
 MAX_TEXT = 400
 SINGLE = (
@@ -70,7 +70,8 @@ SYSTEM = (
     "Then choose at most five next steps from `actions`, most useful first, each by "
     "its handle with a short imperative sentence. Skip anything that adds nothing. "
     "Write for the analyst: name people, places, dates and source titles in words; "
-    "handles go only in `about`, `cite` and `action`, never in `text`."
+    "handles go only in `about`, `cite` and `action`, never in `text`. "
+    + read.DATA_ONLY
 )
 SENTENCE = {
     "type": "object",
@@ -746,7 +747,15 @@ async def brief(c) -> str:
     c.run.prompt_hash = read.prompt_hash(PROMPT_VERSION, SYSTEM, SCHEMA)
     if c.run.model_requested == read.FIXED:
         c.run.inputs = {**c.run.inputs, "demo": read.note("intake brief")}
-    asked = await read.ask(c, "intake_brief", SYSTEM, p, SCHEMA, fixed_answer)
+    asked = await read.ask(
+        c,
+        "intake_brief",
+        SYSTEM,
+        p,
+        SCHEMA,
+        fixed_answer,
+        lambda a: validate(a, cands, h, g["case"].claims)[1],
+    )
     written, dropped = validate(asked["answer"], cands, h, g["case"].claims)
     sections = lines | written
     # Recheck what every line cites against the ledger as it stands now.
