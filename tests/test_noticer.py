@@ -519,6 +519,22 @@ class NoticerRunTest(unittest.IsolatedAsyncioTestCase):
             (st.prop, author.name, tier), (Prop.RELATION, "Noticer", "unconfirmed")
         )
         self.assertEqual((proposal.tool, proposal.status), ("notice_link", "done"))
+        cards = (
+            await (
+                await client.get(
+                    "/api/agents/overview", query_string={"investigation": CASE}
+                )
+            ).get_json()
+        )["agents"]
+        self.assertEqual(
+            next(a for a in cards if a["key"] == "noticer")["agreement"]["rows"],
+            [
+                {
+                    "label": "Version 1, the demo answer with no model",
+                    "text": "0 accepted, 0 rejected, 1 open",
+                }
+            ],
+        )
         again = await client.post("/api/agents/notice/link", json=body, headers=headers)
         self.assertEqual(again.status_code, 409)
         shown = await (

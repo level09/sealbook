@@ -21,6 +21,12 @@
                 <p class="mt-1">${ a.note }</p>
                 <p v-if="a.last" class="mt-1"><span class="text-medium-emphasis">Last run ${ ago(a.last.at) }:</span> ${ a.last.text }</p>
                 <p v-else class="mt-1 text-medium-emphasis">Has not run for you in this case yet.</p>
+                <details v-if="a.agreement" class="mt-1">
+                    <summary>${ a.agreement.text }</summary>
+                    <ul class="ms-5 text-medium-emphasis">
+                        <li v-for="r in a.agreement.rows" :key="r.label">${ r.label }: ${ r.text }.</li>
+                    </ul>
+                </details>
                 <keep-checking v-if="a.keep && !overview.off" :kind="a.keep" :investigation="caseSel" class="mt-2"></keep-checking>
                 <p v-if="a.href" class="mt-1"><a :href="a.href">${ a.where }</a></p>
                 <template v-if="a.key === 'noticer'">
