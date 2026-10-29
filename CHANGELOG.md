@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.2.0-alpha, 2026-10-29
+
+First tagged alpha. Not production ready; measurements are on synthetic data and
+small samples (docs/agent-eval.md).
+
+- Licensed under AGPL-3.0-or-later.
+- Reported events: extraction quotes what a text reports happened, where and when
+  (`reports`), and the linker proposes `same_event` links between sources, for an
+  analyst to decide.
+- Linker: known and declined candidates no longer fill a run, and a name-only
+  mention can reach the person it names.
+- Extraction drops mentions that are links, hashtags or sentences; OCR and
+  extraction can run on the `anthropic` route (`MODEL_ANTHROPIC`) where a policy row
+  allows it.
+- `acceptance/eval_extract.py` counts invented people and events per model.
+- Fixes: Review detail crash on texts naming places, gazetteer import of a whole
+  country.
+
 ## Sealbook on stk 17, 2026-10-25
 
 - Depend on the `stkit` package (`>=17.0.2,<18`) instead of a fork of stk. Sealbook's

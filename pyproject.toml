@@ -1,6 +1,6 @@
 [project]
 name = "sealbook"
-version = "0.1.0"
+version = "0.2.0a0"
 description = "AI-first evidence ledger"
 authors = [
     {name = "Level09", email = "hello@level09.com"}
