@@ -41,7 +41,7 @@ from sealbook.settings import Config
 
 TOOL = "link"
 AGENT = "Linker"
-PROMPT_VERSION = "linker-2"
+PROMPT_VERSION = "linker-3"
 CAP = 12  # candidates of each kind per run, strongest first
 PER_CALL = 4
 BUDGET_SECONDS = LEASE.total_seconds() - 90
@@ -65,12 +65,15 @@ SYSTEM = (
     "every one. Each candidate has a handle and the claims behind it, each claim "
     "with its own handle (c...). Candidates: m = maybe the same person, v = a "
     "person maybe involved in an incident, r = two documents maybe related, x = two "
-    "people maybe related. Rules: a shared name alone never makes the same person; "
+    "people maybe related, n = the same full name, held by no other record in the "
+    "case, where one record has nothing else to compare. Rules: outside n, a shared "
+    "name alone never makes the same person; for n, propose only when nothing given "
+    "argues against it and say in why that only the name matches; "
     "names in Arabic and Latin script, or a shorter form of a name, can be the same "
     "name; a difference in birth date or a parent's name rules out the same person. "
     "For each candidate first write why in one sentence naming what agrees and what "
     "differs and list in basis the claim handles that carry it, then set kind "
-    "(same_person for m, involved for v, contains or contained_in or related for "
+    "(same_person for m and n, involved for v, contains or contained_in or related for "
     "r, family or cellmate or command for x) and set propose to true only when its "
     f"claims support the link. Use only the data given. {read.DATA_ONLY}"
 )
@@ -239,6 +242,39 @@ def candidates(
         )
     out += top(c for _, c in sorted(same, key=lambda t: t[0]))
 
+    # A record that is only a name (a mention in a document) can agree on nothing
+    # else, so it never becomes an m. On analyst-linked staging data a full name
+    # held by exactly two records, one of them bare, was the same person in every
+    # pair, and partial names never were; so only the full, unshared name goes on.
+    holders: dict[str, set[str]] = {}
+    for p, ns in names.items():
+        for n in ns:
+            if len((key := normalise(n.text)).split()) >= 2:
+                holders.setdefault(key, set()).add(p)
+    named = []
+    for key, ps in holders.items():
+        if len(ps) != 2:
+            continue
+        a, b = sorted(ps)
+        bare = [p for p in (a, b) if all(c.prop == Prop.NAME for c in people[p])]
+        if not bare or not touches(people[a] + people[b]):
+            continue
+        x = next(c for c in names[a] if normalise(c.text) == key)
+        y = next(c for c in names[b] if normalise(c.text) == key)
+        named.append(
+            (
+                -len(key.split()),
+                {
+                    "h": h("n", (a, b)),
+                    "a": {"names": [view(x)], "other": _other(people[a], view)},
+                    "b": {"names": [view(y)], "other": _other(people[b], view)},
+                    "_sides": (a, b),
+                    "_basis": [x, y],
+                },
+            )
+        )
+    out += top(c for _, c in sorted(named, key=lambda t: t[0]))
+
     involved = []
     for inc in incidents:
         for person, cs in sorted(people.items()):
@@ -364,6 +400,11 @@ def candidates(
     return out
 
 
+def _other(claims: list[Claim], view) -> list[dict]:
+    """What else a record says, so the model can see what argues against a name."""
+    return [view(c) for c in claims if c.prop != Prop.NAME][:4]
+
+
 def payload(cands: list[dict]) -> dict:
     return {
         "candidates": [
@@ -392,6 +433,9 @@ def fixed_answer(p: dict) -> dict:
                 v["h"] for a in c["agree"] for v in (a["a"], a["b"])
             ]
             kind = "same_person"
+        elif prefix == "n":
+            why = "Only the full name matches; no other record in the case has it."
+            basis, kind = hs(c["a"]["names"], c["b"]["names"]), "same_person"
         elif prefix == "v":
             why = f"Placed at {c['place']} in {c['window']}, the incident's place and time."
             basis, kind = hs(c["person"], c["claims"]), "involved"
@@ -423,6 +467,7 @@ def fixed_answer(p: dict) -> dict:
 
 ALLOWED = {
     "m": ("same_person",),
+    "n": ("same_person",),
     "v": ("involved",),
     "r": DOCUMENT_RELATIONS,
     "x": PERSON_RELATIONS,
@@ -469,8 +514,10 @@ def validate(answer: dict | None, cands: list[dict], h: Handles, claims) -> tupl
 
 def _strong(prefix: str, cand: dict, basis: list[Claim]) -> bool:
     """The fail-closed shape each kind needs from its cited claims."""
-    if prefix in ("m", "x"):
+    if prefix in ("m", "n", "x"):
         sides = {c.person for c in basis}
+        if prefix == "n":
+            return set(cand["_sides"]) <= sides
         return set(cand["_sides"]) <= sides and any(c.prop != Prop.NAME for c in basis)
     if prefix == "v":
         return any(c.prop in LOCATED for c in basis)
@@ -511,7 +558,7 @@ def _statement(c, link: dict) -> StatementIn:
     why = {"why": link["why"]} if link["why"] else {}
     prefix = cand["h"][0]
     anchor = basis[0]
-    if prefix in ("m", "x"):
+    if prefix in ("m", "n", "x"):
         a, b = cand["_sides"]
         here = next(x for x in basis if x.person == a)
         there = next(x for x in basis if x.person == b)
@@ -520,7 +567,7 @@ def _statement(c, link: dict) -> StatementIn:
             value["kind"] = kind
         return StatementIn(
             subject=here.subject,
-            prop=Prop.SAME_AS if prefix == "m" else Prop.RELATION,
+            prop=Prop.RELATION if prefix == "x" else Prop.SAME_AS,
             value=value,
             author_id=c.run.principal_id,
             run_id=c.run.id,
@@ -558,7 +605,7 @@ def _statement(c, link: dict) -> StatementIn:
 
 def _key(cand: dict):
     prefix = cand["h"][0]
-    if prefix == "m":
+    if prefix in ("m", "n"):
         return ("person", frozenset(cand["_sides"]))
     if prefix == "x":
         return ("relation", frozenset(cand["_sides"]))

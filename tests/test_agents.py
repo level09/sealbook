@@ -173,6 +173,30 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual([s["href"] for s in out["next"]], ["/review"])
         self.assertEqual(dropped["unknown"], 1)
 
+    def test_linker_offers_a_bare_name_only_when_the_full_name_is_unshared(self):
+        def case(*claims):
+            docs = {c.source: {"title": c.source, "doc_type": ""} for c in claims}
+            return read.Case("c", list(claims), docs, {}, {})
+
+        full = claim(Prop.NAME, "Yousef Khaled Al-Ali", person="person:a")
+        born = claim(Prop.BIRTH_DATE, "1990", person="person:a")
+        mention = claim(
+            Prop.NAME, "Yousef Khaled Al-Ali", person="person:b", source="s2"
+        )
+        cands = linker.candidates(case(full, born, mention), [], None, Handles())
+        self.assertEqual([c["h"][0] for c in cands], ["n"])
+        self.assertEqual(cands[0]["b"]["other"], [])
+        # A third holder makes the name ambiguous; a shorter form never qualifies.
+        third = claim(Prop.NAME, "Yousef Khaled Al-Ali", person="person:c", source="s3")
+        self.assertEqual(
+            linker.candidates(case(full, born, mention, third), [], None, Handles()),
+            [],
+        )
+        short = claim(Prop.NAME, "Yousef Al-Ali", person="person:b", source="s2")
+        self.assertEqual(
+            linker.candidates(case(full, born, short), [], None, Handles()), []
+        )
+
     def test_linker_needs_cited_non_name_basis(self):
         other = claim(Prop.NAME, "يوسف خالد العلي", person="person:b", source="s2")
         held = claim(Prop.DETAINED_AT, "Branch 999", person="person:b", source="s2")
@@ -720,7 +744,7 @@ class AgentRunTest(unittest.IsolatedAsyncioTestCase):
                 "text": f"Analysts accepted 1 of 2 decided proposals ({n - 2} open).",
                 "rows": [
                     {
-                        "label": "Version 2, the demo answer with no model",
+                        "label": "Version 3, the demo answer with no model",
                         "text": f"1 accepted, 1 rejected, {n - 2} open",
                     }
                 ],

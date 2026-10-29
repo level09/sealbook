@@ -258,7 +258,7 @@ def score_linker(spec, case, out, written, keys):
         return {
             frozenset(keys["cluster"][s] for s in c["_sides"])
             for c in cands
-            if c["h"][0] == "m"
+            if c["h"][0] in "mn"
         }
 
     every = linker.candidates(case, [], None, read.Handles())
