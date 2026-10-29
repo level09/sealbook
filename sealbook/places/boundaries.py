@@ -13,7 +13,8 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 import orjson
-from sqlalchemy import func, select, text
+from sqlalchemy import any_, func, literal, select, text
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 
 from sealbook.places.models import AdminArea, BoundarySet, Place
 
@@ -150,7 +151,8 @@ async def assign(db, ids=None) -> int:
     )
     q = select(func.count()).select_from(Place).where(Place.admin1_id.is_not(None))
     if ids is not None:
-        q = q.where(Place.id.in_(params["ids"]))
+        # One array parameter: a whole country file passes asyncpg's 32767 limit.
+        q = q.where(Place.id == any_(literal(params["ids"], ARRAY(UUID))))
     return await db.scalar(q)
 
 
