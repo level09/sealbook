@@ -328,6 +328,31 @@ town and the date, quoted) grouped posts sharing a gazetteer town and an event o
 posting date within two days at precision 0.95, recall 0.45 on Opus (0.96 and 0.38
 on Haiku); about 632,000 input tokens per model for both prompts.
 
+The event layer then ran end to end on the same posts through the app: extraction
+on `claude-haiku-5-5` (route `anthropic`, `MODEL_ANTHROPIC`) wrote 350 `reports`
+claims, 280 with a town, and 47 names, none of them an outlet or a headline. A
+first run gave a document date for only 111 posts, because the model did not read
+"Posted on ... on <date>" as the document's date; once the prompt said a posting
+date is one, 211 posts had it. The linker built 342 same-event candidates, 318 of
+them pairs the archive had grouped (precision 0.93, recall 0.39). With the town
+missing from what the model saw, Haiku declined most true pairs; with each report's
+kind, place and town shown, it proposed 308 links over 44 runs, 288 of them right
+(precision 0.94, recall 0.36), for about one dollar. The model step adds little
+filtering to the rule layer here: it declined 4 of the 24 candidates the archive
+had not grouped, and some of those may be true pairs the archive never linked.
+
+## Extraction check
+
+`acceptance/eval_extract.py` scores what extraction would write on 16 synthetic,
+fictional posts (`acceptance/extract/posts.json`): six with no person in them but
+outlets, hashtags, headlines and unnamed people; two that report no event; six
+naming fictional people; two with an outlet and a person together. It counts
+invented people (target zero in every trial), missed people, events reported where
+a post has none, and planted towns found in a report's place words. On 2026-10-29,
+`claude-haiku-5-5` over two trials and `claude-opus-5-5` over one each invented no
+person and no event and found every planted person and town. The OpenRouter
+models could not be scored that day: the key had reached its spending limit.
+
 ## Known gaps
 
 - One synthetic case, 132 claims. The numbers say nothing about archive scale or
