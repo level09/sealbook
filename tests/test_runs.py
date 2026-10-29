@@ -279,6 +279,33 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         async with self.Session() as s:
             self.assertTrue(any("modified" in p for p in await verify_db(s)))
 
+    async def test_a_headline_or_link_is_not_a_person(self):
+        headline = "#Aleppo airstrike hits the market this morning near the old souk"
+        text = f"{TEXT}\n{headline}\nhttps://video.test/x\nPosted in Aleppo."
+        out = {
+            "statements": [
+                item(NAME),
+                item(headline, mention="post"),
+                item("Aleppo", prop="seen_at", mention="post"),
+                item("https://video.test/x", mention="link"),
+            ]
+        }
+        run_id = await self.queue(data=text.encode())
+        await work_once(
+            self.Session,
+            transport=self.transport(completion(orjson.dumps(out).decode())),
+        )
+        self.assertEqual((await self.get_run(run_id)).status, "done")
+        async with self.Session() as s:
+            written = (
+                await s.execute(
+                    select(Statement.prop).where(Statement.run_id == run_id)
+                )
+            ).scalars()
+            self.assertEqual(list(written), [Prop.NAME])
+        drops = [e.drop_reason for e in await self.events(run_id) if e.drop_reason]
+        self.assertEqual(drops, ["not_a_person"] * 3)
+
     async def test_placeholder_dates_keep_the_quoted_claims(self):
         # Recorded from openai/gpt-4o-mini on OpenRouter, 2026-10-24: both claims
         # quote real spans, but `valid` echoed the string "null" and the old code

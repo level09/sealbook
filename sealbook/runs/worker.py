@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import logging
+import re
 import uuid
 from calendar import monthrange
 from collections.abc import Awaitable, Callable
@@ -133,8 +134,10 @@ EXTRACT_SYSTEM = (
     "detention_branch the security branch holding the person, transferred_to where "
     "they were moved, seen_at and last_seen where they were seen; each quotes the "
     "place. A person's mother and father are facts about that person, not people of "
-    "their own. List each fact once and stop when every fact is listed. "
-    + read.DATA_ONLY
+    "their own. A person is a human being the text names: outlets, pages, channels, "
+    "organisations, places, crossings, headlines, links, hashtags and unnamed people "
+    "(a child, a witness) are not people and get no facts. List each fact once and "
+    "stop when every fact is listed. " + read.DATA_ONLY
 )
 VALID = r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
 
@@ -218,6 +221,12 @@ def locate(text: str, quote: str, occurrence: int) -> dict | None:
     return {"start": start, "end": start + len(quote)}
 
 
+def name_shaped(text: str) -> bool:
+    """Could be a person's name: no link, hashtag or handle, and at most eight words
+    (Arabic names with a nasab run to six or seven)."""
+    return not re.search(r"https?://|www\.|[#@]", text) and len(text.split()) <= 8
+
+
 async def extract(c: Ctx) -> str | None:
     blob = await c.s.get(Blob, c.run.inputs["blobs"][0])
     try:
@@ -243,6 +252,13 @@ async def extract(c: Ctx) -> str | None:
         }
     )
     items = orjson.loads(routes.content(served))["statements"]
+    # A headline or a channel filed as a person would reach review and the linker as
+    # someone; every fact of such a mention goes.
+    unnamed = {
+        i["mention"]
+        for i in items
+        if i["prop"] == Prop.NAME and not name_shaped(i["value"]["text"])
+    }
     subjects: dict[str, str] = {}
     names = []
     written = dropped = undated = 0
@@ -250,6 +266,10 @@ async def extract(c: Ctx) -> str | None:
         prop = Prop(item["prop"])
         if prop not in EXTRACTED_PROPS:
             raise ValueError(f"model returned non-extracted prop {prop}")
+        if prop not in DOCUMENT_PROPS and item["mention"] in unnamed:
+            dropped += 1
+            await c.emit("dropped", drop_reason="not_a_person")
+            continue
         if prop in DOCUMENT_PROPS:
             subject = f"blob:{blob.sha256}"
         else:
