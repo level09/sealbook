@@ -675,6 +675,30 @@ class AgentRunTest(unittest.IsolatedAsyncioTestCase):
         async with ext.async_session_factory() as s:
             self.assertEqual(await verify_db(s), [])
 
+    async def test_linker_moves_past_known_and_declined_candidates(self):
+        # Known links no longer fill a run's places: with one place per kind, the
+        # second run reaches the next candidate instead of stopping.
+        with mock.patch.object(linker, "CAP", 1):
+            _, first = await self.agent("link")
+            _, second = await self.agent("link")
+        self.assertTrue(first["written"] and second["written"])
+        self.assertFalse(
+            {w["statement"] for w in first["written"]}
+            & {w["statement"] for w in second["written"]}
+        )
+
+        propose = linker.fixed_answer
+
+        def decline(p):
+            return {"links": [{**x, "propose": False} for x in propose(p)["links"]]}
+
+        with mock.patch.object(linker, "fixed_answer", decline):
+            _, asked = await self.agent("link")
+            _, again = await self.agent("link")
+        self.assertTrue(asked["declined"])
+        self.assertEqual(again["candidates"], 0)
+        self.assertEqual(again["raw"], [])
+
     async def test_agents_page_counts_decisions_on_proposals(self):
         _, out = await self.agent("link")
         n = len(out["written"])

@@ -32,7 +32,7 @@ from sealbook.ledger.contracts import (
     StatementIn,
     Tier,
 )
-from sealbook.ledger.models import Payload, Run, Statement, StatementTier
+from sealbook.ledger.models import Blob, Payload, Run, Statement, StatementTier
 from sealbook.ledger.queue import LEASE
 from sealbook.monitor.data import LOCATED
 from sealbook.places import normalise
@@ -160,10 +160,14 @@ def _same_place(case, a: Claim, b: Claim) -> bool:
     return read.same_value(a.prop, a.text, b.text)
 
 
-def candidates(case, incidents: list[dict], focus: set | None, h: Handles) -> list:
+def candidates(
+    case, incidents: list[dict], focus: set | None, h: Handles, keep=None
+) -> list:
     """Every candidate, strongest first within its kind, at most CAP of each.
-    `focus` is a set of claim ids a candidate must touch (None: the whole case)."""
+    `focus` is a set of claim ids a candidate must touch (None: the whole case).
+    `keep` filters before the cap, so known links never fill a run's places."""
     docs = case.docs
+    top = lambda xs: [x for x in xs if keep is None or keep(x)][:CAP]  # noqa: E731
     view = lambda c: claim_view(h, c, docs)  # noqa: E731
     people = case.by_person()
     names = {p: [c for c in cs if c.prop == Prop.NAME] for p, cs in people.items()}
@@ -233,7 +237,7 @@ def candidates(case, incidents: list[dict], focus: set | None, h: Handles) -> li
                 },
             )
         )
-    out += [c for _, c in sorted(same, key=lambda t: t[0])[:CAP]]
+    out += top(c for _, c in sorted(same, key=lambda t: t[0]))
 
     involved = []
     for inc in incidents:
@@ -266,7 +270,7 @@ def candidates(case, incidents: list[dict], focus: set | None, h: Handles) -> li
                     "_basis": [*names[person][:1], *at[:3]],
                 }
             )
-    out += involved[:CAP]
+    out += top(involved)
 
     by_source: dict[str, dict[str, list[Claim]]] = {}
     for p, cs in people.items():
@@ -303,7 +307,7 @@ def candidates(case, incidents: list[dict], focus: set | None, h: Handles) -> li
                 },
             )
         )
-    out += [c for _, c in sorted(documents, key=lambda t: t[0])[:CAP]]
+    out += top(c for _, c in sorted(documents, key=lambda t: t[0]))
 
     related = []
     together = {p: {c.source for c in cs} for p, cs in people.items()}
@@ -356,7 +360,7 @@ def candidates(case, incidents: list[dict], focus: set | None, h: Handles) -> li
                 "_basis": [*na, *nb, *basis],
             }
         )
-    out += related[:CAP]
+    out += top(related)
     return out
 
 
@@ -552,7 +556,7 @@ def _statement(c, link: dict) -> StatementIn:
     )
 
 
-def _key(cand: dict, groups):
+def _key(cand: dict):
     prefix = cand["h"][0]
     if prefix == "m":
         return ("person", frozenset(cand["_sides"]))
@@ -563,6 +567,37 @@ def _key(cand: dict, groups):
     return ("document", frozenset(cand["_docs"]))
 
 
+def _wire(k) -> list:
+    return [k[0], *(sorted(p) if isinstance(p, frozenset) else p for p in k[1:])]
+
+
+def _unwire(w: list):
+    return (w[0], *(frozenset(p) if isinstance(p, list) else p for p in w[1:]))
+
+
+async def declined(db, investigation: str, model: str) -> list:
+    """What this model already declined in this case under this prompt, with the
+    claims it saw: like a rejection, asked again only when a new claim joins.
+    A new model or prompt version reads everything afresh."""
+    # ponytail: reads every past run's output; keep declines in a table if a case
+    # gathers thousands of linker runs.
+    runs = await db.scalars(
+        select(Run).where(
+            Run.tool == TOOL,
+            Run.status == "done",
+            Run.model_requested == model,
+            Run.inputs["investigation"].astext == investigation,
+            Run.output_hash.is_not(None),
+        )
+    )
+    out = []
+    for run in runs:
+        o = read.read_output(await db.get(Blob, run.output_hash))
+        if o.get("version") == PROMPT_VERSION:
+            out += [(_unwire(k), set(basis)) for k, basis in o.get("declined", [])]
+    return out
+
+
 async def link(c) -> str:
     """Worker tool `link`: inputs {investigation, for_user, focus}."""
     investigation = c.run.inputs["investigation"]
@@ -570,20 +605,23 @@ async def link(c) -> str:
     focus = await focus_of(c.s, case, c.run.inputs.get("focus"))
     incidents = await read.incidents(c.s, investigation, case.groups)
     exists, rejected = await known(c.s, case.groups)
+    for k, basis in await declined(c.s, investigation, c.run.model_requested):
+        rejected.setdefault(k, set()).update(basis)
     h = Handles()
-    every = candidates(case, incidents, focus, h)
-    cands = [
-        x
-        for x in every
-        if fresh(
-            _key(x, case.groups), [_ref(b.id) for b in x["_basis"]], exists, rejected
-        )
-    ]
+    skipped = []
+
+    def keep(x):
+        new = fresh(_key(x), [_ref(b.id) for b in x["_basis"]], exists, rejected)
+        if not new:
+            skipped.append(x)
+        return new
+
+    cands = candidates(case, incidents, focus, h, keep)
     await c.emit(
         "input_read",
         claims=len(case.claims),
-        candidates=len(every),
-        already_known=len(every) - len(cands),
+        candidates=len(cands) + len(skipped),
+        already_known=len(skipped),
     )
     await read.log_read(
         c,
@@ -602,7 +640,7 @@ async def link(c) -> str:
         "prompt_tokens": 0,
         "completion_tokens": 0,
     }
-    links, dropped, deferred = [], {}, []
+    links, dropped, deferred, declines = [], {}, [], []
     started = time.monotonic()
     for i in range(0, len(cands), PER_CALL):
         part = cands[i : i + PER_CALL]
@@ -625,11 +663,18 @@ async def link(c) -> str:
             asked[k] += got[k] or 0
         found, why = validate(got["answer"], part, h, case.claims)
         links += found
+        by = {x["h"]: x for x in part}
+        for a in (got["answer"] or {}).get("links", []):
+            if not a["propose"] and a["h"] in by:
+                x = by[a["h"]]
+                declines.append(
+                    [_wire(_key(x)), sorted(_ref(b.id) for b in x["_basis"])]
+                )
         for k, n in why.items():
             dropped[k] = dropped.get(k, 0) + n
     written, refused = [], []
     for link_ in links:
-        k = _key(link_["cand"], case.groups)
+        k = _key(link_["cand"])
         if not fresh(k, [_ref(b.id) for b in link_["basis"]], exists, rejected):
             refused.append("already known")
             continue
@@ -660,8 +705,9 @@ async def link(c) -> str:
             "investigation": investigation,
             "focus": c.run.inputs.get("focus"),
             "candidates": len(cands),
-            "already_known": len(every) - len(cands),
+            "already_known": len(skipped),
             "deferred": len(deferred),
+            "declined": declines,
             "written": written,
             "dropped": dropped,
             "refused": refused,

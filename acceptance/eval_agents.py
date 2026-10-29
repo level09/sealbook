@@ -198,6 +198,7 @@ def harness(case, events, g, written, route: Route):
         (brief, "invisible", mock.AsyncMock(return_value=set())),
         (brief, "gather", mock.AsyncMock(return_value=g)),
         (linker, "known", mock.AsyncMock(return_value=(set(), {}))),
+        (linker, "declined", mock.AsyncMock(return_value=[])),
         (write, "subject_head", nothing),
         (write, "append", append),
         (gaps, "event_kinds", mock.AsyncMock(return_value=events)),
