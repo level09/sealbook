@@ -200,6 +200,7 @@ class ValidateTest(unittest.TestCase):
         cands = linker.candidates(case, [], None, Handles(), towns=towns)
         self.assertEqual([x["_docs"] for x in cands], [("s1", "s2")])
         self.assertIn("posted", cands[0]["b"])
+        self.assertEqual(cands[0]["a"]["town"], "Kafr Nabl")
         self.assertEqual(len(cands[0]["_basis"]), 3)
         self.assertEqual(linker.candidates(case, [], None, Handles()), [])
 
@@ -774,7 +775,7 @@ class AgentRunTest(unittest.IsolatedAsyncioTestCase):
                 "text": f"Analysts accepted 1 of 2 decided proposals ({n - 2} open).",
                 "rows": [
                     {
-                        "label": "Version 4, the demo answer with no model",
+                        "label": "Version 5, the demo answer with no model",
                         "text": f"1 accepted, 1 rejected, {n - 2} open",
                     }
                 ],

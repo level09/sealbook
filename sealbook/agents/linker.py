@@ -43,7 +43,7 @@ from sealbook.sheets import dates
 
 TOOL = "link"
 AGENT = "Linker"
-PROMPT_VERSION = "linker-4"
+PROMPT_VERSION = "linker-5"
 CAP = 12  # candidates of each kind per run, strongest first
 PER_CALL = 4
 BUDGET_SECONDS = LEASE.total_seconds() - 90
@@ -444,6 +444,7 @@ def _same_event(case, h: Handles, view, touches, towns: dict) -> list[dict]:
 
         def side(src, r):
             out = {"title": case.docs[src]["title"], "report": view(r[0])}
+            out |= case.reports.get(r[0].id, {})  # kind, place and town words
             if r[3]:
                 out["posted"] = view(posted[src][1])
             return out
