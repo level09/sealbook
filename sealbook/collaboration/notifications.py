@@ -36,6 +36,7 @@ PROP = {
     "detained_at": "Detained at",
     "document_date": "Document date",
     "document_type": "Document type",
+    "reports": "Reports",
 }
 # These read as a question or a thing, not as "<field> claim".
 WHOLE = {

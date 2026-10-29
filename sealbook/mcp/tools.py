@@ -40,7 +40,8 @@ from sealbook.search import find
 UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 SHA256 = "[0-9a-f]{64}"
 DOCUMENT_PROPS = frozenset({Prop.DOCUMENT_TYPE, Prop.DOCUMENT_DATE})
-FACT_PROPS = sorted(str(p) for p in EXTRACTED_PROPS)
+# A reported event needs its kind and place words; MCP clients do not propose one yet.
+FACT_PROPS = sorted(str(p) for p in EXTRACTED_PROPS - {Prop.REPORTS})
 EVIDENCE = {
     "type": "array",
     "items": {"enum": [str(e) for e in EvidenceKind]},

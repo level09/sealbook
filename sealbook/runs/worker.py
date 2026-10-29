@@ -35,6 +35,7 @@ from sealbook.discovery import service as discovery
 from sealbook.ledger import chain, queue, write
 from sealbook.ledger.contracts import (
     EXTRACTED_PROPS,
+    REPORT_KINDS,
     Event,
     EvidenceKind,
     Prop,
@@ -54,7 +55,7 @@ from sealbook.watch import matcher
 
 log = logging.getLogger(__name__)
 POLL_SECONDS = 2
-DOCUMENT_PROPS = {Prop.DOCUMENT_TYPE, Prop.DOCUMENT_DATE}
+DOCUMENT_PROPS = {Prop.DOCUMENT_TYPE, Prop.DOCUMENT_DATE, Prop.REPORTS}
 
 
 class Events:
@@ -129,7 +130,9 @@ EXTRACT_SYSTEM = (
     "printed text); "
     "valid, the date the fact held written in digits like 2013, 2013-09 or "
     "2013-09-17 when the text dates the fact, otherwise JSON null. A birth date or "
-    "document date is the value itself, so its valid is null. "
+    "document date is the value itself, so its valid is null. The document_date is "
+    "when the document was written, issued, published or posted; give it whenever "
+    "the text states one. "
     "arrested_at is the place of arrest, detained_at the place held, "
     "detention_branch the security branch holding the person, transferred_to where "
     "they were moved, seen_at and last_seen where they were seen; each quotes the "
@@ -137,7 +140,14 @@ EXTRACT_SYSTEM = (
     "their own. A person is a human being the text names: outlets, pages, channels, "
     "organisations, places, crossings, headlines, links, hashtags and unnamed people "
     "(a child, a witness) are not people and get no facts. List each fact once and "
-    "stop when every fact is listed. " + read.DATA_ONLY
+    "stop when every fact is listed. "
+    "Separately, in events, list each event the text reports (an attack, strike, "
+    "shelling, raid, arrest, killing, explosion or the like): what, the words saying "
+    "what happened; kind; place, the words naming where, or null; town, the name of "
+    "the town, city, village, airport, crossing or site inside place, or null; each "
+    "copied exactly from the text, with lang for what; and date, the day it happened "
+    "in digits like 2013-09-17 when the text gives it, or null. A posting date is not "
+    "the event date unless the text says it happened that day. " + read.DATA_ONLY
 )
 VALID = r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
 
@@ -147,8 +157,29 @@ EXTRACT_SCHEMA = {
     "schema": {
         "type": "object",
         "additionalProperties": False,
-        "required": ["statements"],
+        "required": ["statements", "events"],
         "properties": {
+            "events": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["what", "lang", "kind", "place", "town", "date"],
+                    "properties": {
+                        "what": {"type": "string"},
+                        "lang": {"type": "string"},
+                        "kind": {"enum": list(REPORT_KINDS)},
+                        "place": {"type": ["string", "null"]},
+                        "town": {"type": ["string", "null"]},
+                        "date": {
+                            "anyOf": [
+                                {"type": "string", "pattern": VALID},
+                                {"type": "null"},
+                            ]
+                        },
+                    },
+                },
+            },
             "statements": {
                 "type": "array",
                 "items": {
@@ -164,7 +195,10 @@ EXTRACT_SCHEMA = {
                     ],
                     "properties": {
                         "mention": {"type": "string"},
-                        "prop": {"type": "string", "enum": sorted(EXTRACTED_PROPS)},
+                        "prop": {
+                            "type": "string",
+                            "enum": sorted(EXTRACTED_PROPS - {Prop.REPORTS}),
+                        },
                         "value": {
                             "type": "object",
                             "additionalProperties": False,
@@ -190,7 +224,7 @@ EXTRACT_SCHEMA = {
                         },
                     },
                 },
-            }
+            },
         },
     },
 }
@@ -219,6 +253,20 @@ def locate(text: str, quote: str, occurrence: int) -> dict | None:
         if start < 0:
             return None
     return {"start": start, "end": start + len(quote)}
+
+
+def _reported(e: dict) -> dict:
+    """An event of the answer as a statement item on the document."""
+    value = {"text": e["what"], "lang": e["lang"], "kind": e["kind"]}
+    value |= {k: e[k] for k in ("place", "town") if e[k]}
+    return {
+        "mention": "document",
+        "prop": Prop.REPORTS,
+        "value": value,
+        "occurrence": 1,
+        "evidence": ["printed_text"],
+        "valid": e["date"],
+    }
 
 
 def name_shaped(text: str) -> bool:
@@ -251,7 +299,8 @@ async def extract(c: Ctx) -> str | None:
             **({"reasoning_effort": "none"} if c.run.route == "local" else {}),
         }
     )
-    items = orjson.loads(routes.content(served))["statements"]
+    answer = orjson.loads(routes.content(served))
+    items = answer["statements"] + [_reported(e) for e in answer.get("events", [])]
     # A headline or a channel filed as a person would reach review and the linker as
     # someone; every fact of such a mention goes.
     unnamed = {
@@ -282,10 +331,18 @@ async def extract(c: Ctx) -> str | None:
             valid_from = valid_to = None
             undated += 1
             await c.emit("undated", drop_reason="bad_valid_date")
+        value = item["value"]
+        if prop == Prop.REPORTS:
+            # Place words the text does not contain are the model's, not the source's.
+            value = {
+                k: v
+                for k, v in value.items()
+                if k not in ("place", "town") or (v and v in text)
+            }
         st = StatementIn(
             subject=subject,
             prop=prop,
-            value=item["value"],
+            value=value,
             author_id=c.run.principal_id,
             run_id=c.run.id,
             span_blob=blob.sha256,

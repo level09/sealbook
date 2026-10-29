@@ -60,6 +60,8 @@ class Case:
     groups: dict[str, frozenset]
     # Clusters a same-person proposal joins that no one has decided yet.
     links: list[tuple[str, str]] = field(default_factory=list)
+    # What a reports claim names beyond its text: claim id -> {"kind", "place", "town"}.
+    reports: dict = field(default_factory=dict)
 
     def by_person(self) -> dict[str, list[Claim]]:
         out: dict[str, list[Claim]] = {}
@@ -134,7 +136,14 @@ async def case(db, investigation: str) -> Case:
     ]
     located = [c.id for c in claims if c.prop in LOCATED]
     places = await resolve.resolved(db, located, investigation) if located else {}
-    return Case(investigation, claims, docs, places, groups, await links(db, groups))
+    reports = {
+        st.id: {k: value[k] for k in ("kind", "place", "town") if k in value}
+        for st, _, value, _ in rows
+        if st.prop == Prop.REPORTS
+    }
+    return Case(
+        investigation, claims, docs, places, groups, await links(db, groups), reports
+    )
 
 
 async def links(db, groups: dict) -> list[tuple[str, str]]:

@@ -94,6 +94,7 @@ RELATION_WORDS = {
     "contains": "Contains another document",
     "contained_in": "An excerpt of another document",
     "related": "Related to another document",
+    "same_event": "Reports the same event as another document",
 }
 
 

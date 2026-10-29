@@ -79,6 +79,11 @@ class Prop(enum.StrEnum):
     # Facts about a document (subject "blob:<sha256>")
     DOCUMENT_TYPE = "document_type"
     DOCUMENT_DATE = "document_date"
+    # An event the document reports (subject "blob:<sha256>"): value {"text": the
+    # words saying what happened, "lang", "kind": one of REPORT_KINDS, optional
+    # "place" and "town" quoted from the same text}, dated by valid_from/valid_to
+    # when the text dates it.
+    REPORTS = "reports"
     SHA256 = "sha256"
     MD5 = "md5"
     C2PA_VERIFY = "c2pa_verify"
@@ -162,12 +167,23 @@ EXTRACTED_PROPS = frozenset(
         Prop.EVENT,
         Prop.DOCUMENT_TYPE,
         Prop.DOCUMENT_DATE,
+        Prop.REPORTS,
     }
 )
 
 EVENT_KINDS = ("killed", "missing", "displaced", "released", "wounded", "defected")
+REPORT_KINDS = (
+    "airstrike",
+    "shelling",
+    "ground_attack",
+    "explosion",
+    "arrest",
+    "killing",
+    "raid",
+    "other",
+)
 PERSON_RELATIONS = ("family", "cellmate", "command")
-DOCUMENT_RELATIONS = ("contains", "contained_in", "related")
+DOCUMENT_RELATIONS = ("contains", "contained_in", "related", "same_event")
 
 # Fields hashed into each chained row. Order is irrelevant (canonical JSON sorts
 # keys); membership is the contract.

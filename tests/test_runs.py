@@ -23,6 +23,7 @@ from sealbook import blobs
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import (
     Blob,
+    Payload,
     Principal,
     Run,
     RunEvent,
@@ -278,6 +279,35 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             (await s.get(Run, run_id)).model_served = "vendor/other-model"
         async with self.Session() as s:
             self.assertTrue(any("modified" in p for p in await verify_db(s)))
+
+    async def test_a_reported_event_keeps_only_place_words_the_text_has(self):
+        text = "Warplanes struck the market in Kafr Nabl on 2016-05-17.\n"
+        event = {
+            "what": "Warplanes struck the market",
+            "lang": "en",
+            "kind": "airstrike",
+            "place": "the market in Kafr Nabl",
+            "town": "Kafranbel",  # the model's spelling, not the text's
+            "date": "2016-05-17",
+        }
+        run_id = await self.queue(data=text.encode())
+        out = {"statements": [], "events": [event]}
+        await work_once(
+            self.Session,
+            transport=self.transport(completion(orjson.dumps(out).decode())),
+        )
+        self.assertEqual((await self.get_run(run_id)).status, "done")
+        async with self.Session() as s:
+            st = (
+                await s.execute(select(Statement).where(Statement.run_id == run_id))
+            ).scalar_one()
+            value = (await s.get(Payload, st.commitment)).value
+        self.assertEqual(st.prop, Prop.REPORTS)
+        self.assertTrue(st.subject.startswith("blob:"))
+        self.assertEqual(st.span, {"start": 0, "end": 27})
+        self.assertEqual(st.valid_from, date(2016, 5, 17))
+        self.assertEqual(value["place"], "the market in Kafr Nabl")
+        self.assertNotIn("town", value)
 
     async def test_a_headline_or_link_is_not_a_person(self):
         headline = "#Aleppo airstrike hits the market this morning near the old souk"

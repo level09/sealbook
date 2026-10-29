@@ -2,13 +2,14 @@
 throwaway Postgres. Citation validation, masking for a reader without the reveal,
 duplicate and rejected-link suppression, and determinism."""
 
+import dataclasses
 import os
 import re
 import subprocess
 import sys
 import unittest
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from types import SimpleNamespace
 from unittest import mock
 
@@ -39,6 +40,7 @@ from sealbook.ledger.models import Blob, Principal, Run, Statement
 from sealbook.ledger.write import principal_for_user, record_acquisition, verify_db
 from sealbook.monitor.seed import Seeder
 from sealbook.people import data as people_data
+from sealbook.places import normalise
 from sealbook.runs import routes
 from sealbook.runs.worker import process
 from sealbook.settings import Config
@@ -172,6 +174,34 @@ class ValidateTest(unittest.TestCase):
         )
         self.assertEqual([s["href"] for s in out["next"]], ["/review"])
         self.assertEqual(dropped["unknown"], 1)
+
+    def test_linker_pairs_reports_of_one_town_within_two_days(self):
+        def report(text, town, src, day=None):
+            c = claim(Prop.REPORTS, text, person=None, source=src)
+            c = dataclasses.replace(c, subject=f"blob:{src}", lo=day, hi=day)
+            return c, {"kind": "airstrike", "town": town}
+
+        def posted(src, text):
+            c = claim(Prop.DOCUMENT_DATE, text, person=None, source=src)
+            return dataclasses.replace(c, subject=f"blob:{src}")
+
+        a, ta = report(
+            "Warplanes struck the market", "Kafr Nabl", "s1", date(2016, 5, 17)
+        )
+        b, tb = report("قصف السوق", "كفرنبل", "s2")
+        c, tc = report("Shelling hit the school", "Kafr Nabl", "s3", date(2016, 6, 30))
+        claims = [a, b, c, posted("s2", "2016-05-18")]
+        docs = {s: {"title": s, "doc_type": ""} for s in ("s1", "s2", "s3")}
+        case = read.Case(
+            "c", claims, docs, {}, {}, reports={a.id: ta, b.id: tb, c.id: tc}
+        )
+        # Kafr Nabl and كفرنبل meet only through the gazetteer.
+        towns = {"kafr nabl": {"p1"}, normalise("كفرنبل"): {"p1"}}
+        cands = linker.candidates(case, [], None, Handles(), towns=towns)
+        self.assertEqual([x["_docs"] for x in cands], [("s1", "s2")])
+        self.assertIn("posted", cands[0]["b"])
+        self.assertEqual(len(cands[0]["_basis"]), 3)
+        self.assertEqual(linker.candidates(case, [], None, Handles()), [])
 
     def test_linker_offers_a_bare_name_only_when_the_full_name_is_unshared(self):
         def case(*claims):
@@ -744,7 +774,7 @@ class AgentRunTest(unittest.IsolatedAsyncioTestCase):
                 "text": f"Analysts accepted 1 of 2 decided proposals ({n - 2} open).",
                 "rows": [
                     {
-                        "label": "Version 3, the demo answer with no model",
+                        "label": "Version 4, the demo answer with no model",
                         "text": f"1 accepted, 1 rejected, {n - 2} open",
                     }
                 ],
