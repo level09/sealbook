@@ -341,6 +341,14 @@ kind, place and town shown, it proposed 308 links over 44 runs, 288 of them righ
 filtering to the rule layer here: it declined 4 of the 24 candidates the archive
 had not grouped, and some of those may be true pairs the archive never linked.
 
+Falling back to the places named in a report's place words, only when a report
+has no town the gazetteer knows, raised the candidates to 479, 419 of them grouped
+by the archive (precision 0.875, recall 0.52). Letting any shared place word count
+reached recall 0.56 at 0.845, the loss coming from distinct strikes a day apart in
+one city (two airports near Damascus). After the model step the run held 382
+same-event proposals, 356 of them right (precision 0.93, recall 0.44), about 1.34
+dollars of Haiku over 57 linker runs in all.
+
 ## Extraction check
 
 `acceptance/eval_extract.py` scores what extraction would write on 16 synthetic,
