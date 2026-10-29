@@ -64,6 +64,36 @@ class AnthropicRouteTest(unittest.IsolatedAsyncioTestCase):
 
         return httpx.MockTransport(handle)
 
+    async def test_an_image_part_becomes_a_base64_block(self):
+        body = {
+            "model": "claude-opus-5-5",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Transcribe."},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": "data:image/png;base64,iVBORw0K"},
+                        },
+                    ],
+                }
+            ],
+        }
+        await routes.chat(Route.ANTHROPIC, body, self.transport(reply()))
+        sent = orjson.loads(self.sent[0].content)["messages"][0]["content"]
+        self.assertEqual(
+            sent[1],
+            {
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": "image/png",
+                    "data": "iVBORw0K",
+                },
+            },
+        )
+
     async def test_request_and_response_translate(self):
         served = await routes.chat(Route.ANTHROPIC, BODY, self.transport(reply()))
         (request,) = self.sent

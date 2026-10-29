@@ -126,6 +126,8 @@ class Config(stk.Config):
     # The model each route serves for OCR and extraction (MODEL_LOCAL,
     # MODEL_CLOUD_ZDR, MODEL_CLOUD). Ingest queues work on the most private route
     # the policy allows that has a model; none means the file waits, unprocessed.
+    # MODEL_ANTHROPIC (e.g. claude-opus-5-5, with ANTHROPIC_API_KEY) is last: Anthropic
+    # keeps API data for a period, so a policy row must allow it, for public sources.
     # cloud-zdr defaults to Gemma 4 31B, which read the Arabic demo register almost
     # exactly (2026-10-25); MODEL_CLOUD_ZDR= (empty) turns it off.
     RUN_MODELS = {
@@ -136,6 +138,7 @@ class Config(stk.Config):
                 ("local", ""),
                 ("cloud-zdr", "google/gemma-4-31b-it"),
                 ("cloud", ""),
+                ("anthropic", ""),
             )
         )
         if m

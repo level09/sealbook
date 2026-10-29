@@ -141,7 +141,8 @@ policy row to `{local}` so nothing falls back to a hosted model.
 | `ROUTE_CLOUD_ZDR_PROVIDERS` | Empty by default, which pins nothing: any zero-retention provider may serve. Set to comma-separated OpenRouter provider slugs (`deepinfra,google-vertex/us-east5`) and every `cloud-zdr` chat and embedding call also sends them as `provider.only`; a response whose served provider is not on the list fails the run or search. OpenRouter reports a display name ("DeepInfra"), not a slug, so a name matches when it equals a pin's base slug (before the first `/`) after both are lowercased and cut to letters and digits. A provider whose display name does not fold to its slug always fails; pick another provider or clear the pin |
 | `EMBEDDING_ROUTE` | `cloud-zdr` (default): `EMBEDDING_MODEL` on OpenRouter, default `google/gemini-embedding-2`, one item per call; `local`: an Ollama-style `/api/embed` server at `EMBEDDING_URL` |
 | `MODEL_CLOUD` | OpenRouter model for ordinary sources |
-| `ANTHROPIC_API_KEY` | Key for the `anthropic` route (agents only, not zero retention; see Proactive agents) |
+| `ANTHROPIC_API_KEY` | Key for the `anthropic` route (not zero retention; see Proactive agents) |
+| `MODEL_ANTHROPIC` | Claude model for OCR and extraction on the `anthropic` route, tried last; a source uses it only when its policy row allows `anthropic`, so set that for public material only |
 
 Checked here on 2026-10-25: `google/gemma-4-31b-it` on the zero-retention route read the
 demo register scan, Arabic headers, names, mothers, places and dates, almost exactly in

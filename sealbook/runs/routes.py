@@ -101,6 +101,24 @@ def _wire(schema):
     }
 
 
+def _parts(content):
+    """Chat content parts as Messages blocks: an image data URL becomes a base64 image."""
+    if isinstance(content, str):
+        return content
+    out = []
+    for part in content:
+        if part["type"] == "image_url":
+            mime, _, data = (
+                part["image_url"]["url"].removeprefix("data:").partition(";base64,")
+            )
+            part = {
+                "type": "image",
+                "source": {"type": "base64", "media_type": mime, "data": data},
+            }
+        out.append(part)
+    return out
+
+
 def _to_messages(body: dict) -> dict:
     """An OpenAI chat body as a Messages API request. temperature is dropped: current
     Claude models answer any non-default value with a 400."""
@@ -109,7 +127,7 @@ def _to_messages(body: dict) -> dict:
         "model": body["model"],
         "max_tokens": body.get("max_tokens", ANTHROPIC_MAX_TOKENS),
         "messages": [
-            {"role": m["role"], "content": m["content"]}
+            {"role": m["role"], "content": _parts(m["content"])}
             for m in turns
             if m["role"] != "system"
         ],
