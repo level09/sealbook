@@ -295,6 +295,39 @@ On judgment, `google/gemini-4-argon` is the strongest here and the dearest, abou
 son trap like the others, and its other losses are a label and one citation. One
 synthetic case and three trials per model: a direction, not a benchmark.
 
+## Real data checks, 2026-10-29
+
+Two checks outside the planted case. The data stays off this repository; only
+counts are recorded here.
+
+**Analyst-linked archive records** (a private copy, 300 documents, 886 person
+profiles, no model called). Against 735 pairs analysts had marked as one person,
+the linker's rules built 92 candidates: 638 pairs were lost because one side is a
+mention that carries only a name, so nothing else could agree. The 12 strongest
+candidates were all true, but 80 true pairs sat below the per-kind cap, and a run
+re-asked the same top 12 because nothing recorded a decline. After skipping known
+and declined candidates before the cap, and proposing a bare mention when its full
+name is held by exactly one other record, 639 pairs became candidates; every
+name-only candidate was a known true pair, though mentions copied from profiles
+make exact names likelier here than in real documents. Rules cannot reach the
+rest: none of 29 family links shared a source, and a sibling rule (same father and
+family name) matched 4 of them among 1,461 pairs; document links mostly mark
+documents entered together, and text similarity separated them weakly (precision
+about 0.3).
+
+**Public conflict posts** (40 incidents, 235 posts in Arabic, English and Hebrew,
+grouped by the archive that published them). Person extraction on
+`google/gemma-4-31b-it` filed headlines, outlets, crossings, hashtags and unnamed
+people ("a young man") as 321 people. Dropping names that are links, hashtags or
+over eight words cut that to 132, and the outlets remained. The same prompt on
+`claude-opus-5-5` and `claude-haiku-5-5` (route `anthropic`) gave 80 and 69 names,
+all personal names or the display names of the people posting. No current claim
+says what a post reports, so Sealbook connected none of the 807 pairs of posts that
+belong to one incident. A prototype event prompt (what happened, the place, the
+town and the date, quoted) grouped posts sharing a gazetteer town and an event or
+posting date within two days at precision 0.95, recall 0.45 on Opus (0.96 and 0.38
+on Haiku); about 632,000 input tokens per model for both prompts.
+
 ## Known gaps
 
 - One synthetic case, 132 claims. The numbers say nothing about archive scale or

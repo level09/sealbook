@@ -824,3 +824,20 @@ covers in the text it was read from (`span_blob`).
 - stk's templates win only when the app has no file at the same path. Templates the
   fork never changed were deleted so stk's copies serve; a deleted fork file (the
   old favicon, stk's nav components) is served from stk again but nothing links it.
+
+## Checking against real data (2026-10-29)
+
+- A planted case passed while real records failed: most real mentions are a bare
+  name, which the same-person rules could never reach. Score the rule layer on
+  analyst-linked data before tuning the model.
+- A per-kind cap applied before filtering known links made every run re-ask the
+  same candidates. Filter, then cap, and record what the model declined.
+- An extraction prompt that says every person gets a name makes a mid-size model
+  invent people from text with none: headlines, outlets and hashtags became people.
+  A mechanical guard catches links, hashtags and sentences, not outlets; the
+  frontier models did not invent them at all. Measure invented people per model.
+- `stk places import` of a whole country into an empty database passed asyncpg's
+  32,767 parameter limit through one `IN` list; pass one array parameter instead.
+- An OpenRouter key limit surfaces as 403 "Key limit exceeded" on every route and
+  looked like slow models; read the run error before blaming the provider.
+
