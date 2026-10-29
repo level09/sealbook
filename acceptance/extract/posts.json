@@ -1,0 +1,145 @@
+{
+ "note": "Synthetic, fictional posts for scoring extraction: people a model invents, people it misses, and reported events with their town. No real record.",
+ "posts": [
+  {
+   "id": "p01",
+   "text": "عاجل | غارات جوية تستهدف سوق مدينة معرة النعمان صباح اليوم #إدلب #سوريا\nالمصدر: شبكة أخبار إدلب الحرة\n\nPosted on facebook on 2016-05-17.",
+   "people": [],
+   "towns": [
+    "معرة النعمان"
+   ]
+  },
+  {
+   "id": "p02",
+   "text": "Syria Today News | Shelling hit the main road near Kafr Nabl this morning, a young man and a child were wounded. #Idlib\n\nPosted on twitter on 2016-05-18.",
+   "people": [],
+   "towns": [
+    "Kafr Nabl"
+   ]
+  },
+  {
+   "id": "p03",
+   "text": "شاهد بالفيديو: لحظة انفجار سيارة مفخخة في مدينة أعزاز بريف حلب الشمالي\nقناة حلب اليوم\n\nPosted on youtube on 2017-01-07.",
+   "people": [],
+   "towns": [
+    "أعزاز"
+   ]
+  },
+  {
+   "id": "p04",
+   "text": "Breaking: airstrikes on Saraqib hospital, the hospital is now out of service. Source: Idlib Health Directorate. https://example.org/v/123\n\nPosted on telegram on 2019-05-06.",
+   "people": [],
+   "towns": [
+    "Saraqib"
+   ]
+  },
+  {
+   "id": "p05",
+   "text": "مراسل شبكة شام: قصف مدفعي على بلدة كفرزيتا وأنباء عن إصابات بين المدنيين\n\nPosted on facebook on 2018-02-11.",
+   "people": [],
+   "towns": [
+    "كفرزيتا"
+   ]
+  },
+  {
+   "id": "p06",
+   "text": "تغطية مستمرة | الدفاع المدني يواصل انتشال الضحايا من تحت الأنقاض في مدينة دوما #الغوطة_الشرقية\n\nPosted on twitter on 2018-02-20.",
+   "people": [],
+   "towns": [
+    "دوما"
+   ]
+  },
+  {
+   "id": "p07",
+   "text": "Join our live discussion tonight about humanitarian access across the region. Follow the page for updates.\n\nPosted on facebook on 2020-03-01.",
+   "people": [],
+   "towns": []
+  },
+  {
+   "id": "p08",
+   "text": "نشكر جميع المتابعين على دعمهم المستمر للصفحة، ونعدكم بتغطية دقيقة للأحداث.\n\nPosted on facebook on 2021-06-12.",
+   "people": [],
+   "towns": []
+  },
+  {
+   "id": "p09",
+   "text": "استشهد الشاب نزار خليل العمري جراء قصف جوي على حي الصاخور في مدينة حلب يوم 2016-09-24.\n\nPosted on facebook on 2016-09-24.",
+   "people": [
+    "نزار خليل العمري"
+   ],
+   "towns": [
+    "حلب"
+   ]
+  },
+  {
+   "id": "p10",
+   "text": "Local activist Reem Adel Hassan reported that government forces arrested her brother Fadi Adel Hassan at a checkpoint in Jableh on 2014-03-02.\n\nPosted on twitter on 2014-03-03.",
+   "people": [
+    "Reem Adel Hassan",
+    "Fadi Adel Hassan"
+   ],
+   "towns": [
+    "Jableh"
+   ]
+  },
+  {
+   "id": "p11",
+   "text": "مدير المشفى الميداني في بلدة اللطامنة الدكتور سامر يوسف الأحمد: استهداف المشفى بثلاث غارات صباح اليوم وخروجه عن الخدمة\n\nPosted on facebook on 2017-03-25.",
+   "people": [
+    "سامر يوسف الأحمد"
+   ],
+   "towns": [
+    "اللطامنة"
+   ]
+  },
+  {
+   "id": "p12",
+   "text": "Witness Omar Said told us the strike on Talbiseh market killed a shop owner, Khaled Nasser.\n\nPosted on youtube on 2015-10-01.",
+   "people": [
+    "Omar Said",
+    "Khaled Nasser"
+   ],
+   "towns": [
+    "Talbiseh"
+   ]
+  },
+  {
+   "id": "p13",
+   "text": "قناة سوريا الآن | الإعلامي باسل نادر يوثق آثار القصف على مدينة الباب\n#حلب\n\nPosted on facebook on 2017-02-10.",
+   "people": [
+    "باسل نادر"
+   ],
+   "towns": [
+    "الباب"
+   ]
+  },
+  {
+   "id": "p14",
+   "text": "Daraa 24 Network: Mahmoud Hilal Fanish, a farmer, was shot near Nawa during a raid on 2019-07-14.\n\nPosted on telegram on 2019-07-14.",
+   "people": [
+    "Mahmoud Hilal Fanish"
+   ],
+   "towns": [
+    "Nawa"
+   ]
+  },
+  {
+   "id": "p15",
+   "text": "مصدر عسكري: العدو الإسرائيلي نفذ عدواناً جوياً استهدف مطار حلب الدولي فجر اليوم\nوكالة الأنباء الرسمية\n\nPosted on twitter on 2024-03-29.",
+   "people": [],
+   "towns": [
+    "حلب"
+   ]
+  },
+  {
+   "id": "p16",
+   "text": "Photographer Lina Omar captured the aftermath of the barrel bomb on al-Kallasa neighbourhood in Aleppo.\n\nPosted on instagram on 2016-08-03.",
+   "people": [
+    "Lina Omar"
+   ],
+   "towns": [
+    "Aleppo"
+   ]
+  }
+ ]
+}

@@ -255,6 +255,39 @@ def locate(text: str, quote: str, occurrence: int) -> dict | None:
     return {"start": start, "end": start + len(quote)}
 
 
+def facts(answer: dict, text: str) -> tuple[list[dict], int]:
+    """The answer's items that may be written, and how many facts were dropped
+    because their mention is not a person. Shared with acceptance/eval_extract.py."""
+    items = answer["statements"] + [_reported(e) for e in answer.get("events", [])]
+    # A headline or a channel filed as a person would reach review and the linker as
+    # someone; every fact of such a mention goes.
+    unnamed = {
+        i["mention"]
+        for i in items
+        if i["prop"] == Prop.NAME and not name_shaped(i["value"]["text"])
+    }
+    out, dropped = [], 0
+    for item in items:
+        prop = Prop(item["prop"])
+        if prop not in EXTRACTED_PROPS:
+            raise ValueError(f"model returned non-extracted prop {prop}")
+        if prop not in DOCUMENT_PROPS and item["mention"] in unnamed:
+            dropped += 1
+            continue
+        if prop == Prop.REPORTS:
+            # Place words the text does not contain are the model's, not the source's.
+            value = item["value"]
+            item = item | {
+                "value": {
+                    k: v
+                    for k, v in value.items()
+                    if k not in ("place", "town") or (v and v in text)
+                }
+            }
+        out.append(item)
+    return out, dropped
+
+
 def _reported(e: dict) -> dict:
     """An event of the answer as a statement item on the document."""
     value = {"text": e["what"], "lang": e["lang"], "kind": e["kind"]}
@@ -299,26 +332,15 @@ async def extract(c: Ctx) -> str | None:
             **({"reasoning_effort": "none"} if c.run.route == "local" else {}),
         }
     )
-    answer = orjson.loads(routes.content(served))
-    items = answer["statements"] + [_reported(e) for e in answer.get("events", [])]
-    # A headline or a channel filed as a person would reach review and the linker as
-    # someone; every fact of such a mention goes.
-    unnamed = {
-        i["mention"]
-        for i in items
-        if i["prop"] == Prop.NAME and not name_shaped(i["value"]["text"])
-    }
+    items, unnamed = facts(orjson.loads(routes.content(served)), text)
+    for _ in range(unnamed):
+        await c.emit("dropped", drop_reason="not_a_person")
     subjects: dict[str, str] = {}
     names = []
-    written = dropped = undated = 0
+    written = undated = 0
+    dropped = unnamed
     for item in items:
         prop = Prop(item["prop"])
-        if prop not in EXTRACTED_PROPS:
-            raise ValueError(f"model returned non-extracted prop {prop}")
-        if prop not in DOCUMENT_PROPS and item["mention"] in unnamed:
-            dropped += 1
-            await c.emit("dropped", drop_reason="not_a_person")
-            continue
         if prop in DOCUMENT_PROPS:
             subject = f"blob:{blob.sha256}"
         else:
@@ -332,13 +354,6 @@ async def extract(c: Ctx) -> str | None:
             undated += 1
             await c.emit("undated", drop_reason="bad_valid_date")
         value = item["value"]
-        if prop == Prop.REPORTS:
-            # Place words the text does not contain are the model's, not the source's.
-            value = {
-                k: v
-                for k, v in value.items()
-                if k not in ("place", "town") or (v and v in text)
-            }
         st = StatementIn(
             subject=subject,
             prop=prop,
