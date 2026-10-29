@@ -36,7 +36,7 @@ from sealbook.ledger.contracts import (
 from sealbook.ledger.models import Blob, Payload, Run, Statement, StatementTier
 from sealbook.ledger.queue import LEASE
 from sealbook.monitor.data import LOCATED
-from sealbook.places import normalise, resolve
+from sealbook.places import normalise, phrases, resolve
 from sealbook.search.arabic import candidates as name_match
 from sealbook.settings import Config
 from sealbook.sheets import dates
@@ -173,7 +173,8 @@ def candidates(
     """Every candidate, strongest first within its kind, at most CAP of each.
     `focus` is a set of claim ids a candidate must touch (None: the whole case).
     `keep` filters before the cap, so known links never fill a run's places.
-    `towns` maps a normalised town to the gazetteer places it may name."""
+    `towns` maps normalised town and place words to the gazetteer places they may
+    name."""
     docs = case.docs
     top = lambda xs: [x for x in xs if keep is None or keep(x)][:CAP]  # noqa: E731
     view = lambda c: claim_view(h, c, docs)  # noqa: E731
@@ -407,53 +408,71 @@ def candidates(
 
 
 def _same_event(case, h: Handles, view, touches, towns: dict) -> list[dict]:
-    """Two sources whose reported events name one town (the same words or a shared
-    gazetteer place) on days within two of each other: the event's own day, else
-    the document's date. On public posts an archive had grouped by incident this
-    pairing was right 95 times in 100 and found 45 of 100 pairs (2026-10-29)."""
+    """Two sources whose reported events name one place on days within two of each
+    other: the event's own day, else the document's date. The most specific words
+    decide: two towns the gazetteer knows must share a place; only when one report
+    has no such town do the places named in its place words count, ranked after.
+    On public posts an archive had grouped by incident, towns alone were right 93
+    times in 100 and found 39 of 100 pairs; with the place-word fallback, 88 and 52
+    (2026-10-29)."""
     posted = {}
     for c in case.claims:
         if c.prop == Prop.DOCUMENT_DATE and (d := dates.interval(c.text)):
             posted.setdefault(c.source, (d, c))
     reports: dict[str, list] = {}
     for c in case.claims:
-        town = case.reports.get(c.id, {}).get("town")
-        if c.prop != Prop.REPORTS or not town:
+        r = case.reports.get(c.id, {})
+        if c.prop != Prop.REPORTS or not (r.get("town") or r.get("place")):
             continue
         own = (c.lo, c.hi) if c.lo else None
-        if own or c.source in posted:
-            reports.setdefault(c.source, []).append(
-                (c, normalise(town), own or posted[c.source][0], own is None)
-            )
+        if not (own or c.source in posted):
+            continue
+        town = normalise(r["town"]) if r.get("town") else None
+        known = towns.get(town, set()) if town else set()
+        words = r.get("place", "")
+        named = set().union(
+            *(towns.get(w, set()) for w, _, _ in phrases(words, 0, len(words)))
+        )
+        reports.setdefault(c.source, []).append(
+            (c, town, known, known | named, own or posted[c.source][0], own is None)
+        )
+
+    def place(x, y):
+        """0 when the towns match, 1 when only the place words do, else None."""
+        if x[1] and x[1] == y[1] or x[2] & y[2]:
+            return 0
+        if not (x[2] and y[2]) and x[3] & y[3]:
+            return 1
+        return None
+
     near = timedelta(days=2)
     found = []
     for a, b in combinations(sorted(reports), 2):
-        hit = next(
-            (
-                (x, y)
-                for x in reports[a]
-                for y in reports[b]
-                if (x[1] == y[1] or towns.get(x[1], set()) & towns.get(y[1], set()))
-                and x[2][0] - near <= y[2][1]
-                and y[2][0] - near <= x[2][1]
-            ),
-            None,
-        )
-        if hit is None or not touches([hit[0][0], hit[1][0]]):
+        hits = [
+            (rank, x, y)
+            for x in reports[a]
+            for y in reports[b]
+            if (rank := place(x, y)) is not None
+            and x[4][0] - near <= y[4][1]
+            and y[4][0] - near <= x[4][1]
+        ]
+        if not hits:
+            continue
+        rank, x, y = min(hits, key=lambda t: (t[0], t[1][5] + t[2][5]))
+        if not touches([x[0], y[0]]):
             continue
 
         def side(src, r):
             out = {"title": case.docs[src]["title"], "report": view(r[0])}
             out |= case.reports.get(r[0].id, {})  # kind, place and town words
-            if r[3]:
+            if r[5]:
                 out["posted"] = view(posted[src][1])
             return out
 
-        x, y = hit
-        basis = [x[0], y[0]] + [posted[s][1] for s, r in ((a, x), (b, y)) if r[3]]
+        basis = [x[0], y[0]] + [posted[s][1] for s, r in ((a, x), (b, y)) if r[5]]
         found.append(
             (
-                x[3] + y[3],  # reports dated by the text itself first
+                (rank, x[5] + y[5]),  # towns, then reports dated by their own text
                 {
                     "h": h("e", (a, b)),
                     "a": side(a, x),
@@ -736,6 +755,9 @@ async def link(c) -> str:
         return new
 
     named = {normalise(r["town"]) for r in case.reports.values() if r.get("town")}
+    for r in case.reports.values():
+        words = r.get("place", "")
+        named |= {w for w, _, _ in phrases(words, 0, len(words))}
     towns = {
         n: {p.id for p in ps}
         for n, ps in (await resolve.candidates_many(c.s, named)).items()

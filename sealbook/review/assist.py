@@ -23,12 +23,10 @@ from sealbook.ledger.models import Blob, Payload, Statement, StatementTier
 from sealbook.ledger.write import current_clause
 from sealbook.monitor.data import LOCATED, POSITION, places_apart
 from sealbook.people import data as people
-from sealbook.places import normalise, resolve
+from sealbook.places import normalise, phrases, resolve
 from sealbook.review import queue
 from sealbook.settings import Config
 
-# Longest place name looked up in the gazetteer, in words.
-MAX_WORDS = 5
 # Props a person has one value of: a second accepted value is a contradiction.
 SINGLE = {
     Prop.BIRTH_DATE,
@@ -63,19 +61,6 @@ def sentence(text: str, a: int, b: int) -> tuple[int, int]:
     lo = max((m.end() for m in STOP.finditer(text, 0, a)), default=0)
     hi = next((m.start() for m in STOP.finditer(text, b)), len(text))
     return lo, max(hi, b)
-
-
-def phrases(text: str, lo: int, hi: int) -> list[tuple[str, int, int]]:
-    """Every run of 1 to MAX_WORDS words in text[lo:hi], normalised, longest first."""
-    toks = list(WORD.finditer(text, lo, hi))
-    out = []
-    for n in range(MAX_WORDS, 0, -1):
-        for i in range(len(toks) - n + 1):
-            run = toks[i : i + n]
-            out.append(
-                (" ".join(normalise(t[0]) for t in run), run[0].start(), run[-1].end())
-            )
-    return out
 
 
 def unheld_places(found, gazetteer: dict, held: set, held_ids: set) -> list[dict]:

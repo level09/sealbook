@@ -204,6 +204,37 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual(len(cands[0]["_basis"]), 3)
         self.assertEqual(linker.candidates(case, [], None, Handles()), [])
 
+    def test_linker_falls_back_to_place_words_only_without_a_known_town(self):
+        def report(town, place, src):
+            c = claim(Prop.REPORTS, "airstrike", person=None, source=src)
+            c = dataclasses.replace(
+                c, subject=f"blob:{src}", lo=date(2024, 12, 8), hi=date(2024, 12, 8)
+            )
+            return c, {"kind": "airstrike", "place": place} | (
+                {"town": town} if town else {}
+            )
+
+        mezzeh, tm = report("Mezzeh airport", "Mezzeh airport in Damascus", "s1")
+        aqraba, ta = report("Aqraba airport", "Aqraba airport near Damascus", "s2")
+        vague, tv = report(None, "a military site in Damascus", "s3")
+        docs = {s: {"title": s, "doc_type": ""} for s in ("s1", "s2", "s3")}
+        case = read.Case(
+            "c",
+            [mezzeh, aqraba, vague],
+            docs,
+            {},
+            {},
+            reports={mezzeh.id: tm, aqraba.id: ta, vague.id: tv},
+        )
+        towns = {"mezzeh airport": {"pm"}, "aqraba airport": {"pa"}, "damascus": {"pd"}}
+        pairs = [
+            x["_docs"]
+            for x in linker.candidates(case, [], None, Handles(), towns=towns)
+        ]
+        # Two known airports never meet through "Damascus"; the vague report does.
+        self.assertNotIn(("s1", "s2"), pairs)
+        self.assertEqual(sorted(pairs), [("s1", "s3"), ("s2", "s3")])
+
     def test_linker_offers_a_bare_name_only_when_the_full_name_is_unshared(self):
         def case(*claims):
             docs = {c.source: {"title": c.source, "doc_type": ""} for c in claims}
