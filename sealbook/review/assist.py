@@ -253,6 +253,14 @@ async def flags(db, user, item: dict, st: Statement, readable: bool) -> list[dic
     if text and case:
         mine = [c for c in case.claims if c.source == sha and c.prop in PLACED]
         held = {words(c.text) for c in mine}
+        # A reported event's place words are held by that report.
+        held |= {
+            words(v)
+            for c in case.claims
+            if c.source == sha and c.prop == Prop.REPORTS
+            for k, v in case.reports.get(c.id, {}).items()
+            if k in ("place", "town")
+        }
         held_ids = set()
         for c in mine:
             if (p := case.places.get(c.id)) is not None:
@@ -260,16 +268,16 @@ async def flags(db, user, item: dict, st: Statement, readable: bool) -> list[dic
         found = phrases(text, lo, hi)
         gazetteer = await resolve.candidates_many(db, {n for n, _, _ in found})
         for hit in unheld_places(found, gazetteer, held, held_ids):
-            places = hit["places"]
+            named = hit["places"]
             out.append(
                 {
                     "kind": "place",
                     "quote": text[hit["start"] : hit["end"]],
                     "place": {
-                        "id": str(places[0].id),
-                        "name": read.place_name(places[0]),
+                        "id": str(named[0].id),
+                        "name": read.place_name(named[0]),
                     }
-                    if len(places) == 1
+                    if len(named) == 1
                     else None,
                     "cite": await cite(sha, st.span_blob, hit),
                 }
