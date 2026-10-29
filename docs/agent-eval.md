@@ -349,6 +349,15 @@ one city (two airports near Damascus). After the model step the run held 382
 same-event proposals, 356 of them right (precision 0.93, recall 0.44), about 1.34
 dollars of Haiku over 57 linker runs in all.
 
+The same-event proposals connect into groups that are mostly one incident each: on
+the first sample 382 proposals formed 38 groups, 35 of them a single archive
+incident (92%), covering 179 posts and 37 of 40 incidents. On a second, disjoint
+sample of 40 incidents (225 posts, predictions written down before the run: groups
+at least 85% pure, at least five pair decisions saved per group decision), 360
+proposals (338 right, precision 0.94, recall 0.44) formed 34 groups, 32 pure
+(94%), 10.6 pair proposals per group. Reviewing a group as one candidate incident
+would ask an analyst about ten times fewer questions.
+
 ## Extraction check
 
 `acceptance/eval_extract.py` scores what extraction would write on 16 synthetic,
