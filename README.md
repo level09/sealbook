@@ -27,3 +27,9 @@ uv run stk smoke --json
 
 See [local operations](docs/operations.md) before migration or model setup.
 No live model quality or production readiness is implied by local test results.
+
+## License
+
+Sealbook is free software under the GNU Affero General Public License, version 3
+or later ([LICENSE](LICENSE)). Anyone who runs a modified version as a network
+service must offer its users the modified source.
