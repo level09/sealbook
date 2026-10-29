@@ -126,7 +126,7 @@
     const files = names.map((n, i) => box(svg, 10, 40 + i * 44, 210, 30, n, "f"));
     const ctx = box(svg, 10, 190, 210, 30, "accepted case facts", "f v");
     const brief = box(svg, 250, 40, 110, 40, "intake brief", "f", true), linker = box(svg, 250, 160, 110, 40, "linker", "f", true);
-    const local = [txt(svg, 305, 96, "local model", "lbl f", "middle"), txt(svg, 305, 216, "local model", "lbl f", "middle")];
+    const local = [txt(svg, 305, 96, "agent model", "lbl f", "middle"), txt(svg, 305, 216, "agent model", "lbl f", "middle")];
     const edges = [...names.flatMap((_, i) => [curve(svg, 220, 55 + i * 44, 250, 60), curve(svg, 220, 55 + i * 44, 250, 180)]),
       curve(svg, 220, 205, 250, 60, "v"), curve(svg, 220, 205, 250, 180, "v")];
     const lines = [["Yousef Khaled Al-Ali, already known  [name]", ""], ["Bassel Nader, new to the case  [name]", ""],
@@ -141,7 +141,7 @@
       on(ctx); say("A batch finishes.");
       await wait(1000);
       on(brief, linker, ...edges, ...local);
-      say("Two agents read it against the rest of the case, on a local model.");
+      say("Two agents read it against the rest of the case, on the agent model.");
       await wait(1800);
       for (const l of lines) { on(l); await wait(380); }
       say("The intake brief cites a claim for every sentence.");
@@ -163,7 +163,7 @@
     const access = txt(svg, 290, 106, "access checked first", "lbl f", "middle");
     const toAgent = curve(svg, 360, 70, 400, 70);
     const agent = box(svg, 400, 50, 110, 40, "agent", "f v", true);
-    const local = txt(svg, 455, 106, "local model", "lbl f", "middle");
+    const local = txt(svg, 455, 106, "agent model", "lbl f", "middle");
     const lines = ["cited line, kept", "uncited line", "sensitive line"]
       .map((t, i) => [txt(svg, 550, 30 + i * 30, t, "f"), curve(svg, 510, 70, 545, 26 + i * 30)]);
     const drop = txt(svg, 550, 73, "no citation, dropped", "lbl r f");
