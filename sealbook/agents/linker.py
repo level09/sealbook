@@ -249,7 +249,7 @@ def candidates(
     out += top(c for _, c in sorted(same, key=lambda t: t[0]))
 
     # A record that is only a name (a mention in a document) can agree on nothing
-    # else, so it never becomes an m. On analyst-linked staging data a full name
+    # else, so it never becomes an m. On analyst-linked archive records a full name
     # held by exactly two records, one of them bare, was the same person in every
     # pair, and partial names never were; so only the full, unshared name goes on.
     holders: dict[str, set[str]] = {}
