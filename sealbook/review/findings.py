@@ -571,6 +571,10 @@ async def undo(db, user, gesture: str, only: list[str] | None, author) -> list:
     ]
 
 
+def _about(subject: str) -> uuid.UUID:
+    return uuid.UUID(subject.removeprefix("statement:"))
+
+
 async def describe(db, statements: list[StatementIn]) -> list[dict]:
     """Each statement of a gesture as a reviewer reads it before signing."""
     places = await _places(
@@ -588,6 +592,23 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
             for s in statements
             if s.prop == Prop.INVOLVED
         ],
+    )
+
+    reviewed = [
+        uuid.UUID(s.subject.removeprefix("statement:"))
+        for s in statements
+        if s.prop == Prop.REVIEW
+    ]
+    links = (
+        set(
+            await db.scalars(
+                select(Statement.id).where(
+                    Statement.id.in_(reviewed), Statement.prop == Prop.RELATION
+                )
+            )
+        )
+        if reviewed
+        else set()
     )
 
     def short(ref: str) -> str:
@@ -615,7 +636,10 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
             return f"claim {v['statement'][:8]}"
         if s.prop == Prop.REVIEW:
             why_ = f": {v['reason']}" if v.get("reason") else ""
-            return f"{v['verdict']} the finding{why_}"
+            what = (
+                "the same-event link" if _about(s.subject) in links else "the finding"
+            )
+            return f"{v['verdict']} {what}{why_}"
         return f"undo {short(s.subject)}"
 
     return [

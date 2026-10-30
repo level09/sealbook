@@ -7,11 +7,13 @@ function registerStkComponents(app) {
   return app;
 }
 
-/* A finding takes the hue of what it proposes: people seen together, or an incident
-   (docs/design.md, Colour roles). `cls` for role utilities, `color` for Vuetify props. */
+/* A finding takes the hue of what it proposes: people seen together, or an incident,
+   whether from positions or from posts linked as one event (docs/design.md, Colour
+   roles). `cls` for role utilities, `color` for Vuetify props. */
 const FINDING_HUES = {
   shared_presence: {cls: 'is-person', color: 'person', icon: 'ti ti-users-group'},
   candidate_incident: {cls: 'is-incident', color: 'incident', icon: 'ti ti-alert-triangle'},
+  event_group: {cls: 'is-incident', color: 'incident', icon: 'ti ti-stack-2'},
 };
 function findingHue(kind) {
   return FINDING_HUES[kind] || {cls: 'is-finding', color: 'agent', icon: 'ti ti-robot'};

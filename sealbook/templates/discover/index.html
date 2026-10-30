@@ -31,6 +31,30 @@
 .dv-chk td { vertical-align: middle; }
 .dv-chk .role { min-width: 150px; }
 .dv-done { border-color: var(--agent) !important; }
+/* Rows and post cards toggle on a click anywhere; the checkbox is the visible state. */
+.dv-chk tbody tr { cursor: pointer; }
+.dv-chk tbody tr:hover { background: var(--wash); }
+.dv-chk tbody tr.out td:not(:first-child) { color: var(--ink-3); }
+.dv-posts { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; padding: 12px; }
+.dv-post { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; outline: none; transition: border-color .15s ease-out, background-color .15s ease-out, opacity .15s ease-out; }
+.dv-post:hover { border-color: var(--line-strong); background: var(--raise); }
+.dv-post:focus-visible { box-shadow: 0 0 0 2px var(--ink); }
+.dv-post.out { border-style: dashed; background: transparent; }
+.dv-post.out .dv-body { opacity: .55; }
+.dv-post .dv-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dv-post .dv-top strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dv-post .dv-n { font-variant-numeric: tabular-nums; color: var(--ink-3); font-size: 12px; min-width: 2ch; }
+.dv-tick { margin-inline-start: auto; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 5px; border: 1.5px solid var(--ink); background: var(--ink); color: var(--panel); flex: none; font-size: 15px; }
+.dv-post.out .dv-tick { background: transparent; color: transparent; border-color: var(--line-strong); }
+.dv-post:hover .dv-tick { box-shadow: 0 0 0 3px var(--wash); }
+.dv-hint { font-size: 12px; color: var(--ink-3); }
+.dv-post:not(:hover):not(:focus-visible) .dv-hint.hover { visibility: hidden; }
+.dv-post .dv-ex { max-height: 10.5em; overflow: auto; margin: 0; }
+.dv-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12.5px; color: var(--ink-2); align-items: center; }
+.dv-meta .ti { font-size: 14px; vertical-align: -2px; }
+.dv-links summary { cursor: pointer; color: var(--ink-2); padding: 4px 0; }
+.dv-why { font-size: 13px; color: var(--ink-2); margin: 6px 0; }
+.dv-why b { font-variant-numeric: tabular-nums; color: var(--ink); }
 @media (max-width: 959px) { .dv-grid { grid-template-columns: 1fr; } .dv-hide-m { display: none !important; } }
 </style>
 {% endblock %}
@@ -63,9 +87,10 @@
         <template v-for="grp in grouped" :key="grp.title">
           <v-list-subheader v-if="grp.items.length" class="font-weight-bold">${ grp.title }</v-list-subheader>
           <v-list-item v-for="f in grp.items" :key="f.id" class="dv-row" :class="{ sel: cur && cur.id === f.id }" tabindex="-1" :data-key="f.id" @click="pick(f.id)">
-            <template #prepend><v-checkbox-btn class="me-1" density="compact" :model-value="picked.includes(f.id)" :aria-label="'Select ' + f.reason" @click.stop @update:model-value="togglePick(f.id)"></v-checkbox-btn></template>
+            <template #prepend><i v-if="f.kind === 'event_group'" class="ti ti-stack-2 r-tile is-incident me-3 ms-2" aria-hidden="true"></i><v-checkbox-btn v-else class="me-1" density="compact" :model-value="picked.includes(f.id)" :aria-label="'Select ' + f.reason" @click.stop @update:model-value="togglePick(f.id)"></v-checkbox-btn></template>
             <v-list-item-title class="text-body-2 font-weight-medium"><bdi dir="auto">${ f.reason }</bdi></v-list-item-title>
-            <v-list-item-subtitle><span class="r-ink" :class="hue(f.kind).cls"><v-icon :icon="hue(f.kind).icon" size="13"></v-icon> ${ f.label }</span>, ${ plural(f.people.length, 'person', 'people') } from ${ plural(f.members.length, 'claim') }<span v-if="f.also.length">, also a ${ f.also[0].label.toLowerCase() }</span> <span class="dv-band ms-1" :class="f.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ f.band }</v-list-item-subtitle>
+            <v-list-item-subtitle v-if="f.kind === 'event_group'"><span class="r-ink" :class="hue(f.kind).cls">${ f.label }</span>, ${ plural(f.count.posts, 'post') } joined by ${ plural(f.count.links, 'proposed link') }</v-list-item-subtitle>
+            <v-list-item-subtitle v-else><span class="r-ink" :class="hue(f.kind).cls"><v-icon :icon="hue(f.kind).icon" size="13"></v-icon> ${ f.label }</span>, ${ plural(f.people.length, 'person', 'people') } from ${ plural(f.members.length, 'claim') }<span v-if="f.also.length">, also a ${ f.also[0].label.toLowerCase() }</span> <span class="dv-band ms-1" :class="f.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ f.band }</v-list-item-subtitle>
           </v-list-item>
         </template>
       </v-list>
@@ -74,7 +99,49 @@
       </v-empty-state>
     </section>
 
-    <section class="dv-panel" v-if="cur" aria-labelledby="h-f">
+    <section class="dv-panel" v-if="cur && cur.kind === 'event_group'" aria-labelledby="h-g">
+      <header><v-chip :color="hue(cur.kind).color" variant="tonal" :prepend-icon="hue(cur.kind).icon" size="small">Same event</v-chip>
+        <v-chip color="agent" variant="tonal" size="small" prepend-icon="ti ti-robot">linked by an agent</v-chip>
+        <span class="act dv-muted text-caption" v-if="group">${ plural(keptPosts.length, 'post') } kept of ${ group.posts.length }</span></header>
+      <div class="px-3 pt-3"><h2 id="h-g" style="font-size:17px"><bdi dir="auto">${ cur.reason }</bdi></h2>
+        <p class="dv-muted mt-1 mb-0" v-if="group">The agent proposed that these posts report one event: ${ plural(group.links.length, 'link') } between ${ plural(group.posts.length, 'post') }<span v-if="towns.length">, naming ${ towns.slice(0, 4).join(', ') }${ towns.length > 4 ? ' and ' + plural(towns.length - 4, 'other town') : '' }</span>. Click a post that is about something else to drop it; dropped posts stay in the queue.</p></div>
+      <div class="dv-posts" v-if="group" role="group" aria-label="Posts in this group">
+        <div v-for="(p, i) in group.posts" :key="p.sha" class="dv-post" :class="{out: dropped.includes(p.sha)}" role="checkbox" tabindex="0" :aria-checked="!dropped.includes(p.sha)" :aria-label="'Post ' + (i + 1) + ', ' + p.title" :id="i === 0 ? 'dv-first' : null" @click="togglePost(p.sha)" @keydown.space.prevent="togglePost(p.sha)" @keydown.enter.prevent="togglePost(p.sha)">
+          <div class="dv-top"><span class="dv-n">${ i + 1 }</span><i class="ti ti-file-text r-tile is-source" aria-hidden="true"></i><strong><bdi dir="auto">${ p.title }</bdi></strong>
+            <span class="dv-tick" aria-hidden="true"><i class="ti ti-check"></i></span></div>
+          <div class="dv-body d-flex flex-column ga-2">
+            <div v-if="p.text" class="dv-ex" dir="auto"><template v-for="(r, j) in p.text" :key="j"><mark v-if="r.mark">${ r.t }</mark><template v-else>${ r.t }</template></template><span v-if="p.more" class="dv-muted">…</span></div>
+            <div v-else-if="p.sensitive" class="dv-lock"><i class="ti ti-eye-off" aria-hidden="true"></i> Sensitive source. Open it to read the post; opening is logged.</div>
+            <div class="dv-meta">
+              <span v-for="t in postTowns(p)" :key="t.name"><i class="ti ti-map-pin r-ink is-place" aria-hidden="true"></i> <a v-if="t.place" :href="'/places/' + t.place.id" @click.stop><bdi dir="auto">${ t.place.en || t.name }</bdi></a><bdi v-else dir="auto">${ t.name }</bdi></span>
+              <span v-if="!postTowns(p).length" class="dv-muted"><i class="ti ti-map-pin-off" aria-hidden="true"></i> no town named</span>
+              <span><i class="ti ti-calendar" aria-hidden="true"></i> <template v-if="p.when && p.when !== p.posted">happened ${ fmt(p.when) }, </template>posted ${ p.posted ? fmt(p.posted) : 'on an unknown date' }</span>
+            </div>
+            <div class="dv-meta"><span>${ postKinds(p) }</span><span>linked to ${ plural(degree[p.sha] || 0, 'other post') }</span><a class="ms-auto" :href="'/evidence/' + p.sha" @click.stop>Open source</a></div>
+          </div>
+          <div class="dv-hint" :class="{hover: !dropped.includes(p.sha)}">${ dropped.includes(p.sha) ? 'Dropped. Click to keep it in this incident.' : 'Click to drop: not about this event' }</div>
+        </div>
+      </div>
+      <v-progress-linear v-else indeterminate color="agent"></v-progress-linear>
+      <template v-if="group">
+        <details class="dv-links px-3"><summary>Why the agent linked them: ${ plural(group.links.length, 'reason') }</summary>
+          <p v-for="l in group.links" :key="l.statement" class="dv-why" dir="auto"><b>${ postNo(l.a) } and ${ postNo(l.b) }.</b> ${ l.why }</p></details>
+        <div class="px-3 pt-3 d-flex ga-2 flex-wrap align-center">
+          <v-text-field v-model="title" density="compact" hide-details label="Incident title" style="flex: 2 1 320px; max-width: 520px" dir="auto"></v-text-field>
+        </div>
+        <p class="px-3 pt-2 mb-0 text-caption dv-muted"><template v-if="group.summary.place && group.summary.window">Place and time: <a :href="'/places/' + group.summary.place.id"><bdi dir="auto">${ group.summary.place.en || group.summary.place.ar }</bdi></a>, ${ span(group.summary.window) }. </template><template v-else-if="group.summary.town">No place is written: <bdi dir="auto">${ group.summary.town }</bdi> ${ group.summary.candidates ? 'matches ' + plural(group.summary.candidates, 'place') + ' in the gazetteer' : 'is not in the gazetteer' }. Add it on the incident page. </template>
+          One passkey gesture records the incident, ${ plural(keptReports, 'report') } as support and ${ plural(keptLinks, 'link') } accepted. Undo works per statement or for the whole gesture.</p>
+        <div class="pa-3 d-flex ga-2 flex-wrap align-center">
+          <v-btn id="dv-sign" color="primary" prepend-icon="ti ti-signature" :disabled="keptPosts.length < 2 || !keptLinks || !title.trim()" :loading="busy" @click="acceptGroup">Create incident and sign</v-btn>
+          <v-btn variant="outlined" prepend-icon="ti ti-x" @click="rejecting = true">Not one event</v-btn>
+          <v-btn v-if="dropped.length" variant="text" prepend-icon="ti ti-arrow-back-up" @click="dropped = []">Keep all</v-btn>
+          <span v-if="keptPosts.length < 2" class="text-caption dv-muted">Keep at least two posts.</span>
+          <span v-else-if="!keptLinks" class="text-caption dv-muted">No proposed link joins the kept posts.</span>
+        </div>
+      </template>
+    </section>
+
+    <section class="dv-panel" v-if="cur && cur.kind !== 'event_group'" aria-labelledby="h-f">
       <header><v-chip :color="hue(cur.kind).color" variant="tonal" :prepend-icon="hue(cur.kind).icon" size="small">${ cur.label }</v-chip>
         <v-chip v-for="a in cur.also" :key="a.id" variant="outlined" size="small" :color="hue(kindOf(a.id)).color" prepend-icon="ti ti-link" :title="'The same people, place and month are also proposed as a ' + a.label.toLowerCase()" @click="pick(a.id)">also a ${ a.label.toLowerCase() }</v-chip>
         <v-chip v-if="cur.new" variant="outlined" color="new" size="small" prepend-icon="ti ti-point-filled">new since you last looked</v-chip>
@@ -102,10 +169,10 @@
           <p class="dv-muted text-caption mb-1">Drop any member you do not accept. Roles start as unspecified and can be corrected later. One passkey gesture writes each kept statement; undo works per statement or for the whole gesture.</p></div>
         <div class="v-table v-table--density-compact dv-chk"><div class="v-table__wrapper"><table>
           <thead><tr><th style="width:40px"><v-checkbox-btn :model-value="keep.length === detail.members.length" :indeterminate="keep.length > 0 && keep.length < detail.members.length" aria-label="Keep all" @update:model-value="v => keep = v ? detail.members.map(m => m.statement) : []"></v-checkbox-btn></th><th>Person</th><th class="dv-hide-m">Supported by</th><th style="width:190px">Role</th></tr></thead>
-          <tbody><tr v-for="(g, i) in persons" :key="g.cluster">
-            <td><v-checkbox-btn :model-value="kept(g)" :indeterminate="!kept(g) && g.claims.some(m => keep.includes(m.statement))" :id="i === 0 ? 'dv-first' : null" :aria-label="'Keep ' + memberName(g.first)" @update:model-value="v => keepPerson(g, v)"></v-checkbox-btn></td>
+          <tbody><tr v-for="(g, i) in persons" :key="g.cluster" :class="{out: !g.claims.some(m => keep.includes(m.statement))}" @click="keepPerson(g, !kept(g))">
+            <td><v-checkbox-btn :model-value="kept(g)" :indeterminate="!kept(g) && g.claims.some(m => keep.includes(m.statement))" :id="i === 0 ? 'dv-first' : null" :aria-label="'Keep ' + memberName(g.first)" @click.stop @update:model-value="v => keepPerson(g, v)"></v-checkbox-btn></td>
             <td><span class="d-inline-flex ga-2 align-center"><i class="ti r-tile is-person" :class="g.first.name ? 'ti-user' : 'ti-lock'" aria-hidden="true"></i><bdi dir="auto">${ memberName(g.first) }</bdi></span></td><td class="text-caption dv-hide-m"><template v-for="(m, j) in g.claims" :key="m.statement">${ j ? '; ' : '' }<bdi dir="auto">${ m.file }</bdi> (${ human(m.prop) })</template></td>
-            <td class="role"><v-select v-model="roles[g.cluster]" :items="ROLES" item-title="t" item-value="v" density="compact" hide-details variant="plain" :disabled="!g.claims.some(m => keep.includes(m.statement))" :aria-label="'Role of ' + memberName(g.first)"></v-select></td></tr></tbody>
+            <td class="role" @click.stop><v-select v-model="roles[g.cluster]" :items="ROLES" item-title="t" item-value="v" density="compact" hide-details variant="plain" :disabled="!g.claims.some(m => keep.includes(m.statement))" :aria-label="'Role of ' + memberName(g.first)"></v-select></td></tr></tbody>
         </table></div></div>
         <div class="px-3 pt-3 d-flex ga-2 flex-wrap">
           <v-select v-model="incident" :items="incidentOptions" item-title="t" item-value="v" density="compact" hide-details label="Incident" style="flex: 1 1 220px; max-width: 300px"></v-select>
@@ -129,10 +196,10 @@
       <tbody><tr v-for="r in staged.data.rows" :key="r.hash"><td>${ stLabel(r) }</td><td class="mono">${ r.subject }</td><td><bdi dir="auto">${ r.summary }</bdi></td><td class="mono dv-hide-m" :title="r.hash">${ r.hash.slice(0, 10) }</td></tr></tbody>
     </table></div></div>
     <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="signing = false">Cancel</v-btn><v-btn color="primary" prepend-icon="ti ti-key" :loading="busy" @click="confirm">Use passkey</v-btn></v-card-actions></v-card></v-dialog>
-  <v-dialog v-model="rejecting" width="460"><v-card border title="Reject this finding">
-    <v-card-text><p class="mb-3">This set of people and places, in this investigation and month, will not be proposed again. New evidence for the same set is attached to this rejection as a note; a different set is a new finding.</p>
+  <v-dialog v-model="rejecting" width="460"><v-card border :title="isGroup ? 'Not one event' : 'Reject this finding'">
+    <v-card-text><p class="mb-3" v-if="isGroup">Every link the agent proposed between these ${ plural(group?.posts.length || 0, 'post') } is rejected. The posts stay in the case; a new link between them is a new proposal.</p><p class="mb-3" v-else>This set of people and places, in this investigation and month, will not be proposed again. New evidence for the same set is attached to this rejection as a note; a different set is a new finding.</p>
       <v-textarea v-model="why" label="Why (kept with the rejection)" rows="2" density="compact" hide-details dir="auto" maxlength="4000"></v-textarea></v-card-text>
-    <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="rejecting = false">Cancel</v-btn><v-btn color="primary" prepend-icon="ti ti-signature" :loading="busy" @click="reject">Reject and sign</v-btn></v-card-actions></v-card></v-dialog>
+    <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="rejecting = false">Cancel</v-btn><v-btn color="primary" prepend-icon="ti ti-signature" :loading="busy" @click="isGroup ? rejectGroup() : reject()">Reject and sign</v-btn></v-card-actions></v-card></v-dialog>
   <v-dialog v-model="asking" width="460"><v-card border title="Ask a colleague">
     <v-card-text><v-select v-model="reviewer" :items="analysts" item-title="name" item-value="id" label="Analyst" density="compact" class="mb-3"></v-select>
       <v-textarea v-model="ask" label="What should they check?" rows="2" density="compact" hide-details maxlength="4000" dir="auto"></v-textarea></v-card-text>
@@ -148,8 +215,9 @@
 import {prepare, sign} from '/static/js/monitor/passkey.js';
 
 const ROLES = [{t: 'unspecified', v: 'unspecified'}, {t: 'victim', v: 'victim'}, {t: 'witness', v: 'witness'}, {t: 'alleged perpetrator', v: 'alleged_perpetrator'}, {t: 'other', v: 'other'}];
-const KINDS = {shared_presence: 'Shared presence', candidate_incident: 'Candidate incident'};
-const LABELS = {incident: 'incident', occurred_at: 'place and time', involved: 'involved person', supported_by: 'supporting claim', review: 'decision on the finding', retraction: 'undo'};
+const KINDS = {shared_presence: 'Shared presence', candidate_incident: 'Candidate incident', event_group: 'Same event'};
+const LABELS = {incident: 'incident', occurred_at: 'place and time', involved: 'involved person', supported_by: 'supporting claim', review: 'decision', retraction: 'undo'};
+const EVENT = {airstrike: 'Airstrike', shelling: 'Shelling', ground_attack: 'Ground attack', explosion: 'Explosion'};
 function plural(n, one, many) { return `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`; }
 const human = s => (s || '').replaceAll('_', ' ');
 const fmt = d => new Date(d + 'T00:00:00Z').toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'});
@@ -160,7 +228,7 @@ window.app = Vue.createApp({
     const p = new URLSearchParams(location.search);
     return {
       ROLES, items: [], loaded: false, error: '', kinds: [], curId: p.get('f'), detail: null, seq: 0,
-      keep: [], roles: {}, title: '', incident: null, incidents: [], picked: [], analysts: [],
+      keep: [], roles: {}, title: '', incident: null, group: null, dropped: [], incidents: [], picked: [], analysts: [],
       staged: null, signing: false, rejecting: false, asking: false, assigning: false, busy: false,
       why: '', reviewer: null, ask: '', assignee: null, done: null, snack: {show: false, text: ''},
       shellHints: [['/', 'search'], ['meta+k', 'go to'], ['j', 'next'], ['k', 'previous'], ['a', 'accept'], ['r', 'reject'], ['s', 'ask'], ['x', 'select']],
@@ -189,6 +257,12 @@ window.app = Vue.createApp({
       const parts = this.incident ? ['an addition to the chosen incident'] : ['the new incident', plural(this.cur.places.length, 'place and time', 'places and times')];
       return [...parts, plural(this.keptPeople.length, 'person', 'people') + ' involved', plural(this.keep.length, 'supporting claim'), 'your decision'].join(', ').replace(/, ([^,]*)$/, ' and $1');
     },
+    isGroup() { return this.cur?.kind === 'event_group'; },
+    keptPosts() { return (this.group?.posts || []).filter(p => !this.dropped.includes(p.sha)); },
+    keptLinks() { return (this.group?.links || []).filter(l => !this.dropped.includes(l.a) && !this.dropped.includes(l.b)).length; },
+    keptReports() { return this.keptPosts.reduce((n, p) => n + p.reports.length, 0); },
+    degree() { const d = {}; for (const l of this.group?.links || []) { d[l.a] = (d[l.a] || 0) + 1; d[l.b] = (d[l.b] || 0) + 1; } return d; },
+    towns() { return [...new Set((this.group?.posts || []).flatMap(p => this.postTowns(p).map(t => t.place?.en || t.name)))]; },
     canSign() { return this.keep.length > 0 && (this.incident || this.title.trim()); },
     incidentOptions() { return [{t: 'New incident', v: null}, ...this.incidents.map(i => ({t: i.title, v: i.id}))]; },
   },
@@ -197,6 +271,21 @@ window.app = Vue.createApp({
     kindLabel: k => KINDS[k] || human(k),
     hue: findingHue,
     kindOf(id) { return this.items.find(f => f.id === id)?.kind; },
+    fmt,
+    postNo(sha) { return this.group.posts.findIndex(p => p.sha === sha) + 1; },
+    togglePost(sha) { this.dropped = this.dropped.includes(sha) ? this.dropped.filter(x => x !== sha) : [...this.dropped, sha]; },
+    // Each town a post's reports name once, with the gazetteer place when the name means one.
+    postTowns(p) {
+      const by = {};
+      for (const r of p.reports) if (r.town && !by[r.town]) by[r.town] = {name: r.town, place: r.places.length === 1 ? r.places[0] : null};
+      return Object.values(by);
+    },
+    postKinds(p) { const k = [...new Set(p.reports.map(r => EVENT[r.kind] || 'Other event'))]; return k.length ? k.join(', ') : 'No event reported'; },
+    // A group's queue line: what happened, where and when, from its reports.
+    groupReason(g) {
+      const s = g.summary, where = s.place ? (s.place.en || s.place.ar) : s.town;
+      return [EVENT[s.kind] || 'Event', where, s.window && this.span(s.window)].filter(Boolean).join(', ');
+    },
     span(w) { return w[0] === w[1] ? fmt(w[0]) : `${fmt(w[0])} to ${fmt(w[1])}`; },
     where(s) { return !s ? 'whole item' : 'start' in s ? `characters ${s.start} to ${s.end}` : s.page ? `region on page ${s.page}` : s.ms ? `${(s.ms[0] / 1000).toFixed(1)} s` : 'whole item'; },
     // The finding names people by identity cluster; a member's subject is one mention in it.
@@ -217,14 +306,24 @@ window.app = Vue.createApp({
     useCase() { this.picked = []; this.load(); },
     async load() {
       try {
-        const {data} = await axios.get('/api/discover/findings', {params: {investigation: this.caseSel || undefined}});
-        this.items = data.items;
+        const params = {investigation: this.caseSel || undefined};
+        const [found, groups] = await Promise.all([axios.get('/api/discover/findings', {params}), axios.get('/api/discover/groups', {params})]);
+        this.items = [...found.data.items, ...groups.data.items.map(g => ({...g, reason: this.groupReason(g), new: false}))];
         this.loaded = true;
       } catch (err) { this.fail(err); }
     },
     async open(f) {
       const seq = ++this.seq;
-      this.detail = null;
+      this.detail = null; this.group = null; this.dropped = [];
+      if (f.kind === 'event_group') {
+        try {
+          const {data} = await axios.get('/api/discover/groups/' + f.id);
+          if (seq !== this.seq) return;
+          this.group = data;
+          this.title = f.reason;
+        } catch (err) { if (seq === this.seq) this.fail(err); }
+        return;
+      }
       try {
         const [d, inc] = await Promise.all([axios.get('/api/discover/findings/' + f.id), axios.get('/api/discover/incidents', {params: {investigation: f.investigation}})]);
         if (seq !== this.seq) return;
@@ -261,6 +360,25 @@ window.app = Vue.createApp({
         this.gone(f.id);
       });
     },
+    acceptGroup() {
+      const f = this.cur, title = this.title.trim();
+      this.stage({group: f.id, kept: this.keptPosts.map(p => p.sha), title}, '/api/review/groups/options', `Create incident: ${title}`, out => {
+        const incident = out.statements.find(s => s.subject.startsWith('incident:'))?.subject.slice(9);
+        const left = this.dropped.length ? ` ${plural(this.dropped.length, 'dropped post')} stay in the queue.` : '';
+        this.done = {text: `Signed once: incident \u201c${title}\u201d created from ${plural(this.keptPosts.length, 'post')}.${left} Undo is per statement or for the whole gesture.`, gesture: out.gesture, left: out.statements, open: false, incident};
+        this.gone(f.id);
+        if (this.dropped.length) this.load();
+      });
+    },
+    rejectGroup() {
+      const f = this.cur;
+      this.rejecting = false;
+      this.stage({group: f.id, reason: this.why.trim()}, '/api/review/groups/reject', `Not one event: ${f.reason}`, out => {
+        this.done = {text: `Rejected and signed: ${plural(out.statements.length, 'link')}.`, gesture: out.gesture, left: out.statements, open: false};
+        this.why = '';
+        this.gone(f.id);
+      });
+    },
     reject() {
       const f = this.cur;
       this.rejecting = false;
@@ -275,7 +393,7 @@ window.app = Vue.createApp({
       this.stage({gesture: this.done.gesture, ...(all ? {} : {statements: ids})}, '/api/review/undo', all ? 'Undo the whole gesture' : `Undo ${plural(ids.length, 'statement')}`, async () => {
         const reopened = this.done.left.some(s => s.prop === 'review' && ids.includes(s.id));
         this.done.left = this.done.left.filter(s => !ids.includes(s.id));
-        this.done.text = reopened ? 'Undone. The finding is back in the queue.' : `Undone: ${plural(ids.length, 'statement')}.`;
+        this.done.text = reopened ? 'Undone. It is back in the queue.' : `Undone: ${plural(ids.length, 'statement')}.`;
         if (reopened) await this.load();
       });
     },
@@ -313,8 +431,8 @@ window.app = Vue.createApp({
         k: () => i > 0 && this.pick(list[i - 1].id),
         a: () => { const el = document.getElementById('dv-first'); el?.scrollIntoView({block: 'center'}); document.querySelector('#dv-sign')?.focus(); },
         r: () => { this.rejecting = true; },
-        s: () => { if (!this.detail?.request) this.asking = true; },
-        x: () => this.togglePick(this.cur.id),
+        s: () => { if (this.detail && !this.detail.request) this.asking = true; },
+        x: () => !this.isGroup && this.togglePick(this.cur.id),
       }[e.key];
       if (!act) return;
       e.preventDefault();
@@ -323,7 +441,7 @@ window.app = Vue.createApp({
     },
   },
   watch: {
-    cur: {handler(f) { if (f && f.id !== this.detail?.id) this.open(f); }},
+    cur: {handler(f) { if (f && f.id !== (this.detail?.id || this.group?.id)) this.open(f); }},
     asking(v) { if (v) this.loadAnalysts().catch(this.fail); },
     assigning(v) { if (v) this.loadAnalysts().catch(this.fail); },
   },

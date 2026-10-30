@@ -19,7 +19,7 @@ from sealbook.ledger import attest, offline_sigs, write
 from sealbook.ledger.contracts import Event, Prop, Refused, StatementIn
 from sealbook.ledger.models import RunEvent, Statement, StatementTier
 from sealbook.monitor import data
-from sealbook.review import findings, queue
+from sealbook.review import events, findings, queue
 
 review = Blueprint("review", __name__)
 
@@ -484,6 +484,50 @@ async def incident_list():
         g.db_session, request.args.get("investigation") or None
     )
     return _private({"items": items})
+
+
+@review.get("/api/discover/groups")
+async def group_queue():
+    items = await events.groups(
+        g.db_session, current_user, request.args.get("investigation") or None
+    )
+    return _private({"items": items})
+
+
+@review.get("/api/discover/groups/<key>")
+async def group_detail(key):
+    db = g.db_session
+    found = await events.detail(db, current_user, key)
+    if found is None:
+        abort(404, description="no open group with that key; it may have been decided")
+    await events.log_view(db, current_user, found)
+    await db.commit()
+    return _private(found)
+
+
+@review.post("/api/review/groups/options")
+async def group_accept():
+    item = await _item()
+    return await _planned(
+        lambda db, who: events.plan(
+            db,
+            current_user,
+            item.get("group"),
+            item.get("kept"),
+            item.get("title"),
+            who,
+        )
+    )
+
+
+@review.post("/api/review/groups/reject")
+async def group_reject():
+    item = await _item()
+    return await _planned(
+        lambda db, who: events.reject(
+            db, current_user, item.get("group"), item.get("reason", ""), who
+        )
+    )
 
 
 @review.post("/api/review/findings/options")
