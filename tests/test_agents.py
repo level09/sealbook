@@ -75,6 +75,17 @@ def claim(prop, text, person="person:a", sensitive=False, source="s1"):
     )
 
 
+class RecentRunsTest(unittest.TestCase):
+    def test_back_to_back_repeats_merge(self):
+        from sealbook.agents.overview import _runs
+
+        fail = {"agent": "Standing questions", "case": "c", "text": "x", "failed": True}
+        ok = fail | {"text": "y", "failed": False}
+        rows = _runs([fail | {"at": "3"}, fail | {"at": "2"}, ok, fail])
+        assert [r["times"] for r in rows] == [2, 1, 1]
+        assert rows[0]["at"] == "3"
+
+
 class ValidateTest(unittest.TestCase):
     """The rules on plain data, without a model or a database."""
 

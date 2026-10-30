@@ -41,7 +41,7 @@
             <h2 class="mb-2" style="font-size: 17px">Recent agent work</h2>
             <p v-if="!overview.recent.length" class="mb-6">No agent has run for you yet.</p>
             <ul v-else class="ag-recent mb-6">
-                <li v-for="(r, i) in overview.recent" :key="i"><strong>${ r.agent }</strong> in ${ r.case }, ${ ago(r.at) }: <span :class="{'text-error': r.failed}">${ r.text }</span></li>
+                <li v-for="(r, i) in overview.recent" :key="i"><strong>${ r.agent }</strong> in ${ r.case }, ${ ago(r.at) }: <span :class="{'text-error': r.failed}">${ r.text }</span><span v-if="r.times > 1" class="text-medium-emphasis"> (${ r.times } times in a row)</span></li>
             </ul>
         </template>
 

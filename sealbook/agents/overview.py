@@ -255,8 +255,20 @@ async def overview(db, user, investigation: str, missing: list[str]) -> dict:
         "investigation": investigation,
         "off": setup_line(missing),
         "agents": cards,
-        "recent": [_row(run, slug, outs[run.id]) for run, slug in runs[:12]],
+        "recent": _runs([_row(run, slug, outs[run.id]) for run, slug in runs[:12]]),
     }
+
+
+def _runs(rows: list[dict]) -> list[dict]:
+    """Back-to-back runs that say the same thing read as one row with a count."""
+    out: list[dict] = []
+    for r in rows:
+        last = out[-1] if out else None
+        if last and all(last[k] == r[k] for k in ("agent", "case", "text", "failed")):
+            last["times"] += 1
+        else:
+            out.append(r | {"times": 1})
+    return out
 
 
 async def agreement(db, investigation: str | None = None) -> list[dict]:
