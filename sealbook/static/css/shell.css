@@ -141,9 +141,11 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 /* top bar */
 .sb-top.v-app-bar { border-bottom: 1px solid var(--line) !important; }
 .sb-top .v-toolbar__content { gap: 10px; padding: 0 12px; }
-.sb-top .brand { display: flex; align-items: center; gap: 7px; font-weight: 700; letter-spacing: -.02em; text-decoration: none; color: var(--ink); width: 164px; flex: none; }
+.sb-top .brand { display: flex; align-items: center; gap: 7px; font-weight: 700; letter-spacing: -.02em; text-decoration: none; color: var(--ink); width: 178px; flex: none; }
 .sb-top .brand:hover { opacity: 1; }
-.case-sw { width: 220px; max-width: 220px; flex: none; }
+/* The brand spans the rail, so the switcher starts clear of the rail's edge. */
+.case-sw { width: 236px; max-width: 236px; flex: none; }
+.case-sw-menu .v-list-item-title { letter-spacing: 0; font-size: 14px; }
 .qbox { flex: 1; max-width: 560px; }
 
 /* rail */
