@@ -52,7 +52,7 @@ the move needed from the app side, and what stk 17.0.x could offer instead.
 
 ## Found moving to stk 17.2 (2026-10-31)
 
-Sealbook depends on `stkit>=17.2.6,<18`. It runs its own queue as `stk runner` (stk's
+Sealbook depends on `stkit>=17.2.7,<18`. It runs its own queue as `stk runner` (stk's
 `worker` drains `stk_job`), uses `stk.utils.netguard` and `httpx2` throughout, and
 keeps its own MCP, notifications and evidence storage.
 

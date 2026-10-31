@@ -10,7 +10,7 @@ license = {text = "AGPL-3.0-or-later"}
 requires-python = ">=3.11"
 
 dependencies = [
-    "stkit>=17.2.6,<18",
+    "stkit>=17.2.7,<18",
     "asyncpg>=0.30.0",
     "httpx2>=2.16.0",
     "jsonschema>=4.23",
