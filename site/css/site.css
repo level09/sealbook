@@ -276,7 +276,7 @@ section[id] { scroll-margin-top: calc(var(--head) + 16px); }
 .ledger::after { left: calc(var(--gutter) + var(--spine) - 1px); width: 3px; background: var(--broken); transform: scaleY(0); transform-origin: top; transition: transform 1.6s var(--ease); }
 .ledger.tampered::after { transform: scaleY(1); }
 .disclaimer { position: relative; margin: 0 0 56px 64px; max-width: 70ch; font-size: 14px; color: var(--ink-3); }
-.walkthrough { position: relative; z-index: 1; margin: -64px 0 56px 64px; }
+.walkthrough { position: relative; z-index: 1; margin: 40px 0 0; }
 .wt-frame { position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 24px 50px -28px rgba(27, 26, 23, .45); }
 .walkthrough video { display: block; width: 100%; height: auto; background: var(--paper-3); }
 /* Before the first play the poster carries one drawn control; the browser's own appear once it plays. */
@@ -456,6 +456,81 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 .fine { font-size: 13px; color: var(--ink-3); margin-top: 18px; }
 .foot { max-width: 1180px; margin: 0 auto; padding: 24px var(--gutter) 48px; font-size: 13px; color: var(--ink-3); border-top: 1px solid var(--rule); }
 
+/* Opening: the film leads, its storyboard seeks it, the old evidence panel follows. */
+.hero-split { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 48px; align-items: center; }
+.hero-split .walkthrough { margin: 0; }
+.hero-split .wt-play { font-size: 14px; padding: 7px 14px 7px 7px; gap: 10px; }
+.hero-split .wt-play svg { width: 28px; height: 28px; padding: 7px; }
+.hero-copy h1 { font-size: clamp(2.4rem, 4.4vw, 4.4rem); line-height: 1.02; max-width: 12ch; margin-bottom: 22px; }
+.hero-copy .lede { max-width: 40ch !important; font-size: 1.15rem; }
+.vs-more p { max-width: 68ch; }
+.hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 28px; }
+.act-primary { display: inline-flex; align-items: center; padding: 13px 22px; border-radius: 999px; background: var(--ink); color: var(--paper); font-weight: 500; text-decoration: none; transition: transform .3s var(--ease); }
+.act-primary:hover { transform: translateY(-1px); }
+.act-watch { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px 8px 8px; border: 1px solid var(--rule); border-radius: 999px; background: transparent; color: var(--ink); font: 500 15px var(--sans); cursor: pointer; }
+.act-watch svg { width: 30px; height: 30px; padding: 7px; border-radius: 50%; background: var(--violet); fill: #fff; box-sizing: border-box; }
+.act-watch .mono { color: var(--ink-3); font-size: 13px; }
+.act-primary:focus-visible, .act-watch:focus-visible, .board button:focus-visible, .tour-index a:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+.board { list-style: none; padding: 0; margin: 18px 0 72px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+.board button { display: block; width: 100%; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; color: var(--ink); }
+.board img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; outline: 1px solid var(--rule); transition: outline-color .3s, transform .3s var(--ease); }
+.board button:hover img { transform: translateY(-2px); }
+.board .b-t { display: block; margin-top: 8px; font-size: 12px; color: var(--ink-3); }
+.board .b-l { display: block; font: 400 1.02rem/1.25 var(--serif); }
+.board li.on img { outline: 2px solid var(--violet); }
+.board li.on .b-t { color: var(--violet); }
+
+/* Part intros between the chapters, the tour and the finale. */
+.part { position: relative; z-index: 1; padding-left: 64px; margin: 0 0 72px; max-width: 64rem; }
+.part h2 { font-size: clamp(2.3rem, 4.6vw, 3.8rem); margin-bottom: 14px; }
+.part > p { max-width: 58ch; color: var(--ink-2); font-size: 1.12rem; }
+.part.finale h2 { color: var(--ink); }
+
+/* A chapter sets the task by hand beside what Sealbook proposes; the live demo follows. */
+.vs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 0; margin: 22px 0 18px; border-top: 1px solid var(--ink); }
+.vs > div { padding: 16px 28px 4px 0; }
+.vs .with { padding-left: 28px; border-left: 1px solid var(--rule); }
+.vs-k { display: block; margin-bottom: 8px; font: 500 13px var(--sans); color: var(--ink-3); }
+.vs .with .vs-k { color: var(--violet); }
+.byhand p { color: var(--ink-3) !important; font: italic 400 1.12rem/1.5 var(--serif); }
+.vs .with p { max-width: 60ch; }
+
+/* The tour's index. */
+.tour-index { list-style: none; padding: 0; margin: 32px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 40px; }
+.tour-index > li { break-inside: avoid; }
+.t-group { display: block; margin: 12px 0 4px; font: 500 13px var(--sans); color: var(--ink-3); }
+.tour-index ol { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--rule); }
+.tour-index a { display: block; padding: 10px 0; border-bottom: 1px solid var(--rule); color: var(--ink); text-decoration: none; }
+.tour-index a:hover .t-name { color: var(--violet); }
+.t-name { display: block; font: 400 1.15rem/1.3 var(--serif); }
+.t-job { display: block; font-size: 14px; color: var(--ink-3); }
+
+/* A tour section shows its name, its line and the way in; the rest opens on request. */
+.link.folded { margin-bottom: 56px; }
+.link.folded .copy > p:not(.job), .link.folded .copy > details, .link.folded > .diagram, .link.folded > .demo { display: none; }
+.unfold { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; padding: 9px 16px; border: 1px solid var(--ink); border-radius: 999px; background: transparent; color: var(--ink); font: 500 14px var(--sans); cursor: pointer; }
+.unfold::before { content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translate(-2px, -2px); transition: transform .3s var(--ease); }
+.unfold[aria-expanded="true"]::before { transform: rotate(-135deg) translate(-2px, -2px); }
+.unfold:hover { background: var(--ink); color: var(--paper); }
+.unfold:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+
+/* Seals stay quiet along the way and speak in full at the finale, or once a seal breaks. */
+.link:not(#proof) .seal { font-size: 12px; margin-bottom: 14px; }
+.link:not(#proof) .seal > div:not(:last-child) { display: none; }
+.ledger.tampered .seal > div { display: flex !important; }
+
+@media (max-width: 1000px) {
+  .board { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hero-split { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .vs { grid-template-columns: minmax(0, 1fr); }
+  .vs .with { padding-left: 0; border-left: 0; border-top: 1px solid var(--rule); }
+  .tour-index { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .part { padding-left: 34px; }
+}
+
 @media (max-width: 1000px) {
   .chapters { display: none; }
   .specimen { position: relative; top: 0; }
@@ -474,7 +549,6 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
   .link::before { width: 13px; height: 13px; top: 6px; }
   .link::after { display: none; }
   .disclaimer { margin-left: 34px; }
-  .walkthrough { margin: -40px 0 40px 34px; }
   .seal { gap: 0 14px; font-size: 11.5px; }
   .archive { padding: 18px 16px; }
   .stamp { width: 76px; height: 76px; font-size: 10.5px; }

@@ -310,13 +310,47 @@
 })();
 
 // The walkthrough: one drawn play control on the poster, then the browser's own.
+// The storyboard's stills and the Watch button seek the film to their moment, and
+// the still for the moment playing is marked.
 (() => {
   const fig = document.querySelector(".walkthrough");
   if (!fig) return;
   const video = fig.querySelector("video");
-  fig.querySelector(".wt-play").addEventListener("click", () => {
+  const stills = [...document.querySelectorAll(".board button")];
+  const at = (t) => {
     fig.classList.add("playing");
     video.controls = true;
-    video.play();
+    const seek = () => { video.currentTime = t; video.play(); };
+    if (video.readyState >= 1) seek();
+    else { video.preload = "auto"; video.addEventListener("loadedmetadata", seek, { once: true }); video.load(); }
+    fig.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  };
+  fig.querySelector(".wt-play").addEventListener("click", () => at(0));
+  document.querySelectorAll("[data-seek]").forEach((b) => b.addEventListener("click", () => at(Number(b.dataset.seek))));
+  video.addEventListener("timeupdate", () => {
+    const now = video.currentTime;
+    let on = -1;
+    stills.forEach((b, i) => { if (Number(b.dataset.seek) <= now) on = i; });
+    stills.forEach((b, i) => b.parentElement.classList.toggle("on", i === on));
   });
+})();
+
+// The tour: each section opens its demo on request, and a link into it opens it too.
+(() => {
+  const open = (sec, on) => {
+    sec.classList.toggle("folded", !on);
+    const b = sec.querySelector(".unfold");
+    b.setAttribute("aria-expanded", String(on));
+    b.textContent = on ? "Close the demo" : "Open the live demo";
+  };
+  document.querySelectorAll(".unfold").forEach((b) => b.addEventListener("click", () => {
+    const sec = b.closest("section");
+    open(sec, sec.classList.contains("folded"));
+  }));
+  const fromHash = () => {
+    const sec = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (sec && sec.querySelector(".unfold")) open(sec, true);
+  };
+  addEventListener("hashchange", fromHash);
+  fromHash();
 })();

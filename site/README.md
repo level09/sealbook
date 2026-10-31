@@ -35,10 +35,17 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
 
 ## Structure
 
-- `index.html`: nineteen sections, each a `section.link` in the demonstration chain.
-  Each section leads with a plain `.job` line and paragraph for non-technical
-  readers; the precise technical text sits in a `details.how` fold inside `.copy`,
-  so it is still part of the hashed chain.
+- `index.html`: nineteen sections, each a `section.link` in the demonstration chain,
+  in four parts. The opening sets the headline and the pilot request beside the
+  walkthrough film (`media/walkthrough.mp4`), with a storyboard of six stills from it
+  (`media/board/`, each seeking the film to its moment). "By hand, and with Sealbook"
+  (`#work`) holds six chapters, each setting a task as done by hand (`.byhand`) beside
+  what Sealbook proposes (`.with`), with its live demo. "The tour" (`#tour`) indexes the
+  nine other sections, which stay folded (`.link.folded`) until opened or linked to.
+  "Now break the seal" (`#finale`) leads into Proof. Seals stay to one quiet line
+  along the way and show in full in Proof or once a seal breaks. Each section leads
+  with a plain `.job` line; the precise technical text sits in a `details.how` fold
+  inside `.copy`, so it is still part of the hashed chain.
 - `js/site.js`: theme, data loading, the chain, and the `window.sealbook` API
   documented at the top of the file. Demo scripts call `sealbook.onReady(data => ...)`
   and mount into their `[data-demo]` element.
