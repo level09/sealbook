@@ -11,6 +11,7 @@ from datetime import UTC, date, datetime
 from sqlalchemy import Text, cast, select
 from sqlalchemy.orm import aliased
 
+from sealbook import method
 from sealbook.blobs import read
 from sealbook.collaboration.service import check_reviewer
 from sealbook.discovery import evidence
@@ -27,7 +28,7 @@ from sealbook.people import data as people
 from sealbook.places.models import Place
 from sealbook.settings import Config
 
-ROLES = ("unspecified", "victim", "witness", "alleged_perpetrator", "other")
+ROLES = method.ROLES
 KINDS = {discovery.SHARED: "Shared presence", discovery.INCIDENT: "Candidate incident"}
 INCIDENT_REF = re.compile(r"incident:[0-9a-f-]{36}")
 # Two statements per kept member plus incident, place and review stay inside one
@@ -506,6 +507,27 @@ async def plan(
     return gesture, out
 
 
+async def violation(db, incident: str, kind: str, category: str, author):
+    """One signed statement categorising a current incident's violation."""
+    if not isinstance(incident, str) or not INCIDENT_REF.fullmatch(incident):
+        raise ValueError("incident must be incident:<uuid>")
+    if kind not in ("potential", "claimed"):
+        raise ValueError("kind is potential or claimed")
+    if category not in method.violations()[kind]:
+        raise ValueError(f"choose a {kind} violation from the list")
+    if not any(i["id"] == incident for i in await incidents(db, None)):
+        raise LookupError("no current incident with that id")
+    gesture = str(uuid.uuid4())
+    return gesture, [
+        StatementIn(
+            subject=incident,
+            prop=Prop.VIOLATION,
+            value={"kind": kind, "category": category, "gesture": gesture},
+            author_id=author,
+        )
+    ]
+
+
 async def reject(db, user, key: str, why_: str, author) -> tuple[str, list]:
     """One review rejecting the finding; its key then never returns."""
     if not isinstance(why_, str) or len(why_) > 4000:
@@ -636,6 +658,9 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
             return f"{who} as {v['role'].replace('_', ' ')}"
         if s.prop == Prop.SUPPORTED_BY:
             return f"claim {v['statement'][:8]}"
+        if s.prop == Prop.VIOLATION:
+            what = "possible violation" if v["kind"] == "potential" else "claimed"
+            return f"{what}: {v['category']}"
         if s.prop == Prop.REVIEW:
             why_ = f": {v['reason']}" if v.get("reason") else ""
             what = REVIEWED.get(props.get(_about(s.subject)), "the claim")

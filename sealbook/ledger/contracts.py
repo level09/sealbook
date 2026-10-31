@@ -126,12 +126,15 @@ class Prop(enum.StrEnum):
     # Incident layer (subject "incident:<uuid>", except LOCATED_AT). INCIDENT value
     # {"title": text, "kind": str}; OCCURRED_AT {"place": "place:<uuid>"} with
     # valid_from/valid_to; INVOLVED {"person": "person:<uuid>", "role":
-    # victim|witness|alleged_perpetrator|other|unspecified}, and an agent may only
+    # one of method.ROLES; the older "victim" reads as injured party}, and an agent may only
     # write "unspecified"; SUPPORTED_BY {"statement": "<uuid>"}.
     INCIDENT = "incident"
     OCCURRED_AT = "occurred_at"
     INVOLVED = "involved"
     SUPPORTED_BY = "supported_by"
+    # An analyst's categorisation of an incident (subject "incident:<uuid>"), value
+    # {"kind": "potential" | "claimed", "category": one of method.violations()[kind]}.
+    VIOLATION = "violation"
     # Discovery finding (subject "finding:<key>"): value {"kind":
     # shared_presence|candidate_incident, "members": [statement ids], "people": [...],
     # "places": [...], "window": [iso, iso], "features": {...}, "key": str}.

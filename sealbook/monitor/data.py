@@ -113,6 +113,8 @@ def display(value, prop: str | None = None) -> str | None:
         return str(value)
     if prop in ASSESSED_PROPS:
         return method.words(prop, value)
+    if prop == Prop.VIOLATION:
+        return value["category"]
     for key in ("text", "date", "result", "hex", "verdict", "action"):
         if key in value:
             return str(value[key])

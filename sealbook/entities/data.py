@@ -12,6 +12,7 @@ from datetime import date
 import orjson
 from sqlalchemy import Text, and_, case, cast, func, or_, select
 
+from sealbook import method
 from sealbook.discovery.evidence import REVIEW_PROPS, granted, threads
 from sealbook.discovery.models import FindingKey
 from sealbook.discovery.service import available
@@ -624,7 +625,23 @@ async def incident(db, user, ref: str) -> dict:
                 "roles": [],
                 "statement": str(st.id),
             },
-        )["roles"].append(v["role"])
+        )["roles"].append(method.ROLE_WORDS.get(v["role"], v["role"]))
+    violations = {"potential": [], "claimed": []}
+    for st, v in (
+        await db.execute(
+            select(Statement, Payload.value)
+            .join(Payload, Payload.commitment == Statement.commitment)
+            .join(StatementTier, StatementTier.statement_id == Statement.id)
+            .where(
+                Statement.subject == ref,
+                Statement.prop == Prop.VIOLATION,
+                StatementTier.tier == Tier.ACCEPTED,
+            )
+            .order_by(Statement.recorded_at)
+        )
+    ).all():
+        if v and v["category"] not in violations[v["kind"]]:
+            violations[v["kind"]].append(v["category"])
     gestures = {v.get("gesture") for _, v in current if v.get("gesture")}
     built = []
     if gestures:
@@ -713,6 +730,8 @@ async def incident(db, user, ref: str) -> dict:
         "places": inc["places"],
         "sources": inc["sources"],
         "support": len(inc["statements"]),
+        "violations": violations,
+        "violation_lists": method.violations(),
         "signed": {
             "by": ctx.principal(signed.author_id)["name"],
             "at": signed.recorded_at.isoformat(),

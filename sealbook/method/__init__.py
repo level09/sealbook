@@ -1,5 +1,6 @@
 """The analyst's method as data: triage by content and reliability, the priority they
-set, and the label vocabulary. labels.csv is Bayanat's (AGPL-3.0,
+set, the roles people play in an incident, and the label and violation vocabularies.
+labels.csv, potential_violation.csv and claimed_violation.csv are Bayanat's (AGPL-3.0,
 https://github.com/sjacorg/bayanat, docs/methodology), reused so analysts trained on
 it find their own terms; verified labels are what the analyst observes in the item,
 unverified ones what the source alleges and the item partly supports."""
@@ -46,6 +47,29 @@ def priority(content: str, reliability: str) -> str:
     return "high" if (content, reliability) in HIGH else "low"
 
 
+# Roles in an incident, in the method's terms. "victim" is the word Sealbook used
+# before; statements that carry it stay valid and read as Injured party.
+ROLES = (
+    "unspecified",
+    "injured_party",
+    "witness",
+    "alleged_perpetrator",
+    "appeared",
+    "participant",
+    "other",
+)
+ROLE_WORDS = {
+    "unspecified": "Role not set",
+    "injured_party": "Injured party",
+    "victim": "Injured party",
+    "witness": "Witness",
+    "alleged_perpetrator": "Alleged perpetrator",
+    "appeared": "Appeared",
+    "participant": "Participant",
+    "other": "Other",
+}
+
+
 def words(prop: str, value: dict) -> str:
     """A first-pass value as the analyst reads it; its quote is the evidence."""
     if prop == Prop.TRIAGE:
@@ -68,6 +92,15 @@ def alleged_labels() -> tuple[str, ...]:
         for r in _rows("labels.csv")
         if r["verified"] != "1" and r["for_item"] == "1"
     )
+
+
+@cache
+def violations() -> dict[str, tuple[str, ...]]:
+    """The possible category of an incident's violation, and the violations claimed."""
+    return {
+        kind: tuple(r["title"].strip() for r in _rows(f"{kind}_violation.csv"))
+        for kind in ("potential", "claimed")
+    }
 
 
 assert priority("incident", "some_evidence") == "high"

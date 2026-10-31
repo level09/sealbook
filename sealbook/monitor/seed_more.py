@@ -908,7 +908,7 @@ async def decide(s, reviewer, senior, plan: dict) -> None:
     shared presence with a reason, as the Discover checklist would."""
     kind, month, title = plan["accept"]
     fk, value = await finding_of(s, kind, month)
-    roles = dict.fromkeys(value["people"], "victim")
+    roles = dict.fromkeys(value["people"], "injured_party")
     _, planned = await findings.plan(
         s.s, reviewer, fk.key, value["members"], roles, title, None, senior.id
     )

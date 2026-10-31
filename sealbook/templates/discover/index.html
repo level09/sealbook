@@ -214,7 +214,7 @@
 <script type="module">
 import {prepare, sign} from '/static/js/monitor/passkey.js';
 
-const ROLES = [{t: 'unspecified', v: 'unspecified'}, {t: 'victim', v: 'victim'}, {t: 'witness', v: 'witness'}, {t: 'alleged perpetrator', v: 'alleged_perpetrator'}, {t: 'other', v: 'other'}];
+const ROLES = [{t: 'role not set', v: 'unspecified'}, {t: 'injured party', v: 'injured_party'}, {t: 'witness', v: 'witness'}, {t: 'alleged perpetrator', v: 'alleged_perpetrator'}, {t: 'appeared', v: 'appeared'}, {t: 'participant', v: 'participant'}, {t: 'other', v: 'other'}];
 const KINDS = {shared_presence: 'Shared presence', candidate_incident: 'Candidate incident', event_group: 'Same event'};
 const LABELS = {incident: 'incident', occurred_at: 'place and time', involved: 'involved person', supported_by: 'supporting claim', review: 'decision', retraction: 'undo'};
 const EVENT = {airstrike: 'Airstrike', shelling: 'Shelling', ground_attack: 'Ground attack', explosion: 'Explosion'};

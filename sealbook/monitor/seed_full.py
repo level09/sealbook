@@ -1067,7 +1067,7 @@ async def seed_full(session, app) -> dict:
             "kind": "candidate_incident",
             "month": "2014-03",
             "kept": [lina_held.id, reem_held.id],
-            "roles": {L1: "victim", RM: "witness"},
+            "roles": {L1: "injured_party", RM: "witness"},
             "title": "Women held at Branch 999, March 2014",
         },
         reject={

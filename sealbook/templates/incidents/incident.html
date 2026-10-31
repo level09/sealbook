@@ -9,8 +9,21 @@
 <div><dt>When</dt><dd>${ e.window ? fmtSpan(e.window[0], e.window[1]) : 'no date accepted' }</dd></div>
 <div><dt>Where</dt><dd><template v-for="(p, i) in e.places" :key="p.id">${ i ? ', ' : '' }<a :href="'/places/' + p.id"><bdi dir="auto">${ placeName(p) }</bdi></a></template><span v-if="!e.places.length">no place accepted</span></dd></div>
 <div><dt>Kind</dt><dd>${ e.kind && e.kind !== 'unspecified' ? human(e.kind) : 'not set' }</dd></div>
+<div><dt>Possible violation</dt><dd>${ e.violations.potential.join(', ') || 'not set' }</dd></div>
+<div v-if="e.violations.claimed.length"><dt>Violations claimed</dt><dd>${ e.violations.claimed.join('; ') }</dd></div>
 <div><dt>Evidence</dt><dd>${ plural(e.support, 'supporting claim') } from ${ plural(e.sources, 'source') }</dd></div>
 <div v-if="e.signed"><dt>Accepted by</dt><dd>${ e.signed.by }, ${ fmtDay(e.signed.at.slice(0, 10)) }</dd></div>
+{% endblock %}
+{% block actions %}
+<v-btn size="small" variant="outlined" prepend-icon="ti ti-scale" @click="vio.open = true">Categorise</v-btn>
+<v-dialog v-model="vio.open" width="480"><v-card border title="Categorise the violation">
+  <v-card-text>
+    <v-btn-toggle v-model="vio.kind" mandatory density="compact" variant="outlined" divided class="mb-3"><v-btn value="potential">Possible category</v-btn><v-btn value="claimed">Violation claimed</v-btn></v-btn-toggle>
+    <v-autocomplete v-model="vio.category" :items="e.violation_lists[vio.kind]" :label="vio.kind === 'potential' ? 'Possible category' : 'Violation claimed'" density="compact" hide-details auto-select-first></v-autocomplete>
+    <p class="text-caption en-muted mt-3 mb-0">From the methodology's lists. Your passkey signs it; undo it from the history.</p>
+  </v-card-text>
+  <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="vio.open = false">Cancel</v-btn><v-btn color="primary" prepend-icon="ti ti-signature" :disabled="!vio.category" :loading="signBusy" @click="categorise">Sign</v-btn></v-card-actions>
+</v-card></v-dialog>
 {% endblock %}
 {% block side %}
 <section class="en-panel" aria-labelledby="en-h-where">
@@ -39,6 +52,19 @@ window.app = entityPage(boot, {
   missing: 'No current incident with that id that you may see. It may have been undone, or its support erased.',
   reviewed: 'the finding',
   mixin: {
+    data: () => ({vio: {open: false, kind: 'potential', category: null}}),
+    watch: {'vio.kind'() { this.vio.category = null; }},
+    methods: {
+      categorise() {
+        const {kind, category} = this.vio;
+        this.vio.open = false;
+        this.stage({incident: 'incident:' + this.e.id, kind, category}, '/api/review/incidents/violation/options', `Categorise: ${category}`, async () => {
+          this.say('Categorised and signed.');
+          this.vio.category = null;
+          await this.load();
+        });
+      },
+    },
     computed: {
       shapes() { return this.e.places.filter(p => p.lonlat).map(p => ({geometry: {type: 'Point', coordinates: p.lonlat}})); },
       relations() {

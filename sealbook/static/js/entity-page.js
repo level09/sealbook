@@ -216,6 +216,7 @@ export function entityPage(boot, page) {
           occurred_at: () => `Placed it at ${this.placeLabel(h.place)}${h.when ? ', ' + h.when : ''}`,
           involved: () => `${this.personLabel(h.person)}, ${v.toLowerCase() || 'involved'}`,
           supported_by: () => 'Linked a supporting claim',
+          violation: () => `Categorised the violation as ${v}`,
         }[h.prop]?.() || human(h.prop);
         const counted = h.prop === 'located_at' || (h.prop === 'review' && page.reviewedMany);
         return many && !counted ? `${text}, ${n} times` : text;

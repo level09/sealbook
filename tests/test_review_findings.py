@@ -280,14 +280,76 @@ class ReviewFindingsTest(unittest.IsolatedAsyncioTestCase):
             },
         )
         assert status == 400, body
-        out = await self.accept(client, roles={victim: "victim"})
+        # The older word is no longer offered; old statements that carry it stay.
+        status, _ = await self.post(
+            client,
+            "/api/review/findings/options",
+            {
+                "finding": self.fid,
+                "kept": self.members,
+                "title": "x",
+                "roles": {victim: "victim"},
+            },
+        )
+        assert status == 400
+        out = await self.accept(client, roles={victim: "injured_party"})
         roles = {
             v["person"]: v["role"]
             for st, v, _ in await self.gesture_rows(out["gesture"])
             if st.prop == Prop.INVOLVED
         }
-        assert roles[victim] == "victim"
-        assert sorted(set(roles.values())) == ["unspecified", "victim"]
+        assert roles[victim] == "injured_party"
+        assert sorted(set(roles.values())) == ["injured_party", "unspecified"]
+        incident = next(
+            s for s in out["statements"] if s["subject"].startswith("incident:")
+        )["subject"]
+        r = await client.get(f"/api/incidents/{incident.removeprefix('incident:')}")
+        people = (await r.get_json())["relations"]["people"]
+        assert sorted(r for p in people for r in p["roles"]) == [
+            "Injured party",
+            "Role not set",
+            "Role not set",
+        ]
+
+    async def test_violation_categories_on_an_incident(self):
+        client = await self.client()
+        out = await self.accept(client, title="Branch 999, July 2013")
+        incident = next(
+            s for s in out["statements"] if s["subject"].startswith("incident:")
+        )["subject"]
+        path = "/api/review/incidents/violation/options"
+        status, _ = await self.post(
+            client,
+            path,
+            {"incident": incident, "kind": "claimed", "category": "Not in the list"},
+        )
+        assert status == 400
+        _, staged = await self.post(
+            client,
+            path,
+            {"incident": incident, "kind": "potential", "category": "War Crime"},
+        )
+        assert staged["rows"][0]["summary"] == "possible violation: War Crime"
+        await self.sign(
+            client,
+            path,
+            {
+                "incident": incident,
+                "kind": "claimed",
+                "category": "Torture/Cruel or Inhuman Treatment",
+            },
+        )
+        await self.sign(
+            client,
+            path,
+            {"incident": incident, "kind": "potential", "category": "War Crime"},
+        )
+        r = await client.get(f"/api/incidents/{incident.removeprefix('incident:')}")
+        found = await r.get_json()
+        assert found["violations"] == {
+            "potential": ["War Crime"],
+            "claimed": ["Torture/Cruel or Inhuman Treatment"],
+        }
 
     async def test_undo_gesture_retracts_all(self):
         client = await self.client()
