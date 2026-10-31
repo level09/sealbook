@@ -20,14 +20,17 @@ export const ImageViewer = {
       if (!W) return [];
       // Labels sit above their box; a label that would cover an earlier one moves up a lane.
       // Widths are estimates in screen pixels at the fitted size, so lanes hold at any zoom.
+      // A box over most of the photo (a triage or title citing the whole picture)
+      // points at nothing in it, so it draws only while its claim is selected.
       const k = this.w / W, rects = [];
-      return this.boxes.map(b => {
+      const whole = b => (b.bbox[2] - b.bbox[0]) * (b.bbox[3] - b.bbox[1]) >= 0.6 * W * H;
+      return this.boxes.filter(b => this.sel === b.id || !whole(b)).map(b => {
         const [x0, y0, x1, y1] = b.bbox;
         const l = x0 * k, t = y0 * k, wd = String(b.short).length * 6.5 + 10;
         let lane = 0;
         while (rects.some(r => r.lane === lane && l < r.l + r.wd && r.l < l + wd && Math.abs(t - r.t) < 14)) lane++;
         rects.push({l, t, wd, lane});
-        return {...b, lane, style: {left: x0 / W * 100 + '%', top: y0 / H * 100 + '%', width: (x1 - x0) / W * 100 + '%', height: (y1 - y0) / H * 100 + '%'}};
+        return {...b, lane, whole: whole(b), style: {left: x0 / W * 100 + '%', top: y0 / H * 100 + '%', width: (x1 - x0) / W * 100 + '%', height: (y1 - y0) / H * 100 + '%'}};
       });
     },
   },
@@ -83,9 +86,9 @@ export const ImageViewer = {
       <v-tooltip text="Full screen (f)"><template #activator="{props}"><v-btn v-bind="props" icon="ti ti-maximize" size="small" variant="text" aria-label="Full screen" @click="full"></v-btn></template></v-tooltip>
     </div>
     <div ref="stage" class="mv-stage" :class="{zoomed: z > 1, dragging: drag}" @wheel="wheel" @pointerdown="down" @pointermove="move" @pointerup="drag = null" @pointercancel="drag = null" @dblclick="z > 1 ? reset() : zoom(2)">
-      <div ref="inner" class="mv-inner" :style="{transform: 'translate(' + x + 'px,' + y + 'px) scale(' + z + ')', '--z': z}">
+      <div ref="inner" class="mv-inner" :class="{picking: placed.some(b => b.id === sel)}" :style="{transform: 'translate(' + x + 'px,' + y + 'px) scale(' + z + ')', '--z': z}">
         <img :src="src" :alt="alt" draggable="false" @load="e => nat = [e.target.naturalWidth, e.target.naturalHeight]" @error="$emit('error')">
-        <button v-for="b in placed" :key="b.id" class="mv-box" :class="['tier-' + b.tier, b.agent ? 'by-agent' : 'by-person', {on: sel === b.id}]" :style="b.style" :aria-label="b.label" @click.stop="$emit('select', b.id)"><span :style="{'--lane': b.lane}">{{ b.short }}<em v-if="b.label !== b.short">{{ b.label.slice(String(b.short).length) }}</em></span></button>
+        <button v-for="b in placed" :key="b.id" class="mv-box" :class="['tier-' + b.tier, b.agent ? 'by-agent' : 'by-person', {on: sel === b.id, whole: b.whole}]" :style="b.style" :aria-label="b.label" @click.stop="$emit('select', b.id)"><span :style="{'--lane': b.lane}">{{ b.short }}<em v-if="b.label !== b.short">{{ b.label.slice(String(b.short).length) }}</em></span></button>
       </div>
     </div>
   </div>`,

@@ -234,6 +234,10 @@ to evidence:
   evidence for this detainee between March and June" is a finding.
 - **Tier is visual encoding.** Unconfirmed is hatched, corroborated outlined, accepted solid,
   rejected hidden by default. AI drafts can never look like accepted facts.
+  On a photo, an unconfirmed box keeps its dashed edge but drops the hatch until it is
+  hovered or selected, so the boxes never hide the picture; a box over most of the photo
+  (a triage or title citing the whole image) draws only while its claim is selected,
+  and selecting one fades the rest.
 - **Every number clicks through** to its statements, then to bytes, run and signer (two-click
   rule).
 - **Sensitive text masked by default.** Revealing it is an access statement on the chain.
