@@ -17,9 +17,10 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import aliased
 from stk.user.models import User
 
+from sealbook import method
 from sealbook.collaboration.models import Assignment
 from sealbook.discovery.models import FindingKey
-from sealbook.ledger.contracts import EXTRACTED_PROPS, Prop, Tier
+from sealbook.ledger.contracts import ASSESSED_PROPS, EXTRACTED_PROPS, Prop, Tier
 from sealbook.ledger.models import (
     Acquisition,
     Blob,
@@ -490,8 +491,15 @@ async def listing(db, f: dict) -> dict:
             .select_from(ranked)
             .where(and_(true(), *count_filters(ranked, f)))
         )
+    items = [_row(m) for m in found]
+    passes = await first_passes(db, [i["sha256"] for i in items])
+    for item in items:
+        item["pass"] = passes.get(item["sha256"])
+        # A first-pass title is free text that may name people (monitor PERSONAL).
+        if item["pass"] and item["sensitive"]:
+            item["pass"] |= {"title": None, "title_ar": None}
     return {
-        "items": [_row(m) for m in found],
+        "items": items,
         "total": total,
         "page": f["page"],
         "per_page": f["per_page"],
@@ -517,3 +525,34 @@ async def collectors(db) -> list[dict]:
         .order_by(Principal.name)
     )
     return [{"id": str(i), "name": n} for i, n in await db.execute(q)]
+
+
+async def first_passes(db, shas: list[str]) -> dict[str, dict]:
+    """Each item's first pass in brief, in one query: the analyst title, the
+    priority its triage sets, and whether any part still waits for review."""
+    if not shas:
+        return {}
+    rows = await db.execute(
+        select(Statement.subject, Statement.prop, Payload.value, StatementTier.tier)
+        .join(StatementTier, StatementTier.statement_id == Statement.id)
+        # An erased value has no payload, so it drops out.
+        .join(Payload, Payload.commitment == Statement.commitment)
+        .where(
+            Statement.subject.in_([f"blob:{sha}" for sha in shas]),
+            Statement.prop.in_(ASSESSED_PROPS),
+            StatementTier.tier != Tier.REJECTED,
+        )
+        .order_by(Statement.recorded_at)
+    )
+    out: dict[str, dict] = {}
+    for subject, prop, value, tier in rows:
+        brief = out.setdefault(
+            subject.removeprefix("blob:"),
+            {"title": None, "title_ar": None, "priority": None, "open": False},
+        )
+        brief["open"] |= tier == Tier.UNCONFIRMED
+        if prop == Prop.TITLE:
+            brief["title"], brief["title_ar"] = value["title"], value.get("title_ar")
+        elif prop == Prop.TRIAGE:
+            brief["priority"] = method.priority(value["content"], value["reliability"])
+    return out

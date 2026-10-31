@@ -183,3 +183,15 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
   .qbox .v-kbd, .sb-top .sb-pal-btn { display: none; }
   .sb-top .v-toolbar__content { gap: 6px; padding: 0 8px; }
 }
+
+/* Case page: the case's header and a tab per case page, above that page. */
+.case-head { padding: 16px 24px 0; }
+.case-title { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.case-title h1 { margin: 0; font-weight: 600; }
+.case-title p { margin: 2px 0 0; color: var(--ink-2); }
+.case-tabs { display: flex; gap: 4px; margin-top: 12px; border-bottom: 1px solid var(--line-strong); overflow-x: auto; }
+.case-tabs a { padding: 9px 12px 8px; color: var(--ink-2); text-decoration: none; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.case-tabs a:hover { color: var(--ink); }
+.case-tabs a.on { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
+.case-tabs a:focus-visible { outline: 2px solid var(--agent); outline-offset: -2px; }
+.case-tabs .n { margin-inline-start: 5px; color: var(--ink-3); font-weight: 400; font-variant-numeric: tabular-nums; }

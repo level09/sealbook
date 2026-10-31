@@ -33,7 +33,7 @@ from sealbook.ledger.models import (
     StatementTier,
 )
 from sealbook.settings import Config
-from sealbook.sources import scale
+from sealbook.sources import data, scale
 
 POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 A, B = "case-scale-test-a", "case-scale-test-b"
@@ -122,6 +122,27 @@ class SourcesTest(unittest.IsolatedAsyncioTestCase):
             if len(out) >= body["total"]:
                 return out, body["total"]
             page += 1
+
+    async def test_first_pass_title_is_hidden_on_a_sensitive_source(self):
+        brief = {
+            "title": "Shelling",
+            "title_ar": "قصف",
+            "priority": "high",
+            "open": True,
+        }
+
+        async def every(db, shas):
+            return {sha: dict(brief) for sha in shas}
+
+        client = await self.client()
+        with mock.patch.object(data, "first_passes", every):
+            rows, _ = await self.all_rows(client, investigation=A)
+        sensitive = [r["pass"] for r in rows if r["sensitive"]]
+        ordinary = [r["pass"] for r in rows if not r["sensitive"]]
+        self.assertTrue(sensitive and ordinary)
+        self.assertTrue(all(p["title"] is None is p["title_ar"] for p in sensitive))
+        self.assertTrue(all(p["priority"] == "high" for p in sensitive))
+        self.assertTrue(all(p == brief for p in ordinary))
 
     async def test_access_is_analyst_only(self):
         anon = self.app.test_client()

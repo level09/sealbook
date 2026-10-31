@@ -39,7 +39,7 @@
     <v-app-bar density="compact" flat class="sb-top">
         <a class="brand" href="/todo"><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></a>
         {% if current_user.is_authenticated %}
-        <v-autocomplete class="case-sw" :model-value="caseSel ?? 'all'" :items="caseOptions" density="compact" variant="outlined" hide-details auto-select-first prepend-inner-icon="ti ti-folder" :menu-props="{contentClass: 'case-sw-menu'}" aria-label="Switch investigation" @update:model-value="switchCase"></v-autocomplete>
+        <v-autocomplete v-if="isMobile" class="case-sw" :model-value="caseSel ?? 'all'" :items="caseOptions" density="compact" variant="outlined" hide-details auto-select-first prepend-inner-icon="ti ti-folder" :menu-props="{contentClass: 'case-sw-menu'}" aria-label="Switch investigation" @update:model-value="switchCase"></v-autocomplete>
         <form class="qbox" action="/search" role="search">
             <v-text-field id="q" name="q" v-model="shellQ" density="compact" variant="outlined" hide-details prepend-inner-icon="ti ti-search" placeholder="Search names, hashes, passages, frames" aria-label="Search evidence, people, places and identifiers" autocomplete="off">
                 <template #append-inner><v-kbd>/</v-kbd></template>
@@ -91,14 +91,14 @@
     {% if current_user.is_authenticated %}
     <v-navigation-drawer v-if="!isMobile" permanent width="188" class="sb-rail">
         <div class="px-2 pt-2"><v-btn block color="primary" variant="flat" prepend-icon="ti ti-upload" href="/ingest/">Add evidence</v-btn></div>
-        <!-- Work first, then the case's own pages; agents, following, export and help sit at the foot. -->
+        <!-- Work first, then the cases (each opens as one page with tabs); agents, following, export and help sit at the foot. -->
         <v-list nav density="compact" aria-label="Sections">
-            <template v-for="(n, i) in mainRail" :key="n.title">
-                <v-list-subheader v-if="n.group === 'case' && mainRail[i - 1]?.group !== 'case'" class="sb-sub">The case</v-list-subheader>
-                <v-list-item :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null">
-                    <template #append v-if="n.count"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
-                </v-list-item>
-            </template>
+            <v-list-item v-for="n in mainRail" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current && !caseTab" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null">
+                <template #append v-if="n.count"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
+            </v-list-item>
+            <v-list-subheader v-if="caseList.length" class="sb-sub">Cases</v-list-subheader>
+            <v-list-item v-for="c in caseList" :key="c" :title="c" prepend-icon="ti ti-folder" :active="!!caseTab && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
+            <v-list-item v-if="caseList.length" title="All cases" prepend-icon="ti ti-folders" :active="!!caseTab && !caseSel" color="primary" @click="openCase('all')"></v-list-item>
         </v-list>
         <template #append>
             <v-list nav density="compact" class="sb-foot" aria-label="More">
@@ -120,6 +120,21 @@
     {% endif %}
 
     <v-main>
+        {% if current_user.is_authenticated %}
+        <!-- A case is one page: its header, then a tab per case page. Each tab is that page's own address. -->
+        <header v-if="caseTab" class="case-head">
+            <div class="case-title">
+                <div>
+                    <h1 class="text-title-large">${ caseSel || 'All cases' }</h1>
+                    <p v-if="caseFacts">${ caseFacts }</p>
+                </div>
+                <v-btn color="primary" variant="flat" prepend-icon="ti ti-upload" href="/ingest/">${ caseSel ? 'Add evidence to this case' : 'Add evidence' }</v-btn>
+            </div>
+            <nav class="case-tabs" aria-label="Case pages">
+                <a v-for="t in caseTabs" :key="t.to" :href="t.to" :class="{on: t === caseTab}" :aria-current="t === caseTab ? 'page' : null">${ t.title }<span v-if="t.count != null" class="n">${ t.count }</span></a>
+            </nav>
+        </header>
+        {% endif %}
         {% block content %}
         {% endblock %}
     </v-main>
@@ -209,6 +224,11 @@
 
     // Monitor and people APIs answer analysts and admins only.
     const canRead = userRoles.some(r => r === 'analyst' || r === 'admin');
+    // In the words Add evidence uses for a case's last addition.
+    const daysAgo = iso => {
+        const d = Math.round((Date.now() - new Date(iso)) / 86400000);
+        return d < 1 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`;
+    };
     const storedCase = () => { try { return localStorage.getItem('sb.case'); } catch { return null; } };
     // Text entry and selects swallow shortcuts; checkboxes and buttons do not.
     const TYPING = el => el.isContentEditable || ['TEXTAREA', 'SELECT'].includes(el.tagName)
@@ -230,6 +250,7 @@
                 navCounts: {},
                 caseSel: storedCase(),
                 caseList: [],
+                caseDetails: [],
                 shellQ: new URLSearchParams(location.search).get('q') || '',
                 palOpen: false,
                 palQ: '',
@@ -253,7 +274,27 @@
                     count: this.navCounts[item.badge] || null,
                 }));
             },
-            mainRail() { return this.railItems.filter(x => x.group !== 'more'); },
+            mainRail() { return this.railItems.filter(x => !x.group); },
+            caseTabs() {
+                const info = this.caseInfo, todo = this.railItems.find(x => x.badge === 'todo');
+                const counts = {'/sources': info?.sources, '/people': info?.people};
+                return [
+                    ...(todo ? [{...todo, count: todo.count}] : []),
+                    ...this.railItems.filter(x => x.group === 'case').map(x => ({...x, count: counts[x.to] ?? null})),
+                ];
+            },
+            // The tab of the page open now: its list page, not a record under it.
+            caseTab() {
+                const path = location.pathname.replace(/\/$/, '');
+                return this.caseTabs.find(t => path === t.match) || null;
+            },
+            caseFacts() {
+                const c = this.caseInfo;
+                if (!c) return '';
+                const n = (k, one) => `${c[k]} ${c[k] === 1 ? one : one === 'person' ? 'people' : one + 's'}`;
+                return [c.description, n('sources', 'source'), n('people', 'person'), c.last_added && `last added ${daysAgo(c.last_added)}`].filter(Boolean).join(', ');
+            },
+            caseInfo() { return this.caseDetails.find(c => c.slug === this.caseSel) || null; },
             caseOptions() {
                 return [...this.caseList.map(c => ({title: c, value: c})), {title: 'All investigations', value: 'all'}];
             },
@@ -288,6 +329,11 @@
                 this.caseSel = value;
                 if (this.useCase) this.useCase(value);
                 this.loadNavCounts();
+            },
+            // From the rail: on a case page, follow the case there; elsewhere open its To do.
+            openCase(c) {
+                this.switchCase(c);
+                if (!this.caseTab) location.href = '/todo';
             },
             loadNavCounts() {
                 axios.get('/api/nav/counts', {params: {investigation: this.caseSel || undefined}}).then(r => { this.navCounts = r.data; }).catch(() => {});
@@ -396,6 +442,7 @@
             this._connectWs();
             this.loadNavCounts();
             if (canRead) axios.get('/api/monitor/investigations').then(r => { this.caseList = r.data.items; });
+            if (canRead && this.caseTab) axios.get('/api/cases').then(r => { this.caseDetails = r.data.items; }).catch(() => {});
             {% endif %}
         },
         beforeUnmount() {

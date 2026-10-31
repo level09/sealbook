@@ -28,7 +28,7 @@ Bayanat's label, violation, event type and relation lists are reused with credit
    decided there, not twice.
 5. **Upload shows its work.** Done 2026-10-31, see [status](status.md). Per-file progress, then the batch's summary of what was
    found, opening the batch's own decisions.
-6. **Case in one place.** Done 2026-10-31, see [status](status.md); the case is one rail group, not one tabbed page; video frames are read since the same day. People, places, incidents, evidence and the timeline and map as
+6. **Case in one place.** Done 2026-10-31, see [status](status.md); the case is one page with a tab per case page and video frames are read, both since the same day. People, places, incidents, evidence and the timeline and map as
    tabs of one case page with an incident list; Agents, Following, Help and Export in the
    sidebar footer. Frame reading for observed labels on photos and video.
 7. **Walkthrough video.** Done 2026-10-31 as a 63 s film from real screens (scratch build, not in the repo). One batch (photo, voice note, video, web post) from upload to a
@@ -119,4 +119,4 @@ Descriptions, titles and labels moved to Now, step 1.
 - A Google Cloud Vision key usable from this machine, to check the vision OCR route live;
   then use its word boxes to draw OCR claims on the scan.
 - Video frames chosen at scene changes rather than evenly; description lines in Arabic.
-- The case as one tabbed page.
+- Case tabs that switch without a page load, with a count on every tab.
