@@ -5,6 +5,17 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  # stk's release gate runs these checks against its candidate commit.
+  workflow_dispatch:
+    inputs:
+      test_with:
+        description: Requirement installed over the lock, e.g. "stkit[full] @ git+https://...@<sha>"
+        required: false
+      run_title:
+        description: Run name, so the caller can find this run
+        required: false
+
+run-name: ${{ inputs.run_title || '' }}
 
 env:
   SECRET_KEY: test-secret-key-for-ci
@@ -52,6 +63,14 @@ jobs:
 
       - name: Install dependencies
         run: uv sync
+
+      - name: Install the candidate under test
+        if: inputs.test_with
+        env:
+          TEST_WITH: ${{ inputs.test_with }}
+        run: |
+          uv pip install "$TEST_WITH"
+          echo "UV_NO_SYNC=1" >> "$GITHUB_ENV"
 
       - name: Install Chromium
         run: uv run playwright install --with-deps chromium
