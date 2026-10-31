@@ -52,10 +52,17 @@ async function alert(env, row) {
 // ponytail: buffers the whole film per request, fine at 9 MB; move films to R2 past ~50 MB.
 async function ranged(request, env) {
   const full = await env.ASSETS.fetch(new Request(request.url));
-  const range = request.headers.get("range");
-  if (!full.ok || !range) return full;
+  if (!full.ok) return full;
   const body = await full.arrayBuffer();
   const size = body.byteLength;
+  const range = request.headers.get("range");
+  // Phone players check length and range support before playing.
+  if (!range) {
+    const headers = new Headers(full.headers);
+    headers.set("accept-ranges", "bytes");
+    headers.set("content-length", String(size));
+    return new Response(request.method === "HEAD" ? null : body, { status: 200, headers });
+  }
   const m = /^bytes=(\d*)-(\d*)$/.exec(range);
   let start = m && m[1] !== "" ? Number(m[1]) : m && m[2] !== "" ? size - Number(m[2]) : NaN;
   const end = m && m[1] !== "" && m[2] !== "" ? Math.min(Number(m[2]), size - 1) : size - 1;
