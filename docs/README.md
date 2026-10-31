@@ -15,7 +15,7 @@ describes the code, its decisions and its limits for contributors.
 | [Operations](operations.md) | Configuration, local commands and verification |
 | [Lessons](lessons.md) | Failures found during the build and how to avoid them |
 | [stk upstream notes](stk-upstream.md) | Framework issues and reusable pieces found while building Sealbook |
-| [Roadmap](roadmap.md) | Accepted next work and deferred capabilities |
+| [Plan](roadmap.md) | The one plan: what comes next, in order |
 | [Research](research.md) | Borrowed patterns and DigUp references |
 | [Model choice](models.md) | Current local multimodal recommendation, alternatives and validation gap |
 | [Development](development.md) | Detailed stk conventions |

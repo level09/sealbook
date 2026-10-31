@@ -1,4 +1,43 @@
-# Accepted next work
+# Plan
+
+This is the one plan. [Status](status.md) says what exists; this file says what comes
+next, in order. Update both in the same change.
+
+## Now: the analyst's method, done first by agents (2026-10-31)
+
+Investigators coming from Bayanat (open source, AGPL-3.0) work by its published
+methodology: triage each item by content and reliability, give it an analyst title and a
+time-tagged description, tag it with verified (observed) and unverified (alleged) labels,
+record people with their roles and events, then group items into incidents with a
+possible violation category, and peer review. Sealbook keeps that method and does the
+first pass of each step as a cited proposal, so the analyst judges instead of typing.
+Bayanat's label, violation, event type and relation lists are reused with credit.
+
+1. **First pass on each item.** After extraction, an agent proposes triage (content:
+   incident, post-incident, non-incident and the document kinds; reliability: no, some
+   or strong evidence; priority from both, by the method's table), an analyst title next
+   to the original, description lines and alleged labels, each pinned to the passage it
+   rests on; a transcript passage carries its time. Observed labels wait for frame
+   reading (step 6). One signature accepts the pass.
+2. **Their vocabulary.** Injured party, alleged perpetrator, witness, appeared and
+   participant as roles; possible and claimed violation categories on incidents.
+3. **Peer review.** Send an item or incident for review; the reviewer answers no review
+   needed or needs review with +label, -label and notes; the owner revisits.
+4. **One To do list.** Inbox, Review, Discover and the Desk's questions become one list,
+   high priority and biggest decisions first; a link inside a same-event group is
+   decided there, not twice.
+5. **Upload shows its work.** Per-file progress, then the batch's summary of what was
+   found, opening the batch's own decisions.
+6. **Case in one place.** People, places, incidents, evidence and the timeline and map as
+   tabs of one case page with an incident list; Agents, Following, Help and Export in the
+   sidebar footer. Frame reading for observed labels on photos and video.
+7. **Walkthrough video.** One batch (photo, voice note, video, web post) from upload to a
+   signed incident, made with HyperFrames once 1 to 6 are in the app.
+
+Mockups: the flow in five steps (add, what it found, one item read for you, decide,
+the case) was approved on 2026-10-31.
+
+## Earlier accepted work
 
 The user approved these DigUp-inspired features on 2026-10-23 after the first
 connected-workflow build. Keep this table aligned with code and tests.
@@ -69,10 +108,8 @@ notifications, watches and the research service.
 
 ## Gaps to close
 
-1. **Descriptions and titles.** Authored, cited, versioned title and description statements
-   with AI drafts as proposals, review, diffs and search.
-2. **Labels with observed and alleged basis.** A versioned bilingual vocabulary and a
-   span-pinned label statement.
-3. **Typed relations with stated certainty.** Family, command, membership and document
+Descriptions, titles and labels moved to Now, step 1.
+
+1. **Typed relations with stated certainty.** Family, command, membership and document
    relations between subjects, pinned to evidence, with human certainty kept separate from
    machine scores.
