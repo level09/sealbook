@@ -760,13 +760,19 @@ class ReviewTest(unittest.IsolatedAsyncioTestCase):
         for href in ("/users/", "/roles/", "/activities/"):
             self.assertIn(href, body)
 
-    async def test_nav_counts_open_review_requests(self):
+    async def test_nav_counts_match_todo(self):
         original = await self.propose(f"person:{uuid.uuid4()}", "محمد")
         reviewer = await self.colleague()
         client = await self.client()
         recipient = await self.client("colleague@example.com")
-        counts = lambda c: c.get("/api/nav/counts")  # noqa: E731
-        self.assertEqual((await (await counts(recipient)).get_json())["review"], 0)
+
+        async def counts(c):
+            badge = (await (await c.get("/api/nav/counts")).get_json())["todo"]
+            page = (await (await c.get("/api/todo")).get_json())["total"]
+            self.assertEqual(badge, page)
+            return badge
+
+        before, mine = await counts(recipient), await counts(client)
         response = await client.post(
             "/api/collaboration/requests",
             headers=client.csrf,
@@ -779,8 +785,8 @@ class ReviewTest(unittest.IsolatedAsyncioTestCase):
             },
         )
         self.assertEqual(response.status_code, 201)
-        self.assertEqual((await (await counts(recipient)).get_json())["review"], 1)
-        self.assertEqual((await (await counts(client)).get_json())["review"], 0)
+        self.assertEqual(await counts(recipient), before + 1)
+        self.assertEqual(await counts(client), mine)
 
     async def test_layout_has_new_nav(self):
         client = await self.client()

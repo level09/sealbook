@@ -80,7 +80,7 @@ window.app = Vue.createApp({
   mixins: [layoutMixin], delimiters: config.delimiters,
   data: () => ({d: null, error: '', more: {triage: false, groups: false, findings: false}}),
   computed: {
-    total() { const d = this.d; return d ? d.asked.length + d.triage.length + d.groups.length + d.findings.length + d.claims : 0; },
+    total() { return this.d?.total || 0; },
   },
   methods: {
     plural, hue: findingHue,

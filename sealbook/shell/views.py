@@ -2,11 +2,10 @@
 
 from quart import Blueprint, g, render_template, request, session
 from quart_security import auth_required, current_user, roles_required
-from sqlalchemy import Text, func, select
 
 from sealbook.collaboration import notifications
-from sealbook.ledger.contracts import Prop, Tier
-from sealbook.ledger.models import Payload, Statement, StatementTier
+from sealbook.review import todo
+from sealbook.review.views import ROLES
 
 # stk's users blueprint is admin-only; these pages are for every analyst.
 bp_account = Blueprint("account", __name__)
@@ -48,23 +47,13 @@ async def admin():
 
 @bp_account.get("/api/nav/counts")
 async def nav_counts():
-    open_requests = await g.db_session.scalar(
-        select(func.count())
-        .select_from(Statement)
-        .join(Payload, Payload.commitment == Statement.commitment)
-        .join(
-            StatementTier,
-            func.concat("statement:", StatementTier.statement_id.cast(Text))
-            == Statement.subject,
-        )
-        .where(
-            Statement.prop == Prop.REVIEW_REQUEST,
-            Payload.value["reviewer"].as_integer() == current_user.id,
-            StatementTier.tier == Tier.UNCONFIRMED,
-        )
-    )
     unread = await g.db_session.scalar(notifications.unread_query(current_user.id))
-    return {"review": open_requests, "notifications": unread}
+    if not any(current_user.has_role(r) for r in ROLES):
+        return {"notifications": unread}
+    waiting = await todo.todo(
+        g.db_session, current_user, request.args.get("investigation") or None
+    )
+    return {"todo": waiting["total"], "notifications": unread}
 
 
 def register_passkey_return(app):

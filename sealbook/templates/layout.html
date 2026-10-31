@@ -287,6 +287,10 @@
                 try { localStorage.setItem('sb.case', value ?? 'all'); } catch {}
                 this.caseSel = value;
                 if (this.useCase) this.useCase(value);
+                this.loadNavCounts();
+            },
+            loadNavCounts() {
+                axios.get('/api/nav/counts', {params: {investigation: this.caseSel || undefined}}).then(r => { this.navCounts = r.data; }).catch(() => {});
             },
             setTheme(dark) {
                 this.isDark = dark;
@@ -390,7 +394,7 @@
             {% if current_user.is_authenticated %}
             window.addEventListener('keydown', this._shellKey);
             this._connectWs();
-            axios.get('/api/nav/counts').then(r => { this.navCounts = r.data; }).catch(() => {});
+            this.loadNavCounts();
             if (canRead) axios.get('/api/monitor/investigations').then(r => { this.caseList = r.data.items; });
             {% endif %}
         },

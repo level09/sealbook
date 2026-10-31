@@ -9,6 +9,6 @@ def init_app(app):
             "hue": "tier-accepted",
             "to": "/todo",
             "match": "/todo",
-            "badge": "review",
+            "badge": "todo",
         }
     )
