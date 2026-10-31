@@ -190,6 +190,7 @@ class WatchTest(unittest.IsolatedAsyncioTestCase):
                                 "triage_quote": "",
                                 "why": "",
                                 "title": "",
+                                "title_ar": "",
                                 "title_quote": "",
                                 "description": [],
                                 "labels": [],

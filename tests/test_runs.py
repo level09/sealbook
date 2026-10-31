@@ -296,6 +296,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             "triage_quote": "two men were wounded",
             "why": "The text reports wounded civilians at a market.",
             "title": "Shelling hits market, two wounded",
+            "title_ar": "قصف يصيب السوق وجرح رجلين",
             "title_quote": "Shelling hit the market",
             "description": [
                 {
@@ -348,6 +349,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             "triage_box": [0, 0, 1000, 1000],
             "why": "Damage is visible.",
             "title": "Damaged wall",
+            "title_ar": "جدار متضرر",
             "title_box": [100, 100, 600, 900],
             "description": [
                 {"line": "A wall has a hole.", "box": [200, 200, 400, 400]},
@@ -858,6 +860,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             "why": "The speaker says it.",
             "triage_rests": {"frame": 0, "quote": "was shelled"},
             "title": "Market shelled",
+            "title_ar": "قصف السوق",
             "title_rests": rest,
             "description": [
                 {"line": "A test card.", "rests": {"frame": 7, "quote": ""}}

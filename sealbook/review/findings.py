@@ -544,7 +544,7 @@ async def no_review_needed(db, user, incident: str, author):
         .order_by(Statement.recorded_at)
         .limit(1)
     )
-    if st is None:
+    if st is None or not any(i["id"] == incident for i in await incidents(db, None)):
         raise LookupError("no current incident with that id")
     if not await requests(db, st.id):
         raise LookupError("this incident was not sent for peer review")

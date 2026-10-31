@@ -464,8 +464,17 @@ async def queue_processing(session: AsyncSession, acq: Acquisition, mime: str) -
         return {"queued": None, "reason": reason}
     if tool == "transcribe":
         queued = await queue_transcribe(session, acq)
-        if not queued["queued"] and mime.startswith("video/"):
-            # Nothing will read its speech, so the frames' first pass need not wait.
+        speech = await session.scalar(
+            select(Run.id)
+            .where(
+                Run.tool == "transcribe",
+                Run.inputs["blobs"][0].astext == acq.blob_sha256,
+            )
+            .limit(1)
+        )
+        if mime.startswith("video/") and speech is None:
+            # Nothing will read its speech, so the frames' first pass need not wait;
+            # otherwise transcription queues it with the transcript.
             await queue_read(session, acq, "assess", acq.blob_sha256)
         return queued
     return await queue_read(session, acq, tool, acq.blob_sha256)

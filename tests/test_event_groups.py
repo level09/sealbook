@@ -440,6 +440,18 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
             s.add(peer)
             await s.flush()
             s.add(peer_key.register(peer))
+        # Its author can never sign it, so nobody may ask them to.
+        reviewer = await self.client("peer@example.com")
+        async with ext.async_session_factory() as s:
+            author = await s.scalar(
+                select(User.id).where(User.email == "analyst@example.com")
+            )
+        r = await reviewer.post(
+            "/api/collaboration/requests",
+            json={"item": {"statement": statement, "reviewer": author, "reason": "P"}},
+            headers=reviewer.csrf,
+        )
+        assert r.status_code == 400, await r.get_json()
         r = await client.post(
             "/api/collaboration/requests",
             json={

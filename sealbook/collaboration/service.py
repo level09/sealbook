@@ -82,6 +82,9 @@ async def request_review(db, proposal, user, reviewer_id, reason):
         raise ValueError("an erased proposal cannot be assigned")
     if await requests(db, proposal.id):
         raise Refused("proposal already has a review request")
+    # check_reviewer never lets an author decide their own statement.
+    if (await db.get(Principal, proposal.author_id)).user_id == reviewer_id:
+        raise ValueError("choose an analyst who did not write it")
     who = await write.principal_for_user(db, user.id, user.name or user.email)
     return await write.append(
         db,
