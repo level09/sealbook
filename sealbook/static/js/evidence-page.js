@@ -185,6 +185,12 @@ export function mount(boot) {
       enter() {const r = this.current; if (!r) return; if (this.cursor.list === 'claims') this.openSpan(r); else if (r.fold) this.fold(r); else if (r.other) location.href = `/evidence/${r.other}`;},
       // A media time when the line rests on a transcript; text needs no position.
       at(c) {const t = this.msAt(c.span); return t != null ? ms(t) : '';},
+      async peerReview() {
+        await this.askAbout(this.pass.triage);
+        if (this.ask.open && !this.ask.reason) this.ask.reason = 'Peer review of the first pass: triage, title, description and labels.';
+      },
+      // The method's review notes: +label to add, -label to remove, *note.
+      noteClass(line) {return {'+': 'ev-n-add', '-': 'ev-n-del', '*': 'ev-n-note'}[line.trim()[0]] || '';},
       async acceptPass() {
         this.busy = true;
         try {

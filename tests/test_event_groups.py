@@ -23,6 +23,7 @@ from stk.user.models import Role, User
 
 from sealbook import blobs
 from sealbook.app import create_app
+from sealbook.collaboration.service import request_review
 from sealbook.ledger.contracts import Prop, StatementIn
 from sealbook.ledger.models import Payload, Principal, Run, Statement, StatementTier
 from sealbook.ledger.write import append, record_acquisition, verify_db
@@ -336,16 +337,16 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
                 )
             ).all()
 
-    async def test_first_pass_accepts_in_one_gesture(self):
-        sha, text = self.shas[0], POSTS[0][0]
+    async def first_pass(self, i):
+        sha, text = self.shas[i], POSTS[i][0]
         async with ext.async_session_factory() as s, s.begin():
             for prop, value, quote in (
                 (
                     Prop.TRIAGE,
                     {"content": "incident", "reliability": "some_evidence", "why": "w"},
-                    "Shelling hit the market",
+                    "Tel Ward",
                 ),
-                (Prop.LABEL, {"label": "Type, Martial, Shelling"}, "Shelling"),
+                (Prop.LABEL, {"label": "Type, Martial, Shelling"}, "Tel Ward"),
             ):
                 start = text.index(quote)
                 await append(
@@ -361,6 +362,10 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
                     ),
                     sign=self.run_sign,
                 )
+        return sha
+
+    async def test_first_pass_accepts_in_one_gesture(self):
+        sha = await self.first_pass(0)
         client = await self.client()
         staged, out = await self.sign(
             client, "/api/review/firstpass/options", {"sha": sha}
@@ -376,3 +381,34 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
             headers=client.csrf,
         )
         assert r.status_code == 404
+
+    async def test_a_pass_sent_for_peer_review_is_the_reviewers(self):
+        sha = await self.first_pass(1)
+        async with ext.async_session_factory() as s, s.begin():
+            role = await s.scalar(select(Role).where(Role.name == "analyst"))
+            peer = User(
+                email="peer@example.com",
+                name="peer",
+                password="x",
+                active=True,
+                confirmed_at=datetime.now(),
+            )
+            peer.roles.append(role)
+            s.add(peer)
+            await s.flush()
+            me = await s.scalar(select(User).where(User.email == "analyst@example.com"))
+            triage = await s.scalar(
+                select(Statement).where(
+                    Statement.prop == Prop.TRIAGE, Statement.subject == f"blob:{sha}"
+                )
+            )
+            await request_review(
+                s, triage, me, peer.id, "Peer review of the first pass"
+            )
+        client = await self.client()
+        r = await client.post(
+            "/api/review/firstpass/options",
+            json={"item": {"sha": sha}},
+            headers=client.csrf,
+        )
+        assert r.status_code == 403

@@ -106,3 +106,6 @@ body.dark-mode .evp {
 .ev-prio.hi { background: var(--incident-wash); color: var(--incident); }
 .ev-label { all: unset; font-size: 12px; padding: 1px 8px; border: 1px dashed var(--line-strong); border-radius: 5px; cursor: pointer; color: var(--ink-2); }
 .ev-label:hover { border-color: var(--agent-line); color: var(--ink); }
+.ev-n-add { color: var(--accepted); }
+.ev-n-del { color: var(--negative); text-decoration: line-through; text-decoration-thickness: 1px; }
+.ev-n-note { color: var(--ink-2); font-style: italic; }

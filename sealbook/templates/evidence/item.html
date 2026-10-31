@@ -46,7 +46,8 @@
           <span class="ev-legend"><span class="tier-accepted by-person"><span class="ev-sw"></span> accepted</span><span class="tier-corroborated by-person"><span class="ev-sw"></span> corroborated</span><span class="tier-unconfirmed by-agent"><span class="ev-sw"></span> unconfirmed</span></span></header>
         <div v-if="pass.all.length" class="ev-pass" aria-labelledby="ev-h-pass">
           <div class="d-flex align-center ga-2 flex-wrap"><h3 id="ev-h-pass">First pass</h3><span class="ev-agent"><i class="ti ti-robot" aria-hidden="true"></i> proposed by an agent from this item only</span>
-            <v-btn v-if="pass.open.length" class="ms-auto" size="small" color="primary" prepend-icon="ti ti-signature" :loading="busy" @click="acceptPass">Accept the first pass</v-btn>
+            <v-btn v-if="pass.open.length && pass.triage" class="ms-auto" size="small" variant="outlined" prepend-icon="ti ti-users" @click="peerReview">${ threadFor(pass.triage) ? 'Review thread' : 'Send for peer review' }</v-btn>
+            <v-btn v-if="pass.open.length" :class="pass.triage ? '' : 'ms-auto'" size="small" color="primary" prepend-icon="ti ti-signature" :loading="busy" @click="acceptPass">Accept the first pass</v-btn>
             <span v-else class="ms-auto ev-done"><i class="ti ti-circle-check" aria-hidden="true"></i> decided</span></div>
           <button v-if="pass.triage" type="button" class="ev-pline" @click="openSpan(pass.triage)"><span class="ev-plab">Triage</span><span class="ev-pv"><span class="ev-prio" :class="pass.triage.value.endsWith('high priority') ? 'hi' : ''">${ pass.triage.value.split(', ').pop() }</span> ${ pass.triage.value.split(', ').slice(0, -1).join(', ') }</span><span class="ev-at">${ at(pass.triage) }</span></button>
           <button v-if="pass.title" type="button" class="ev-pline" @click="openSpan(pass.title)"><span class="ev-plab">Title</span><span class="ev-pv">${ pass.title.value }</span><span class="ev-at">${ at(pass.title) }</span></button>
@@ -165,11 +166,13 @@
         <template v-if="thread">
           <p class="mt-3 mb-1"><strong>${ thread.sender.name }</strong> asked: <span dir="auto">${ thread.reason }</span></p>
           <p class="ev-note mb-2">About ${ prop(thread.proposal.prop) }<template v-if="thread.proposal.display">: <bdi dir="auto">${ thread.proposal.display }</bdi></template>, ${ thread.proposal.tier }</p>
-          <div v-for="m in thread.comments" :key="m.id" class="py-2" style="border-top:1px solid var(--e-line, #e4e4e0)"><strong>${ m.author }</strong> <span class="ev-note">${ m.at.slice(0, 16).replace('T', ' ') }</span><div dir="auto">${ m.text }</div></div>
-          <v-textarea id="ev-comment" v-model="comment" label="Comment, @name to mention" rows="2" auto-grow hide-details class="mt-2"></v-textarea>
+          <div v-for="m in thread.comments" :key="m.id" class="py-2" style="border-top:1px solid var(--e-line, #e4e4e0)"><strong>${ m.author }</strong> <span class="ev-note">${ m.at.slice(0, 16).replace('T', ' ') }</span><div dir="auto"><div v-for="(ln, k) in m.text.split('\n')" :key="k" :class="noteClass(ln)">${ ln }</div></div></div>
+          <p v-if="thread.proposal.prop === 'triage'" class="ev-note mt-2 mb-0">Peer review of the first pass. Nothing wrong: No review needed signs it. Needs review: write one line each, +label to add, -label to remove, *note for anything else.</p>
+          <v-textarea id="ev-comment" v-model="comment" :label="thread.proposal.prop === 'triage' ? 'Needs review: +label, -label, *note' : 'Comment, @name to mention'" rows="2" auto-grow hide-details class="mt-2"></v-textarea>
           <div class="d-flex ga-2 mt-2 flex-wrap">
             <v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-send" :disabled="!comment.trim()" :loading="threadBusy" @click="sendComment">Comment</v-btn>
-            <template v-if="thread.can_review && ['unconfirmed', 'corroborated'].includes(thread.proposal.tier)"><v-btn size="small" variant="outlined" prepend-icon="ti ti-check" @click="decide({...thread.proposal, can_review: true, statement: thread.proposal.id, kind: thread.proposal.prop === 'media_match' ? 'Copy' : undefined}, 'accept')">Accept</v-btn><v-btn size="small" variant="outlined" prepend-icon="ti ti-x" @click="decide({...thread.proposal, can_review: true, statement: thread.proposal.id}, 'reject')">Reject</v-btn></template>
+            <v-btn v-if="thread.proposal.prop === 'triage' && thread.can_review && pass.open.length" size="small" variant="outlined" prepend-icon="ti ti-signature" :loading="busy" @click="acceptPass">No review needed</v-btn>
+            <template v-else-if="thread.can_review && ['unconfirmed', 'corroborated'].includes(thread.proposal.tier)"><v-btn size="small" variant="outlined" prepend-icon="ti ti-check" @click="decide({...thread.proposal, can_review: true, statement: thread.proposal.id, kind: thread.proposal.prop === 'media_match' ? 'Copy' : undefined}, 'accept')">Accept</v-btn><v-btn size="small" variant="outlined" prepend-icon="ti ti-x" @click="decide({...thread.proposal, can_review: true, statement: thread.proposal.id}, 'reject')">Reject</v-btn></template>
           </div>
         </template>
         <h3 class="mt-5 mb-2">History</h3>

@@ -28,7 +28,14 @@ async def plan(db, user, sha: str, author) -> tuple[str, list[StatementIn]]:
     )
     if not open_:
         raise LookupError("nothing in this item's first pass is waiting")
-    for st in open_:
+    # Sent for peer review, the pass is the reviewer's to decide as a whole: the
+    # request sits on its triage line.
+    triage = await db.scalar(
+        select(Statement).where(
+            Statement.subject == f"blob:{sha}", Statement.prop == Prop.TRIAGE
+        )
+    )
+    for st in [triage, *open_] if triage else open_:
         await check_reviewer(db, st, user)
     gesture = str(uuid.uuid4())
     at = datetime.now(UTC).isoformat()
