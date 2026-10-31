@@ -242,7 +242,8 @@ bdi { unicode-bidi: isolate; }
   background: var(--paper); border-bottom: 1px solid transparent; transition: border-color .2s;
 }
 .top.stuck { border-bottom-color: var(--rule); }
-.top .mark { margin-right: auto; text-decoration: none; }
+.top .mark { margin-right: auto; text-decoration: none; color: var(--ink); border-radius: 6px; }
+.top .mark:focus-visible { outline: 2px solid var(--violet); outline-offset: 4px; }
 section[id] { scroll-margin-top: calc(var(--head) + 16px); }
 .chapters { display: flex; gap: 2px; margin-right: 8px; }
 .chapters a { font: 500 14px/1 var(--sans); color: var(--ink-2); text-decoration: none; padding: 9px 12px; border-radius: 999px; transition: color .2s, background .2s; }
