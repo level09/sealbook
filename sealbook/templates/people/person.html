@@ -168,6 +168,8 @@ const {createApp} = Vue;
 const {createVuetify} = Vuetify;
 const vuetify = createVuetify(config.vuetifyConfig);
 const boot = JSON.parse(document.getElementById('people-boot').textContent);
+// The facts that put a person somewhere on a day, drawn on the track.
+const TRACK = ['arrested_at', 'detained_at', 'detention_branch', 'transferred_to', 'seen_at', 'last_seen', 'reports'];
 
 const app = createApp({
   mixins: [layoutMixin],
@@ -189,7 +191,7 @@ const app = createApp({
     storyHref() { return `/stories?lens=person&ref=${boot.person}`; },
     trackRows() {
       const key = `person:${this.p.person}`;
-      const pts = Object.keys(PROP).flatMap(prop => this.p.facts[prop] || []).filter(r => r.from && r.display)
+      const pts = TRACK.flatMap(prop => this.p.facts[prop] || []).filter(r => r.from && r.display)
         .map(r => ({id: r.id, subject: key, prop: r.prop, place: r.display, from: r.from, to: r.to || r.from, tier: r.tier, agent: r.actor.agent, inherited: r.inherited}));
       return timelineRows([{key, label: this.title || 'Track', steps: this.p.track.steps, gaps: this.p.gaps}], pts);
     },

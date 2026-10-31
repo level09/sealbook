@@ -9,7 +9,6 @@ import * as maplibregl from '/static/maplibre/maplibre-gl.mjs';
 import {addBasemap} from '/static/js/basemap.js';
 
 const METHOD = {exif: 'camera metadata', c2pa: 'content credentials', analyst: 'analyst geolocation'};
-const PROP = {photographed_at: 'Photographed at', filmed_at: 'Filmed at'};
 // The story map's palette: this page has no map colour tokens of its own.
 const MAP = {light: {bg: '#eef0f1', land: '#f9f9f7', border: '#c9c9c3', muted: '#8a8d93'}, dark: {bg: '#101215', land: '#181a1e', border: '#383c43', muted: '#7d8189'}};
 
@@ -54,7 +53,7 @@ export const EvidenceLocation = {
     label(l) {
       const where = `${l.lat.toFixed(5)}, ${l.lon.toFixed(5)}`;
       const facing = l.bearing == null ? '' : `, facing ${l.bearing}°`;
-      return `${PROP[l.prop] || l.prop} ${where} within ${l.precision_m} m${facing}: ${METHOD[l.method] || l.method}, ${l.tier}${l.agent ? ', read by a tool' : ''}`;
+      return `${propTitle(l.prop)} ${where} within ${l.precision_m} m${facing}: ${METHOD[l.method] || l.method}, ${l.tier}${l.agent ? ', read by a tool' : ''}`;
     },
     color(name) { return getComputedStyle(this.$el).getPropertyValue(name).trim() || '#555'; },
     async draw() {
