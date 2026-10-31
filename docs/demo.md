@@ -51,8 +51,8 @@ marked synthetic:
 
 The PDFs are read by the real PDF reader at seed time and their claims sit on that
 page text. The two scans were read once by the app's own OCR prompt on
-`google/gemini-3.1-flash-lite` over OpenRouter (both are ordinary sources, which the
-cloud route may read) and the answer is kept in `acceptance/demo/ocr.json`. The
+`google/gemini-4-argon` (`OCR_MODEL`) on OpenRouter's zero-retention route (both are
+ordinary sources) and the answer is kept in `acceptance/demo/ocr.json`. The
 seed replays it through the real `ocr` tool: the run names that model, carries a
 `demo` note saying when it was recorded and that no model ran at seed time, and
 writes the text as a derived blob like a live run. A claim on a scan points at the

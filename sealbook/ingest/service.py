@@ -437,11 +437,14 @@ async def queue_read(
     inputs = {"blobs": [sha], "acquisition": str(acq.id)} | extra
     if tool == "ocr":
         inputs |= await extract_target(session, acq)
+    hosted = route in (Route.CLOUD_ZDR, Route.CLOUD)
     run = Run(
         principal_id=(await system_agent(session, "extractor")).id,
         tool=tool,
         route=str(route),
-        model_requested=Config.RUN_MODELS[route],
+        model_requested=Config.OCR_MODEL
+        if tool == "ocr" and hosted and Config.OCR_MODEL
+        else Config.RUN_MODELS[route],
         inputs=inputs,
     )
     session.add(run)

@@ -8,8 +8,8 @@ Everything here is invented: the people, the branch, the documentation groups.
 
 OCR is recorded, never written by hand: the app's own request goes to Google Cloud
 Vision (GOOGLE_VISION_API_KEY), the route the policy prefers for OCR of ordinary
-sources, or else to MODEL_CLOUD on the cloud route, and ocr.json keeps the answer as
-received. A recording whose image or prompt no longer matches
+sources, or else to OCR_MODEL on the zero-retention route, and ocr.json keeps the
+answer as received. A recording whose image or prompt no longer matches
 fails the run until it is recorded again.
 """
 
@@ -322,12 +322,14 @@ def pdf(browser, html, name, facts):
 
 
 def ocr_route():
-    """Vision when its key is set, as the policy prefers for OCR, else MODEL_CLOUD."""
+    """Vision when its key is set, as the policy prefers for OCR, else OCR_MODEL on
+    the zero-retention route, as ingest queues it."""
     from sealbook.ledger.contracts import Route
+    from sealbook.settings import Config
 
     if os.environ.get("GOOGLE_VISION_API_KEY"):
         return Route.VISION, "DOCUMENT_TEXT_DETECTION"
-    return Route.CLOUD, os.environ["MODEL_CLOUD"]
+    return Route.CLOUD_ZDR, Config.OCR_MODEL
 
 
 def ocr_request(image: bytes, model: str) -> dict:

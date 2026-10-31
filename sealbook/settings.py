@@ -132,6 +132,12 @@ class Config(stk.Config):
     # exactly (2026-10-25); MODEL_CLOUD_ZDR= (empty) turns it off. GOOGLE_VISION_API_KEY
     # turns on the vision route, Google Cloud Vision text detection, which the policy
     # prefers for OCR of ordinary sources: it reads text and never describes a picture.
+    # OCR on OpenRouter (cloud-zdr, cloud) uses its own model: on the demo's Arabic
+    # scans Gemini 4 Argon and Gemini 3.1 Pro read all 28 known values in every run,
+    # where cheaper models missed handwritten names and places (2026-10-31,
+    # docs/agent-eval.md); Argon is not a preview. OCR_MODEL= (empty) uses the
+    # route's model.
+    OCR_MODEL = os.environ.get("OCR_MODEL", "google/gemini-4-argon")
     RUN_MODELS = {
         r: m
         for r, m in (

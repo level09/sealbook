@@ -8,6 +8,7 @@ import tempfile
 import unittest
 import uuid
 from datetime import datetime
+from io import BytesIO
 from pathlib import Path
 from unittest import mock
 
@@ -203,6 +204,27 @@ class IngestTest(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(held["processing"]["queued"])
         self.assertIn("Set MODEL_LOCAL or MODEL_CLOUD_ZDR in settings", held["processing"]["reason"])
         self.assertEqual(free["processing"]["route"], "cloud")
+
+    async def test_hosted_ocr_uses_the_ocr_model(self):
+        models, png = {"cloud": "m/c"}, BytesIO()
+        Image.new("RGB", (8, 8)).save(png, "PNG")
+        with (
+            mock.patch.object(Config, "RUN_MODELS", models),
+            mock.patch.object(Config, "OCR_MODEL", "m/ocr"),
+        ):
+            async with self.Session() as s, s.begin():
+                kw = self.kw("device:x", "image/png") | {"sensitivity": "ordinary"}
+                photo = await service.ingest_bytes(s, png.getvalue(), **kw)
+                note = await service.ingest_bytes(
+                    s,
+                    b"a note",
+                    **self.kw("device:x", "text/plain"),
+                    sensitivity="ordinary",
+                )
+                ocr = await s.get(Run, uuid.UUID(photo["processing"]["run"]))
+                extract = await s.get(Run, uuid.UUID(note["processing"]["run"]))
+        self.assertEqual((ocr.tool, ocr.model_requested), ("ocr", "m/ocr"))
+        self.assertEqual((extract.tool, extract.model_requested), ("extract", "m/c"))
 
     async def test_c2pa_valid_absent_invalid(self):
         signed = jpeg(self.tmp, signed=True)

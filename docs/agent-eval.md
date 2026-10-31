@@ -358,6 +358,43 @@ proposals (338 right, precision 0.94, recall 0.44) formed 34 groups, 32 pure
 (94%), 10.6 pair proposals per group. Reviewing a group as one candidate incident
 would ask an analyst about ten times fewer questions.
 
+## OCR models compared, 2026-10-31
+
+The app's own OCR request (structured answer, line by line) on OpenRouter, temperature
+0, on three synthetic Arabic scans with known values (the demo's detainee list and
+dormitory roster, and the acceptance register page, slightly rotated) and one photo
+with no text. A value counts when it appears character for character, as a claim's
+quote must. 28 values; the demo list's normalised date is left out because the page
+never writes it that way. Cost and seconds are for all four images.
+
+| Model | Values read | No-text photo | Cost | Seconds | Zero retention |
+| --- | --- | --- | --- | --- | --- |
+| `google/gemini-4-argon` | 28, 28, 28 | right | $0.018 | 27 to 30 | Google |
+| `google/gemini-3.1-pro-preview` | 28, 28, 28, 28 | right | $0.018 | 18 to 29 | Google |
+| `google/gemini-3.8-flash` | 28 | right | $0.052 | 99 | Google |
+| `anthropic/claude-haiku-5.5` | 28, 27, 27 | right | $0.001 | 16 to 24 | Bedrock, Google |
+| `openai/gpt-5.6-luna` | 28, 26, 27 | right | $0.004 to $0.006 | 36 to 49 | Azure |
+| `google/gemini-3.1-flash-lite` | 27, 27, 27 | right | $0.002 | 10 to 19 | Google |
+| `google/gemini-3.5-flash-lite` | 27 | right | $0.003 | 20 | Google |
+| `bytedance-seed/seed-2.0-lite` | 27 | right | $0.007 | 47 | |
+| `google/gemma-4-31b-it` | 26, 26, 26 | right | $0.0005 | 26 to 41 | several |
+| `deepseek/deepseek-v4-flash-vision-exp` | 26 | right | $0.003 | 45 | yes |
+| `openai/gpt-5.4-mini` | 26 | right | $0.009 | 12 | |
+| `meta-llama/llama-4-maverick` | 26 | right | $0.002 | 25 | yes |
+| `mistralai/mistral-large-4-0` | 24 | right | $0.009 | 38 | yes |
+| `qwen/qwen3-vl-235b-a22b-instruct` | 24 | right | $0.003 | 162 | |
+| `qwen/qwen3.8-flash` | 24 | right | $0.001 | 34 | |
+| `mistralai/mistral-medium-3-5` | 23 | right | $0.017 | 16 | yes |
+| `mistralai/mistral-small-2603` | 18 | right | $0.002 | 13 | yes |
+| `nvidia/nemotron-3.5-super-vl` | 17 | right | $0.005 | 28 | |
+
+Every model answered "no text" for the photo once the answer was structured. What
+the cheaper models miss are handwritten names and places (حرستا, فادي كرم). Only
+Gemini 4 Argon and Gemini 3.1 Pro read every value in every run; Argon is the
+default `OCR_MODEL` because it is not a preview. These scans no longer separate the
+two leaders: a harder set (more handwriting, stamps, low light) is needed before
+the next choice. Three scans of one synthetic hand: a direction, not a benchmark.
+
 ## Extraction check
 
 `acceptance/eval_extract.py` scores what extraction would write on 16 synthetic,
