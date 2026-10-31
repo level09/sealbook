@@ -13,6 +13,7 @@ import orjson
 from sqlalchemy import Text, and_, case, cast, func, or_, select
 
 from sealbook import method
+from sealbook.collaboration.service import signed_off
 from sealbook.discovery.evidence import REVIEW_PROPS, granted, threads
 from sealbook.discovery.models import FindingKey
 from sealbook.discovery.service import available
@@ -768,6 +769,9 @@ async def incident(db, user, ref: str) -> dict:
         }
         if signed
         else None,
+        # Peer review is asked on the incident statement (collaboration.service).
+        "statement": str(signed.id) if signed else None,
+        "peer_signed": bool(signed) and await signed_off(db, signed.id),
         "story": story,
         "relations": {
             "people": [

@@ -2,11 +2,9 @@
 
 from quart import Blueprint, g, render_template, request, session
 from quart_security import auth_required, current_user, roles_required
-from sqlalchemy import Text, func, select
 
 from sealbook.collaboration import notifications
-from sealbook.ledger.contracts import Prop, Tier
-from sealbook.ledger.models import Payload, Statement, StatementTier
+from sealbook.review import todo
 
 # stk's users blueprint is admin-only; these pages are for every analyst.
 bp_account = Blueprint("account", __name__)
@@ -48,21 +46,8 @@ async def admin():
 
 @bp_account.get("/api/nav/counts")
 async def nav_counts():
-    open_requests = await g.db_session.scalar(
-        select(func.count())
-        .select_from(Statement)
-        .join(Payload, Payload.commitment == Statement.commitment)
-        .join(
-            StatementTier,
-            func.concat("statement:", StatementTier.statement_id.cast(Text))
-            == Statement.subject,
-        )
-        .where(
-            Statement.prop == Prop.REVIEW_REQUEST,
-            Payload.value["reviewer"].as_integer() == current_user.id,
-            StatementTier.tier == Tier.UNCONFIRMED,
-        )
-    )
+    # The same open requests To do lists, so the badge and the list agree.
+    open_requests = len(await todo.asked(g.db_session, current_user))
     unread = await g.db_session.scalar(notifications.unread_query(current_user.id))
     return {"review": open_requests, "notifications": unread}
 

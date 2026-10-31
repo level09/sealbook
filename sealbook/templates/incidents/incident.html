@@ -13,8 +13,18 @@
 <div v-if="e.violations.claimed.length"><dt>Violations claimed</dt><dd>${ e.violations.claimed.join('; ') }</dd></div>
 <div><dt>Evidence</dt><dd>${ plural(e.support, 'supporting claim') } from ${ plural(e.sources, 'source') }</dd></div>
 <div v-if="e.signed"><dt>Accepted by</dt><dd>${ e.signed.by }, ${ fmtDay(e.signed.at.slice(0, 10)) }</dd></div>
+<div v-if="peer"><dt>Peer review</dt><dd>${ e.peer_signed ? 'signed, no review needed' : 'asked, waiting' }</dd></div>
 {% endblock %}
 {% block actions %}
+<v-btn v-if="e.statement" size="small" variant="outlined" prepend-icon="ti ti-users" @click="peerReview">${ peer ? 'Review thread' : 'Send for peer review' }</v-btn>
+<v-dialog v-model="ask.open" max-width="440"><v-card border title="Send for peer review">
+  <v-card-text>
+    <v-select v-model="ask.reviewer" :items="analysts" item-title="name" item-value="id" label="Reviewer" class="mb-2"></v-select>
+    <v-textarea v-model="ask.reason" label="What should they check?" rows="3" auto-grow></v-textarea>
+    <p class="text-caption en-muted mb-0">From then only they sign the peer review. Their notes show in the thread.</p>
+  </v-card-text>
+  <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="ask.open = false">Cancel</v-btn><v-btn color="primary" variant="flat" :disabled="!ask.reviewer || !ask.reason.trim()" :loading="ask.busy" @click="sendAsk">Send request</v-btn></v-card-actions>
+</v-card></v-dialog>
 <v-btn size="small" variant="outlined" prepend-icon="ti ti-scale" @click="vio.open = true">Categorise</v-btn>
 <v-dialog v-model="vio.open" width="480"><v-card border title="Categorise the violation">
   <v-card-text>
@@ -24,6 +34,13 @@
   </v-card-text>
   <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="vio.open = false">Cancel</v-btn><v-btn color="primary" prepend-icon="ti ti-signature" :disabled="!vio.category" :loading="signBusy" @click="categorise">Sign</v-btn></v-card-actions>
 </v-card></v-dialog>
+{% endblock %}
+{% block thread_hint %}
+<p v-if="thread.proposal.prop === 'incident'" class="text-caption en-muted mt-2 mb-0">Peer review of the incident. Nothing wrong: No review needed signs it. Needs review: write one line each, +label to add, -label to remove, *note for anything else.</p>
+{% endblock %}
+{% block thread_actions %}
+<v-btn v-if="thread.proposal.prop === 'incident' && thread.can_review && !e.peer_signed" size="small" variant="outlined" prepend-icon="ti ti-signature" :loading="signBusy" @click="noReviewNeeded">No review needed</v-btn>
+<v-btn v-else-if="thread.proposal.prop !== 'incident'" size="small" variant="text" :href="'/review?request=' + thread.id">Decide in Review</v-btn>
 {% endblock %}
 {% block side %}
 <section class="en-panel" aria-labelledby="en-h-where">
@@ -51,10 +68,35 @@ window.app = entityPage(boot, {
   title: e => e.title,
   missing: 'No current incident with that id that you may see. It may have been undone, or its support erased.',
   reviewed: 'the finding',
+  // Peer review words, kept here while the shared prop words are consolidated.
+  historyText: (vm, h) => h.prop === 'review' && h.subject === `statement:${vm.e.statement}` ? 'Peer review: no review needed' : null,
+  commentLabel: vm => vm.thread?.proposal.prop === 'incident' ? 'Needs review: +label, -label, *note' : null,
   mixin: {
-    data: () => ({vio: {open: false, kind: 'potential', category: null}}),
+    data: () => ({vio: {open: false, kind: 'potential', category: null}, ask: {open: false, reviewer: null, reason: '', busy: false}, analysts: []}),
     watch: {'vio.kind'() { this.vio.category = null; }},
     methods: {
+      async peerReview() {
+        if (this.peer) { this.drawer = true; await this.openThread(this.peer); this.$nextTick(() => document.getElementById('en-comment')?.focus()); return; }
+        if (!this.analysts.length) this.analysts = (await axios.get('/api/collaboration/analysts')).data.items;
+        this.ask = {open: true, reviewer: null, reason: 'Peer review of the incident: title, kind, when and where, people and roles, categories.', busy: false};
+      },
+      async sendAsk() {
+        this.ask.busy = true;
+        try {
+          await axios.post('/api/collaboration/requests', {item: {statement: this.e.statement, reviewer: this.ask.reviewer, reason: this.ask.reason}});
+          this.ask.open = false;
+          this.say('Sent for peer review. Your colleague is notified.');
+          await this.load();
+        } catch (err) { this.say(this.fail(err)); }
+        finally { this.ask.busy = false; }
+      },
+      noReviewNeeded() {
+        this.stage({incident: 'incident:' + this.e.id}, '/api/review/incidents/peer/options', 'Peer review: no review needed', async () => {
+          this.say('Peer review signed with your passkey.');
+          await this.load();
+          await this.openThread(this.peer);
+        });
+      },
       categorise() {
         const {kind, category} = this.vio;
         this.vio.open = false;
@@ -66,6 +108,7 @@ window.app = entityPage(boot, {
       },
     },
     computed: {
+      peer() { return this.e.threads.find(t => t.about === this.e.statement) || null; },
       shapes() { return this.e.places.filter(p => p.lonlat).map(p => ({geometry: {type: 'Point', coordinates: p.lonlat}})); },
       relations() {
         const r = this.e.relations;

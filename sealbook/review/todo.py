@@ -1,7 +1,7 @@
 """To do: everything waiting on this person in one list, biggest decisions first. Each
 row opens the screen where it is decided; nothing is decided here."""
 
-from sqlalchemy import Text, func, select
+from sqlalchemy import Text, and_, func, or_, select
 from sqlalchemy.orm import aliased
 
 from sealbook import method
@@ -15,11 +15,25 @@ LIMIT = 50
 
 
 async def asked(db, user) -> list[dict]:
-    """Open review requests addressed to this person, oldest first."""
+    """Open review requests addressed to this person, oldest first: a pending
+    proposal, or an accepted incident whose peer review is not yet signed."""
     target = aliased(StatementTier)
+    about = aliased(Statement)
+    review = aliased(Statement)
+    review_tier = aliased(StatementTier)
+    signed = (
+        select(review.id)
+        .join(review_tier, review_tier.statement_id == review.id)
+        .where(
+            review.subject == Statement.subject,
+            review.prop == Prop.REVIEW,
+            review_tier.tier == Tier.ACCEPTED,
+        )
+        .exists()
+    )
     rows = (
         await db.execute(
-            select(Statement, Payload.value, Principal.name)
+            select(Statement, Payload.value, Principal.name, about.subject)
             .join(Payload, Payload.commitment == Statement.commitment)
             .join(Principal, Principal.id == Statement.author_id)
             .join(
@@ -27,10 +41,18 @@ async def asked(db, user) -> list[dict]:
                 func.concat("statement:", target.statement_id.cast(Text))
                 == Statement.subject,
             )
+            .join(about, about.id == target.statement_id)
             .where(
                 Statement.prop == Prop.REVIEW_REQUEST,
                 Payload.value["reviewer"].as_integer() == user.id,
-                target.tier == Tier.UNCONFIRMED,
+                or_(
+                    target.tier == Tier.UNCONFIRMED,
+                    and_(
+                        about.prop == Prop.INCIDENT,
+                        target.tier == Tier.ACCEPTED,
+                        ~signed,
+                    ),
+                ),
             )
             .order_by(Statement.recorded_at)
             .limit(LIMIT)
@@ -43,8 +65,11 @@ async def asked(db, user) -> list[dict]:
             "from": name,
             "reason": v["reason"],
             "at": st.recorded_at.isoformat(),
+            "incident": subject.removeprefix("incident:")
+            if subject.startswith("incident:")
+            else None,
         }
-        for st, v, name in rows
+        for st, v, name, subject in rows
     ]
 
 

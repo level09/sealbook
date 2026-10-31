@@ -81,10 +81,11 @@
         <p v-else-if="threadId && !thread" class="en-muted mt-3">This thread is private to its sender, reviewer and admins.</p>
         <template v-if="thread">
           <p class="mt-3 mb-1"><strong>${ thread.sender.name }</strong> asked: <span dir="auto">${ thread.reason }</span></p>
-          <div v-for="m in thread.comments" :key="m.id" class="py-2" style="border-top: 1px solid var(--line)"><strong>${ m.author }</strong> <span class="en-muted">${ m.at.slice(0, 16).replace('T', ' ') }</span><div dir="auto">${ m.text }</div></div>
-          <v-textarea v-model="comment" label="Comment, @name to mention" rows="2" auto-grow hide-details class="mt-2"></v-textarea>
+          <div v-for="m in thread.comments" :key="m.id" class="py-2" style="border-top: 1px solid var(--line)"><strong>${ m.author }</strong> <span class="en-muted">${ m.at.slice(0, 16).replace('T', ' ') }</span><div dir="auto"><div v-for="(ln, k) in m.text.split('\n')" :key="k" :class="noteClass(ln)">${ ln }</div></div></div>
+          {% block thread_hint %}{% endblock %}
+          <v-textarea id="en-comment" v-model="comment" :label="commentLabel" rows="2" auto-grow hide-details class="mt-2"></v-textarea>
           <div class="d-flex ga-2 mt-2"><v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-send" :disabled="!comment.trim()" :loading="threadBusy" @click="sendComment">Comment</v-btn>
-            <v-btn size="small" variant="text" :href="'/review?request=' + thread.id">Decide in Review</v-btn></div>
+            {% block thread_actions %}<v-btn size="small" variant="text" :href="'/review?request=' + thread.id">Decide in Review</v-btn>{% endblock %}</div>
         </template>
         <h3 class="text-body-2 font-weight-bold mt-6 mb-1">Signed history</h3>
         <ul v-if="gestures.length" class="en-hist">

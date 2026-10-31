@@ -562,6 +562,16 @@ async def incident_violation():
     )
 
 
+@review.post("/api/review/incidents/peer/options")
+async def incident_peer_review():
+    item = await _item()
+    return await _planned(
+        lambda db, who: findings.no_review_needed(
+            db, current_user, item.get("incident"), who
+        )
+    )
+
+
 @review.post("/api/review/findings/options")
 async def finding_accept():
     item = await _item()
