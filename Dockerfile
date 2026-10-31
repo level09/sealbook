@@ -22,7 +22,9 @@ ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1
 
 # Install runtime deps and create user
-RUN apt-get update && apt-get install -y --no-install-recommends curl libexpat1 \
+# ffmpeg reads video and audio (frames, fingerprints, speech); Chromium serves web research.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN apt-get update && apt-get install -y --no-install-recommends curl libexpat1 ffmpeg \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -m -u 1000 stk
 
@@ -38,6 +40,7 @@ RUN curl -fsSL -o /tmp/c2patool.tgz "https://github.com/contentauth/c2pa-rs/rele
 
 # Copy venv and app
 COPY --from=builder --chown=stk:stk /app/.venv ./.venv
+RUN playwright install --with-deps chromium && rm -rf /var/lib/apt/lists/*
 COPY --chown=stk:stk . .
 
 # Create instance dir with correct ownership

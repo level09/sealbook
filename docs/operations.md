@@ -320,6 +320,24 @@ machine before relying on capture. A capture needs `ffmpeg` to merge video and a
 upgrade it with `uv add yt-dlp==<version>` and restart workers when downloads start
 failing. The capture run records the version it used.
 
+## Hosted demo with Docker Compose
+
+`docker-compose.yml` runs PostgreSQL with PostGIS and pgvector, Redis, the app
+(`website`), the queue (`runner`, `stk runner`) and Caddy, which obtains the TLS
+certificate for `STK_HOST`. Evidence bytes and the speech model live in the
+`instance-data` volume that the app and the runner share. Put the host's DNS record in
+place first, then write `.env` with `SECRET_KEY`, `SECURITY_PASSWORD_SALT`,
+`DB_ADMIN_PASSWORD`, `DB_PASSWORD`, `REDIS_PASSWORD`, `STK_HOST` and
+`OPENROUTER_API_KEY`, and start it:
+
+```bash
+docker compose up -d --build
+docker compose exec website python -m stk install        # first admin
+docker compose exec runner python -m stk speech-model     # speech to text weights
+```
+
+Synthetic or public material only: evidence bytes are not encrypted at rest yet.
+
 ## Verification
 
 ```sh
