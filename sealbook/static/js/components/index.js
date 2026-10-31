@@ -19,6 +19,26 @@ function findingHue(kind) {
   return FINDING_HUES[kind] || {cls: 'is-finding', color: 'agent', icon: 'ti ti-robot'};
 }
 
+/* A statement's prop in readable words, the one map every page uses. Lowercase,
+   to sit inside a sentence; propTitle starts a line or a field label with it. */
+const PROP_WORDS = {
+  name: 'name', father_name: "father's name", mother_name: "mother's name", birth_date: 'born', place_of_birth: 'born in',
+  arrested_at: 'arrested at', detained_at: 'held at', detention_branch: 'held by branch', transferred_to: 'transferred to',
+  seen_at: 'seen at', last_seen: 'last seen at', sex: 'sex', age: 'age', occupation: 'occupation', event: 'event',
+  document_date: 'document date', reports: 'reported event', document_type: 'document type', same_as: 'same person',
+  not_same: 'different people', media_match: 'media match', located_at: 'place confirmed', photographed_at: 'photographed at',
+  filmed_at: 'filmed at', finding: 'finding', relation: 'relation', involved: 'involved in', review: 'review', retraction: 'undo',
+  access: 'access', sha256: 'SHA-256', md5: 'MD5', c2pa_verify: 'C2PA check', fingerprint: 'fingerprint', url_liveness: 'link check',
+  triage: 'triage', title: 'title', description: 'description line', label: 'label',
+};
+function propWord(p) {
+  return PROP_WORDS[p] || (p || '').replaceAll('_', ' ');
+}
+function propTitle(p) {
+  const w = propWord(p);
+  return w.charAt(0).toUpperCase() + w.slice(1);
+}
+
 /**
  * Filter navigation items by user role
  * @param {Array} items - Navigation items

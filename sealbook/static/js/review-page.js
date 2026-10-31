@@ -12,7 +12,6 @@ import {TIMEOUT, failure} from '/static/js/components/EvidenceViewer.js';
 
 const api = axios.create({timeout: TIMEOUT});
 
-const PROP = {name: 'name', father_name: "father's name", mother_name: "mother's name", birth_date: 'born', place_of_birth: 'born in', arrested_at: 'arrested at', last_seen: 'last seen', detention_branch: 'held by branch', transferred_to: 'transferred to', seen_at: 'seen at', detained_at: 'detained at', sex: 'sex', age: 'age', occupation: 'occupation', event: 'event', document_date: 'document date', reports: 'reports', document_type: 'document type', same_as: 'same person', not_same: 'different people', media_match: 'same recording', located_at: 'place confirmed', photographed_at: 'photographed at', filmed_at: 'filmed at', finding: 'finding', relation: 'relation', involved: 'involved in', triage: 'triage', title: 'title', description: 'description line', label: 'label'};
 // A proposed relation reads as the question the reviewer answers.
 const RELATION_ASK = {family: 'Family?', cellmate: 'Cellmates?', command: 'Command relation?', contains: 'Contains the other document?', contained_in: 'Excerpt of the other document?', related: 'Related documents?', same_event: 'Same event?'};
 // What each relation label means, as a tooltip (sealbook/review/assist.py relation()).
@@ -43,7 +42,7 @@ const ago = iso => {
 // The viewer's own calendar day: due dates are days, not instants (en-CA prints YYYY-MM-DD).
 const today = () => new Date().toLocaleDateString('en-CA');
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many || one + 's'}`;
-const label = p => PROP[p] || (p || '').replaceAll('_', ' ');
+const label = propWord;
 const sec = ms => {const s = Math.round((ms || 0) / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;};
 
 // Invariant copy in plain words. Same checks and outcomes as data.invariants.

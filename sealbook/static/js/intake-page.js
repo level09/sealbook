@@ -114,6 +114,8 @@ export function mount(boot) {
     },
     watch: {
       caseSel() { if (this.search.open) this.loadSearch(); },
+      // Captures are stored by the worker, after start() has reread the counts.
+      finished(done) { if (done) this.loadCases(); },
     },
     async mounted() {
       if (this.caseSel === 'all') this.caseSel = null;
@@ -366,6 +368,8 @@ export function mount(boot) {
         this.items.forEach(i => { i.sel = false; });
         window.scrollTo({top: 0, behavior: 'smooth'});
         for (const it of [...this.items]) await this.send(it);
+        // The case's counts were read before this batch stored anything.
+        this.loadCases();
         this.poll();
       },
       addMore(e) { this.addFiles([...e.target.files]); e.target.value = ''; },

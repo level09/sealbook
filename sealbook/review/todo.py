@@ -94,9 +94,13 @@ async def todo(db, user, investigation: str | None) -> dict:
     found = await findings.queue(db, user, investigation)
     groups = await events.groups(db, user, investigation)
     claims = len(await queue.ids(db, user, "open", investigation))
+    mine = await asked(db, user)
+    read = await triage(db, investigation)
     return {
-        "asked": await asked(db, user),
-        "triage": await triage(db, investigation),
+        # The page heading and the rail badge both show this number.
+        "total": len(mine) + len(read) + len(groups) + len(found) + claims,
+        "asked": mine,
+        "triage": read,
         "groups": [
             {
                 "id": g["id"],
