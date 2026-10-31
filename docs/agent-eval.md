@@ -397,10 +397,11 @@ the next choice. Three scans of one synthetic hand: a direction, not a benchmark
 
 ## Extraction check
 
-`acceptance/eval_extract.py` scores what extraction would write on 16 synthetic,
+`acceptance/eval_extract.py` scores what extraction would write on 18 synthetic,
 fictional posts (`acceptance/extract/posts.json`): six with no person in them but
 outlets, hashtags, headlines and unnamed people; two that report no event; six
-naming fictional people; two with an outlet and a person together. It counts
+naming fictional people; two with an outlet and a person together; and the film's
+two aftermath posts (p17, p18), which describe rubble and name no attack. It counts
 invented people (target zero in every trial), missed people, events reported where
 a post has none, and planted towns found in a report's place words. On 2026-10-29,
 `claude-haiku-5-5` over two trials and `claude-opus-5-5` over one each invented no
@@ -423,6 +424,16 @@ on it; OCR keeps `OCR_MODEL`. On the same day Gemma 4 wrote one photo's first pa
 then repeated an empty-boxed label until its 16,384 tokens ran out, in every try;
 Haiku wrote that photo's pass in 7 s for $0.0006 with fitting labels. A schema cap
 on list length would stop such a loop, but Gemini rejects `maxItems`.
+
+Aftermath posts. On 2026-10-31 the film case's two posts about rubble in Jdeideh,
+Aleppo, were left out of their same-event group in 2 of 5 rebuilds. Every miss was
+an empty `events` list: the prompt named attacks, strikes and raids, and damage
+alone did not read as an event. Over 20 calls each on `anthropic/claude-haiku-5.5`,
+the English post had its event 16 times before one added sentence (damage,
+destruction, rubble or casualties are the aftermath of an event, kind other unless
+the text names the cause) and 20 times after. The Arabic post had it 19 times both
+before and after, sometimes listed twice. Six trials over all 18 posts after the
+change invented no event in the posts that report none.
 
 ## Known gaps
 

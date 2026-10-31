@@ -153,7 +153,9 @@ EXTRACT_SYSTEM = (
     "the town, city, village, airport, crossing or site inside place, or null; each "
     "copied exactly from the text, with lang for what; and date, the day it happened "
     "in digits like 2013-09-17 when the text gives it, or null. A posting date is not "
-    "the event date unless the text says it happened that day. " + read.DATA_ONLY
+    "the event date unless the text says it happened that day. Damage, destruction, "
+    "rubble or casualties the text describes are the aftermath of an event: list it, "
+    "with kind other unless the text names the cause. " + read.DATA_ONLY
 )
 VALID = r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
 
