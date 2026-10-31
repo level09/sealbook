@@ -160,6 +160,7 @@ export function mount(boot) {
       async refresh() {try {this.it = (await api.get(`/api/evidence/${boot.sha}/item`)).data;} catch (err) {this.say(message(err));}},
       // A claim from a transcript points at characters of the joined transcript; the read timeline maps them to the line's second.
       msAt(span) {
+        if (span?.ms) return span.ms[0];
         if (span?.start == null || !this.read?.timeline) return null;
         const line = this.read.timeline.findLast(l => l[0] <= span.start);
         return line ? line[1] : null;
