@@ -1930,7 +1930,7 @@ wheels = [
 
 [[package]]
 name = "quart-security"
-version = "2.0.6"
+version = "2.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosmtplib" },
@@ -1948,9 +1948,9 @@ dependencies = [
     { name = "webauthn" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b3/95/6e5ec7956de6697f849f120c12cedb51a0b36fc8d2a02ec047b304507ecf/quart_security-2.0.6.tar.gz", hash = "sha256:b0249da24dafcd4ae1417b86d9a002237e1f8e793c19a94842eb89777122ab8c", size = 37574, upload-time = "2026-10-31T17:42:37.056Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/07/ca/47ba66b62c218735b9f373010d9bbaf0a928e0e92cfeb1df1deab759259d/quart_security-2.1.1.tar.gz", hash = "sha256:c51c8316d67911b10d735264a570db1f818e7d56b3ea2dce791bb07db9ba610b", size = 44261, upload-time = "2026-10-31T18:58:36.684Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4e/38/957016f20ff094f3266e32547e46a1b77323a981e70c1c2a83fd1e33b8f1/quart_security-2.0.6-py3-none-any.whl", hash = "sha256:4af67431c0e3f33e9b9fdd24d271bd3b6849ac973b6aa1a8bf65e6199da6fd51", size = 43451, upload-time = "2026-10-31T17:42:35.468Z" },
+    { url = "https://files.pythonhosted.org/packages/4f/f6/13ebb8f1861ac6a2d5f81c5613a984b004da08c2e80d09faa9a30633a11e/quart_security-2.1.1-py3-none-any.whl", hash = "sha256:71d2cef8e8635f1fcf479998b01eba4d061dcdbb6ee55db5cb1e18778d8ef7da", size = 51803, upload-time = "2026-10-31T18:58:35.256Z" },
 ]
 
 [[package]]
@@ -2208,7 +2208,7 @@ requires-dist = [
     { name = "playwright", specifier = ">=1.60.0" },
     { name = "pypdf", specifier = ">=6.21,<7" },
     { name = "pypdfium2", specifier = ">=5,<6" },
-    { name = "stkit", specifier = ">=17.2.7,<18" },
+    { name = "stkit", specifier = ">=17.3.1,<18" },
     { name = "stkit", extras = ["full"], marker = "extra == 'full'" },
     { name = "yt-dlp", specifier = "==2026.10.21" },
 ]
@@ -2278,7 +2278,7 @@ asyncio = [
 
 [[package]]
 name = "stkit"
-version = "17.2.7"
+version = "17.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosmtplib" },
@@ -2309,9 +2309,9 @@ dependencies = [
     { name = "webauthn" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/4b/274ed6d786ed9347528d027b0e0992221df967be16e02908a8b31632aeef/stkit-17.2.7.tar.gz", hash = "sha256:be002f6f73a21e5528daa6165c111eba4da4888256a74a480ad3495e3bff31c6", size = 1959052, upload-time = "2026-10-31T17:45:54.584Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/97/97/d74812cee92660c58fe8a6d2ebe77ffd4e525a15800e95a335df2f7d6b57/stkit-17.3.1.tar.gz", hash = "sha256:edfe922eea8f8089b92b27caebe2b8f9b4fa5d844ab4d0717b29a51e1c42727a", size = 1961001, upload-time = "2026-10-31T18:58:38.982Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6b/f6/c1ff0695f6702db748300302eb2c72eaebc3a0650bbe0c15b7366e1f94e3/stkit-17.2.7-py3-none-any.whl", hash = "sha256:0441ca4bae76302e88858ee818e1b7cab7f1ba0bc0a5db7fe4600f81dfa3e80b", size = 1860731, upload-time = "2026-10-31T17:45:52.966Z" },
+    { url = "https://files.pythonhosted.org/packages/62/b8/76080963fbac506c0a0e0d66e8ccf5af0c1d5f17bab757030ad9502ded56/stkit-17.3.1-py3-none-any.whl", hash = "sha256:ebaa5ba24647f4511b8a448fee8be466902109371fbfdaf4b8fe68abd2ee36ec", size = 1861877, upload-time = "2026-10-31T18:58:37.326Z" },
 ]
 
 [package.optional-dependencies]
