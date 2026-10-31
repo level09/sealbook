@@ -6,6 +6,8 @@ third-party requests. The one dynamic part is the invite form: `js/invite.js` po
 to `/api/invite`, which `worker.js` stores in the D1 (SQLite) database
 `sealbook-invites` (`invites.sql`). It has no captcha, which would load a third-party
 script; a honeypot field and five requests per hour per salted IP hash keep it quiet.
+`worker.js` also serves the films under `media/` with byte ranges (206), because
+Workers assets answer a Range request with the whole file and Chrome then cannot seek.
 
 The form asks for an email and an optional note only. The page has a sticky header
 with five chapter links and a Contents popover listing every section; section jumps

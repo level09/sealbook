@@ -33,12 +33,12 @@
   // Theme: paper by default, toggle stored per viewer.
   const root = document.documentElement;
   const toggle = document.getElementById("theme");
-  // Paper is the default; the night archive is opt-in.
+  // Paper is the default; dark is opt-in.
   const current = () => root.dataset.theme || "light";
   const label = () => {
     const dark = current() === "dark";
     toggle.setAttribute("aria-pressed", String(dark));
-    toggle.querySelector("span").textContent = dark ? "Paper" : "Night archive";
+    toggle.querySelector("span").textContent = dark ? "Paper" : "Dark";
   };
   toggle.addEventListener("click", () => {
     root.dataset.theme = current() === "dark" ? "light" : "dark";
@@ -54,7 +54,11 @@
   const entries = [...toc.querySelectorAll("ol ol a")].map((a) => ({
     a,
     section: document.querySelector(a.hash),
-    chapter: chapters[[...toc.querySelectorAll(":scope > ol > li")].indexOf(a.closest("ol").parentElement)],
+    // The chapter whose target is this section or the last one before it.
+    chapter: chapters.findLast((c) => {
+      const t = document.querySelector(c.hash);
+      return t === document.querySelector(a.hash) || t.compareDocumentPosition(document.querySelector(a.hash)) & Node.DOCUMENT_POSITION_FOLLOWING;
+    }),
   }));
   let frame = 0;
   const spy = () => {
@@ -72,8 +76,9 @@
     if (!a) return;
     e.preventDefault();
     toc.hidePopover();
-    document.querySelector(a.hash).scrollIntoView({ behavior: "instant" });
     history.replaceState(null, "", a.hash);
+    dispatchEvent(new HashChangeEvent("hashchange")); // replaceState fires none, and a folded target unfolds on it
+    document.querySelector(a.hash).scrollIntoView({ behavior: "instant" });
   });
   spy();
 

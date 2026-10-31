@@ -10,7 +10,7 @@ sealbook.onReady(() => {
   const leaves = h("ol", { class: "leaves", "aria-label": "Each link of this page with its hash" });
   const count = h("p", { class: "note" });
   const live = h("p", { class: "live", "aria-live": "polite" });
-  const edit = h("button", { type: "button", class: "quiet solid", text: `Change "${FROM}" to "${TO}" in link 0` });
+  const edit = h("button", { type: "button", class: "quiet solid", text: "Change one word in the opening" });
   const restore = h("button", { type: "button", class: "quiet", text: "Restore" });
   restore.disabled = true;
 

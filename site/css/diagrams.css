@@ -1,5 +1,8 @@
 /* Animated diagrams of each mechanism, shown above the live demos */
-.diagram { margin: 36px 0 0; background: var(--paper-2); border-radius: 10px; padding: 22px 24px 14px; overflow-x: auto; }
+.diagram { margin: 36px 0 0; border-radius: 10px; padding: 22px 24px 14px; overflow-x: auto;
+  /* A shade on the right edge while more of the diagram is off screen; the local cover hides it at the end. */
+  background: linear-gradient(to left, var(--paper-2) 40%, transparent) right / 48px 100% no-repeat local,
+    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / .18), transparent) right / 16px 100% no-repeat scroll, var(--paper-2); }
 /* ponytail: phones scroll a diagram sideways inside its frame; draw narrow layouts if phone readers complain */
 .diagram svg { display: block; width: 100%; min-width: 560px; height: auto; overflow: visible; }
 .diagram figcaption { position: sticky; left: 0; font: 400 13px/1.5 var(--mono); color: var(--ink-3); margin-top: 12px; min-height: 3em; transition: color .3s; }

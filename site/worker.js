@@ -1,4 +1,4 @@
-// Static files come from the assets binding; only POST /api/invite reaches this code.
+// Static files come from the assets binding; only /api/* and the films reach this code.
 const LIMITS = { email: 254, use_case: 2000 };
 const PER_HOUR = 5;
 
@@ -47,12 +47,36 @@ async function alert(env, row) {
   });
 }
 
+// Workers assets answer a Range request with the whole file (200), and Chrome cannot
+// seek a video without 206 partial responses.
+// ponytail: buffers the whole film per request, fine at 9 MB; move films to R2 past ~50 MB.
+async function ranged(request, env) {
+  const full = await env.ASSETS.fetch(new Request(request.url));
+  const range = request.headers.get("range");
+  if (!full.ok || !range) return full;
+  const body = await full.arrayBuffer();
+  const size = body.byteLength;
+  const m = /^bytes=(\d*)-(\d*)$/.exec(range);
+  let start = m && m[1] !== "" ? Number(m[1]) : m && m[2] !== "" ? size - Number(m[2]) : NaN;
+  const end = m && m[1] !== "" && m[2] !== "" ? Math.min(Number(m[2]), size - 1) : size - 1;
+  start = Math.max(start, 0);
+  if (!m || Number.isNaN(start) || start > end) {
+    return new Response(null, { status: 416, headers: { "content-range": `bytes */${size}` } });
+  }
+  const headers = new Headers(full.headers);
+  headers.delete("content-length");
+  headers.set("content-range", `bytes ${start}-${end}/${size}`);
+  headers.set("accept-ranges", "bytes");
+  return new Response(body.slice(start, end + 1), { status: 206, headers });
+}
+
 export default {
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
     if (pathname === "/api/invite") {
       return request.method === "POST" ? invite(request, env, ctx) : reply(405, { error: "Use POST." });
     }
+    if (pathname.startsWith("/media/") && pathname.endsWith(".mp4")) return ranged(request, env);
     return env.ASSETS.fetch(request);
   },
 };

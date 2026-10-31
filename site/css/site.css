@@ -333,7 +333,7 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 .lede { font: 400 1.3rem/1.58 var(--serif); color: var(--ink) !important; max-width: 42ch !important; }
 .link.broken .copy { padding: 8px 12px; margin-left: -12px; }
 /* Plain layer first; the engineering sits in .how, still inside the hashed copy. */
-.job { font: italic 400 1.35rem/1.4 var(--serif); color: var(--violet) !important; max-width: 46ch !important; margin-top: -6px !important; }
+.job { font: italic 400 1.35rem/1.4 var(--serif); color: var(--ink-2) !important; max-width: 46ch !important; margin-top: -6px !important; }
 .why { background: var(--violet-wash); border-radius: 8px; padding: 12px 16px; color: var(--ink) !important; }
 .why b { font-weight: 500; }
 .how { max-width: 68ch; border-top: 1px solid var(--rule); margin: 4px 0 16px; }
@@ -486,6 +486,9 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 .part h2 { font-size: clamp(2.3rem, 4.6vw, 3.8rem); margin-bottom: 14px; }
 .part > p { max-width: 58ch; color: var(--ink-2); font-size: 1.12rem; }
 .part.finale h2 { color: var(--ink); }
+/* Tour entries sit one step below the chapters they follow. */
+#tour ~ .link:not(#finale ~ .link) .copy h2 { font-size: clamp(1.6rem, 2.8vw, 2.2rem); }
+.proof-next { margin: 32px 0 0; }
 
 /* A chapter sets the task by hand beside what Sealbook proposes; the live demo follows. */
 .vs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 0; margin: 22px 0 18px; border-top: 1px solid var(--ink); }

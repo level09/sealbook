@@ -4,7 +4,7 @@
   "name": "sealbook",
   "main": "worker.js",
   "compatibility_date": "2026-10-01",
-  "assets": { "directory": "dist", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
+  "assets": { "directory": "dist", "binding": "ASSETS", "run_worker_first": ["/api/*", "/media/*.mp4"] },
   "d1_databases": [
     { "binding": "DB", "database_name": "sealbook-invites", "database_id": "d1a26ec7-da6c-41c3-97fe-5f964179c307" }
   ],
