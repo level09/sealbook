@@ -440,13 +440,12 @@ async def queue_read(
     if tool == "ocr":
         inputs |= await extract_target(session, acq)
     hosted = route in (Route.CLOUD_ZDR, Route.CLOUD)
+    own = {"ocr": Config.OCR_MODEL, "assess": Config.ASSESS_MODEL}.get(tool)
     run = Run(
         principal_id=(await system_agent(session, "extractor")).id,
         tool=tool,
         route=str(route),
-        model_requested=Config.OCR_MODEL
-        if tool == "ocr" and hosted and Config.OCR_MODEL
-        else Config.RUN_MODELS[route],
+        model_requested=own if hosted and own else Config.RUN_MODELS[route],
         inputs=inputs,
     )
     session.add(run)

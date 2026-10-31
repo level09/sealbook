@@ -229,6 +229,19 @@ class IngestTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((ocr.tool, ocr.model_requested), ("ocr", "m/ocr"))
         self.assertEqual((extract.tool, extract.model_requested), ("extract", "m/c"))
 
+    async def test_hosted_first_pass_uses_the_assess_model(self):
+        with (
+            mock.patch.object(Config, "RUN_MODELS", {"cloud": "m/c"}),
+            mock.patch.object(Config, "ASSESS_MODEL", "m/assess"),
+        ):
+            async with self.Session() as s, s.begin():
+                kw = self.kw("device:x", "text/plain") | {"sensitivity": "ordinary"}
+                note = await service.ingest_bytes(s, b"a second note", **kw)
+                acq = await s.get(Acquisition, uuid.UUID(note["acquisition_id"]))
+                out = await service.queue_read(s, acq, "assess", acq.blob_sha256)
+                run = await s.get(Run, uuid.UUID(out["run"]))
+        self.assertEqual((run.tool, run.model_requested), ("assess", "m/assess"))
+
     async def test_c2pa_valid_absent_invalid(self):
         signed = jpeg(self.tmp, signed=True)
         plain = jpeg(self.tmp, signed=False)

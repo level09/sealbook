@@ -140,6 +140,11 @@ class Config(stk.Config):
     # docs/agent-eval.md); Argon is not a preview. OCR_MODEL= (empty) uses the
     # route's model.
     OCR_MODEL = os.environ.get("OCR_MODEL", "google/gemini-4-argon")
+    # The first pass (triage, title, description, labels) on OpenRouter, for text,
+    # photos and video. Empty uses the route's model. A stronger model found about
+    # twice the alleged labels analysts gave in a comparison on analyst-labelled
+    # records; it stays opt-in until a person has checked that comparison's judge.
+    ASSESS_MODEL = os.environ.get("ASSESS_MODEL", "")
     RUN_MODELS = {
         r: m
         for r, m in (
