@@ -13,17 +13,17 @@ possible violation category, and peer review. Sealbook keeps that method and doe
 first pass of each step as a cited proposal, so the analyst judges instead of typing.
 Bayanat's label, violation, event type and relation lists are reused with credit.
 
-1. **First pass on each item.** After extraction, an agent proposes triage (content:
+1. **First pass on each item.** Done 2026-10-31, see [status](status.md). After extraction, an agent proposes triage (content:
    incident, post-incident, non-incident and the document kinds; reliability: no, some
    or strong evidence; priority from both, by the method's table), an analyst title next
    to the original, description lines and alleged labels, each pinned to the passage it
    rests on; a transcript passage carries its time. Observed labels wait for frame
    reading (step 6). One signature accepts the pass.
-2. **Their vocabulary.** Injured party, alleged perpetrator, witness, appeared and
+2. **Their vocabulary.** Done 2026-10-31, see [status](status.md). Injured party, alleged perpetrator, witness, appeared and
    participant as roles; possible and claimed violation categories on incidents.
-3. **Peer review.** Send an item or incident for review; the reviewer answers no review
+3. **Peer review.** Done 2026-10-31, see [status](status.md). Send an item or incident for review; the reviewer answers no review
    needed or needs review with +label, -label and notes; the owner revisits.
-4. **One To do list.** Inbox, Review, Discover and the Desk's questions become one list,
+4. **One To do list.** Done 2026-10-31, see [status](status.md). Inbox, Review, Discover and the Desk's questions become one list,
    high priority and biggest decisions first; a link inside a same-event group is
    decided there, not twice.
 5. **Upload shows its work.** Per-file progress, then the batch's summary of what was
