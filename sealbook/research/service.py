@@ -14,16 +14,16 @@ import uuid
 from datetime import UTC, date, datetime
 from urllib.parse import parse_qsl, urlencode, urlsplit
 
-import httpx
+import httpx2
 import numpy as np
 import pdqhash
 import stk.extensions as ext
 from PIL import Image, ImageOps
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from stk.utils import netguard
 from stk.utils.ratelimit import consume_limit
 
-from sealbook import netguard
 from sealbook.cases.models import Case
 from sealbook.discovery.models import MediaFrame
 from sealbook.discovery.service import available
@@ -284,17 +284,14 @@ def _pdq(data: bytes) -> tuple[str, int] | None:
 
 async def _thumb(url: str, transport) -> tuple[bytes, str] | None:
     try:
-        async with netguard.stream(url, timeout=10, transport=transport) as (resp, _):
+        async with netguard.stream(
+            url, timeout=10, max_bytes=THUMB_BYTES, transport=transport
+        ) as (resp, _):
             mime = resp.headers.get("content-type", "").split(";")[0].strip()
             if resp.status_code != 200 or not mime.startswith("image/"):
                 return None
-            data = b""
-            async for chunk in resp.aiter_bytes():
-                data += chunk
-                if len(data) > THUMB_BYTES:
-                    return None
-            return data, mime
-    except (httpx.HTTPError, netguard.Blocked):
+            return await resp.aread(), mime
+    except (httpx2.HTTPError, netguard.Blocked, TimeoutError):
         return None
 
 
@@ -369,7 +366,7 @@ async def search(
     scope: str,
     investigation: str,
     queries: list[dict],
-    transport: httpx.AsyncBaseTransport | None = None,
+    transport: httpx2.AsyncBaseTransport | None = None,
     window: tuple[str, str] | None = None,
 ) -> dict:
     if missing()["search"] and any(

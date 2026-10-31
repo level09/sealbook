@@ -12,7 +12,7 @@ from io import BytesIO
 from pathlib import Path
 from unittest import mock
 
-import httpx
+import httpx2
 import stk
 import stk.extensions as ext
 from alembic import command
@@ -27,8 +27,8 @@ from stk.migrations import (
     throwaway_database_url,
 )
 from stk.user.models import User
+from stk.utils import netguard
 
-from sealbook import netguard
 from sealbook.app import create_app
 from sealbook.ingest import batch, service
 from sealbook.ledger.models import Acquisition, Blob, Principal, Run
@@ -202,7 +202,10 @@ class IngestTest(unittest.IsolatedAsyncioTestCase):
                 )
         # A sensitive document never falls back to a cloud route: it waits.
         self.assertIsNone(held["processing"]["queued"])
-        self.assertIn("Set MODEL_LOCAL or MODEL_CLOUD_ZDR in settings", held["processing"]["reason"])
+        self.assertIn(
+            "Set MODEL_LOCAL or MODEL_CLOUD_ZDR in settings",
+            held["processing"]["reason"],
+        )
         self.assertEqual(free["processing"]["route"], "cloud")
 
     async def test_hosted_ocr_uses_the_ocr_model(self):
@@ -257,14 +260,14 @@ class IngestTest(unittest.IsolatedAsyncioTestCase):
         page = {"body": b"<html>statement v1</html>", "status": 200}
 
         def handler(request):
-            return httpx.Response(
+            return httpx2.Response(
                 page["status"],
                 content=page["body"],
                 headers={"content-type": "text/html; charset=utf-8"},
             )
 
-        transport = httpx.MockTransport(handler)
-        with mock.patch.object(netguard, "resolve", return_value=["93.184.215.14"]):
+        transport = httpx2.MockTransport(handler)
+        with mock.patch.object(netguard, "_resolve", return_value=["93.184.215.14"]):
             async with self.Session() as s, s.begin():
                 cap = await service.capture_url(
                     s,

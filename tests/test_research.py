@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from unittest import mock
 
-import httpx
+import httpx2
 import orjson
 import stk.extensions as ext
 from PIL import Image
@@ -24,8 +24,9 @@ from quart_security import hash_password
 from sqlalchemy import select
 from stk.agent_login import create_agent_login_token
 from stk.user.models import Role, User
+from stk.utils import netguard
 
-from sealbook import blobs, netguard
+from sealbook import blobs
 from sealbook.cases.service import ensure as ensure_case
 from sealbook.ingest import service as ingest
 from sealbook.ledger.contracts import Prop, StatementIn
@@ -85,7 +86,7 @@ class Web:
     """The whole outside world for these tests, keyed by host and path."""
 
     def __init__(self):
-        self.requests: list[httpx.Request] = []
+        self.requests: list[httpx2.Request] = []
         self.by_query: dict[str, str] = {}  # query text -> fixture file
         other = io.BytesIO()
         Image.linear_gradient("L").convert("RGB").save(other, "JPEG")
@@ -113,20 +114,20 @@ class Web:
             ),
         }
 
-    def __call__(self, request: httpx.Request) -> httpx.Response:
+    def __call__(self, request: httpx2.Request) -> httpx2.Response:
         self.requests.append(request)
         host = request.headers["host"]
         path = request.url.path
         if host == "api.search.brave.com":
             kind = path.split("/")[-2]
             name = self.by_query.get(request.url.params["q"], f"brave_{kind}.json")
-            return httpx.Response(200, json=fixture(name))
+            return httpx2.Response(200, json=fixture(name))
         if (host, path) in self.files:
             data, mime = self.files[(host, path)]
-            return httpx.Response(200, content=data, headers={"content-type": mime})
-        return httpx.Response(404)
+            return httpx2.Response(200, content=data, headers={"content-type": mime})
+        return httpx2.Response(404)
 
-    def sent(self, host: str) -> list[httpx.Request]:
+    def sent(self, host: str) -> list[httpx2.Request]:
         return [r for r in self.requests if r.headers["host"] == host]
 
 
@@ -293,7 +294,7 @@ class BraveTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.enterContext(mock.patch.object(Config, "BRAVE_API_KEY", "test-key"))
         self.web = Web()
-        self.transport = httpx.MockTransport(self.web)
+        self.transport = httpx2.MockTransport(self.web)
 
     async def test_three_kinds_parse_into_one_shape(self):
         web = await brave.search("web", '"Lina Najjar"', 20, self.transport)
@@ -315,7 +316,7 @@ class BraveTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sent[2].url.params["count"], "50")
 
     async def test_quota_and_missing_key_are_plain_errors(self):
-        quota = httpx.MockTransport(lambda r: httpx.Response(429))
+        quota = httpx2.MockTransport(lambda r: httpx2.Response(429))
         with self.assertRaisesRegex(brave.SearchError, "quota"):
             await brave.search("web", "x", 5, quota)
         with mock.patch.object(Config, "BRAVE_API_KEY", None):
@@ -404,7 +405,7 @@ class BrowserTest(unittest.IsolatedAsyncioTestCase):
         async def resolve(host, port):
             return ["10.0.0.5"] if host == "internal.test" else PUBLIC_IP
 
-        self.enterContext(mock.patch.object(netguard, "resolve", resolve))
+        self.enterContext(mock.patch.object(netguard, "_resolve", resolve))
         self.enterContext(
             mock.patch.object(
                 browser,
@@ -490,7 +491,7 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         }.items():
             self.enterContext(mock.patch.object(Config, key, value))
         self.enterContext(
-            mock.patch.object(netguard, "resolve", return_value=PUBLIC_IP)
+            mock.patch.object(netguard, "_resolve", return_value=PUBLIC_IP)
         )
         self.enterContext(mock.patch.object(browser, "installed", return_value=True))
         self.login_pages: set[str] = set()
@@ -512,13 +513,13 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         # Any request that misses the MockTransport would reach the network: refuse it.
         self.enterContext(
             mock.patch.object(
-                httpx.AsyncHTTPTransport,
+                httpx2.AsyncHTTPTransport,
                 "handle_async_request",
                 side_effect=AssertionError("real network call"),
             )
         )
         self.web = Web()
-        self.transport = httpx.MockTransport(self.web)
+        self.transport = httpx2.MockTransport(self.web)
         real = service.search
         self.enterContext(
             mock.patch.object(

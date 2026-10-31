@@ -5,7 +5,7 @@ import time
 import uuid
 from datetime import UTC, datetime
 
-import httpx
+import httpx2
 import orjson
 from quart import (
     Blueprint,
@@ -97,7 +97,7 @@ async def search():
         try:
             embedding = await embeddings.query(db, query, Config.EMBEDDING_MODEL)
             semantic = {"status": "ok"}
-        except (httpx.HTTPError, ValueError, KeyError, RouteError) as exc:
+        except (httpx2.HTTPError, ValueError, KeyError, RouteError) as exc:
             # Exact matches still answer; the failure is shown, never silent.
             current_app.logger.warning("semantic search failed: %s", exc)
             semantic = {

@@ -12,14 +12,14 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-import httpx
+import httpx2
 import orjson
 from quart import current_app, request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from stk.user.models import User
+from stk.utils import netguard
 
-from sealbook import netguard
 from sealbook.ledger.models import Principal
 from sealbook.mcp.models import McpGrant, McpToken
 
@@ -144,18 +144,16 @@ async def fetch_client_metadata(client_id: str) -> dict:
             follow_redirects=False,
             headers={"Accept": "application/json"},
             timeout=5,
+            max_bytes=METADATA_MAX_BYTES,
         ) as (response, _):
             if response.status_code != 200:
                 raise ClientError(
                     f"client metadata fetch returned {response.status_code}"
                 )
-            async for chunk in response.aiter_bytes():
-                body += chunk
-                if len(body) > METADATA_MAX_BYTES:
-                    raise ClientError("client metadata document is too large")
+            body = await response.aread()
     except netguard.Blocked as exc:
         raise ClientError(str(exc)) from exc
-    except httpx.HTTPError as exc:
+    except (httpx2.HTTPError, TimeoutError) as exc:
         raise ClientError("client metadata could not be fetched") from exc
     try:
         doc = orjson.loads(body)

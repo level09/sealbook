@@ -80,7 +80,7 @@ def enrich(investigation, limit, after, rebuild):
 
     count, cursor = run_async(queue())
     click.echo(
-        f"Scheduled discovery for {count} acquisitions. Run stk worker to process them."
+        f"Scheduled discovery for {count} acquisitions. Run stk runner to process them."
     )
     if cursor:
         click.echo(f"Next batch: --after {cursor}")
@@ -116,5 +116,5 @@ def discover(investigation):
             return run.id
 
     click.echo(
-        f"Queued discover run {run_async(queue())}. Run stk worker to process it."
+        f"Queued discover run {run_async(queue())}. Run stk runner to process it."
     )

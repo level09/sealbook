@@ -419,7 +419,7 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
             "token_endpoint": "https://accounts.google.com/token",
             "jwks_uri": "https://accounts.google.com/keys",
         }
-        import httpx
+        import httpx2
 
         for invalid in (None, "nonce", "iss", "aud", "exp", "signature"):
             with self.subTest(invalid=invalid):
@@ -463,8 +463,8 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
                     "id_token": encoded,
                     "access_token": "fixture",
                 }
-                response = httpx.Response(
-                    200, request=httpx.Request("GET", discovery["jwks_uri"]), json={}
+                response = httpx2.Response(
+                    200, request=httpx2.Request("GET", discovery["jwks_uri"]), json={}
                 )
                 response.json = lambda: {"keys": [RSAKey.import_key(public).as_dict()]}
                 http = AsyncMock()

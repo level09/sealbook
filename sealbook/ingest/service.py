@@ -12,14 +12,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
-import httpx
+import httpx2
 import orjson
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from stk.utils import netguard
 
-from sealbook import netguard
 from sealbook.blobs import blob_path, chunked, storage_ref, store
 from sealbook.discovery import service as discovery
 from sealbook.ledger import chain, write
@@ -37,6 +37,8 @@ from sealbook.settings import Config
 from sealbook.sheets import parse as sheets
 
 AGENT_NAME = "ingest"
+# stk's netguard bounds the whole fetch, body included, so a large video needs room.
+FETCH_SECONDS = 900
 
 # What a person says an item is. Policies and readers key on these.
 DOC_TYPES = {
@@ -496,12 +498,15 @@ async def capture_url(
     *,
     blob_dir: str,
     collector_id: uuid.UUID,
-    transport: httpx.AsyncBaseTransport | None = None,
+    transport: httpx2.AsyncBaseTransport | None = None,
     context: dict | None = None,
     **kw,
 ) -> dict:
     target = normalise_url(url)
-    async with netguard.stream(target, transport=transport) as (resp, final_url):
+    async with netguard.stream(target, timeout=FETCH_SECONDS, transport=transport) as (
+        resp,
+        final_url,
+    ):
         resp.raise_for_status()
         content_type = resp.headers.get("content-type", "application/octet-stream")
         return await ingest(
@@ -526,7 +531,7 @@ async def recheck_url(
     session: AsyncSession,
     acquisition_id: uuid.UUID,
     *,
-    transport: httpx.AsyncBaseTransport | None = None,
+    transport: httpx2.AsyncBaseTransport | None = None,
 ) -> dict:
     """Re-fetch a captured URL and record whether it is unchanged, edited or gone.
     Only 404 and 410 mean gone; other failures raise rather than guess."""
@@ -534,7 +539,10 @@ async def recheck_url(
     if acq is None or not acq.origin.startswith("url:"):
         raise ValueError(f"acquisition {acquisition_id} is not a url capture")
     url = acq.origin.removeprefix("url:")
-    async with netguard.stream(url, transport=transport) as (resp, _):
+    async with netguard.stream(url, timeout=FETCH_SECONDS, transport=transport) as (
+        resp,
+        _,
+    ):
         if resp.status_code in (404, 410):
             value = {"status": "gone", "http_status": resp.status_code}
         else:

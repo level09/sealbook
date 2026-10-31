@@ -15,7 +15,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import date
 
-import httpx
+import httpx2
 import orjson
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
@@ -93,7 +93,7 @@ class Ctx:
     acq: Acquisition | None
     emit: Events
     sign: Callable[[str], dict]
-    transport: httpx.AsyncBaseTransport | None
+    transport: httpx2.AsyncBaseTransport | None
 
     async def call(self, body: dict) -> routes.Served:
         served = await routes.chat(
@@ -661,7 +661,7 @@ async def _check_route(s: AsyncSession, run: Run, acq: Acquisition | None) -> No
 async def process(
     Session: async_sessionmaker,  # noqa: N803
     run_id: uuid.UUID,
-    transport: httpx.AsyncBaseTransport | None = None,
+    transport: httpx2.AsyncBaseTransport | None = None,
 ) -> None:
     async with Session() as s:
         last = await s.scalar(
@@ -712,7 +712,7 @@ async def process(
 async def work_once(
     Session: async_sessionmaker,  # noqa: N803
     tools: list[str] | None = None,
-    transport: httpx.AsyncBaseTransport | None = None,
+    transport: httpx2.AsyncBaseTransport | None = None,
 ) -> bool:
     async with Session() as s, s.begin():
         run = await queue.claim(s, tools)

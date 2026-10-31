@@ -6,7 +6,7 @@ import io
 import math
 import wave
 
-import httpx
+import httpx2
 import numpy as np
 from PIL import Image
 from sqlalchemy import select, text
@@ -126,7 +126,9 @@ async def _post_hosted(inputs, references, model, transport):
     endpoint = f"{routes.OPENROUTER}/embeddings"
     key = routes._env("OPENROUTER_API_KEY")
     gate = asyncio.Semaphore(PARALLEL)
-    async with httpx.AsyncClient(transport=transport, timeout=routes.TIMEOUT) as client:
+    async with httpx2.AsyncClient(
+        transport=transport, timeout=routes.TIMEOUT
+    ) as client:
 
         async def one(item):
             async with gate:
@@ -151,7 +153,7 @@ async def _post_hosted(inputs, references, model, transport):
     if len(served) != 1 or None in served:
         raise ValueError("embedding responses name no single served model")
     values = [vector(b["data"][0]["embedding"], DIMENSIONS) for b in bodies]
-    raw = httpx.Response(
+    raw = httpx2.Response(
         200, content=b"[" + b",".join(r.content for r in responses) + b"]"
     )
     return values[: len(inputs)], values[len(inputs) :], served.pop(), endpoint, raw
@@ -163,7 +165,9 @@ async def _post(inputs, references, model, transport):
     if not Config.EMBEDDING_URL:
         raise ValueError("EMBEDDING_URL is not configured")
     endpoint = f"{Config.EMBEDDING_URL.rstrip('/')}/api/embed"
-    async with httpx.AsyncClient(transport=transport, timeout=routes.TIMEOUT) as client:
+    async with httpx2.AsyncClient(
+        transport=transport, timeout=routes.TIMEOUT
+    ) as client:
         response = await client.post(
             endpoint,
             json={

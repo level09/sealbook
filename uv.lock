@@ -1930,7 +1930,7 @@ wheels = [
 
 [[package]]
 name = "quart-security"
-version = "2.0.3"
+version = "2.0.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosmtplib" },
@@ -1948,9 +1948,9 @@ dependencies = [
     { name = "webauthn" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2b/88/43c45890dd40db6fa5e57d09705b35c42f3a36981997ab3269a2c33403a0/quart_security-2.0.3.tar.gz", hash = "sha256:74be1c5177afca54cc90bafd10d7ae69a1f4923e1786ff106fb9990dd8f7eb5c", size = 35687, upload-time = "2026-10-25T10:39:02.875Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cc/64/f0e68c8b5b70c87e0d8787b0c479f48a89873d95df05b2ec774e14f0825d/quart_security-2.0.5.tar.gz", hash = "sha256:99cecf12b0dedd355c51f726d811dc4142eaadc7b1b2e71a20a82c446f39f61d", size = 36187, upload-time = "2026-10-31T13:00:19.456Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/b5/798c32a417ecba01152a4633cc4552b7ae0a4d70285f003ea7e5f1799e61/quart_security-2.0.3-py3-none-any.whl", hash = "sha256:08ac07b53242b70b519515299e89912cca2c21fabf12a6d25b87f6e4c8601268", size = 41815, upload-time = "2026-10-25T10:39:01.684Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/12/9cf8774bbb2cff5320f8868e64c1f4ae4192c25878f6deeb8c5163f9ecc9/quart_security-2.0.5-py3-none-any.whl", hash = "sha256:33537b073e24a279f77b8c7a7016706da45c584194a04180a878945ec0022e06", size = 42420, upload-time = "2026-10-31T13:00:18.176Z" },
 ]
 
 [[package]]
@@ -2169,7 +2169,7 @@ dependencies = [
     { name = "asn1crypto" },
     { name = "asyncpg" },
     { name = "faster-whisper" },
-    { name = "httpx" },
+    { name = "httpx2" },
     { name = "jsonschema" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
@@ -2199,7 +2199,7 @@ requires-dist = [
     { name = "asn1crypto", specifier = ">=1.5.1" },
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "faster-whisper", specifier = "==1.2.1" },
-    { name = "httpx", specifier = ">=0.27.0" },
+    { name = "httpx2", specifier = ">=2.16.0" },
     { name = "jsonschema", specifier = ">=4.23" },
     { name = "numpy", specifier = ">=2,<3" },
     { name = "openpyxl", specifier = "==3.1.5" },
@@ -2208,7 +2208,7 @@ requires-dist = [
     { name = "playwright", specifier = ">=1.60.0" },
     { name = "pypdf", specifier = ">=6.21,<7" },
     { name = "pypdfium2", specifier = ">=5,<6" },
-    { name = "stkit", specifier = ">=17.1.0,<18" },
+    { name = "stkit", specifier = ">=17.2.6,<18" },
     { name = "stkit", extras = ["full"], marker = "extra == 'full'" },
     { name = "yt-dlp", specifier = "==2026.10.21" },
 ]
@@ -2278,7 +2278,7 @@ asyncio = [
 
 [[package]]
 name = "stkit"
-version = "17.1.0"
+version = "17.2.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosmtplib" },
@@ -2293,6 +2293,7 @@ dependencies = [
     { name = "httpx2" },
     { name = "jinja2" },
     { name = "joserfc" },
+    { name = "jsonschema" },
     { name = "libpass" },
     { name = "orjson" },
     { name = "pillow" },
@@ -2308,9 +2309,9 @@ dependencies = [
     { name = "webauthn" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8f/91/9f2108db71d824a5b568aa43500993e9c2aac007d8bdf6bfe62c053753a9/stkit-17.1.0.tar.gz", hash = "sha256:ba768f9969e78d57d71b0649151ad5277b3cac0b8783d6ae6a7f0cad77fb12e0", size = 1615038, upload-time = "2026-10-25T13:56:15.042Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/30/30/9ed77b1dfdda45335eda67a0455dddc098b09af6308fccfd8322e85a210a/stkit-17.2.6.tar.gz", hash = "sha256:d86aa5cee659327f64cdd68c6f0c0bebd62a83141d05f01cbf8ea0732e77951b", size = 1957675, upload-time = "2026-10-31T16:32:22.933Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9f/82/ad0233bac72a27ae218a6a844b4b18b8159387cdab04bb6c38477a66d73f/stkit-17.1.0-py3-none-any.whl", hash = "sha256:8b3db4d84e69ef5bf2bd7e5bdfbd5078e7c3e5d23ffc9882c3cd417e41c25226", size = 1528103, upload-time = "2026-10-25T13:56:12.894Z" },
+    { url = "https://files.pythonhosted.org/packages/fc/1a/6802f73f9ee133ad7f29befb104fc3c1f7fb43be937c6d6d34997810856a/stkit-17.2.6-py3-none-any.whl", hash = "sha256:970d1103b111910f5549becff16ed7087eccb25ec18fb0fb2b2966ad27a8c88c", size = 1859840, upload-time = "2026-10-31T16:32:21.005Z" },
 ]
 
 [package.optional-dependencies]

@@ -18,8 +18,9 @@ from pathlib import PurePosixPath
 from urllib.parse import urlsplit
 
 import orjson
+from stk.utils import netguard
 
-from sealbook import blobs, netguard
+from sealbook import blobs
 from sealbook.blobs import chunked
 from sealbook.ingest import service as ingest
 from sealbook.ledger.contracts import Refused
@@ -27,19 +28,6 @@ from sealbook.research import browser, service, video, youtube
 from sealbook.settings import Config
 
 MEDIA = ("image/", "video/", "audio/")
-
-
-class TooLarge(Exception):
-    pass
-
-
-async def _capped(resp, limit):
-    size = 0
-    async for chunk in resp.aiter_bytes():
-        size += len(chunk)
-        if size > limit:
-            raise TooLarge(f"larger than {limit} bytes")
-        yield chunk
 
 
 def _mime(header: str, url: str) -> str:
@@ -279,7 +267,12 @@ async def _page(c, i, page, take, method, common, skipped):
         primary = m["tag"] == "result"
         try:
             url = ingest.normalise_url(m["url"])
-            async with netguard.stream(url, timeout=60, transport=c.transport) as (
+            async with netguard.stream(
+                url,
+                timeout=ingest.FETCH_SECONDS,
+                max_bytes=Config.RESEARCH_MEDIA_MAX_BYTES,
+                transport=c.transport,
+            ) as (
                 resp,
                 final,
             ):
@@ -288,7 +281,7 @@ async def _page(c, i, page, take, method, common, skipped):
                 if not mime.startswith(MEDIA):
                     raise ValueError(f"not media ({mime or 'no type'})")
                 await take(
-                    _capped(resp, Config.RESEARCH_MEDIA_MAX_BYTES),
+                    resp.aiter_bytes(),
                     mime,
                     f"url:{url}",
                     "media",

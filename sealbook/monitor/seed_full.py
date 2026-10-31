@@ -1,7 +1,7 @@
 """`stk demo-seed --full`: a second case, case-demo-02, that fills every analyst view.
 The real fixture files in acceptance/ go through the intake path; the people who
 appear in them are invented. Places are real public geography. Run `stk enrich`
-and `stk worker` afterwards for search, media matches and vectors."""
+and `stk runner` afterwards for search, media matches and vectors."""
 
 from __future__ import annotations
 

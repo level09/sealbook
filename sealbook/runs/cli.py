@@ -6,9 +6,9 @@ from quart.cli import ScriptInfo
 from stk.cli.base import run_async
 
 
-@click.command("worker")
+@click.command("runner")
 @click.option("--tool", "tools", multiple=True, help="Only claim runs of this tool.")
-def worker(tools):
+def runner(tools):
     """Claim and execute queued runs until interrupted."""
     from sealbook.runs.worker import serve
 

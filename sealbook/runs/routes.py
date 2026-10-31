@@ -12,7 +12,7 @@ import os
 import re
 from dataclasses import dataclass
 
-import httpx
+import httpx2
 
 from sealbook.ledger.contracts import Route
 from sealbook.settings import Config
@@ -20,7 +20,7 @@ from sealbook.settings import Config
 OPENROUTER = "https://openrouter.ai/api/v1"
 ANTHROPIC = "https://api.anthropic.com"
 VISION = "https://vision.googleapis.com/v1/images:annotate"
-TIMEOUT = httpx.Timeout(120.0, connect=10.0)
+TIMEOUT = httpx2.Timeout(120.0, connect=10.0)
 # A hard cap on thinking plus answer. Opus 5.5 always thinks, so this leaves room
 # for that while an answer here is a few hundred tokens.
 ANTHROPIC_MAX_TOKENS = 16000
@@ -214,7 +214,7 @@ def from_vision(data: dict, model: str) -> dict:
 
 
 async def chat(
-    route: Route, body: dict, transport: httpx.AsyncBaseTransport | None = None
+    route: Route, body: dict, transport: httpx2.AsyncBaseTransport | None = None
 ) -> Served:
     """POST one chat completion on `route`. OpenRouter reports the served model in
     `model` and the upstream provider in `provider` (checked 2026-10-21)."""
@@ -233,13 +233,13 @@ async def chat(
         headers = {"Authorization": f"Bearer {key}"} if key else {}
     try:
         timeout = (
-            httpx.Timeout(float(Config.ROUTE_LOCAL_TIMEOUT), connect=10.0)
+            httpx2.Timeout(float(Config.ROUTE_LOCAL_TIMEOUT), connect=10.0)
             if route is Route.LOCAL
             else TIMEOUT
         )
-        async with httpx.AsyncClient(transport=transport, timeout=timeout) as client:
+        async with httpx2.AsyncClient(transport=transport, timeout=timeout) as client:
             resp = await client.post(endpoint, json=body, headers=headers)
-    except httpx.HTTPError as exc:
+    except httpx2.HTTPError as exc:
         raise RouteError(f"{route} unreachable: {exc!r}") from exc
     if resp.status_code != 200:
         raise RouteError(f"{route} returned {resp.status_code}: {resp.text[:300]}")

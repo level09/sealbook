@@ -9,7 +9,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest import mock
 
-import httpx
+import httpx2
 from alembic import command
 from asn1crypto import cms, tsp
 from asn1crypto import x509 as asn1_x509
@@ -139,20 +139,20 @@ class AnchorTest(unittest.IsolatedAsyncioTestCase):
         pin = hashlib.sha256(self.tsa.cert.dump()).hexdigest()
         self.enterContext(mock.patch.object(Config, "TSA_CERT_SHA256", [pin]))
 
-    def handle(self, request: httpx.Request) -> httpx.Response:
+    def handle(self, request: httpx2.Request) -> httpx2.Response:
         if str(request.url) == CALENDAR + "/digest":
             # append(nonce), sha256, then a pending attestation stub
-            return httpx.Response(200, content=b"\xf0\x10" + bytes(16) + b"\x08\x00")
+            return httpx2.Response(200, content=b"\xf0\x10" + bytes(16) + b"\x08\x00")
         if str(request.url) == TSA:
             if self.tsa_down:
-                return httpx.Response(503)
-            return httpx.Response(200, content=self.tsa.respond(request.content))
+                return httpx2.Response(503)
+            return httpx2.Response(200, content=self.tsa.respond(request.content))
         raise AssertionError(f"unexpected request {request.url}")
 
     async def asyncSetUp(self):
         self.engine = create_async_engine(self.url)
         self.Session = async_sessionmaker(self.engine, expire_on_commit=False)
-        self.client = httpx.AsyncClient(transport=httpx.MockTransport(self.handle))
+        self.client = httpx2.AsyncClient(transport=httpx2.MockTransport(self.handle))
         async with self.Session() as s, s.begin():
             self.human, self.passkey = await attester(s)
 

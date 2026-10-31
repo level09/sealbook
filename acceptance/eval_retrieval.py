@@ -16,7 +16,7 @@ import time
 import wave
 from pathlib import Path
 
-import httpx
+import httpx2
 import numpy as np
 
 DATA = Path(__file__).parent / "retrieval"
@@ -108,7 +108,7 @@ class Embedder:
     def __init__(self, url, model):
         self.url = url.rstrip("/") + "/api/embed"
         self.model = model
-        self.client = httpx.Client(timeout=300)
+        self.client = httpx2.Client(timeout=300)
         self.latency_ms = []
 
     def __call__(self, value):

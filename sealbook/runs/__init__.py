@@ -1,4 +1,4 @@
 def init_app(app):
-    from sealbook.runs.cli import worker
+    from sealbook.runs.cli import runner
 
-    app.cli.add_command(worker)
+    app.cli.add_command(runner)

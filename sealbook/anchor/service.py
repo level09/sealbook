@@ -13,7 +13,7 @@ import logging
 import secrets
 from pathlib import Path
 
-import httpx
+import httpx2
 from asn1crypto import tsp
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -77,7 +77,7 @@ async def close_batch(session: AsyncSession) -> Batch | None:
 
 
 async def ots_stamp(
-    client: httpx.AsyncClient, calendars: list[str], root: str
+    client: httpx2.AsyncClient, calendars: list[str], root: str
 ) -> bytes:
     digest = bytes.fromhex(root)
     branches = []
@@ -101,7 +101,7 @@ async def ots_stamp(
     )
 
 
-async def tsa_stamp(client: httpx.AsyncClient, url: str, root: str) -> bytes:
+async def tsa_stamp(client: httpx2.AsyncClient, url: str, root: str) -> bytes:
     nonce = secrets.randbits(63)
     req = tsp.TimeStampReq(
         {
@@ -155,7 +155,9 @@ async def _attempt(client, batch: Batch, kind: str, target: str) -> bytes:
     return partner_write(target, batch)
 
 
-async def anchor_pending(session: AsyncSession, client: httpx.AsyncClient) -> list[str]:
+async def anchor_pending(
+    session: AsyncSession, client: httpx2.AsyncClient
+) -> list[str]:
     """Anchor every batch lacking a receipt for a configured target. Failures are
     stored as error rows and retried next run. Returns the errors."""
     done = set(
@@ -185,7 +187,7 @@ async def anchor_pending(session: AsyncSession, client: httpx.AsyncClient) -> li
 
 
 async def run_once(
-    session_factory, client: httpx.AsyncClient
+    session_factory, client: httpx2.AsyncClient
 ) -> tuple[Batch | None, list[str]]:
     """Close a batch in its own transaction, so it survives any anchoring failure."""
     async with session_factory() as s, s.begin():

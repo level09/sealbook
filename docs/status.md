@@ -201,6 +201,6 @@ EmbeddingGemma installation.
 Product acceptance still needs the timed comparison against a conventional tool and
 evaluation on real handwritten records and field audio. Semantic search stays off
 until its model settings are supplied; after migrating, `stk enrich` (resumable
-with its printed `--after` cursor) and `stk worker` fill the indexes.
+with its printed `--after` cursor) and `stk runner` fill the indexes.
 [models.md](models.md) records the model setup and the synthetic-set results.
 Accepted next work is in [roadmap.md](roadmap.md).

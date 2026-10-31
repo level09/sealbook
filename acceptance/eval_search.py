@@ -1,5 +1,5 @@
 """Analyst search battery against the local demo database (both demo cases seeded,
-`stk enrich` and `stk worker` run). Read-only: every query runs inside one
+`stk enrich` and `stk runner` run). Read-only: every query runs inside one
 transaction that is rolled back, so no access statements or spaces are kept.
 
   uv run python acceptance/eval_search.py            # table

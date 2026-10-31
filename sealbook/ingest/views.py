@@ -1,12 +1,13 @@
 import re
 import uuid
 
-import httpx
+import httpx2
 import orjson as json
 from quart import Blueprint, Response, abort, current_app, g, render_template, request
 from quart_security import auth_required, current_user
+from stk.utils import netguard
 
-from sealbook import blobs, netguard
+from sealbook import blobs
 from sealbook.cases import service as cases
 from sealbook.ingest import batch as batches
 from sealbook.ingest import service
@@ -242,11 +243,13 @@ async def capture():
         )
     except netguard.Blocked as exc:
         abort(400, description=str(exc))
-    except httpx.HTTPError as exc:
+    except httpx2.HTTPError as exc:
         abort(
             422,
             description=f"The link could not be fetched: {exc or type(exc).__name__}",
         )
+    except TimeoutError:
+        abort(422, description="The link took too long to fetch.")
     except service.C2paError:
         abort(422, description=_C2PA_FAILED)
     await g.db_session.commit()

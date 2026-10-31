@@ -3,7 +3,7 @@
 import asyncio
 
 import click
-import httpx
+import httpx2
 import stk.extensions as ext
 from quart.cli import ScriptInfo
 from stk.cli.base import console, run_async
@@ -20,7 +20,7 @@ def anchor(loop):
     click.get_current_context().ensure_object(ScriptInfo).load_app()
 
     async def main():
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx2.AsyncClient(timeout=30) as client:
             while True:
                 batch, errors = await run_once(ext.async_session_factory, client)
                 if batch:

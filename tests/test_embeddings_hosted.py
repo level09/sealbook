@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest import mock
 
-import httpx
+import httpx2
 import orjson
 
 from sealbook.discovery import embeddings
@@ -22,7 +22,7 @@ class HostedEmbeddingTest(unittest.IsolatedAsyncioTestCase):
             index = len(seen) - 1
             vector = [0.0] * 768
             vector[index] = 1.0
-            return httpx.Response(
+            return httpx2.Response(
                 200,
                 json={"model": "gemini-embedding-2", "data": [{"embedding": vector}]},
             )
@@ -34,7 +34,7 @@ class HostedEmbeddingTest(unittest.IsolatedAsyncioTestCase):
             ["words"],
             embeddings.probes(),
             "google/gemini-embedding-2",
-            httpx.MockTransport(handle),
+            httpx2.MockTransport(handle),
         )
         self.assertEqual(len(seen), 7)
         self.assertTrue(all(b["provider"] == {"zdr": True} for b in seen))

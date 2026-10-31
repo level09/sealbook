@@ -11,7 +11,7 @@ import os
 import unittest
 from unittest import mock
 
-import httpx
+import httpx2
 
 from acceptance import eval_agents
 from sealbook.settings import Config
@@ -83,7 +83,7 @@ class RouteTest(unittest.TestCase):
 
         def answer(request):
             sent.append(json.loads(request.content))
-            return httpx.Response(
+            return httpx2.Response(
                 200,
                 json={
                     "model": "served/model",
@@ -104,7 +104,7 @@ class RouteTest(unittest.TestCase):
                     live=True,
                     route="cloud-zdr",
                     log=log,
-                    transport=httpx.MockTransport(answer),
+                    transport=httpx2.MockTransport(answer),
                 )
             )
         self.assertTrue(sent)

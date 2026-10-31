@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from unittest import mock
 
-import httpx
+import httpx2
 import orjson
 import stk
 import stk.extensions as ext
@@ -200,8 +200,8 @@ class WatchTest(unittest.IsolatedAsyncioTestCase):
                 }
             ],
         }
-        transport = httpx.MockTransport(
-            lambda r: httpx.Response(
+        transport = httpx2.MockTransport(
+            lambda r: httpx2.Response(
                 200, json=first_pass if b'"first_pass"' in r.content else body
             )
         )

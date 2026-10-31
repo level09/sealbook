@@ -9,12 +9,12 @@ import re
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
-import httpx
+import httpx2
 
 from sealbook.settings import Config
 
 KINDS = {"web": "web/search", "images": "images/search", "videos": "videos/search"}
-TIMEOUT = httpx.Timeout(20.0, connect=10.0)
+TIMEOUT = httpx2.Timeout(20.0, connect=10.0)
 _TAGS = re.compile(r"<[^>]+>")
 
 
@@ -71,7 +71,7 @@ async def search(
     kind: str,
     query: str,
     count: int,
-    transport: httpx.AsyncBaseTransport | None = None,
+    transport: httpx2.AsyncBaseTransport | None = None,
     window: tuple[str, str] | None = None,
 ) -> list[Result]:
     if not Config.BRAVE_API_KEY:
@@ -84,7 +84,7 @@ async def search(
     if window and kind == "web":
         params["freshness"] = freshness(window)
     try:
-        async with httpx.AsyncClient(
+        async with httpx2.AsyncClient(
             transport=transport, timeout=TIMEOUT, trust_env=False
         ) as client:
             resp = await client.get(
@@ -95,7 +95,7 @@ async def search(
                     "X-Subscription-Token": Config.BRAVE_API_KEY,
                 },
             )
-    except httpx.HTTPError as exc:
+    except httpx2.HTTPError as exc:
         raise SearchError(f"Brave Search could not be reached: {exc!r}") from exc
     if resp.status_code == 429:
         raise SearchError("Brave Search refused: rate limit or monthly quota reached")

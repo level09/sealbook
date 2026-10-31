@@ -1,7 +1,7 @@
 import unittest
 from unittest import mock
 
-import httpx
+import httpx2
 import orjson
 
 from sealbook.agents import gaps, read
@@ -60,9 +60,9 @@ class AnthropicRouteTest(unittest.IsolatedAsyncioTestCase):
     def transport(self, data):
         def handle(request):
             self.sent.append(request)
-            return httpx.Response(200, json=data)
+            return httpx2.Response(200, json=data)
 
-        return httpx.MockTransport(handle)
+        return httpx2.MockTransport(handle)
 
     async def test_an_image_part_becomes_a_base64_block(self):
         body = {

@@ -34,7 +34,7 @@ For an approved local database, apply migrations before serving new features:
 ```sh
 uv run stk db upgrade
 uv run stk run --port 5001
-uv run stk worker
+uv run stk runner
 ```
 
 For a populated local app, `uv run stk demo-seed --full` adds `case-demo-02` to
@@ -43,7 +43,7 @@ people (twins, cross-script spellings), an active `analyst-2@example.com` collea
 with an unshown random password, review requests both ways, a correction, an undone
 decision, watchlists with matcher hits and a family brief. It needs an active admin
 (`stk install`) and is additive: it refuses when `case-demo-02` exists. Follow it
-with `stk worker`; [demo.md](demo.md) walks through what it writes. It builds no package: that needs `stk anchor`
+with `stk runner`; [demo.md](demo.md) walks through what it writes. It builds no package: that needs `stk anchor`
 receipts. Webm clips record C2PA as absent because c2patool refuses the container (the demo seed still skips the check for them).
 
 Places and maps, on an approved local database:
@@ -182,7 +182,7 @@ The `transcribe` worker tool runs faster-whisper locally. Fetch the weights once
 
 ```sh
 uv run stk speech-model   # downloads into SPEECH_MODEL_DIR and prints revision and hash
-uv run stk worker         # or: uv run stk worker --tool transcribe
+uv run stk runner         # or: uv run stk runner --tool transcribe
 uv run stk enrich --investigation case-name   # queues recordings not yet transcribed
 ```
 
@@ -361,7 +361,7 @@ of the offline checks.
 
 `uv run python acceptance/eval_search.py` runs the analyst search battery against
 the local demo database, read-only; see [search-eval.md](search-eval.md). Let
-`stk worker` finish after `stk demo-seed` so both cases are indexed.
+`stk runner` finish after `stk demo-seed` so both cases are indexed.
 
 In the restricted desktop sandbox, local PostgreSQL sockets and Chromium may need
 an approved execution escalation. `UV_CACHE_DIR=/tmp/sealbook-uv-cache` avoids the

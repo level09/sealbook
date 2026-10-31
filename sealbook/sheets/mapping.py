@@ -11,7 +11,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 
-import httpx
+import httpx2
 
 from sealbook.discovery import embeddings
 from sealbook.settings import Config
@@ -346,7 +346,7 @@ async def suggest(cols: list[dict], remembered: dict[str, str]) -> dict:
             await _ranked(unknown)
         except ValueError:
             note = NO_MODEL
-        except (TimeoutError, OSError, httpx.HTTPError):
+        except (TimeoutError, OSError, httpx2.HTTPError):
             note = MODEL_DOWN
     return {"columns": out, "note": note}
 

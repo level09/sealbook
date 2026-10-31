@@ -18,8 +18,7 @@ from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
 import orjson
-
-from sealbook import netguard
+from stk.utils import netguard
 
 IMAGE_EXT = (".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif", ".heic")
 VIDEO_EXT = (".mp4", ".webm", ".mov", ".m4v", ".ogv")

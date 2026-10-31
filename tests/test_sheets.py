@@ -9,7 +9,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 from unittest import mock
 
-import httpx
+import httpx2
 import orjson
 import stk.extensions as ext
 from openpyxl import Workbook
@@ -350,9 +350,9 @@ class SheetFlowTest(unittest.IsolatedAsyncioTestCase):
     def model(self, rows):
         def handle(request):
             self.sent.append(orjson.loads(request.content))
-            return httpx.Response(200, json=completion(rows))
+            return httpx2.Response(200, json=completion(rows))
 
-        return httpx.MockTransport(handle)
+        return httpx2.MockTransport(handle)
 
     async def sheet(self, data, sensitivity="ordinary", name="messy_people.csv"):
         async with ext.async_session_factory() as s, s.begin():

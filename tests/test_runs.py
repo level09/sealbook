@@ -11,7 +11,7 @@ from io import BytesIO
 from pathlib import Path
 from unittest import mock
 
-import httpx
+import httpx2
 import orjson
 from alembic import command
 from PIL import Image
@@ -146,9 +146,9 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
                     vector[index + 1] = 1.0
                     data.append(vector)
                 response = body | {"embeddings": data}
-            return httpx.Response(200, json=response)
+            return httpx2.Response(200, json=response)
 
-        return httpx.MockTransport(handle)
+        return httpx2.MockTransport(handle)
 
     async def queue(
         self,
@@ -210,7 +210,7 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_local_down_fails_without_other_route(self):
         run_id = await self.queue(sensitivity="sensitive", route="local")
-        down = self.transport(error=httpx.ConnectError("refused"))
+        down = self.transport(error=httpx2.ConnectError("refused"))
         await work_once(self.Session, transport=down)
         run = await self.get_run(run_id)
         self.assertEqual(run.status, "failed")
@@ -803,12 +803,12 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         def handle(request):
             self.requests.append(request)
             if request.url.host == "vision.googleapis.com":
-                return httpx.Response(200, json={"responses": [{}]})
-            return httpx.Response(200, json=completion(orjson.dumps(said).decode()))
+                return httpx2.Response(200, json={"responses": [{}]})
+            return httpx2.Response(200, json=completion(orjson.dumps(said).decode()))
 
         with mock.patch.dict(os.environ, {"GOOGLE_VISION_API_KEY": "test"}):
             for _ in range(4):
-                await work_once(self.Session, transport=httpx.MockTransport(handle))
+                await work_once(self.Session, transport=httpx2.MockTransport(handle))
         (sent,) = [r for r in self.requests if r.url.host == "vision.googleapis.com"]
         body = orjson.loads(sent.content)["requests"][0]
         self.assertEqual(body["features"], [{"type": "vendor/model-x"}])

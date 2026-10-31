@@ -13,7 +13,7 @@ from datetime import UTC, date, datetime
 from types import SimpleNamespace
 from unittest import mock
 
-import httpx
+import httpx2
 import orjson
 import stk.app  # noqa: F401  (registers the CLI before the seed module loads)
 import stk.extensions as ext
@@ -469,11 +469,11 @@ class ReasoningTest(unittest.IsolatedAsyncioTestCase):
         def reply(request):
             sent.append(orjson.loads(request.content))
             choice = {"finish_reason": "stop", "message": message}
-            return httpx.Response(200, json={"model": "m", "choices": [choice]})
+            return httpx2.Response(200, json={"model": "m", "choices": [choice]})
 
         async def call(body):
             return await routes.chat(
-                Route.LOCAL, {"model": "m", **body}, httpx.MockTransport(reply)
+                Route.LOCAL, {"model": "m", **body}, httpx2.MockTransport(reply)
             )
 
         c = SimpleNamespace(

@@ -29,7 +29,7 @@ from datetime import datetime
 from pathlib import Path
 from unittest import mock
 
-import httpx
+import httpx2
 import orjson
 import stk
 import stk.extensions as ext
@@ -45,8 +45,8 @@ from stk.migrations import (
     throwaway_database_url,
 )
 from stk.user.models import Role, User, roles_users
+from stk.utils import netguard
 
-from sealbook import netguard
 from sealbook.anchor import service as anchor
 from sealbook.anchor.models import Batch
 from sealbook.app import app as sealbook_app
@@ -190,20 +190,20 @@ class Model:
         self.calls = []
         self.down = False
 
-    def __call__(self, request: httpx.Request) -> httpx.Response:
+    def __call__(self, request: httpx2.Request) -> httpx2.Response:
         self.calls.append(request)
         if self.down:
-            raise httpx.ConnectError("connection refused")
+            raise httpx2.ConnectError("connection refused")
         messages = orjson.loads(request.content)["messages"]
         if isinstance(messages[0]["content"], list):
             # Ingest queues OCR for every image; only the register page has text.
             image = messages[0]["content"][1]["image_url"]["url"].partition(",")[2]
             register = base64.b64encode((DATA / DOCS["register"]["file"]).read_bytes())
             text = REGISTER_TEXT if image == register.decode() else ""
-            return httpx.Response(200, json=completion(text))
+            return httpx2.Response(200, json=completion(text))
         # PDF pages are read for claims too; a text the scenario did not script yields none.
         items = self.extractions.get(messages[1]["content"], [])
-        return httpx.Response(
+        return httpx2.Response(
             200, json=completion(orjson.dumps({"statements": items}).decode())
         )
 
@@ -216,13 +216,13 @@ class Web:
         self.post = POST
         self.tsa = FakeTsa()
 
-    def __call__(self, request: httpx.Request) -> httpx.Response:
+    def __call__(self, request: httpx2.Request) -> httpx2.Response:
         if str(request.url) == CALENDAR + "/digest":
-            return httpx.Response(200, content=b"\xf0\x10" + bytes(16) + b"\x08\x00")
+            return httpx2.Response(200, content=b"\xf0\x10" + bytes(16) + b"\x08\x00")
         if str(request.url) == TSA:
-            return httpx.Response(200, content=self.tsa.respond(request.content))
+            return httpx2.Response(200, content=self.tsa.respond(request.content))
         assert request.url.host == PUBLIC_IP, request.url
-        return httpx.Response(
+        return httpx2.Response(
             200, content=self.post, headers={"content-type": "text/html; charset=utf-8"}
         )
 
@@ -404,7 +404,7 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
     async def work(self, transport=None):
         while await work_once(
             ext.async_session_factory,
-            transport=transport or httpx.MockTransport(self.model),
+            transport=transport or httpx2.MockTransport(self.model),
         ):
             pass
 
@@ -456,13 +456,13 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
     @contextmanager
     def internet(self):
         """Outbound fetches reach the fake web whatever host they name."""
-        real = httpx.AsyncClient
+        real = httpx2.AsyncClient
         with (
-            mock.patch.object(netguard, "resolve", return_value=[PUBLIC_IP]),
+            mock.patch.object(netguard, "_resolve", return_value=[PUBLIC_IP]),
             mock.patch.object(
-                netguard.httpx,
+                netguard.httpx2,
                 "AsyncClient",
-                lambda **kw: real(**kw | {"transport": httpx.MockTransport(self.web)}),
+                lambda **kw: real(**kw | {"transport": httpx2.MockTransport(self.web)}),
             ),
         ):
             yield
@@ -623,7 +623,7 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
                 out = await recheck_url(
                     s,
                     uuid.UUID(post["acquisition_id"]),
-                    transport=httpx.MockTransport(self.web),
+                    transport=httpx2.MockTransport(self.web),
                 )
         [liveness] = out["statements"]
         self.assertEqual(
@@ -1120,7 +1120,9 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await self.verify(), [])
 
     async def anchor(self):
-        async with httpx.AsyncClient(transport=httpx.MockTransport(self.web)) as client:
+        async with httpx2.AsyncClient(
+            transport=httpx2.MockTransport(self.web)
+        ) as client:
             batch, errors = await anchor.run_once(ext.async_session_factory, client)
         self.assertEqual(errors, [])
         return batch

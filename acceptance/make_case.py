@@ -13,7 +13,7 @@ import tempfile
 import wave
 from pathlib import Path
 
-import httpx
+import httpx2
 from PIL import Image, ImageChops, ImageFilter
 from playwright.sync_api import sync_playwright
 from pypdf import PdfReader
@@ -299,7 +299,7 @@ def speak(name, text, rate=RATE):
     cached = VOICE_DIR / f"{name}.flac"
     if not cached.exists():
         pcm, said = bytearray(), []
-        with httpx.stream(
+        with httpx2.stream(
             "POST",
             "https://openrouter.ai/api/v1/chat/completions",
             headers={"Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}"},

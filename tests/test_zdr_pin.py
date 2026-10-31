@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest import mock
 
-import httpx
+import httpx2
 import orjson
 
 from sealbook.discovery import embeddings
@@ -14,7 +14,7 @@ from sealbook.settings import Config
 def served_by(provider, seen):
     def handle(request):
         seen.append(orjson.loads(request.content))
-        return httpx.Response(
+        return httpx2.Response(
             200,
             json={
                 "model": "m",
@@ -24,7 +24,7 @@ def served_by(provider, seen):
             },
         )
 
-    return httpx.MockTransport(handle)
+    return httpx2.MockTransport(handle)
 
 
 class ZdrPinTest(unittest.IsolatedAsyncioTestCase):

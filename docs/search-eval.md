@@ -1,7 +1,7 @@
 # Search evaluation on the local demo
 
 `acceptance/eval_search.py` runs a battery of analyst queries against the local
-demo database (`sealbook`, both demo cases seeded, `stk enrich` and `stk worker`
+demo database (`sealbook`, both demo cases seeded, `stk enrich` and `stk runner`
 run) through the same functions the endpoints call: `service.search` and
 `service.actor_search` behind `POST /api/evidence/search`, and `sealbook.search.find`
 behind `POST /api/search`. It is read-only: each query runs in a transaction that

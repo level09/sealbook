@@ -14,7 +14,7 @@ On a fresh database:
 uv run stk create-db
 uv run stk install
 uv run stk demo-seed --full
-uv run stk worker
+uv run stk runner
 ```
 
 `demo-seed --full` writes `case-demo-01` (five text stand-ins), `case-demo-02`

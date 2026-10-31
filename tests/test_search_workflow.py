@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-import httpx
+import httpx2
 import orjson
 from sqlalchemy import select
 
@@ -47,9 +47,11 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
                 vector = [0.0] * 768
                 vector[i + epoch[0]] = 1.0
                 data.append(vector)
-            return httpx.Response(200, json={"model": "same-alias", "embeddings": data})
+            return httpx2.Response(
+                200, json={"model": "same-alias", "embeddings": data}
+            )
 
-        transport = httpx.MockTransport(respond)
+        transport = httpx2.MockTransport(respond)
         async with self.Session() as db, db.begin():
             before = await embeddings.call(
                 db, ["private source"], "vendor/model-x", transport
@@ -77,7 +79,7 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
 
         def respond(request):
             inputs = orjson.loads(request.content)["input"]
-            return httpx.Response(
+            return httpx2.Response(
                 200,
                 json={
                     "model": "gemma2",
@@ -88,7 +90,7 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
         async with self.Session() as db, db.begin():
             with self.assertRaisesRegex(ValueError, "ignored"):
                 await embeddings.call(
-                    db, ["query"], "gemma2", httpx.MockTransport(respond)
+                    db, ["query"], "gemma2", httpx2.MockTransport(respond)
                 )
 
     async def test_arabic_passage_match_points_to_the_original_characters(self):
@@ -196,9 +198,9 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
             rows = [[0.0] * 768 for _ in inputs]
             for i, row in enumerate(rows):
                 row[i + epoch[0]] = 1.0
-            return httpx.Response(200, json={"model": "m", "embeddings": rows})
+            return httpx2.Response(200, json={"model": "m", "embeddings": rows})
 
-        transport = httpx.MockTransport(respond)
+        transport = httpx2.MockTransport(respond)
         async with self.Session() as db, db.begin():
             _, created = await embeddings.query(db, "q", "m", transport)
             _, reused = await embeddings.query(db, "q", "m", transport)
@@ -294,9 +296,9 @@ class SearchWorkflowTest(unittest.IsolatedAsyncioTestCase):
                 vector = [0.0] * 768
                 vector[dimension] = 1.0
                 data.append(vector)
-            return httpx.Response(200, json={"model": "gemma2-q8", "embeddings": data})
+            return httpx2.Response(200, json={"model": "gemma2-q8", "embeddings": data})
 
-        transport = httpx.MockTransport(respond)
+        transport = httpx2.MockTransport(respond)
         expected = None
         for color in ("red", "blue"):
             buffer = io.BytesIO()

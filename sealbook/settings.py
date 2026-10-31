@@ -21,7 +21,7 @@ class Config(stk.Config):
     # GET starts an MCP client's OAuth authorization flow; it is not a page.
     STK_SMOKE_SKIP = ["/oauth/authorize"]
     STK_CLI_SECTIONS = [
-        ("Runs", ["worker", "enrich", "discover", "places", "basemap", "speech-model"]),
+        ("Runs", ["runner", "enrich", "discover", "places", "basemap", "speech-model"]),
         ("Case data", ["demo-seed", "erase"]),
         ("Anchors", ["anchor", "verify-anchors"]),
     ]
