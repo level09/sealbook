@@ -12,7 +12,7 @@ const day = s => Date.parse(s + 'T00:00:00Z');
 const iso = t => new Date(t).toISOString().slice(0, 10);
 export const fmtDay = s => s ? new Date(day(s)).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'}) : '';
 export const fmtSpan = (a, b) => !b || a === b ? fmtDay(a) : `${fmtDay(a)} to ${fmtDay(b)}`;
-export const PROP = {arrested_at: 'arrested at', detained_at: 'held at', detention_branch: 'held by branch', transferred_to: 'transferred to', seen_at: 'seen at', last_seen: 'last seen at'};
+export const PROP = {arrested_at: 'arrested at', detained_at: 'held at', detention_branch: 'held by branch', transferred_to: 'transferred to', seen_at: 'seen at', last_seen: 'last seen at', reports: 'reported event', triage: 'triage', title: 'title', description: 'description line', label: 'label'};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 
 /* Rows are people (or places); a gap label reads exactly "N days, no evidence". */

@@ -267,7 +267,7 @@
         </header>
         <intake-brief :batch="batch" :grid="true"></intake-brief>
         <div class="finish">
-            <v-btn color="primary" :variant="claimsN ? 'flat' : 'outlined'" prepend-icon="ti ti-checklist" href="/review?box=open" :disabled="!claimsN">${ claimsN ? 'Review ' + plural(claimsN, 'proposed claim') : 'No claims to review' }</v-btn>
+            <v-btn color="primary" variant="flat" prepend-icon="ti ti-checklist" :href="'/todo?investigation=' + encodeURIComponent(caseSlug)">See what needs you${ claimsN ? ', ' + plural(claimsN, 'proposed claim') : '' }</v-btn>
             <v-btn variant="outlined" prepend-icon="ti ti-files" :href="'/sources?investigation=' + encodeURIComponent(caseSlug) + '&batch=' + batch">${ storedN ? 'Open the ' + plural(storedN, 'new source') : 'Open these sources' }</v-btn>
             <v-btn variant="text" prepend-icon="ti ti-plus" @click="reset">Add another batch</v-btn>
         </div>

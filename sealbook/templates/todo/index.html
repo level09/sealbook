@@ -96,6 +96,10 @@ window.app = Vue.createApp({
       catch (err) { this.error = err.response?.data?.description || err.message; }
     },
   },
+  created() {
+    const p = new URLSearchParams(location.search);
+    if (p.has('investigation')) this.caseSel = p.get('investigation') || null;
+  },
   mounted() { this.load(); },
 });
 registerStkComponents(app);

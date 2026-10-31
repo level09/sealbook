@@ -295,6 +295,8 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
         r = await client.get(f"/api/incidents/{incident.removeprefix('incident:')}")
         found = await r.get_json()
         assert found["title"] == "Shelling of Tel Ward market"
+        [built] = found["relations"]["findings"]
+        assert built["label"] == "Same event" and built["reason"].startswith("2 posts")
         assert found["places"]
         async with ext.async_session_factory() as s:
             assert await verify_db(s) == []
@@ -425,3 +427,70 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
         props = {i["prop"] for i in (await r.get_json())["items"]}
         assert not props & {"relation", "triage", "label"}, props
         assert (await client.get("/todo")).status_code == 200
+
+    async def test_an_ambiguous_town_is_placed_by_the_analyst(self):
+        async with ext.async_session_factory() as s, s.begin():
+            other = Place(
+                name_ar="تل ورد",
+                name_en="Tel Ward",
+                kind="populated",
+                geom=point(37, 35),
+                geo_source="analyst",
+                source="person",
+            )
+            s.add(other)
+            await s.flush()
+            s.add(
+                PlaceName(
+                    place_id=other.id,
+                    name="Tel Ward",
+                    norm=normalise("Tel Ward"),
+                    lang="en",
+                    kind="official",
+                    source="person",
+                )
+            )
+        client = await self.client()
+        r = await client.get(f"/api/discover/groups?investigation={CASE}")
+        [g] = (await r.get_json())["items"]
+        assert g["summary"]["place"] is None
+        d = await (await client.get(f"/api/discover/groups/{g['id']}")).get_json()
+        assert len(d["summary"]["choices"]) == 2
+        item = {"group": g["id"], "kept": self.shas[:2], "title": "t"}
+        r = await client.post(
+            "/api/review/groups/options",
+            json={"item": item | {"place": str(uuid.uuid4())}},
+            headers=client.csrf,
+        )
+        assert r.status_code == 400
+        _, out = await self.sign(
+            client, "/api/review/groups/options", item | {"place": str(other.id)}
+        )
+        props = [s["prop"] for s in out["statements"]]
+        assert Prop.OCCURRED_AT in props
+
+    async def test_first_pass_text_is_masked_on_a_sensitive_source(self):
+        sha, text = self.shas[2], POSTS[2][0]
+        async with ext.async_session_factory() as s, s.begin():
+            start = text.index("Tel Ward")
+            await append(
+                s,
+                StatementIn(
+                    subject=f"blob:{sha}",
+                    prop=Prop.DESCRIPTION,
+                    value={
+                        "line": "A witness names the market.",
+                        "text": "Tel Ward",
+                        "lang": "en",
+                    },
+                    author_id=self.agent,
+                    run_id=self.run,
+                    span_blob=sha,
+                    span={"start": start, "end": start + 8},
+                ),
+                sign=self.run_sign,
+            )
+        client = await self.client()
+        item = await (await client.get(f"/api/evidence/{sha}/item")).get_json()
+        [line] = [c for c in item["claims"] if c["prop"] == "description"]
+        assert line["display"] is None

@@ -17,7 +17,7 @@ from sealbook.ingest import service
 from sealbook.ledger import write
 from sealbook.ledger.contracts import EXTRACTED_PROPS, Prop, Route
 from sealbook.ledger.gate import resolve
-from sealbook.ledger.models import Acquisition, Blob, Principal, Run, Statement
+from sealbook.ledger.models import Acquisition, Blob, Payload, Principal, Run, Statement
 from sealbook.settings import Config
 from sealbook.sheets import parse as sheets
 from sealbook.sheets.models import DatasetVersion
@@ -373,6 +373,25 @@ async def steps(
                 "claims", "Claims proposed", "later", "Proposed once it has been read."
             )
         )
+    # The analyst method's first pass follows extraction (sealbook/method).
+    if passes := [r for r in runs if r.tool == "assess"]:
+        out.append(
+            await _run_step(
+                db,
+                "first_pass",
+                "First pass",
+                passes,
+                "Triage, title, description and labels proposed. Check them on "
+                "the evidence page.",
+            )
+        )
+    elif any(r.tool == "extract" for r in reads) and read["state"] == "done":
+        why = await no_model(db, acq, "assess")
+        out.append(
+            _step("first_pass", "First pass", "model", why)
+            if why
+            else _step("first_pass", "First pass", "later", "Follows the claims.")
+        )
     return out
 
 
@@ -530,11 +549,29 @@ async def status(db: AsyncSession, batch: str) -> dict:
         b.sha256: b
         for b in (await db.execute(select(Blob).where(Blob.sha256.in_(shas)))).scalars()
     }
+    # Runs on text derived from an item (its OCR text, its transcript) are its own
+    # later stages: the claims read from a voice note come from its transcript.
+    owner = {sha: sha for sha in shas} | dict(
+        (
+            await db.execute(
+                select(func.substr(Statement.subject, 6), Payload.value["blob"].astext)
+                .join(Payload, Payload.commitment == Statement.commitment)
+                .where(
+                    Statement.prop == Prop.DERIVED_FROM,
+                    Payload.value["blob"].astext.in_(shas),
+                )
+            )
+        ).all()
+        if shas
+        else []
+    )
     runs: dict[str, list[Run]] = {}
     for r in (
-        await db.execute(select(Run).where(Run.inputs["blobs"][0].astext.in_(shas)))
+        await db.execute(
+            select(Run).where(Run.inputs["blobs"][0].astext.in_(list(owner)))
+        )
     ).scalars():
-        runs.setdefault(r.inputs["blobs"][0], []).append(r)
+        runs.setdefault(owner[r.inputs["blobs"][0]], []).append(r)
     # How far a long read (PDF pages, transcribed ms) has got, for the read stage.
     read_progress = {
         p.source_sha256: {"completed": p.completed, "total": p.total, "unit": p.unit}
@@ -568,8 +605,11 @@ async def status(db: AsyncSession, batch: str) -> dict:
         blob, rs = blobs[a.blob_sha256], runs.get(a.blob_sha256, [])
         duplicate = originals[a.blob_sha256]["acquisition"] != str(a.id)
         states = {"hashed": "done"}
+        # The coarse stages are the item's own runs; its derived text's runs show in
+        # its steps, claims and pending state.
+        own = [r for r in rs if r.inputs["blobs"][0] == a.blob_sha256]
         for stage in ("c2pa", "read", "fingerprint", "embed"):
-            states[stage] = _stage([r for r in rs if STAGE_OF.get(r.tool) == stage])
+            states[stage] = _stage([r for r in own if STAGE_OF.get(r.tool) == stage])
         states["linked"] = "done" if all(r.status == "done" for r in rs) else "queued"
         pending = any(r.status in ("queued", "running") for r in rs)
         sheet = blob.mime in sheets.MIMES

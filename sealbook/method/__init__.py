@@ -75,12 +75,32 @@ def words(prop: str, value: dict) -> str:
     if prop == Prop.TRIAGE:
         c, r = value["content"], value["reliability"]
         return f"{CONTENT[c]}, {RELIABILITY[r].lower()}, {priority(c, r)} priority"
+    if prop == Prop.LABEL:
+        seen = value.get("basis") == "observed"
+        return f"{'Seen' if seen else 'Alleged'}: {value['label']}"
     return value[{Prop.TITLE: "title", Prop.LABEL: "label"}.get(prop, "line")]
 
 
 def _rows(name: str) -> list[dict]:
     with open(HERE / name, newline="") as f:
         return list(csv.DictReader(f))
+
+
+# Verified label groups that triage and the workflow already carry, so the first pass
+# does not propose them again as labels.
+TRIAGED = ("Content", "Reliability", "Priority", "Meta")
+
+
+@cache
+def observed_labels() -> tuple[str, ...]:
+    """Verified labels an item may carry: what the analyst sees in it."""
+    return tuple(
+        r["title"].strip()
+        for r in _rows("labels.csv")
+        if r["verified"] == "1"
+        and r["for_item"] == "1"
+        and not r["title"].startswith(TRIAGED)
+    )
 
 
 @cache

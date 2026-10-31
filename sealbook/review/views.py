@@ -529,6 +529,7 @@ async def group_accept():
             item.get("kept"),
             item.get("title"),
             who,
+            item.get("place"),
         )
     )
 

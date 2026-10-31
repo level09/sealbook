@@ -139,7 +139,7 @@ const NOUN = {name: ['name'], father_name: ["father's name", "fathers' names"], 
   arrested_at: ['arrest place'], detained_at: ['detention place'], detention_branch: ['detention branch', 'detention branches'], transferred_to: ['transfer'], seen_at: ['sighting'],
   last_seen: ['last-seen place'], sex: ['sex entry', 'sex entries'], age: ['age'], occupation: ['occupation'], event: ['event'], document_date: ['document date'], reports: ['reported event'],
   document_type: ['document type'], photographed_at: ['photo place'], filmed_at: ['filming place'], located_at: ['place'],
-  triage: ['triage', 'triages'], title: ['title'], description: ['description line'], label: ['alleged label']};
+  triage: ['triage', 'triages'], title: ['title'], description: ['description line'], label: ['label']};
 function plural(n, one, many) { return `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`; }
 // Field names as the bell and Inbox write them.
 const FIELD = {father_name: "Father's name", mother_name: "Mother's name", birth_date: 'Birth date', place_of_birth: 'Birthplace', detention_branch: 'Held by branch'};

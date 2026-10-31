@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import io
 import logging
 import re
 import uuid
@@ -17,6 +18,7 @@ import httpx
 import orjson
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+from PIL import Image
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -396,31 +398,49 @@ async def extract(c: Ctx) -> str | None:
         c.s.add(
             matcher.match_run(agent, c.run.inputs["acquisition"], blob.sha256, names)
         )
-    if c.acq:
+    # A photo gets the first pass that looks at the picture (queued by ocr) instead.
+    source = await c.s.get(Blob, c.acq.blob_sha256) if c.acq else None
+    if source and not source.mime.startswith("image/"):
         await queue_read(c.s, c.acq, "assess", blob.sha256)
     return c.run.raw_output_ref
 
 
 async def assess(c: Ctx) -> str | None:
-    """The first pass of the analyst's method on the text extraction read."""
+    """The first pass of the analyst's method: on the text extraction read, or on
+    the picture itself for a photo."""
     blob = await c.s.get(Blob, c.run.inputs["blobs"][0])
-    text = blobs.read(blob, Config.BLOB_DIR).decode("utf-8")
-    await c.emit("input_read", chars=len(text))
-    c.run.prompt_hash = chain.sha256(chain.canon([method.SYSTEM, method.SCHEMA]))
+    raw = blobs.read(blob, Config.BLOB_DIR)
+    photo = blob.mime.startswith("image/")
+    if photo:
+        width, height = Image.open(io.BytesIO(raw)).size
+        system, schema = method.SEE_SYSTEM, method.SEE_SCHEMA
+        url = f"data:{blob.mime};base64,{base64.b64encode(raw).decode()}"
+        user = [{"type": "image_url", "image_url": {"url": url}}]
+        await c.emit("input_read", bytes=blob.size)
+    else:
+        text = raw.decode("utf-8")
+        system, schema, user = method.SYSTEM, method.SCHEMA, text
+        await c.emit("input_read", chars=len(text))
+    c.run.prompt_hash = chain.sha256(chain.canon([system, schema]))
     served = await c.call(
         {
             "messages": [
-                {"role": "system", "content": method.SYSTEM},
-                {"role": "user", "content": text},
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
             ],
-            "response_format": {"type": "json_schema", "json_schema": method.SCHEMA},
+            "response_format": {"type": "json_schema", "json_schema": schema},
             "temperature": 0,
             **({"reasoning_effort": "none"} if c.run.route == "local" else {}),
         }
     )
-    parts, dropped = method.items(orjson.loads(routes.content(served)), text)
+    answer = orjson.loads(routes.content(served))
+    parts, dropped = (
+        method.seen(answer, width, height) if photo else method.items(answer, text)
+    )
     for _ in range(dropped):
-        await c.emit("dropped", drop_reason="quote_not_in_text")
+        await c.emit(
+            "dropped", drop_reason="box_unusable" if photo else "quote_not_in_text"
+        )
     for prop, value, span in parts:
         await write.append(
             c.s,
@@ -453,6 +473,8 @@ async def ocr(c: Ctx) -> str | None:
         raise ValueError(f"ocr needs an image, got {blob.mime}")
     data_url = f"data:{blob.mime};base64,{base64.b64encode(blobs.read(blob, Config.BLOB_DIR)).decode()}"
     await c.emit("input_read", bytes=blob.size)
+    if c.acq:
+        await queue_read(c.s, c.acq, "assess", blob.sha256)
     c.run.prompt_hash = chain.sha256(chain.canon([OCR_PROMPT]))
     served = await c.call(
         {

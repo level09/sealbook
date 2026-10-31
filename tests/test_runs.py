@@ -6,11 +6,13 @@ import tempfile
 import unittest
 import uuid
 from datetime import UTC, date, datetime
+from io import BytesIO
 from unittest import mock
 
 import httpx
 import orjson
 from alembic import command
+from PIL import Image
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -334,6 +336,52 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         )
         events = await self.events(run_id)
         self.assertEqual(sum(e.drop_reason == "quote_not_in_text" for e in events), 1)
+
+    async def test_assess_a_photo_pins_each_part_to_a_box(self):
+        png = BytesIO()
+        Image.new("RGB", (200, 100), (90, 90, 90)).save(png, format="PNG")
+        answer = {
+            "content": "post_incident",
+            "reliability": "some_evidence",
+            "triage_box": [0, 0, 1000, 1000],
+            "why": "Damage is visible.",
+            "title": "Damaged wall",
+            "title_box": [100, 100, 600, 900],
+            "description": [
+                {"line": "A wall has a hole.", "box": [200, 200, 400, 400]},
+                {"line": "Nothing.", "box": [500, 500, 500, 600]},
+            ],
+            "labels": [
+                {"label": "Property/Buildings", "box": [0, 0, 1000, 1000]},
+                {"label": "Property/Buildings, Damaged", "box": [0, 0, 500, 1000]},
+            ],
+        }
+        run_id = await self.queue(data=png.getvalue(), mime="image/png", tool="assess")
+        await work_once(
+            self.Session,
+            transport=self.transport(completion(orjson.dumps(answer).decode())),
+        )
+        run = await self.get_run(run_id)
+        self.assertEqual(run.status, "done", run.error)
+        sent = orjson.loads(self.requests[0].content)
+        self.assertEqual(sent["messages"][1]["content"][0]["type"], "image_url")
+        async with self.Session() as s:
+            rows = (
+                await s.execute(
+                    select(Statement, Payload.value)
+                    .join(Payload, Payload.commitment == Statement.commitment)
+                    .where(Statement.run_id == run_id)
+                )
+            ).all()
+            self.assertEqual(await verify_db(s), [])
+        spans = {st.prop: st.span for st, _ in rows}
+        self.assertEqual(spans[Prop.TITLE], {"page": 1, "bbox": [20, 10, 120, 90]})
+        # The empty box is dropped; the parent label gives way to its sub-label.
+        self.assertEqual(sum(st.prop == Prop.DESCRIPTION for st, _ in rows), 1)
+        [label] = [v for st, v in rows if st.prop == Prop.LABEL]
+        self.assertEqual(
+            mdata.display(label, Prop.LABEL), "Seen: Property/Buildings, Damaged"
+        )
 
     async def test_a_reported_event_keeps_only_place_words_the_text_has(self):
         text = "Warplanes struck the market in Kafr Nabl on 2016-05-17.\n"

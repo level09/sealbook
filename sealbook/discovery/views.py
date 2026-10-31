@@ -426,6 +426,10 @@ async def media_blob(sha):
         "audio/x-wav",
         "audio/flac",
         "audio/mp4",
+        # m4a as macOS labels it, and the voice notes Add evidence records itself.
+        "audio/x-m4a",
+        "audio/aac",
+        "audio/webm",
     }:
         abort(415, description="This file type cannot be previewed")
     return blob

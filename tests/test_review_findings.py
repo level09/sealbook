@@ -350,6 +350,10 @@ class ReviewFindingsTest(unittest.IsolatedAsyncioTestCase):
             "potential": ["War Crime"],
             "claimed": ["Torture/Cruel or Inhuman Treatment"],
         }
+        r = await client.get("/api/incidents?investigation=case-f")
+        [row] = (await r.get_json())["items"]
+        assert row["category"] == "War Crime"
+        assert (await client.get("/incidents")).status_code == 200
 
     async def test_undo_gesture_retracts_all(self):
         client = await self.client()

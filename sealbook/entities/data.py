@@ -627,9 +627,10 @@ async def incident(db, user, ref: str) -> dict:
             },
         )["roles"].append(method.ROLE_WORDS.get(v["role"], v["role"]))
     violations = {"potential": [], "claimed": []}
-    for st, v in (
+    for (v,) in (
         await db.execute(
-            select(Statement, Payload.value)
+            select(Payload.value)
+            .select_from(Statement)
             .join(Payload, Payload.commitment == Statement.commitment)
             .join(StatementTier, StatementTier.statement_id == Statement.id)
             .where(
@@ -656,6 +657,35 @@ async def incident(db, user, ref: str) -> dict:
             )
         ).scalars()
         fids = [uuid.UUID(s.removeprefix("statement:")) for s in reviews]
+        # Accepted same-event links: the incident was built from a group of posts.
+        links = (
+            await db.execute(
+                select(Statement.subject, Payload.value["blob"].astext)
+                .join(Payload, Payload.commitment == Statement.commitment)
+                .where(
+                    Statement.id.in_(fids),
+                    Statement.prop == Prop.RELATION,
+                    Payload.value["kind"].astext == "same_event",
+                )
+            )
+        ).all()
+        if links:
+            posts = {sub.removeprefix("blob:") for sub, _ in links} | {
+                b for _, b in links
+            }
+            built.append(
+                {
+                    "key": "same-event",
+                    "label": "Same event",
+                    "state": "accepted",
+                    "reason": f"{len(posts)} posts an agent linked as one event, "
+                    f"{len(links)} links accepted",
+                    "why": "Each link rests on reports that name one place on "
+                    "close dates",
+                    "band": "group",
+                    "investigation": None,
+                }
+            )
         found = (
             await db.execute(
                 select(FindingKey, Payload.value)
@@ -771,3 +801,32 @@ async def incident_claims(db, ref: str) -> list[str]:
     if not found:
         raise LookupError("no current incident with that id that you may see")
     return found[0]["statements"]
+
+
+async def incident_list(db, investigation: str | None) -> list[dict]:
+    """Current incidents in the case, newest window first, each with its place and
+    possible violation category."""
+    groups, _ = await people.identity(db)
+    ids = [i["id"] for i in await findings.incidents(db, investigation)]
+    found = await stories.incidents(db, groups, ids) if ids else []
+    category = dict(
+        (
+            await db.execute(
+                select(Statement.subject, Payload.value["category"].astext)
+                .join(Payload, Payload.commitment == Statement.commitment)
+                .join(StatementTier, StatementTier.statement_id == Statement.id)
+                .where(
+                    Statement.subject.in_(ids),
+                    Statement.prop == Prop.VIOLATION,
+                    Payload.value["kind"].astext == "potential",
+                    StatementTier.tier == Tier.ACCEPTED,
+                )
+            )
+        ).all()
+    )
+    rows = [
+        _incident_row(inc, "")
+        | {"places": inc["places"], "category": category.get(inc["id"])}
+        for inc in found
+    ]
+    return sorted(rows, key=lambda r: (r["window"] or [""])[0], reverse=True)

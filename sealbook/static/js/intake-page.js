@@ -24,7 +24,7 @@ const ICON = {done: 'ti ti-check', run: 'ti ti-loader-2', wait: 'ti ti-clock-pau
 const WORD = {done: 'done', run: 'working', wait: 'waiting for a model', you: 'waiting for you', fail: 'refused', skip: 'not needed', todo: 'not started'};
 // Server step states (sealbook.ingest.batch.steps) to track states, and short labels.
 const TRACK = {done: 'done', running: 'run', queued: 'todo', you: 'you', model: 'wait', failed: 'fail', later: 'todo', skipped: 'skip'};
-const SHORT = {hashed: 'fingerprint', stored: 'stored', indexed: 'search', columns: 'columns', rows: 'rows', claims: 'claims'};
+const SHORT = {hashed: 'fingerprint', stored: 'stored', indexed: 'search', columns: 'columns', rows: 'rows', claims: 'claims', first_pass: 'first pass'};
 // Tone of the row message per step state.
 const TONED = {you: 'you', model: 'wait', failed: 'fail', running: 'run', queued: 'run'};
 // The file a capture of each result kind is about: the rest (screenshot, network log)
@@ -491,7 +491,11 @@ export function mount(boot) {
         // A failed side step (search indexing) is said after the main state, with its own retry.
         const side = sideFail ? ` ${sideFail.label}, ${STEP.failed.word}. ${sideFail.words}` : '';
         const out = {...base, track, side: !!sideFail, read: first?.action === 'read', end: !s.pending, kept: true};
-        if (first) return {...out, tone: TONED[first.state], msg: `${first.label}, ${STEP[first.state].word}. ${first.words}${side}`};
+        if (first) {
+          // The words often open with the state already ("Queued. It starts..."); say it once.
+          const said = first.words.toLowerCase().startsWith(STEP[first.state].word.toLowerCase());
+          return {...out, tone: TONED[first.state], msg: `${first.label}${said ? '' : ', ' + STEP[first.state].word}. ${first.words}${side}`};
+        }
         return {...out, tone: 'ok', msg: `${main.at(-1).words}${side}`};
       },
     },

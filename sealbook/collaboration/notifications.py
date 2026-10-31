@@ -40,7 +40,7 @@ PROP = {
     "triage": "Triage",
     "title": "Title",
     "description": "Description line",
-    "label": "Alleged label",
+    "label": "Label",
 }
 # These read as a question or a thing, not as "<field> claim".
 WHOLE = {

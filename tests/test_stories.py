@@ -395,7 +395,7 @@ class StoryTest(unittest.IsolatedAsyncioTestCase):
         assert {p["person"] for p in people} == {
             x.removeprefix("person:") for x in self.people[:2]
         }
-        assert all(p["roles"] == ["victim"] for p in people)
+        assert all(p["roles"] == ["Injured party"] for p in people)
         assert inc["relations"]["places"][0]["id"] == str(self.place)
         assert {h["prop"] for h in inc["history"]} >= {"incident", "involved"}
         assert inc["undoable"] == [] and inc["signed"]["by"] == "clerk"

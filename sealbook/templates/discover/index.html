@@ -129,8 +129,10 @@
         <div class="px-3 pt-3 d-flex ga-2 flex-wrap align-center">
           <v-text-field v-model="title" density="compact" hide-details label="Incident title" style="flex: 2 1 320px; max-width: 520px" dir="auto"></v-text-field>
         </div>
-        <p class="px-3 pt-2 mb-0 text-caption dv-muted"><template v-if="group.summary.place && group.summary.window">Place and time: <a :href="'/places/' + group.summary.place.id"><bdi dir="auto">${ group.summary.place.en || group.summary.place.ar }</bdi></a>, ${ span(group.summary.window) }. </template><template v-else-if="group.summary.town">No place is written: <bdi dir="auto">${ group.summary.town }</bdi> ${ group.summary.candidates ? 'matches ' + plural(group.summary.candidates, 'place') + ' in the gazetteer' : 'is not in the gazetteer' }. Add it on the incident page. </template>
-          One passkey gesture records the incident, ${ plural(keptReports, 'report') } as support and ${ plural(keptLinks, 'link') } accepted. Undo works per statement or for the whole gesture.</p>
+        <div class="px-3 pt-2 mb-0 text-caption dv-muted"><template v-if="group.summary.place && group.summary.window">Place and time: <a :href="'/places/' + group.summary.place.id"><bdi dir="auto">${ group.summary.place.en || group.summary.place.ar }</bdi></a>, ${ span(group.summary.window) }. </template><template v-else-if="group.summary.choices.length"><span class="d-flex align-center ga-2 flex-wrap mb-1"><bdi dir="auto">${ group.summary.town }</bdi> can mean ${ plural(group.summary.choices.length, 'place') }. Which is it?
+            <v-select v-model="placeChoice" :items="group.summary.choices" :item-title="placeLabel" item-value="id" density="compact" hide-details clearable placeholder="Choose the place" style="min-width: 260px; max-width: 360px"></v-select></span>
+            <template v-if="placeChoice && group.summary.window"> Time: ${ span(group.summary.window) }.</template> </template><template v-else-if="group.summary.town">No place is written: <bdi dir="auto">${ group.summary.town }</bdi> is not in the gazetteer. </template>
+          One passkey gesture records the incident, ${ plural(keptReports, 'report') } as support and ${ plural(keptLinks, 'link') } accepted. Undo works per statement or for the whole gesture.</div>
         <div class="pa-3 d-flex ga-2 flex-wrap align-center">
           <v-btn id="dv-sign" color="primary" prepend-icon="ti ti-signature" :disabled="keptPosts.length < 2 || !keptLinks || !title.trim()" :loading="busy" @click="acceptGroup">Create incident and sign</v-btn>
           <v-btn variant="outlined" prepend-icon="ti ti-x" @click="rejecting = true">Not one event</v-btn>
@@ -228,7 +230,7 @@ window.app = Vue.createApp({
     const p = new URLSearchParams(location.search);
     return {
       ROLES, items: [], loaded: false, error: '', kinds: [], curId: p.get('f'), detail: null, seq: 0,
-      keep: [], roles: {}, title: '', incident: null, group: null, dropped: [], incidents: [], picked: [], analysts: [],
+      keep: [], roles: {}, title: '', incident: null, group: null, dropped: [], placeChoice: null, incidents: [], picked: [], analysts: [],
       staged: null, signing: false, rejecting: false, asking: false, assigning: false, busy: false,
       why: '', reviewer: null, ask: '', assignee: null, done: null, snack: {show: false, text: ''},
       shellHints: [['/', 'search'], ['meta+k', 'go to'], ['j', 'next'], ['k', 'previous'], ['a', 'accept'], ['r', 'reject'], ['s', 'ask'], ['x', 'select']],
@@ -272,6 +274,7 @@ window.app = Vue.createApp({
     hue: findingHue,
     kindOf(id) { return this.items.find(f => f.id === id)?.kind; },
     fmt,
+    placeLabel(p) { return [p.en || p.ar, p.in, human(p.kind)].filter(Boolean).join(', '); },
     postNo(sha) { return this.group.posts.findIndex(p => p.sha === sha) + 1; },
     togglePost(sha) { this.dropped = this.dropped.includes(sha) ? this.dropped.filter(x => x !== sha) : [...this.dropped, sha]; },
     // Each town a post's reports name once, with the gazetteer place when the name means one.
@@ -314,7 +317,7 @@ window.app = Vue.createApp({
     },
     async open(f) {
       const seq = ++this.seq;
-      this.detail = null; this.group = null; this.dropped = [];
+      this.detail = null; this.group = null; this.dropped = []; this.placeChoice = null;
       if (f.kind === 'event_group') {
         try {
           const {data} = await axios.get('/api/discover/groups/' + f.id);
@@ -362,7 +365,7 @@ window.app = Vue.createApp({
     },
     acceptGroup() {
       const f = this.cur, title = this.title.trim();
-      this.stage({group: f.id, kept: this.keptPosts.map(p => p.sha), title}, '/api/review/groups/options', `Create incident: ${title}`, out => {
+      this.stage({group: f.id, kept: this.keptPosts.map(p => p.sha), title, ...(this.placeChoice ? {place: this.placeChoice} : {})}, '/api/review/groups/options', `Create incident: ${title}`, out => {
         const incident = out.statements.find(s => s.subject.startsWith('incident:'))?.subject.slice(9);
         const left = this.dropped.length ? ` ${plural(this.dropped.length, 'dropped post')} stay in the queue.` : '';
         this.done = {text: `Signed once: incident \u201c${title}\u201d created from ${plural(this.keptPosts.length, 'post')}.${left} Undo is per statement or for the whole gesture.`, gesture: out.gesture, left: out.statements, open: false, incident};

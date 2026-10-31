@@ -109,3 +109,4 @@ body.dark-mode .evp {
 .ev-n-add { color: var(--accepted); }
 .ev-n-del { color: var(--negative); text-decoration: line-through; text-decoration-thickness: 1px; }
 .ev-n-note { color: var(--ink-2); font-style: italic; }
+.ev-label.seen { border-style: solid; color: var(--ink); }

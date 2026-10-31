@@ -12,8 +12,10 @@ import {TIMEOUT, failure} from '/static/js/components/EvidenceViewer.js';
 
 const api = axios.create({timeout: TIMEOUT});
 const PASS = ['triage', 'title', 'description', 'label'];
+// What a masked first-pass line says until the sensitive item is shown (and logged).
+const MASKED = 'Masked: show the sensitive item to read it';
 
-const PROP = {name: 'Name', father_name: "Father's name", mother_name: "Mother's name", birth_date: 'Born', place_of_birth: 'Born in', arrested_at: 'Arrested at', last_seen: 'Last seen', detention_branch: 'Held by branch', transferred_to: 'Transferred to', seen_at: 'Seen at', detained_at: 'Detained at', sex: 'Sex', age: 'Age', occupation: 'Occupation', event: 'Event', document_date: 'Document date', reports: 'Reports', document_type: 'Document type', same_as: 'Same person', media_match: 'Media match', review: 'Review', retraction: 'Undo', located_at: 'Place confirmed', access: 'Access', sha256: 'SHA-256', md5: 'MD5', c2pa_verify: 'C2PA check', fingerprint: 'Fingerprint', url_liveness: 'Link check', photographed_at: 'Photographed at', filmed_at: 'Filmed at', triage: 'Triage', title: 'Title', description: 'Description', label: 'Alleged label'};
+const PROP = {name: 'Name', father_name: "Father's name", mother_name: "Mother's name", birth_date: 'Born', place_of_birth: 'Born in', arrested_at: 'Arrested at', last_seen: 'Last seen', detention_branch: 'Held by branch', transferred_to: 'Transferred to', seen_at: 'Seen at', detained_at: 'Detained at', sex: 'Sex', age: 'Age', occupation: 'Occupation', event: 'Event', document_date: 'Document date', reports: 'Reports', document_type: 'Document type', same_as: 'Same person', media_match: 'Media match', review: 'Review', retraction: 'Undo', located_at: 'Place confirmed', access: 'Access', sha256: 'SHA-256', md5: 'MD5', c2pa_verify: 'C2PA check', fingerprint: 'Fingerprint', url_liveness: 'Link check', photographed_at: 'Photographed at', filmed_at: 'Filmed at', triage: 'Triage', title: 'Title', description: 'Description', label: 'Label'};
 const DOC = {detention_register: 'Detention register', transfer_order: 'Transfer order', witness_statement: 'Witness statement', photo: 'Photo', web_post: 'Web post', letter: 'Letter', voice_note: 'Voice note', video: 'Video', news_article: 'News article', report: 'Report', intake_sheet: 'Intake sheet'};
 const ICON = {image: 'ti ti-photo', pdf: 'ti ti-file-type-pdf', audio: 'ti ti-volume', video: 'ti ti-video', web: 'ti ti-world', sheet: 'ti ti-table', text: 'ti ti-file-text'};
 const PENDING = ['unconfirmed', 'corroborated'];
@@ -34,7 +36,7 @@ export function mount(boot) {
   const app = Vue.createApp({
     mixins: [layoutMixin], delimiters: config.delimiters,
     data() {
-      return {boot, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
+      return {boot, masked: MASKED, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
         cursor: {list: 'claims', i: -1}, excerpt: null, threadId: null, thread: null, threadBusy: false, comment: '',
         ask: {open: false, statement: null, reviewer: null, reason: '', busy: false}, analysts: [], relate: {open: false, row: null, value: 'same_recording'},
         snack: {show: false, text: ''}, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
@@ -46,7 +48,8 @@ export function mount(boot) {
       pass() {
         const all = this.claims.filter(c => PASS.includes(c.prop) && c.tier !== 'rejected');
         const by = p => all.filter(c => c.prop === p);
-        return {all, open: all.filter(c => c.tier === 'unconfirmed'), triage: by('triage')[0], title: by('title')[0], lines: by('description'), labels: by('label')};
+        const labels = by('label');
+        return {all, open: all.filter(c => c.tier === 'unconfirmed'), triage: by('triage')[0], title: by('title')[0], lines: by('description'), seen: labels.filter(c => c.value.startsWith('Seen: ')), alleged: labels.filter(c => !c.value.startsWith('Seen: '))};
       },
       groups() {
         const g = {};

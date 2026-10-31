@@ -52,6 +52,9 @@ PERSONAL = {
     Prop.AGE,
     Prop.OCCUPATION,
     Prop.EVENT,
+    # A first-pass title or description line is free text and may name people.
+    Prop.TITLE,
+    Prop.DESCRIPTION,
 }
 # Props whose value is a place a person was at, or was moved to.
 LOCATED = {

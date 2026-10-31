@@ -31,6 +31,7 @@ from sealbook.sheets import dates
 KIND = "event_group"
 TEXT = 1200  # characters of a post shown on its card
 ADMIN = {"governorate", "district", "subdistrict"}
+CHOICES = 8
 
 
 def _key(shas) -> str:
@@ -213,7 +214,14 @@ async def _places(db, towns: set[str]) -> dict[str, list]:
 
 
 def _place_row(p) -> dict:
-    return {"id": str(p.id), "en": p.name_en, "ar": p.name_ar, "kind": p.kind}
+    gov = p.governorate
+    return {
+        "id": str(p.id),
+        "en": p.name_en,
+        "ar": p.name_ar,
+        "kind": p.kind,
+        "in": (gov.name_en or gov.name_ar) if gov else None,
+    }
 
 
 def _one(cands: list) -> object | None:
@@ -291,6 +299,8 @@ async def detail(db, user, key: str) -> dict | None:
     one = _one(cands)
     g["summary"]["place"] = _place_row(one) if one else None
     g["summary"]["candidates"] = len(cands)
+    # A name that means several places: the analyst says which before signing.
+    g["summary"]["choices"] = [] if one else [_place_row(c) for c in cands[:CHOICES]]
     return g
 
 
@@ -339,7 +349,9 @@ def _review(sid: str, verdict: str, why_: str, gesture: str, author) -> Statemen
     )
 
 
-async def plan(db, user, key: str, kept: list[str], title: str, author):
+async def plan(
+    db, user, key: str, kept: list[str], title: str, author, place: str | None = None
+):
     """The statements accepting group `key` with the posts in `kept` writes, all
     under one gesture id. ValueError for a bad request, LookupError when the group
     is gone, PermissionError when a link is assigned to someone else."""
@@ -380,7 +392,12 @@ async def plan(db, user, key: str, kept: list[str], title: str, author):
         if s["town"]
         else []
     )
-    if (one := _one(cands)) and s["window"]:
+    one = _one(cands)
+    if place is not None:
+        one = next((c for c in cands if str(c.id) == place), None)
+        if one is None:
+            raise ValueError("the place must be one the reports' town can mean")
+    if one and s["window"]:
         lo, hi = (datetime.fromisoformat(d).date() for d in s["window"])
         out.append(
             StatementIn(
