@@ -26,12 +26,12 @@ Bayanat's label, violation, event type and relation lists are reused with credit
 4. **One To do list.** Done 2026-10-31, see [status](status.md). Inbox, Review, Discover and the Desk's questions become one list,
    high priority and biggest decisions first; a link inside a same-event group is
    decided there, not twice.
-5. **Upload shows its work.** Per-file progress, then the batch's summary of what was
+5. **Upload shows its work.** Done 2026-10-31, see [status](status.md). Per-file progress, then the batch's summary of what was
    found, opening the batch's own decisions.
-6. **Case in one place.** People, places, incidents, evidence and the timeline and map as
+6. **Case in one place.** Done 2026-10-31, see [status](status.md); the case is one rail group, not one tabbed page, and video frames are not read yet. People, places, incidents, evidence and the timeline and map as
    tabs of one case page with an incident list; Agents, Following, Help and Export in the
    sidebar footer. Frame reading for observed labels on photos and video.
-7. **Walkthrough video.** One batch (photo, voice note, video, web post) from upload to a
+7. **Walkthrough video.** Done 2026-10-31 as a 63 s film from real screens (scratch build, not in the repo). One batch (photo, voice note, video, web post) from upload to a
    signed incident, made with HyperFrames once 1 to 6 are in the app.
 
 Mockups: the flow in five steps (add, what it found, one item read for you, decide,
@@ -113,3 +113,10 @@ Descriptions, titles and labels moved to Now, step 1.
 1. **Typed relations with stated certainty.** Family, command, membership and document
    relations between subjects, pinned to evidence, with human certainty kept separate from
    machine scores.
+
+## Next
+
+- OCR answers in a structured form, so "there is no text" is not stored as text; record
+  the demo's OCR again with it (needs the cloud route's key under its cap).
+- Video frames for observed labels; titles and descriptions in Arabic as well.
+- The case as one tabbed page; the To do badge counting everything waiting.
