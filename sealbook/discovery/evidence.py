@@ -21,7 +21,13 @@ from sealbook import blobs
 from sealbook.discovery.models import EmbeddingSpace, Segment, SegmentEmbedding
 from sealbook.discovery.service import available
 from sealbook.ledger import write
-from sealbook.ledger.contracts import EXTRACTED_PROPS, Prop, StatementIn, Tier
+from sealbook.ledger.contracts import (
+    EXTRACTED_PROPS,
+    SPANNED_PROPS,
+    Prop,
+    StatementIn,
+    Tier,
+)
 from sealbook.ledger.models import (
     Acquisition,
     Blob,
@@ -734,7 +740,7 @@ async def item(db, sha: str, user) -> dict | None:
     claims = await data.statement_rows(
         db,
         mfilter.statement_blob().in_(fam),
-        Statement.prop.in_(EXTRACTED_PROPS),
+        Statement.prop.in_(SPANNED_PROPS),
         order=Statement.recorded_at,
         limit=2000,
     )
@@ -804,7 +810,7 @@ async def item(db, sha: str, user) -> dict | None:
     custody = await data.statement_rows(
         db,
         Statement.subject == f"blob:{sha}",
-        Statement.prop.not_in({Prop.MEDIA_MATCH, *EXTRACTED_PROPS}),
+        Statement.prop.not_in({Prop.MEDIA_MATCH, *SPANNED_PROPS}),
         limit=200,
     )
     meta = {}
@@ -911,13 +917,13 @@ async def content_read(db, sha: str, blob: Blob) -> dict:
     reveal grant first."""
     fam = await family(db, sha)
     values = {
-        str(i): data.display(v)
-        for i, v in await db.execute(
-            select(Statement.id, Payload.value)
+        str(i): data.display(v, prop)
+        for i, prop, v in await db.execute(
+            select(Statement.id, Statement.prop, Payload.value)
             .join(Payload, Payload.commitment == Statement.commitment)
             .where(
                 mfilter.statement_blob().in_(fam),
-                Statement.prop.in_(EXTRACTED_PROPS),
+                Statement.prop.in_(SPANNED_PROPS),
             )
         )
     }

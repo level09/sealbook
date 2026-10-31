@@ -37,6 +37,10 @@ PROP = {
     "document_date": "Document date",
     "document_type": "Document type",
     "reports": "Reports",
+    "triage": "Triage",
+    "title": "Title",
+    "description": "Description line",
+    "label": "Alleged label",
 }
 # These read as a question or a thing, not as "<field> claim".
 WHOLE = {

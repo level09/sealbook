@@ -11,8 +11,9 @@ import {SourceSteps, LIVE} from '/static/js/components/SourceSteps.js';
 import {TIMEOUT, failure} from '/static/js/components/EvidenceViewer.js';
 
 const api = axios.create({timeout: TIMEOUT});
+const PASS = ['triage', 'title', 'description', 'label'];
 
-const PROP = {name: 'Name', father_name: "Father's name", mother_name: "Mother's name", birth_date: 'Born', place_of_birth: 'Born in', arrested_at: 'Arrested at', last_seen: 'Last seen', detention_branch: 'Held by branch', transferred_to: 'Transferred to', seen_at: 'Seen at', detained_at: 'Detained at', sex: 'Sex', age: 'Age', occupation: 'Occupation', event: 'Event', document_date: 'Document date', reports: 'Reports', document_type: 'Document type', same_as: 'Same person', media_match: 'Media match', review: 'Review', retraction: 'Undo', located_at: 'Place confirmed', access: 'Access', sha256: 'SHA-256', md5: 'MD5', c2pa_verify: 'C2PA check', fingerprint: 'Fingerprint', url_liveness: 'Link check', photographed_at: 'Photographed at', filmed_at: 'Filmed at'};
+const PROP = {name: 'Name', father_name: "Father's name", mother_name: "Mother's name", birth_date: 'Born', place_of_birth: 'Born in', arrested_at: 'Arrested at', last_seen: 'Last seen', detention_branch: 'Held by branch', transferred_to: 'Transferred to', seen_at: 'Seen at', detained_at: 'Detained at', sex: 'Sex', age: 'Age', occupation: 'Occupation', event: 'Event', document_date: 'Document date', reports: 'Reports', document_type: 'Document type', same_as: 'Same person', media_match: 'Media match', review: 'Review', retraction: 'Undo', located_at: 'Place confirmed', access: 'Access', sha256: 'SHA-256', md5: 'MD5', c2pa_verify: 'C2PA check', fingerprint: 'Fingerprint', url_liveness: 'Link check', photographed_at: 'Photographed at', filmed_at: 'Filmed at', triage: 'Triage', title: 'Title', description: 'Description', label: 'Alleged label'};
 const DOC = {detention_register: 'Detention register', transfer_order: 'Transfer order', witness_statement: 'Witness statement', photo: 'Photo', web_post: 'Web post', letter: 'Letter', voice_note: 'Voice note', video: 'Video', news_article: 'News article', report: 'Report', intake_sheet: 'Intake sheet'};
 const ICON = {image: 'ti ti-photo', pdf: 'ti ti-file-type-pdf', audio: 'ti ti-volume', video: 'ti ti-video', web: 'ti ti-world', sheet: 'ti ti-table', text: 'ti ti-file-text'};
 const PENDING = ['unconfirmed', 'corroborated'];
@@ -41,9 +42,15 @@ export function mount(boot) {
     computed: {
       claims() {return this.it ? this.it.claims.map(c => ({...c, label: prop(c.prop), value: this.read?.values?.[c.id] ?? c.display})) : [];},
       otherClaims() {return this.other ? this.other.claims.map(c => ({...c, label: prop(c.prop), value: this.otherRead?.values?.[c.id] ?? c.display})) : [];},
+      // The first pass of the analyst's method (sealbook/method), shown on its own.
+      pass() {
+        const all = this.claims.filter(c => PASS.includes(c.prop) && c.tier !== 'rejected');
+        const by = p => all.filter(c => c.prop === p);
+        return {all, open: all.filter(c => c.tier === 'unconfirmed'), triage: by('triage')[0], title: by('title')[0], lines: by('description'), labels: by('label')};
+      },
       groups() {
         const g = {};
-        this.claims.forEach(c => (g[c.subject] ||= []).push(c));
+        this.claims.filter(c => !PASS.includes(c.prop)).forEach(c => (g[c.subject] ||= []).push(c));
         return Object.entries(g).map(([subject, claims]) => ({subject, claims, name: this.nameOf(subject)}));
       },
       ordered() {return this.groups.flatMap(g => g.claims);},
@@ -176,6 +183,16 @@ export function mount(boot) {
       },
       focusRow(list, i) {this.cursor = {list, i}; if (list === 'claims') this.pick(this.lists.claims[i].id);},
       enter() {const r = this.current; if (!r) return; if (this.cursor.list === 'claims') this.openSpan(r); else if (r.fold) this.fold(r); else if (r.other) location.href = `/evidence/${r.other}`;},
+      // A media time when the line rests on a transcript; text needs no position.
+      at(c) {const t = this.msAt(c.span); return t != null ? ms(t) : '';},
+      async acceptPass() {
+        this.busy = true;
+        try {
+          await attest({sha: this.it.sha256}, '/api/review/firstpass/options');
+          this.say('First pass accepted and signed with your passkey');
+          await this.refresh();
+        } catch (err) {this.say(err.message);} finally {this.busy = false;}
+      },
       canDecide(r) {return r && r.can_review && PENDING.includes(r.tier);},
       async decide(r, verdict, relationship) {
         if (!this.canDecide(r)) {this.say(r?.statement || r?.prop ? 'The review flow does not let you decide this one' : 'A lead, not a proposal. Nothing to accept'); return;}

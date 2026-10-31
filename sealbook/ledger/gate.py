@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from sealbook.ledger.contracts import (
-    EXTRACTED_PROPS,
+    SPANNED_PROPS,
     GateInput,
     PolicyRow,
     PrincipalKind,
@@ -43,7 +43,7 @@ def gate(s: GateInput, policy: PolicyRow) -> tuple[Tier, str]:
         return Tier.ACCEPTED, "access_log"
     if s.retracted:
         return Tier.REJECTED, "retracted"
-    if s.author_kind is PrincipalKind.AGENT and s.prop in EXTRACTED_PROPS:
+    if s.author_kind is PrincipalKind.AGENT and s.prop in SPANNED_PROPS:
         if not s.has_span:
             return Tier.REJECTED, "no_span"
         if not s.span_valid:

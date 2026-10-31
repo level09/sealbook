@@ -84,6 +84,15 @@ class Prop(enum.StrEnum):
     # "place" and "town" quoted from the same text}, dated by valid_from/valid_to
     # when the text dates it.
     REPORTS = "reports"
+    # The first pass of the analyst's method on a document (subject "blob:<sha256>",
+    # sealbook.method), each pinned to the passage it rests on, which value "text"
+    # quotes. TRIAGE {"content", "reliability", "why"}; LABEL {"label": an alleged
+    # label}; TITLE {"title": the analyst's title of what happened}; DESCRIPTION
+    # {"line": one fact-only line of the description}. Each also carries "lang".
+    TRIAGE = "triage"
+    LABEL = "label"
+    TITLE = "title"
+    DESCRIPTION = "description"
     SHA256 = "sha256"
     MD5 = "md5"
     C2PA_VERIFY = "c2pa_verify"
@@ -170,6 +179,10 @@ EXTRACTED_PROPS = frozenset(
         Prop.REPORTS,
     }
 )
+
+ASSESSED_PROPS = frozenset({Prop.TRIAGE, Prop.LABEL, Prop.TITLE, Prop.DESCRIPTION})
+# Agent-authored values that must point at a valid span of their document.
+SPANNED_PROPS = EXTRACTED_PROPS | ASSESSED_PROPS
 
 EVENT_KINDS = ("killed", "missing", "displaced", "released", "wounded", "defected")
 REPORT_KINDS = (

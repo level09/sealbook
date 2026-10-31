@@ -1,0 +1,324 @@
+title,verified,for_item,for_person,for_incident
+"Meta, Actor Needed",1,1,1,1
+"Meta, Bad Import",1,1,1,1
+"Meta, Bad Import, Low Quality",1,1,0,0
+"Meta, Confidential",1,1,1,1
+"Meta, Duplicate",1,1,1,1
+"Meta, False or Fake",1,1,1,1
+"Meta, Flagged",1,1,1,1
+"Meta, Graphic",1,1,1,1
+"Meta, Flagged for screenshots",1,1,0,0
+"Meta, Important",1,1,1,1
+"Meta, Irrelevant",1,1,1,1
+"Meta, Irrelevant, Border Incidents",1,1,1,1
+"Meta, Low Quality",1,1,1,1
+"Priority, High",1,1,0,0
+"Priority, Low",1,1,0,0
+"Reliability, Source claims differ from visual/audio",1,1,1,1
+"Reliability, Source claims partially differ from visual/audio",1,1,1,1
+"Reliability, Source claims same as visual/audio",1,1,1,1
+"Reliability, No Evidence",1,1,1,1
+"Reliability, Some/Weak Evidence",1,1,1,1
+"Reliability, Strong Evidence",1,1,1,1
+"Content, Media",1,1,1,1
+"Content, Report",1,1,1,1
+"Content, Document",1,1,1,1
+"Content, Non-Arabic",1,1,1,1
+"Content, Incident",1,1,1,1
+"Content, Non-Incident",1,1,1,1
+"Content, Non-Incident, Prisoner Release/Exchange",1,1,0,0
+"Content, Post-Incident",1,1,1,1
+"Content, Post-Incident, Signs of recent incident",1,1,0,0
+"Content, Interview",1,1,0,0
+"Content, Promotional ",1,1,0,0
+"Content, Unsubstantiated Confessions  ",1,1,0,0
+"Content, List of Names",1,1,1,1
+Identifiable Information,1,1,1,1
+"Identifiable, Ethnographic Info",1,1,1,1
+"Identifiable, Identities",1,1,1,1
+"Identifiable, Identities, Face(s) detectable",1,1,1,1
+"Identifiable, Identities, Name(s) detectable",1,1,1,1
+"Identifiable, Symbols and Text",1,1,1,1
+"Type, Attack on Property",0,1,1,1
+"Type, Attack on Property, Agriculture",0,1,0,1
+"Type, Attack on Property, Cultural Property/Heritage",0,1,1,1
+"Type, Attack on Property, Buildings used militarily ",0,1,0,0
+"Type, Attack on Property, Humanitarian/IPD",0,1,0,0
+"Type, Attack on Property, Demolition",0,1,0,0
+"Type, Attack on Property, Military Facilities",0,1,1,1
+"Type, Attack on Property, Non-Military Facilities",0,1,1,1
+"Type, Collective Punishment",0,1,1,1
+"Type, Human",0,1,1,1
+"Type, Human, Arming Minor",0,1,1,1
+"Type, Human, Cruel Treatment",0,1,1,1
+"Type, Human, Detention/Abduction",0,1,1,1
+"Type, Human, Forced Conscription",0,1,1,1
+"Type, Human, Hate Speech",0,1,1,1
+"Type, Human, Killing",0,1,1,1
+"Type, Human, Killing, Execution",0,1,1,1
+"Type, Human, Impairing",0,1,1,1
+"Type, Human, Indirect Injury",0,1,1,1
+"Type, Human, Persecution",0,1,1,1
+"Type, Human, Persecution, Gender Identity",0,1,1,1
+"Type, Human, Persecution, Political/Ideological",0,1,1,1
+"Type, Human, Persecution, Racial/Ethnic",0,1,1,1
+"Type, Human, Persecution, Religious",0,1,1,1
+"Type, Human, Persecution, Sexual Orientation",0,1,1,1
+"Type, Human, Postmortem Offences",0,1,1,1
+"Type, Human, Postmortem Offences, Mass Grave",0,1,1,1
+"Type, Human, Sexual Violence",0,1,1,1
+"Type, Human, Stillbirth",0,1,1,1
+"Type, Human, Torture",0,1,1,1
+"Type, Human, Using Human Shield",0,1,1,1
+"Type, Looting",0,1,1,1
+"Type, Martial",0,1,1,1
+"Type, Martial, Airstrike",0,1,1,1
+"Type, Martial, Clashing",0,1,1,1
+"Type, Martial, Explosion",0,1,1,1
+"Type, Martial, Hitting a Target",0,1,1,1
+"Type, Martial, Indiscriminate Attack",0,1,1,1
+"Type, Martial, Shelling",0,1,1,1
+"Type, Martial, Shooting",0,1,1,1
+"Type, Martial, Units Un-Engaged",0,1,1,1
+"Type, Suicide Attack",0,1,1,1
+"Type, Use of Non-Military Facilities for Military Purposes",0,1,1,1
+"Type, Extortion ",0,1,1,1
+Weapons,0,1,1,1
+"Weapons, Air System",0,1,1,1
+"Weapons, Air System, Aircraft",0,1,1,1
+"Weapons, Air System, Drone",0,1,1,1
+"Weapons, Air System, Helicopter ",0,1,1,1
+"Weapons, Bladed Weapons",0,1,1,1
+"Weapons, Exploding/Expanding bullets",0,1,1,1
+"Weapons, Explosives",0,1,1,1
+"Weapons, Explosives, Bunker buster munition",0,1,1,0
+"Weapons, Explosives, Landmine",0,1,1,1
+"Weapons, Explosives, Improvised, Barrels",0,1,1,1
+"Weapons, Explosives, Improvised",0,1,1,1
+"Weapons, Explosives, Improvised, Car Bomb",0,1,1,1
+"Weapons, Explosives, Improvised, IED",0,1,1,1
+"Weapons, Explosives, Cluster Munitions",0,1,1,1
+"Weapons, Explosives, Missile",0,1,1,1
+"Weapons, Explosives, Unexploded Ordinance",0,1,1,1
+"Weapons, Explosives, Volumetric Weapons ",0,1,1,1
+"Weapons, Incendiary Ammunition ",0,1,1,1
+"Weapons, Incendiary Ammunition, Napalm",0,1,1,1
+"Weapons, Incendiary Ammunition, White Phosphorus Munitions",0,1,1,1
+"Weapons, Land System",0,1,1,1
+"Weapons, Land System, Armored Fighting Vehicle",0,1,1,1
+"Weapons, Land System, Armored Fighting Vehicle, APC",0,1,1,1
+"Weapons, Land System, Armored Fighting Vehicle, Mine Clearing Vehicle",0,1,1,1
+"Weapons, Land System, Armored Fighting Vehicle, Tank",0,1,1,1
+"Weapons, Land System, Artillery",0,1,1,1
+"Weapons, Land System, Artillery, Field Artillery",0,1,1,1
+"Weapons, Land System, Artillery, Improvised",0,1,1,1
+"Weapons, Land System, Artillery, Mortars",0,1,1,1
+"Weapons, Land System, Artillery, Rockets Artillery",0,1,1,1
+"Weapons, Land System, Anti-Aircraft Weapons",0,1,1,1
+"Weapons, Land System, Anti-Aircraft Weapons, MANPADS",0,1,1,1
+"Weapons, Land System, Anti-Armor Weapons",0,1,1,1
+"Weapons, Land System, Light Weapons",0,1,1,1
+"Weapons, Land System, Light Weapons, Sniper",0,1,1,1
+"Weapons, Land System, Heavy and Medium Machine Guns",0,1,1,1
+"Weapons, Non-Traditional",0,1,1,1
+"Weapons, Non-Traditional, Chemical Weapons",0,1,1,1
+"Weapons, Non-Traditional, Chemical Weapons, Chlorine gas",0,1,1,1
+"Weapons, Riot Control",0,1,1,1
+Injured Party,0,1,1,1
+"Injured Party, Affiliation",0,1,1,1
+"Injured Party, Affiliation, Pro-Government",0,1,1,1
+"Injured Party, Affiliation, Pro-Government, Civilian or Off-Duty Government",0,1,1,1
+"Injured Party, Affiliation, Pro-Government, Informant",0,1,1,1
+"Injured Party, Affiliation, Pro-Government, Other",0,1,1,1
+"Injured Party, Affiliation, Pro-Government, Palestinian Groups",0,1,1,1
+"Injured Party, Affiliation, Pro-Government, Popular Forces/Shabiha",0,1,1,1
+"Injured Party, Affiliation, Pro-Government, Government Forces",0,1,1,1
+"Injured Party, Affiliation, Pro-Government, Government Forces, Armed Forces",0,1,1,1
+"Injured Party, Affiliation, Pro-Government, Government Forces, Police",0,1,1,1
+"Injured Party, Affiliation, Pro-Government, Government Forces, Other Security Forces",0,1,1,1
+"Injured Party, Affiliation, Pro-Government, Government Forces, Palestine Liberation Army",0,1,1,1
+"Injured Party, Affiliation, Jabhat al-Nusra",0,1,1,1
+"Injured Party, Affiliation, ISIS",0,1,1,1
+"Injured Party, Affiliation, Pro-Opposition",0,1,1,1
+"Injured Party, Affiliation, Pro-Opposition, Opposition Forces",0,1,1,1
+"Injured Party, Affiliation, Pro-Opposition, Other",0,1,1,1
+"Injured Party, Affiliation, Kurdish Political Parties",0,1,1,1
+"Injured Party, Affiliation, Kurdish Political Parties, Syrian Kurdish Forces",0,1,1,1
+"Injured Party, Affiliation, Defected",0,1,1,1
+"Injured Party, Affiliation, Third Party",0,1,1,1
+"Injured Party, Affiliation, Third Party, CJTF–OIR",0,1,1,1
+"Injured Party, Affiliation, Third Party, CJTF–OIR, France",0,1,1,1
+"Injured Party, Affiliation, Third Party, CJTF–OIR, Jordan",0,1,1,1
+"Injured Party, Affiliation, Third Party, CJTF–OIR, Saudi Arabia",0,1,1,1
+"Injured Party, Affiliation, Third Party, CJTF–OIR, Turkey",0,1,1,1
+"Injured Party, Affiliation, Third Party, CJTF–OIR, United Kingdom",0,1,1,1
+"Injured Party, Affiliation, Third Party, CJTF–OIR, United States",0,1,1,1
+"Injured Party, Affiliation, Third Party, Hezbollah",0,1,1,1
+"Injured Party, Affiliation, Third Party, Iranian Guard",0,1,1,1
+"Injured Party, Affiliation, Third Party, Non-Syrian Kurdish Forces",0,1,1,1
+"Injured Party, Affiliation, Third Party, Other",0,1,1,1
+"Injured Party, Affiliation, Third Party, Pro-Iran Militias",0,1,1,1
+"Injured Party, Affiliation, Third Party, Russia",0,1,1,1
+"Injured Party, Affiliation, Tribal Forces",0,1,1,1
+"Injured Party, Affiliation, Tribal Forces, Independent/Unknown",0,1,1,1
+"Injured Party, Affiliation, Tribal Forces, Other Affiliations",0,1,1,1
+"Injured Party, Affiliation, Tribal Forces, Pro-Government",0,1,1,1
+"Injured Party, Affiliation, Other Political Groups",0,1,1,1
+"Injured Party, Affiliation, Other Armed Groups",0,1,1,1
+"Injured Party, Affiliation, Unknown",0,1,1,1
+"Injured Party, Armed",0,1,1,1
+"Injured Party, Captured Fighter",0,1,1,1
+"Injured Party, Elderly",0,1,1,1
+"Injured Party, Female",0,1,1,1
+"Injured Party, Journalist",0,1,1,1
+"Injured Party, Medical/Humanitarian",0,1,1,1
+"Injured Party, Minor",0,1,1,1
+"Injured Party, Noncombatant/Civilian",0,1,1,1
+"Injured Party, Non-Syrian",0,1,1,1
+"Injured Party, Pregnant",0,1,1,1
+"Injured Party, Religious",0,1,1,1
+"Injured Party, Sick or Disabled",0,1,1,1
+"Injured Party, Unarmed",0,1,1,1
+"Injured Party, Wounded",0,1,1,1
+Alleged Perpetrator,0,1,1,1
+"Alleged Perpetrator, Affiliation",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government, Civilian or Off-Duty Government",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government, Informant",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government, Other",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government, Palestinian Groups",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government, Popular Forces/Shabiha",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government, Government Forces",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government, Government Forces, Armed Forces",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government, Government Forces, Police",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government, Government Forces, Other Security Forces",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Government, Government Forces, Palestine Liberation Army",0,1,1,1
+"Alleged Perpetrator, Affiliation, Jabhat al-Nusra",0,1,1,1
+"Alleged Perpetrator, Affiliation, ISIS",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Opposition",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Opposition, Opposition Forces",0,1,1,1
+"Alleged Perpetrator, Affiliation, Pro-Opposition, Other",0,1,1,1
+"Alleged Perpetrator, Affiliation, Kurdish Political Parties",0,1,1,1
+"Alleged Perpetrator, Affiliation, Kurdish Political Parties, Syrian Kurdish Forces",0,1,1,1
+"Alleged Perpetrator, Affiliation, Defected",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, CJTF–OIR",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, CJTF–OIR, France",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, CJTF–OIR, Jordan",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, CJTF–OIR, Saudi Arabia",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, CJTF–OIR, Turkey",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, CJTF–OIR, United Kingdom",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, CJTF–OIR, United States",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, Hezbollah",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, Iranian Guard",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, Non-Syrian Kurdish Forces",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, Other",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, Pro-Iran Militias",0,1,1,1
+"Alleged Perpetrator, Affiliation, Third Party, Russia",0,1,1,1
+"Alleged Perpetrator, Affiliation, Tribal Forces",0,1,1,1
+"Alleged Perpetrator, Affiliation, Tribal Forces, Independent/Unknown",0,1,1,1
+"Alleged Perpetrator, Affiliation, Tribal Forces, Other Affiliations",0,1,1,1
+"Alleged Perpetrator, Affiliation, Tribal Forces, Pro-Government",0,1,1,1
+"Alleged Perpetrator, Affiliation, Other Political Groups",0,1,1,1
+"Alleged Perpetrator, Affiliation, Other Armed Groups",0,1,1,1
+"Alleged Perpetrator, Affiliation, Unknown",0,1,1,1
+"Alleged Perpetrator, Armed",0,1,1,1
+"Alleged Perpetrator, Female",0,1,1,1
+"Alleged Perpetrator, Minor",0,1,1,1
+"Alleged Perpetrator, Noncombatant/Civilian",0,1,1,1
+"Alleged Perpetrator, Non-Syrian",0,1,1,1
+"Alleged Perpetrator, Unarmed",0,1,1,1
+Uniform,1,1,1,1
+"Uniform, Government military ",1,1,1,1
+"Uniform, Government security/police",1,1,1,1
+"Uniform, Third-country military",1,1,1,1
+"Uniform, Non-government militia",1,1,1,1
+"Uniform, Kurdish",1,1,1,1
+"Uniform, Unit detectable",1,1,1,1
+"Uniform, Rank detectable",1,1,1,1
+"Uniform, Unknown",1,1,1,1
+"Uniform, Plain clothed fighter",1,1,1,1
+"Uniform, Humanitarian uniform",1,1,1,1
+"Uniform, Other",1,1,1,1
+Human,1,1,1,1
+"Human, Incapacitated ",1,1,0,0
+"Human, Signs of Injury",1,1,0,0
+"Human, Signs of Injury, Wounds/Bruises",1,1,1,1
+"Human, Signs of Injury, Maimed",1,1,0,0
+"Human, Child",1,1,1,1
+"Human, Child, Armed",1,1,0,0
+"Human, Child, Participating in hostilities",1,1,0,0
+"Human, Officer/Commander(s)",1,1,1,1
+Grave,1,1,1,1
+"Grave, Burial ceremony",1,1,1,1
+"Grave, Uncovering a grave with one body",1,1,1,1
+"Grave, Uncovering a grave with multiple bodies",1,1,1,1
+Weapon,1,1,1,1
+"Weapon, Manufacturing",1,1,1,1
+"Weapon, Transporting",1,1,1,1
+"Weapon, Loading",1,1,1,1
+"Weapon, Firing",1,1,1,1
+"Weapon, Identification Marking",1,1,0,0
+"Weapon, Weapon type detectable",1,1,1,1
+"Weapon, Remnants of weapons ",1,1,1,1
+Aircraft,1,1,1,1
+"Aircraft, Airstrike with aircraft visible",1,1,1,1
+"Aircraft, Airstrike with no visible aircraft ",1,1,1,1
+"Aircraft, Ground to air shooting",1,1,1,1
+"Aircraft, Origin detectable",1,1,0,0
+Vehicle,1,1,1,1
+"Vehicle, Armored military vehicle",1,1,1,1
+"Vehicle, Unarmored military vehicle",1,1,1,1
+"Vehicle, Armored civilian vehicle",1,1,1,1
+"Vehicle, Unarmored civilian vehicle",1,1,1,1
+"Vehicle, Humanitarian",1,1,0,0
+Property/Buildings,1,1,1,1
+"Property/Buildings, Civilian structure",1,1,1,1
+"Property/Buildings, Camp",1,1,0,0
+"Property/Buildings, Religious/Cultural",1,1,1,1
+"Property/Buildings, Educational",1,1,1,1
+"Property/Buildings, Agricultural ",1,1,0,0
+"Property/Buildings, Medical",1,1,0,0
+"Property/Buildings, Humanitarian",1,1,0,0
+"Property/Buildings, Military structure",1,1,1,1
+"Property/Buildings, Unknown structure used for military purposes",1,1,0,0
+"Property/Buildings, Public Infrastructure",1,1,0,0
+"Property/Buildings, Checkpoint",1,1,1,1
+"Property/Buildings, Identifiable structure",1,1,1,1
+"Property/Buildings, Destroyed",1,1,1,1
+"Property/Buildings, Damaged",1,1,1,1
+"Property/Buildings, Looting",1,1,1,1
+Demonstration,1,1,1,1
+"Demonstration, Funeral",1,1,1,1
+"Demonstration, Violence",1,1,1,1
+"Demonstration, Arrests",1,1,1,1
+Hostilities,1,1,1,1
+"Hostilities, In urban area",1,1,1,1
+"Hostilities, Explosion",1,1,0,0
+"Hostilities, Near urban area",1,1,1,1
+"Hostilities, Unknown area",1,1,0,0
+"Hostilities, Civilians on periphery",1,1,1,1
+"Hostilities, Civilians as human shields",1,1,1,1
+"Hostilities, Indiscriminate",1,1,1,1
+"Hostilities, Wounding/Killing ",1,1,0,0
+Non-Battle Incidents,1,1,1,1
+"Non-Battle Incidents, Beating",1,1,1,1
+"Non-Battle Incidents, Killing/Wounding",1,1,0,0
+"Non-Battle Incidents, Beheading",1,1,1,1
+"Non-Battle Incidents, Destruction to Property",1,1,0,0
+"Non-Battle Incidents, Questioning ",1,1,1,1
+"Non-Battle Incidents, Other Violence ",1,1,0,0
+"Non-Battle Incidents, Threats ",1,1,0,0
+Sounds,1,1,1,1
+"Sounds, Audible aircraft(s)",1,1,0,0
+"Sounds, Audible weapon(s)",1,1,1,1
+"Sounds, Audible explosion(s)",1,1,1,1
+"Sounds, Audible chant(s)",1,1,1,1
+"Sounds, Audible scream(s)",1,1,1,1
+"Sounds, Radio Contact",1,1,1,1
+Video,1,1,1,1
+"Video, Aerial view",1,1,1,1
+"Video, Night",1,1,1,1
+"Video, Timestamp visible",1,1,1,1
+"Video, Clear weather",1,1,1,1
+"Video, Stormy weather",1,1,1,1

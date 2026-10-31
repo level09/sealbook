@@ -175,7 +175,35 @@ class WatchTest(unittest.IsolatedAsyncioTestCase):
                 {"message": {"content": orjson.dumps({"statements": items}).decode()}}
             ],
         }
-        transport = httpx.MockTransport(lambda r: httpx.Response(200, json=body))
+        # The first pass that follows extraction quotes nothing, so it writes nothing.
+        first_pass = {
+            "model": "local/model",
+            "provider": "TestZdr",
+            "choices": [
+                {
+                    "message": {
+                        "content": orjson.dumps(
+                            {
+                                "lang": "en",
+                                "content": "document",
+                                "reliability": "no_evidence",
+                                "triage_quote": "",
+                                "why": "",
+                                "title": "",
+                                "title_quote": "",
+                                "description": [],
+                                "labels": [],
+                            }
+                        ).decode()
+                    }
+                }
+            ],
+        }
+        transport = httpx.MockTransport(
+            lambda r: httpx.Response(
+                200, json=first_pass if b'"first_pass"' in r.content else body
+            )
+        )
         while await work_once(ext.async_session_factory, transport=transport):
             pass
         async with ext.async_session_factory() as s:

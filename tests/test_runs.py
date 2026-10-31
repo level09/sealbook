@@ -31,6 +31,7 @@ from sealbook.ledger.models import (
     StatementTier,
 )
 from sealbook.ledger.write import record_acquisition, verify_db
+from sealbook.monitor import data as mdata
 from sealbook.runs.worker import locate, valid_range, work_once
 from sealbook.settings import Config
 
@@ -279,6 +280,60 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             (await s.get(Run, run_id)).model_served = "vendor/other-model"
         async with self.Session() as s:
             self.assertTrue(any("modified" in p for p in await verify_db(s)))
+
+    async def test_assess_writes_the_first_pass_with_quotes(self):
+        text = (
+            "Shelling hit the market in Kafr Nabl this morning; two men were wounded."
+        )
+        answer = {
+            "lang": "en",
+            "content": "incident",
+            "reliability": "some_evidence",
+            "triage_quote": "two men were wounded",
+            "why": "The text reports wounded civilians at a market.",
+            "title": "Shelling hits market, two wounded",
+            "title_quote": "Shelling hit the market",
+            "description": [
+                {
+                    "line": "A market in Kafr Nabl was shelled.",
+                    "quote": "Shelling hit the market in Kafr Nabl",
+                },
+                {"line": "A clinic was hit.", "quote": "the clinic"},
+            ],
+            "labels": [
+                {"label": "Type, Martial, Shelling", "quote": "Shelling"},
+                {"label": "Type, Martial, Shelling", "quote": "Shelling"},
+            ],
+        }
+        run_id = await self.queue(data=text.encode(), tool="assess")
+        await work_once(
+            self.Session,
+            transport=self.transport(completion(orjson.dumps(answer).decode())),
+        )
+        run = await self.get_run(run_id)
+        self.assertEqual(run.status, "done", run.error)
+        async with self.Session() as s:
+            rows = (
+                await s.execute(
+                    select(Statement, Payload.value, StatementTier.tier)
+                    .join(Payload, Payload.commitment == Statement.commitment)
+                    .join(StatementTier, StatementTier.statement_id == Statement.id)
+                    .where(Statement.run_id == run_id)
+                )
+            ).all()
+            self.assertEqual(await verify_db(s), [])
+        props = sorted(st.prop for st, _, _ in rows)
+        # The clinic line quotes words the text lacks; the repeated label is one.
+        self.assertEqual(props, ["description", "label", "title", "triage"])
+        self.assertTrue(all(t == Tier.UNCONFIRMED for _, _, t in rows))
+        for st, value, _ in rows:
+            self.assertEqual(text[st.span["start"] : st.span["end"]], value["text"])
+        triage = next(v for st, v, _ in rows if st.prop == Prop.TRIAGE)
+        self.assertEqual(
+            mdata.display(triage, Prop.TRIAGE), "Incident, some evidence, high priority"
+        )
+        events = await self.events(run_id)
+        self.assertEqual(sum(e.drop_reason == "quote_not_in_text" for e in events), 1)
 
     async def test_a_reported_event_keeps_only_place_words_the_text_has(self):
         text = "Warplanes struck the market in Kafr Nabl on 2016-05-17.\n"

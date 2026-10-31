@@ -571,6 +571,16 @@ async def undo(db, user, gesture: str, only: list[str] | None, author) -> list:
     ]
 
 
+REVIEWED = {
+    Prop.FINDING: "the finding",
+    Prop.RELATION: "the same-event link",
+    Prop.TRIAGE: "the triage",
+    Prop.TITLE: "the title",
+    Prop.DESCRIPTION: "a description line",
+    Prop.LABEL: "a label",
+}
+
+
 def _about(subject: str) -> uuid.UUID:
     return uuid.UUID(subject.removeprefix("statement:"))
 
@@ -594,21 +604,13 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
         ],
     )
 
-    reviewed = [
-        uuid.UUID(s.subject.removeprefix("statement:"))
-        for s in statements
-        if s.prop == Prop.REVIEW
-    ]
-    links = (
-        set(
-            await db.scalars(
-                select(Statement.id).where(
-                    Statement.id.in_(reviewed), Statement.prop == Prop.RELATION
-                )
+    reviewed = [_about(s.subject) for s in statements if s.prop == Prop.REVIEW]
+    props = dict(
+        (
+            await db.execute(
+                select(Statement.id, Statement.prop).where(Statement.id.in_(reviewed))
             )
-        )
-        if reviewed
-        else set()
+        ).all()
     )
 
     def short(ref: str) -> str:
@@ -636,9 +638,7 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
             return f"claim {v['statement'][:8]}"
         if s.prop == Prop.REVIEW:
             why_ = f": {v['reason']}" if v.get("reason") else ""
-            what = (
-                "the same-event link" if _about(s.subject) in links else "the finding"
-            )
+            what = REVIEWED.get(props.get(_about(s.subject)), "the claim")
             return f"{v['verdict']} {what}{why_}"
         return f"undo {short(s.subject)}"
 

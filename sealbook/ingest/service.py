@@ -329,7 +329,11 @@ def _tool(mime: str) -> str | None:
     return None
 
 
-READS = {"ocr": "reading text in images", "extract": "reading claims from text"}
+READS = {
+    "ocr": "reading text in images",
+    "extract": "reading claims from text",
+    "assess": "the first pass of the analyst's method",
+}
 
 
 def _model_setting(route: str) -> str:

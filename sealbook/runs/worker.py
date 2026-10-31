@@ -32,6 +32,7 @@ from sealbook.agents.standing import standing
 from sealbook.collaboration import intake
 from sealbook.discovery import findings, indexing
 from sealbook.discovery import service as discovery
+from sealbook.ingest.service import queue_read
 from sealbook.ledger import chain, queue, write
 from sealbook.ledger.contracts import (
     EXTRACTED_PROPS,
@@ -46,6 +47,7 @@ from sealbook.ledger.contracts import (
 from sealbook.ledger.gate import resolve
 from sealbook.ledger.models import Acquisition, Blob, Run, RunEvent
 from sealbook.maps.geotag import geotag
+from sealbook.method import assess as method
 from sealbook.research.capture import capture
 from sealbook.runs import routes
 from sealbook.settings import Config
@@ -394,6 +396,46 @@ async def extract(c: Ctx) -> str | None:
         c.s.add(
             matcher.match_run(agent, c.run.inputs["acquisition"], blob.sha256, names)
         )
+    if c.acq:
+        await queue_read(c.s, c.acq, "assess", blob.sha256)
+    return c.run.raw_output_ref
+
+
+async def assess(c: Ctx) -> str | None:
+    """The first pass of the analyst's method on the text extraction read."""
+    blob = await c.s.get(Blob, c.run.inputs["blobs"][0])
+    text = blobs.read(blob, Config.BLOB_DIR).decode("utf-8")
+    await c.emit("input_read", chars=len(text))
+    c.run.prompt_hash = chain.sha256(chain.canon([method.SYSTEM, method.SCHEMA]))
+    served = await c.call(
+        {
+            "messages": [
+                {"role": "system", "content": method.SYSTEM},
+                {"role": "user", "content": text},
+            ],
+            "response_format": {"type": "json_schema", "json_schema": method.SCHEMA},
+            "temperature": 0,
+            **({"reasoning_effort": "none"} if c.run.route == "local" else {}),
+        }
+    )
+    parts, dropped = method.items(orjson.loads(routes.content(served)), text)
+    for _ in range(dropped):
+        await c.emit("dropped", drop_reason="quote_not_in_text")
+    for prop, value, span in parts:
+        await write.append(
+            c.s,
+            StatementIn(
+                subject=f"blob:{blob.sha256}",
+                prop=prop,
+                value=value,
+                author_id=c.run.principal_id,
+                run_id=c.run.id,
+                span_blob=blob.sha256,
+                span=span,
+            ),
+            sign=c.sign,
+        )
+    await c.emit("statements_written", written=len(parts), dropped=dropped)
     return c.run.raw_output_ref
 
 
@@ -479,6 +521,7 @@ async def match(c: Ctx) -> str | None:
 
 TOOLS: dict[str, Callable[[Ctx], Awaitable[str | None]]] = {
     "extract": extract,
+    "assess": assess,
     "ocr": ocr,
     "match": match,
     "transcribe": speech.transcribe,

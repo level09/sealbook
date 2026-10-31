@@ -33,3 +33,7 @@ No live model quality or production readiness is implied by local test results.
 Sealbook is free software under the GNU Affero General Public License, version 3
 or later ([LICENSE](LICENSE)). Anyone who runs a modified version as a network
 service must offer its users the modified source.
+
+The label list in `sealbook/method/labels.csv` and the triage terms come from
+[Bayanat](https://github.com/sjacorg/bayanat) (AGPL-3.0) and its published analysis
+methodology.

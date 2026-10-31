@@ -12,6 +12,8 @@ from unittest import mock
 import stk
 import stk.extensions as ext
 from alembic import command
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from quart_security import hash_password
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
@@ -22,9 +24,6 @@ from stk.user.models import Role, User
 from sealbook import blobs
 from sealbook.app import create_app
 from sealbook.ledger.contracts import Prop, StatementIn
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
-
 from sealbook.ledger.models import Payload, Principal, Run, Statement, StatementTier
 from sealbook.ledger.write import append, record_acquisition, verify_db
 from sealbook.places import normalise
@@ -121,6 +120,8 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
 
             def sign(h):
                 return {"kind": "ed25519", "sig": key.sign(h.encode()).hex()}
+
+            self.run_sign, self.agent, self.run = sign, agent.id, run.id
 
             self.shas, self.reports = [], []
             for text, posted, sensitivity in POSTS:
@@ -334,3 +335,44 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
                     .where(Statement.prop == Prop.INCIDENT)
                 )
             ).all()
+
+    async def test_first_pass_accepts_in_one_gesture(self):
+        sha, text = self.shas[0], POSTS[0][0]
+        async with ext.async_session_factory() as s, s.begin():
+            for prop, value, quote in (
+                (
+                    Prop.TRIAGE,
+                    {"content": "incident", "reliability": "some_evidence", "why": "w"},
+                    "Shelling hit the market",
+                ),
+                (Prop.LABEL, {"label": "Type, Martial, Shelling"}, "Shelling"),
+            ):
+                start = text.index(quote)
+                await append(
+                    s,
+                    StatementIn(
+                        subject=f"blob:{sha}",
+                        prop=prop,
+                        value=value | {"text": quote, "lang": "en"},
+                        author_id=self.agent,
+                        run_id=self.run,
+                        span_blob=sha,
+                        span={"start": start, "end": start + len(quote)},
+                    ),
+                    sign=self.run_sign,
+                )
+        client = await self.client()
+        staged, out = await self.sign(
+            client, "/api/review/firstpass/options", {"sha": sha}
+        )
+        assert [r["summary"] for r in staged["rows"]] == [
+            "accept the triage",
+            "accept a label",
+        ]
+        assert len(out["statements"]) == 2
+        r = await client.post(
+            "/api/review/firstpass/options",
+            json={"item": {"sha": sha}},
+            headers=client.csrf,
+        )
+        assert r.status_code == 404

@@ -19,7 +19,7 @@ from sealbook.ledger import attest, offline_sigs, write
 from sealbook.ledger.contracts import Event, Prop, Refused, StatementIn
 from sealbook.ledger.models import RunEvent, Statement, StatementTier
 from sealbook.monitor import data
-from sealbook.review import events, findings, queue
+from sealbook.review import events, findings, firstpass, queue
 
 review = Blueprint("review", __name__)
 
@@ -527,6 +527,14 @@ async def group_reject():
         lambda db, who: events.reject(
             db, current_user, item.get("group"), item.get("reason", ""), who
         )
+    )
+
+
+@review.post("/api/review/firstpass/options")
+async def first_pass_accept():
+    item = await _item()
+    return await _planned(
+        lambda db, who: firstpass.plan(db, current_user, item.get("sha"), who)
     )
 
 

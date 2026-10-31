@@ -14,10 +14,16 @@ from sqlalchemy import Text, cast, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
-from sealbook import blobs
+from sealbook import blobs, method
 from sealbook.cases.models import Case
 from sealbook.ledger.blobmeta import span_check
-from sealbook.ledger.contracts import EXTRACTED_PROPS, PRIVATE_PROPS, Prop, Tier
+from sealbook.ledger.contracts import (
+    ASSESSED_PROPS,
+    EXTRACTED_PROPS,
+    PRIVATE_PROPS,
+    Prop,
+    Tier,
+)
 from sealbook.ledger.models import (
     Acquisition,
     Blob,
@@ -105,6 +111,8 @@ def display(value, prop: str | None = None) -> str | None:
         return None
     if not isinstance(value, dict):
         return str(value)
+    if prop in ASSESSED_PROPS:
+        return method.words(prop, value)
     for key in ("text", "date", "result", "hex", "verdict", "action"):
         if key in value:
             return str(value[key])
@@ -162,6 +170,7 @@ def subject_label(subject: str, files: dict) -> str:
 
 TOOL_WORDS = {
     "extract": "AI extraction",
+    "assess": "AI first pass",
     "extract_sheet": "AI sheet extraction",
     "transcribe": "AI transcription",
     "embed": "AI embedding",
