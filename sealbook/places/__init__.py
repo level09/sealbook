@@ -37,6 +37,7 @@ def init_app(app):
     app.navigation.append(
         {
             "title": "Places",
+            "group": "case",
             "icon": "ti ti-map-pin",
             "hue": "is-place",
             "to": "/places",

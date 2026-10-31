@@ -5,6 +5,7 @@ def init_app(app):
     app.navigation.append(
         {
             "title": "Stories",
+            "group": "case",
             "icon": "ti ti-timeline",
             "hue": "is-story",
             "to": "/stories",

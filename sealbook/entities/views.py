@@ -133,6 +133,19 @@ async def incident_page(incident_id):
     )
 
 
+@bp_entities.get("/incidents")
+async def incident_index():
+    return await render_template("incidents/index.html")
+
+
+@bp_entities.get("/api/incidents")
+async def incident_index_data():
+    rows = await data.incident_list(
+        g.db_session, request.args.get("investigation") or None
+    )
+    return _json({"items": rows})
+
+
 @bp_entities.get("/api/incidents/<uuid:incident_id>")
 async def incident_view(incident_id: uuid.UUID):
     db = g.db_session

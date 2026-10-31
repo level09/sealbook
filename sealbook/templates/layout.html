@@ -90,13 +90,22 @@
 
     {% if current_user.is_authenticated %}
     <v-navigation-drawer v-if="!isMobile" permanent width="188" class="sb-rail">
+        <div class="px-2 pt-2"><v-btn block color="primary" variant="flat" prepend-icon="ti ti-upload" href="/ingest/">Add evidence</v-btn></div>
+        <!-- Work first, then the case's own pages; agents, following, export and help sit at the foot. -->
         <v-list nav density="compact" aria-label="Sections">
-            <v-list-item v-for="n in railItems" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null">
-                <template #append v-if="n.count"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
-            </v-list-item>
+            <template v-for="(n, i) in mainRail" :key="n.title">
+                <v-list-subheader v-if="n.group === 'case' && mainRail[i - 1]?.group !== 'case'" class="sb-sub">The case</v-list-subheader>
+                <v-list-item :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null">
+                    <template #append v-if="n.count"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
+                </v-list-item>
+            </template>
         </v-list>
-        <div class="px-2"><v-btn block variant="outlined" prepend-icon="ti ti-upload" href="/ingest/">Add evidence</v-btn></div>
-        <template #append><div class="pa-3 text-caption text-medium-emphasis">${ caseLabel }</div></template>
+        <template #append>
+            <v-list nav density="compact" class="sb-foot" aria-label="More">
+                <v-list-item v-for="n in railItems.filter(x => x.group === 'more')" :key="n.title" density="compact" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null"></v-list-item>
+            </v-list>
+            <div class="px-3 pb-3 text-caption text-medium-emphasis">${ caseLabel }</div>
+        </template>
     </v-navigation-drawer>
     <v-bottom-navigation v-else grow density="compact" aria-label="Sections">
         <v-btn v-for="n in railItems.slice(0, 4)" :key="n.title" :href="n.to" :class="n.hue && ['sb-nav-icon', n.hue]" :active="n.current"><v-icon :icon="n.icon"></v-icon><span>${ n.title }</span></v-btn>
@@ -244,6 +253,7 @@
                     count: this.navCounts[item.badge] || null,
                 }));
             },
+            mainRail() { return this.railItems.filter(x => x.group !== 'more'); },
             caseOptions() {
                 return [...this.caseList.map(c => ({title: c, value: c})), {title: 'All investigations', value: 'all'}];
             },

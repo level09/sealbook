@@ -7,6 +7,7 @@ def init_app(app):
     app.navigation.append(
         {
             "title": "People",
+            "group": "case",
             "icon": "ti ti-users",
             "hue": "is-person",
             "to": "/people",

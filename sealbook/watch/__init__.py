@@ -3,5 +3,11 @@ def init_app(app):
 
     app.register_blueprint(bp_watch)
     app.navigation.append(
-        {"title": "Watching", "icon": "ti ti-eye", "to": "/watch", "match": "/watch"}
+        {
+            "title": "Watching",
+            "group": "more",
+            "icon": "ti ti-eye",
+            "to": "/watch",
+            "match": "/watch",
+        }
     )

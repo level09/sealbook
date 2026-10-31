@@ -5,6 +5,7 @@ def init_app(app):
     app.navigation.append(
         {
             "title": "Sources",
+            "group": "case",
             "icon": "ti ti-files",
             "hue": "is-source",
             "to": "/sources",

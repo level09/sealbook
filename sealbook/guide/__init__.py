@@ -3,5 +3,11 @@ def init_app(app):
 
     app.register_blueprint(bp_guide)
     app.navigation.append(
-        {"title": "Guide", "icon": "ti ti-book", "to": "/guide", "match": "/guide"}
+        {
+            "title": "Guide",
+            "group": "more",
+            "icon": "ti ti-book",
+            "to": "/guide",
+            "match": "/guide",
+        }
     )

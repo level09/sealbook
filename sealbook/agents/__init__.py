@@ -7,6 +7,7 @@ def init_app(app):
     app.navigation.append(
         {
             "title": "Agents",
+            "group": "more",
             "icon": "ti ti-robot-face",
             "hue": "is-agent",
             "to": "/agents/",

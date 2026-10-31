@@ -112,7 +112,7 @@ a[href^="/people/"] { --r: var(--person); --r-line: var(--person-line); }
 a[href^="/places/"] { --r: var(--place); --r-line: var(--place-line); }
 a[href^="/evidence/"] { --r: var(--source); --r-line: var(--source-line); }
 a[href^="/incidents/"] { --r: var(--incident); --r-line: var(--incident-line); }
-a:is([href^="/people/"], [href^="/places/"], [href^="/evidence/"], [href^="/incidents/"]):not(.v-btn, .v-list-item, .v-tab, .v-chip, .en-rel, .sr-hit, .mv-thumb, .ev-thumb, .td-row),
+a:is([href^="/people/"], [href^="/places/"], [href^="/evidence/"], [href^="/incidents/"]):not(.v-btn, .v-list-item, .v-tab, .v-chip, .en-rel, .sr-hit, .mv-thumb, .ev-thumb, .td-row, .in-row),
 .r-link { color: var(--r); text-decoration: underline; text-decoration-color: var(--r-line); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 /* Rail: each section's icon takes the hue of what the page is about; labels stay ink. */
 .sb-nav-icon .v-icon, .sb-nav-icon.v-icon { color: var(--r) !important; opacity: 1 !important; }
@@ -152,6 +152,9 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .sb-rail.v-navigation-drawer { border-right: 1px solid var(--line) !important; }
 .sb-rail .v-list-item--active { font-weight: 600; }
 .sb-rail .v-list-item-title { white-space: normal; }
+.sb-rail .sb-sub { min-height: 28px; font-size: 11.5px; color: var(--ink-3); }
+.sb-rail .sb-foot { border-top: 1px solid var(--line); padding-top: 4px; }
+.sb-rail .sb-foot .v-list-item { min-height: 32px; }
 
 /* bell */
 .sb-bell .v-list-item.unread .v-list-item-title { font-weight: 650; }

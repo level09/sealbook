@@ -5,6 +5,7 @@ def init_app(app):
     app.navigation.append(
         {
             "title": "Case map",
+            "group": "case",
             "icon": "ti ti-map-2",
             "hue": "is-place",
             "to": "/case-map",

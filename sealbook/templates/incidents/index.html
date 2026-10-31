@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.in-page { max-width: 1100px; }
+.in-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.in-head h1 { font-size: 18px; font-weight: 650; margin: 0; }
+.in-head p { margin: 0; color: var(--ink-3); }
+.in-list { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.in-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) minmax(0, 220px) auto; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+.in-row:first-child { border-top: 0; }
+.in-row:hover, .in-row:focus-visible { background: var(--wash); outline: none; box-shadow: inset 2px 0 0 var(--ink); }
+.in-row .t { font-weight: 600; }
+.in-row .s { font-size: 12.5px; color: var(--ink-3); }
+.in-cat { font-size: 12px; color: var(--ink-2); }
+@media (max-width: 700px) { .in-row { grid-template-columns: 28px minmax(0, 1fr); } .in-row .in-cat, .in-row .in-n { grid-column: 2; } }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="in-page py-4">
+  <div class="in-head"><h1>Incidents</h1><p v-if="items">${ plural(items.length, 'accepted incident') } in ${ caseSel || 'all investigations' }</p></div>
+  <v-alert v-if="error" type="error" density="compact" class="mb-3">${ error }</v-alert>
+  <div v-if="items && items.length" class="in-list" role="list">
+    <a v-for="i in items" :key="i.id" class="in-row" role="listitem" :href="'/incidents/' + i.id">
+      <i class="ti ti-alert-triangle r-tile is-incident" aria-hidden="true"></i>
+      <span><span class="t d-block"><bdi dir="auto">${ i.title }</bdi></span>
+        <span class="s">${ i.window ? span(i.window) : 'no date accepted' }<template v-if="i.places.length">, <bdi dir="auto">${ i.places.map(p => p.en || p.ar).join(', ') }</bdi></template></span></span>
+      <span class="in-cat">${ i.category || 'violation not categorised' }</span>
+      <span class="s in-n">${ plural(i.people, 'person', 'people') }, ${ plural(i.sources, 'source') }</span>
+    </a>
+  </div>
+  <v-empty-state v-else-if="items" icon="ti ti-alert-triangle" title="No incidents yet">
+    <template #text>An incident is created when you accept posts that report one event, or a candidate incident, from To do.</template>
+    <template #actions><v-btn href="/todo" prepend-icon="ti ti-checklist" variant="outlined">Open To do</v-btn></template>
+  </v-empty-state>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="module">
+const fmt = d => new Date(d + 'T00:00:00Z').toLocaleDateString('en', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'});
+function plural(n, one, many) { return `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`; }
+window.app = Vue.createApp({
+  mixins: [layoutMixin], delimiters: config.delimiters,
+  data: () => ({items: null, error: ''}),
+  methods: {
+    plural,
+    span(w) { return w[0] === w[1] ? fmt(w[0]) : `${fmt(w[0])} to ${fmt(w[1])}`; },
+    useCase() { this.load(); },
+    async load() {
+      try { this.items = (await axios.get('/api/incidents', {params: {investigation: this.caseSel || undefined}})).data.items; }
+      catch (err) { this.error = err.response?.data?.description || err.message; }
+    },
+  },
+  mounted() { this.load(); },
+});
+registerStkComponents(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}
