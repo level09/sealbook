@@ -8,12 +8,3 @@ def init_app(app):
     app.register_blueprint(bp)
     app.cli.add_command(discover)
     app.cli.add_command(enrich)
-    app.navigation.append(
-        {
-            "title": "Discover",
-            "icon": "ti ti-robot",
-            "hue": "is-agent",
-            "to": "/discover",
-            "match": "/discover",
-        }
-    )

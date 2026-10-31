@@ -15,7 +15,7 @@ from stk.user.models import User
 from sealbook.collaboration.models import Assignment
 from sealbook.discovery import evidence
 from sealbook.discovery.models import FindingKey, Segment
-from sealbook.ledger.contracts import PRIVATE_PROPS, Prop, Tier
+from sealbook.ledger.contracts import ASSESSED_PROPS, PRIVATE_PROPS, Prop, Tier
 from sealbook.ledger.models import (
     Blob,
     Payload,
@@ -159,12 +159,19 @@ async def ids(db, user, box: str, investigation: str | None) -> list[uuid.UUID]:
     pending = StatementTier.tier.in_(PENDING)
     if box == "open":
         used = data._used()
+        # A first-pass line is decided with its item's pass, a same-event link with
+        # its group in Discover; neither is listed twice.
         q = (
             select(Statement.id)
             .join(StatementTier, StatementTier.statement_id == Statement.id)
+            .join(Payload, Payload.commitment == Statement.commitment)
             .where(
                 StatementTier.tier == Tier.UNCONFIRMED,
-                Statement.prop.not_in(HIDDEN | {Prop.FINDING}),
+                Statement.prop.not_in(HIDDEN | ASSESSED_PROPS | {Prop.FINDING}),
+                ~(
+                    (Statement.prop == Prop.RELATION)
+                    & (Payload.value["kind"].astext == "same_event")
+                ),
                 case,
             )
             .order_by(used.is_(None), Statement.recorded_at)

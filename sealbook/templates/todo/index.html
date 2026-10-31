@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.td-page { max-width: 1100px; }
+.td-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.td-head h1 { font-size: 18px; font-weight: 650; margin: 0; }
+.td-head p { margin: 0; color: var(--ink-3); }
+.td-sec { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+.td-sec > header { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-bottom: 1px solid var(--line); }
+.td-sec > header h2 { font-size: 13.5px; font-weight: 650; margin: 0; }
+.td-sec > header .n { color: var(--ink-3); font-size: 12.5px; }
+.td-sec > header .why { margin-inline-start: auto; color: var(--ink-3); font-size: 12.5px; }
+.td-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 14px; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+.td-row:first-of-type { border-top: 0; }
+.td-row:hover, .td-row:focus-visible { background: var(--wash); outline: none; box-shadow: inset 2px 0 0 var(--ink); }
+.td-row .t { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-row .s { font-size: 12.5px; color: var(--ink-3); }
+.td-pill { font-size: 11.5px; font-weight: 700; padding: 0 7px; border-radius: 4px; background: var(--wash); color: var(--ink-2); white-space: nowrap; }
+.td-pill.hi { background: var(--incident-wash); color: var(--incident); }
+.td-more { display: block; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-3); }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="td-page py-4">
+  <div class="td-head">
+    <h1>To do</h1>
+    <p v-if="d">${ total ? plural(total, 'thing') + ' waiting on you in ' + (caseSel || 'all investigations') + ', biggest first' : 'Nothing is waiting on you in ' + (caseSel || 'all investigations') }</p>
+    <p v-else>Loading</p>
+  </div>
+  <v-alert v-if="error" type="error" density="compact" class="mb-3">${ error }</v-alert>
+  <template v-if="d">
+    <section v-if="d.asked.length" class="td-sec" aria-labelledby="td-asked">
+      <header><h2 id="td-asked">Asked of you</h2><span class="n">${ d.asked.length }</span><span class="why">a colleague is waiting for your decision</span></header>
+      <a v-for="r in d.asked" :key="r.request" class="td-row" :href="'/review?request=' + r.request"><i class="ti ti-message-question r-tile state-new" aria-hidden="true"></i>
+        <span><span class="t d-block"><bdi dir="auto">${ r.reason }</bdi></span><span class="s">from ${ r.from }, ${ ago(r.at) }</span></span><span class="td-pill">review</span></a>
+    </section>
+
+    <section v-if="d.triage.length" class="td-sec" aria-labelledby="td-triage">
+      <header><h2 id="td-triage">Items read for you</h2><span class="n">${ d.triage.length }</span><span class="why">check the first pass and sign it</span></header>
+      <a v-for="r in d.triage.slice(0, more.triage ? 999 : 8)" :key="r.sha" class="td-row" :href="'/evidence/' + r.sha"><i class="ti ti-file-text r-tile is-source" aria-hidden="true"></i>
+        <span><span class="t d-block"><bdi dir="auto">${ r.title || 'Untitled item' }</bdi></span><span class="s">${ r.triage.split(', ').slice(0, -1).join(', ') }</span></span><span class="td-pill" :class="{hi: r.priority === 'high'}">${ r.priority } priority</span></a>
+      <a v-if="d.triage.length > 8 && !more.triage" href="#" class="td-more" @click.prevent="more.triage = true">Show ${ d.triage.length - 8 } more</a>
+    </section>
+
+    <section v-if="d.groups.length" class="td-sec" aria-labelledby="td-groups">
+      <header><h2 id="td-groups">Posts that report one event</h2><span class="n">${ d.groups.length }</span><span class="why">one decision creates the incident</span></header>
+      <a v-for="g in d.groups.slice(0, more.groups ? 999 : 8)" :key="g.id" class="td-row" :href="'/discover?f=' + g.id"><i class="ti ti-stack-2 r-tile is-incident" aria-hidden="true"></i>
+        <span><span class="t d-block"><template v-for="(part, k) in groupTitle(g)" :key="k">${ k ? ', ' : '' }<bdi dir="auto">${ part }</bdi></template></span><span class="s">${ plural(g.posts, 'post') } joined by ${ plural(g.links, 'proposed link') }</span></span><span class="td-pill">${ plural(g.links, 'link') } at once</span></a>
+      <a v-if="d.groups.length > 8 && !more.groups" href="#" class="td-more" @click.prevent="more.groups = true">Show ${ d.groups.length - 8 } more</a>
+    </section>
+
+    <section v-if="d.findings.length" class="td-sec" aria-labelledby="td-findings">
+      <header><h2 id="td-findings">Patterns across the case</h2><span class="n">${ d.findings.length }</span><span class="why">people together, candidate incidents</span></header>
+      <a v-for="f in d.findings.slice(0, more.findings ? 999 : 8)" :key="f.id" class="td-row" :href="'/discover?f=' + f.id"><i class="r-tile" :class="[hue(f.kind || '').icon, hue(f.kind || '').cls]" aria-hidden="true"></i>
+        <span><span class="t d-block"><bdi dir="auto">${ f.reason }</bdi></span><span class="s">${ f.label }</span></span><span class="td-pill">${ f.band }</span></a>
+      <a v-if="d.findings.length > 8 && !more.findings" href="#" class="td-more" @click.prevent="more.findings = true">Show ${ d.findings.length - 8 } more</a>
+    </section>
+
+    <section v-if="d.claims" class="td-sec" aria-labelledby="td-claims">
+      <header><h2 id="td-claims">Single claims</h2><span class="n">${ d.claims }${ d.claims_more ? '+' : '' }</span><span class="why">names, dates and places, one at a time</span></header>
+      <a class="td-row" href="/review?box=open"><i class="ti ti-list-check r-tile tier-accepted" aria-hidden="true"></i>
+        <span><span class="t d-block">${ d.claims_more ? d.claims + ' or more claims' : plural(d.claims, 'claim') } waiting in Review</span><span class="s">accept or reject each with the source beside it</span></span><span class="td-pill">open</span></a>
+    </section>
+
+    <v-empty-state v-if="!total" icon="ti ti-circle-check" title="Nothing waiting on you">
+      <template #text>Add evidence and Sealbook reads it, then lists here what needs your decision.</template>
+      <template #actions><v-btn href="/ingest" prepend-icon="ti ti-upload" variant="outlined">Add evidence</v-btn></template>
+    </v-empty-state>
+  </template>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="module">
+const EVENT = {airstrike: 'Airstrike', shelling: 'Shelling', ground_attack: 'Ground attack', explosion: 'Explosion', arrest: 'Arrest', killing: 'Killing', raid: 'Raid'};
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const day = s => { const [y, m, d] = s.split('-'); return `${+d} ${MON[m - 1]} ${y}`; };
+function plural(n, one, many) { return `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`; }
+
+window.app = Vue.createApp({
+  mixins: [layoutMixin], delimiters: config.delimiters,
+  data: () => ({d: null, error: '', more: {triage: false, groups: false, findings: false}}),
+  computed: {
+    total() { const d = this.d; return d ? d.asked.length + d.triage.length + d.groups.length + d.findings.length + d.claims : 0; },
+  },
+  methods: {
+    plural, hue: findingHue,
+    ago(at) { const h = Math.round((Date.now() - new Date(at)) / 36e5); return h < 1 ? 'just now' : h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`; },
+    groupTitle(g) {
+      const s = g.summary, where = s.place ? (s.place.en || s.place.ar) : s.town;
+      const when = s.window && (s.window[0] === s.window[1] ? day(s.window[0]) : `${day(s.window[0])} to ${day(s.window[1])}`);
+      return [EVENT[s.kind] || 'Event', where, when].filter(Boolean);
+    },
+    useCase() { this.load(); },
+    async load() {
+      try { this.d = (await axios.get('/api/todo', {params: {investigation: this.caseSel || undefined}})).data; }
+      catch (err) { this.error = err.response?.data?.description || err.message; }
+    },
+  },
+  mounted() { this.load(); },
+});
+registerStkComponents(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

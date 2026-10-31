@@ -112,7 +112,7 @@ a[href^="/people/"] { --r: var(--person); --r-line: var(--person-line); }
 a[href^="/places/"] { --r: var(--place); --r-line: var(--place-line); }
 a[href^="/evidence/"] { --r: var(--source); --r-line: var(--source-line); }
 a[href^="/incidents/"] { --r: var(--incident); --r-line: var(--incident-line); }
-a:is([href^="/people/"], [href^="/places/"], [href^="/evidence/"], [href^="/incidents/"]):not(.v-btn, .v-list-item, .v-tab, .v-chip, .en-rel, .sr-hit, .mv-thumb, .ev-thumb),
+a:is([href^="/people/"], [href^="/places/"], [href^="/evidence/"], [href^="/incidents/"]):not(.v-btn, .v-list-item, .v-tab, .v-chip, .en-rel, .sr-hit, .mv-thumb, .ev-thumb, .td-row),
 .r-link { color: var(--r); text-decoration: underline; text-decoration-color: var(--r-line); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 /* Rail: each section's icon takes the hue of what the page is about; labels stay ink. */
 .sb-nav-icon .v-icon, .sb-nav-icon.v-icon { color: var(--r) !important; opacity: 1 !important; }

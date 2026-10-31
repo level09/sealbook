@@ -412,3 +412,16 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
             headers=client.csrf,
         )
         assert r.status_code == 403
+
+    async def test_todo_lists_each_decision_once(self):
+        await self.first_pass(0)
+        client = await self.client()
+        d = await (await client.get(f"/api/todo?investigation={CASE}")).get_json()
+        assert [g["posts"] for g in d["groups"]] == [3]
+        assert [t["priority"] for t in d["triage"]] == ["high"]
+        # Same-event links and first-pass lines are decided with their group and
+        # item, so Review's open list leaves them out.
+        r = await client.get(f"/api/review/queue?box=open&investigation={CASE}")
+        props = {i["prop"] for i in (await r.get_json())["items"]}
+        assert not props & {"relation", "triage", "label"}, props
+        assert (await client.get("/todo")).status_code == 200

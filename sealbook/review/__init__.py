@@ -4,11 +4,11 @@ def init_app(app):
     app.register_blueprint(review)
     app.navigation.append(
         {
-            "title": "Review",
+            "title": "To do",
             "icon": "ti ti-checklist",
             "hue": "tier-accepted",
-            "to": "/review",
-            "match": "/review",
+            "to": "/todo",
+            "match": "/todo",
             "badge": "review",
         }
     )

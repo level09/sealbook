@@ -37,7 +37,7 @@
 <div id="app" v-cloak>
 <v-app>
     <v-app-bar density="compact" flat class="sb-top">
-        <a class="brand" href="/desk"><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></a>
+        <a class="brand" href="/todo"><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></a>
         {% if current_user.is_authenticated %}
         <v-autocomplete class="case-sw" :model-value="caseSel ?? 'all'" :items="caseOptions" density="compact" variant="outlined" hide-details auto-select-first prepend-inner-icon="ti ti-folder" :menu-props="{contentClass: 'case-sw-menu'}" aria-label="Switch investigation" @update:model-value="switchCase"></v-autocomplete>
         <form class="qbox" action="/search" role="search">

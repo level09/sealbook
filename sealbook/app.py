@@ -37,10 +37,10 @@ from sealbook.settings import Config
 extensions = [
     ledger,
     shell,
+    review,
     desk,
     collaboration,
     discovery,
-    review,
     sources,
     people,
     watch,

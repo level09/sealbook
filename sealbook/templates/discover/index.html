@@ -88,7 +88,7 @@
           <v-list-subheader v-if="grp.items.length" class="font-weight-bold">${ grp.title }</v-list-subheader>
           <v-list-item v-for="f in grp.items" :key="f.id" class="dv-row" :class="{ sel: cur && cur.id === f.id }" tabindex="-1" :data-key="f.id" @click="pick(f.id)">
             <template #prepend><i v-if="f.kind === 'event_group'" class="ti ti-stack-2 r-tile is-incident me-3 ms-2" aria-hidden="true"></i><v-checkbox-btn v-else class="me-1" density="compact" :model-value="picked.includes(f.id)" :aria-label="'Select ' + f.reason" @click.stop @update:model-value="togglePick(f.id)"></v-checkbox-btn></template>
-            <v-list-item-title class="text-body-2 font-weight-medium"><bdi dir="auto">${ f.reason }</bdi></v-list-item-title>
+            <v-list-item-title class="text-body-2 font-weight-medium"><template v-if="f.parts"><template v-for="(part, k) in f.parts" :key="k">${ k ? ', ' : '' }<bdi dir="auto">${ part }</bdi></template></template><bdi v-else dir="auto">${ f.reason }</bdi></v-list-item-title>
             <v-list-item-subtitle v-if="f.kind === 'event_group'"><span class="r-ink" :class="hue(f.kind).cls">${ f.label }</span>, ${ plural(f.count.posts, 'post') } joined by ${ plural(f.count.links, 'proposed link') }</v-list-item-subtitle>
             <v-list-item-subtitle v-else><span class="r-ink" :class="hue(f.kind).cls"><v-icon :icon="hue(f.kind).icon" size="13"></v-icon> ${ f.label }</span>, ${ plural(f.people.length, 'person', 'people') } from ${ plural(f.members.length, 'claim') }<span v-if="f.also.length">, also a ${ f.also[0].label.toLowerCase() }</span> <span class="dv-band ms-1" :class="f.band" aria-hidden="true"><i></i><i></i><i></i></span> ${ f.band }</v-list-item-subtitle>
           </v-list-item>
@@ -103,7 +103,7 @@
       <header><v-chip :color="hue(cur.kind).color" variant="tonal" :prepend-icon="hue(cur.kind).icon" size="small">Same event</v-chip>
         <v-chip color="agent" variant="tonal" size="small" prepend-icon="ti ti-robot">linked by an agent</v-chip>
         <span class="act dv-muted text-caption" v-if="group">${ plural(keptPosts.length, 'post') } kept of ${ group.posts.length }</span></header>
-      <div class="px-3 pt-3"><h2 id="h-g" style="font-size:17px"><bdi dir="auto">${ cur.reason }</bdi></h2>
+      <div class="px-3 pt-3"><h2 id="h-g" style="font-size:17px"><template v-for="(part, k) in cur.parts" :key="k">${ k ? ', ' : '' }<bdi dir="auto">${ part }</bdi></template></h2>
         <p class="dv-muted mt-1 mb-0" v-if="group">The agent proposed that these posts report one event: ${ plural(group.links.length, 'link') } between ${ plural(group.posts.length, 'post') }<span v-if="towns.length">, naming ${ towns.slice(0, 4).join(', ') }${ towns.length > 4 ? ' and ' + plural(towns.length - 4, 'other town') : '' }</span>. Click a post that is about something else to drop it; dropped posts stay in the queue.</p></div>
       <div class="dv-posts" v-if="group" role="group" aria-label="Posts in this group">
         <div v-for="(p, i) in group.posts" :key="p.sha" class="dv-post" :class="{out: dropped.includes(p.sha)}" role="checkbox" tabindex="0" :aria-checked="!dropped.includes(p.sha)" :aria-label="'Post ' + (i + 1) + ', ' + p.title" :id="i === 0 ? 'dv-first' : null" @click="togglePost(p.sha)" @keydown.space.prevent="togglePost(p.sha)" @keydown.enter.prevent="togglePost(p.sha)">
@@ -284,7 +284,7 @@ window.app = Vue.createApp({
     // A group's queue line: what happened, where and when, from its reports.
     groupReason(g) {
       const s = g.summary, where = s.place ? (s.place.en || s.place.ar) : s.town;
-      return [EVENT[s.kind] || 'Event', where, s.window && this.span(s.window)].filter(Boolean).join(', ');
+      return [EVENT[s.kind] || 'Event', where, s.window && this.span(s.window)].filter(Boolean);
     },
     span(w) { return w[0] === w[1] ? fmt(w[0]) : `${fmt(w[0])} to ${fmt(w[1])}`; },
     where(s) { return !s ? 'whole item' : 'start' in s ? `characters ${s.start} to ${s.end}` : s.page ? `region on page ${s.page}` : s.ms ? `${(s.ms[0] / 1000).toFixed(1)} s` : 'whole item'; },
@@ -308,7 +308,7 @@ window.app = Vue.createApp({
       try {
         const params = {investigation: this.caseSel || undefined};
         const [found, groups] = await Promise.all([axios.get('/api/discover/findings', {params}), axios.get('/api/discover/groups', {params})]);
-        this.items = [...found.data.items, ...groups.data.items.map(g => ({...g, reason: this.groupReason(g), new: false}))];
+        this.items = [...found.data.items, ...groups.data.items.map(g => ({...g, parts: this.groupReason(g), reason: this.groupReason(g).join(', '), new: false}))];
         this.loaded = true;
       } catch (err) { this.fail(err); }
     },

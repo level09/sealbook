@@ -19,7 +19,7 @@ from sealbook.ledger import attest, offline_sigs, write
 from sealbook.ledger.contracts import Event, Prop, Refused, StatementIn
 from sealbook.ledger.models import RunEvent, Statement, StatementTier
 from sealbook.monitor import data
-from sealbook.review import events, findings, firstpass, queue
+from sealbook.review import events, findings, firstpass, queue, todo
 
 review = Blueprint("review", __name__)
 
@@ -451,6 +451,19 @@ async def _item() -> dict:
     if not isinstance(item, dict):
         abort(400, description="send {item: {...}}")
     return item
+
+
+@review.get("/todo")
+async def todo_page():
+    return await render_template("todo/index.html")
+
+
+@review.get("/api/todo")
+async def todo_list():
+    found = await todo.todo(
+        g.db_session, current_user, request.args.get("investigation") or None
+    )
+    return _private(found)
 
 
 @review.get("/discover")
