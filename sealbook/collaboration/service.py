@@ -37,6 +37,23 @@ async def requests(db, proposal_id):
     ).all()
 
 
+async def signed_off(db, statement_id):
+    """An accepted review of the statement stands: for an accepted incident, the
+    peer review asked on it is answered."""
+    return bool(
+        await db.scalar(
+            select(Statement.id)
+            .join(StatementTier, StatementTier.statement_id == Statement.id)
+            .where(
+                Statement.subject == f"statement:{statement_id}",
+                Statement.prop == Prop.REVIEW,
+                StatementTier.tier == Tier.ACCEPTED,
+            )
+            .limit(1)
+        )
+    )
+
+
 async def check_reviewer(db, statement, user):
     assigned = await requests(db, statement.id)
     if not assigned:
@@ -55,7 +72,11 @@ async def request_review(db, proposal, user, reviewer_id, reason):
         raise ValueError("choose another analyst")
     if not isinstance(reason, str) or not reason.strip() or len(reason) > 4000:
         raise ValueError("reason must contain 1 to 4000 characters")
-    if (await db.get(StatementTier, proposal.id)).tier != Tier.UNCONFIRMED:
+    tier = (await db.get(StatementTier, proposal.id)).tier
+    # An accepted incident is sent for peer review on its incident statement.
+    if tier != Tier.UNCONFIRMED and not (
+        proposal.prop == Prop.INCIDENT and tier == Tier.ACCEPTED
+    ):
         raise ValueError("only pending proposals can be assigned")
     if await db.get(Payload, proposal.commitment) is None:
         raise ValueError("an erased proposal cannot be assigned")

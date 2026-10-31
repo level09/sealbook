@@ -31,7 +31,7 @@
   <template v-if="d">
     <section v-if="d.asked.length" class="td-sec" aria-labelledby="td-asked">
       <header><h2 id="td-asked">Asked of you</h2><span class="n">${ d.asked.length }</span><span class="why">a colleague is waiting for your decision</span></header>
-      <a v-for="r in d.asked" :key="r.request" class="td-row" :href="'/review?request=' + r.request"><i class="ti ti-message-question r-tile state-new" aria-hidden="true"></i>
+      <a v-for="r in d.asked" :key="r.request" class="td-row" :href="r.incident ? '/incidents/' + r.incident : '/review?request=' + r.request"><i class="ti ti-message-question r-tile state-new" aria-hidden="true"></i>
         <span><span class="t d-block"><bdi dir="auto">${ r.reason }</bdi></span><span class="s">from ${ r.from }, ${ ago(r.at) }</span></span><span class="td-pill">review</span></a>
     </section>
 

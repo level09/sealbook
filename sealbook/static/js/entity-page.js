@@ -141,6 +141,7 @@ export function entityPage(boot, page) {
         return `${plural(this.rows.length, 'person', 'people')}, ${plural(pts.length, 'dated point')}, ${fmtSpan(lo, hi)}`;
       },
       evQuery() { return page.params ? page.params(this) : {}; },
+      commentLabel() { return page.commentLabel?.(this) || 'Comment, @name to mention'; },
       gestures() {
         // History grouped by the one passkey gesture that signed it; unsigned rows by
         // one person in one minute read as one sitting. Within a group a repeated
@@ -204,9 +205,13 @@ export function entityPage(boot, page) {
         } catch (err) { this.say(this.fail(err)); }
         finally { this.threadBusy = false; }
       },
+      // The method's review notes: +label to add, -label to remove, *note.
+      noteClass(line) { return {'+': 'en-n-add', '-': 'en-n-del', '*': 'en-n-note'}[line.trim()[0]] || ''; },
       personLabel(id) { return (this.e.relations.people || []).find(p => p.person === id)?.label || 'a person'; },
       placeLabel(ref) { const id = (ref || '').replace('place:', ''); return placeName((this.e.relations.places || []).find(p => p.id === id) || (this.e.id === id ? this.e : null)); },
       historyText(h, n = 1) {
+        const own = page.historyText?.(this, h);
+        if (own) return own;
         const v = h.display || '', many = n > 1;
         const text = {
           review: () => `${v === 'reject' ? 'Rejected' : 'Accepted'} ${many && page.reviewedMany ? page.reviewedMany(n) : page.reviewed}`,

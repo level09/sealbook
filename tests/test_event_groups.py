@@ -202,10 +202,10 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
     async def asyncTearDown(self):
         await ext.engine.dispose()
 
-    async def client(self):
+    async def client(self, email="analyst@example.com"):
         client = self.app.test_client()
         async with self.app.app_context():
-            token = create_agent_login_token("analyst@example.com", "/discover")
+            token = create_agent_login_token(email, "/discover")
         await client.get(f"/_test/login?token={token}")
         page = await (await client.get("/discover")).get_data(as_text=True)
         client.csrf = {
@@ -215,7 +215,7 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
         }
         return client
 
-    async def sign(self, client, path, item):
+    async def sign(self, client, path, item, passkey=None):
         r = await client.post(path, json={"item": item}, headers=client.csrf)
         body = await r.get_json()
         self.assertEqual(r.status_code, 200, body)
@@ -224,7 +224,7 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
             json={
                 "item": {
                     "hash": body["hash"],
-                    "credential": self.passkey.assert_(body["hash"]),
+                    "credential": (passkey or self.passkey).assert_(body["hash"]),
                 }
             },
             headers=client.csrf,
@@ -414,6 +414,66 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
             headers=client.csrf,
         )
         assert r.status_code == 403
+
+    async def test_an_incident_sent_for_peer_review_is_the_reviewers(self):
+        client = await self.client()
+        [g] = await self.queue(client)
+        _, out = await self.sign(
+            client,
+            "/api/review/groups/options",
+            {"group": g["id"], "kept": self.shas[:2], "title": "Tel Ward market"},
+        )
+        ref = next(s["subject"] for s in out["statements"] if s["prop"] == "incident")
+        url = f"/api/incidents/{ref.removeprefix('incident:')}"
+        statement = (await (await client.get(url)).get_json())["statement"]
+        peer_key = SoftPasskey()
+        async with ext.async_session_factory() as s, s.begin():
+            role = await s.scalar(select(Role).where(Role.name == "analyst"))
+            peer = User(
+                email="peer@example.com",
+                name="peer",
+                password="x",
+                active=True,
+                confirmed_at=datetime.now(),
+            )
+            peer.roles.append(role)
+            s.add(peer)
+            await s.flush()
+            s.add(peer_key.register(peer))
+        r = await client.post(
+            "/api/collaboration/requests",
+            json={
+                "item": {"statement": statement, "reviewer": peer.id, "reason": "Peer"}
+            },
+            headers=client.csrf,
+        )
+        assert r.status_code == 201, await r.get_json()
+        path, item = "/api/review/incidents/peer/options", {"incident": ref}
+        r = await client.post(path, json={"item": item}, headers=client.csrf)
+        assert r.status_code == 403
+        reviewer = await self.client("peer@example.com")
+        [asked] = (await (await reviewer.get("/api/todo")).get_json())["asked"]
+        assert asked["incident"] == ref.removeprefix("incident:")
+        r = await reviewer.post(
+            f"/api/collaboration/requests/{asked['request']}/comments",
+            json={"item": {"text": "+Type, Martial, Shelling\n*check the date"}},
+            headers=reviewer.csrf,
+        )
+        assert r.status_code < 300
+        staged, _ = await self.sign(reviewer, path, item, peer_key)
+        assert [r["summary"] for r in staged["rows"]] == [
+            "accept the incident: no review needed"
+        ]
+        assert (await (await reviewer.get("/api/todo")).get_json())["asked"] == []
+        found = await (await reviewer.get(url)).get_json()
+        assert found["peer_signed"]
+        [t] = [t for t in found["threads"] if t["about"] == statement]
+        thread = await (
+            await reviewer.get(f"/api/collaboration/requests/{t['id']}")
+        ).get_json()
+        assert thread["comments"][0]["text"].splitlines()[1] == "*check the date"
+        r = await reviewer.post(path, json={"item": item}, headers=reviewer.csrf)
+        assert r.status_code == 404
 
     async def test_todo_lists_each_decision_once(self):
         await self.first_pass(0)

@@ -13,7 +13,7 @@ from sqlalchemy.orm import aliased
 
 from sealbook import method
 from sealbook.blobs import read
-from sealbook.collaboration.service import check_reviewer
+from sealbook.collaboration.service import check_reviewer, requests, signed_off
 from sealbook.discovery import evidence
 from sealbook.discovery import findings as discovery
 from sealbook.discovery.models import FindingKey
@@ -528,6 +528,45 @@ async def violation(db, incident: str, kind: str, category: str, author):
     ]
 
 
+async def no_review_needed(db, user, incident: str, author):
+    """The colleague asked to peer review an incident signs that it needs none: a
+    review accepting its incident statement, where the request hangs."""
+    if not isinstance(incident, str) or not INCIDENT_REF.fullmatch(incident):
+        raise ValueError("incident must be incident:<uuid>")
+    st = await db.scalar(
+        select(Statement)
+        .join(StatementTier, StatementTier.statement_id == Statement.id)
+        .where(
+            Statement.subject == incident,
+            Statement.prop == Prop.INCIDENT,
+            StatementTier.tier == Tier.ACCEPTED,
+        )
+        .order_by(Statement.recorded_at)
+        .limit(1)
+    )
+    if st is None:
+        raise LookupError("no current incident with that id")
+    if not await requests(db, st.id):
+        raise LookupError("this incident was not sent for peer review")
+    await check_reviewer(db, st, user)
+    if await signed_off(db, st.id):
+        raise LookupError("this peer review is already signed")
+    gesture = str(uuid.uuid4())
+    return gesture, [
+        StatementIn(
+            subject=f"statement:{st.id}",
+            prop=Prop.REVIEW,
+            value={
+                "verdict": "accept",
+                "reason": "no review needed",
+                "at": datetime.now(UTC).isoformat(),
+                "gesture": gesture,
+            },
+            author_id=author,
+        )
+    ]
+
+
 async def reject(db, user, key: str, why_: str, author) -> tuple[str, list]:
     """One review rejecting the finding; its key then never returns."""
     if not isinstance(why_, str) or len(why_) > 4000:
@@ -600,6 +639,7 @@ REVIEWED = {
     Prop.TITLE: "the title",
     Prop.DESCRIPTION: "a description line",
     Prop.LABEL: "a label",
+    Prop.INCIDENT: "the incident",
 }
 
 
