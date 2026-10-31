@@ -5,9 +5,17 @@ from sqlalchemy import Text, and_, func, or_, select
 from sqlalchemy.orm import aliased
 
 from sealbook import method
+from sealbook.discovery.evidence import granted
 from sealbook.discovery.service import available
 from sealbook.ledger.contracts import Prop, Tier
-from sealbook.ledger.models import Payload, Principal, Statement, StatementTier
+from sealbook.ledger.models import (
+    Acquisition,
+    Blob,
+    Payload,
+    Principal,
+    Statement,
+    StatementTier,
+)
 from sealbook.monitor import filter as mfilter
 from sealbook.review import events, findings, queue
 
@@ -98,15 +106,37 @@ async def triage(db, investigation: str | None) -> list[dict]:
             .order_by(Statement.recorded_at)
         )
     ).all()
+    shas = {subject.removeprefix("blob:") for subject, _, _ in rows}
+    # The item's kind, and whether its free-text title must stay hidden: sensitive
+    # when any acquisition says so or none set it, as on the evidence page.
+    about = {
+        sha: (mime, sensitive)
+        for sha, mime, sensitive in await db.execute(
+            select(
+                Blob.sha256,
+                Blob.mime,
+                func.coalesce(
+                    func.bool_or(Acquisition.sensitivity == "sensitive"), True
+                ),
+            )
+            .outerjoin(Acquisition, Acquisition.blob_sha256 == Blob.sha256)
+            .where(Blob.sha256.in_(shas))
+            .group_by(Blob.sha256, Blob.mime)
+        )
+    }
     seen, out = set(), []
     for subject, v, t in rows:
         if subject in seen or v is None:
             continue
         seen.add(subject)
+        sha = subject.removeprefix("blob:")
+        mime, sensitive = about[sha]
         out.append(
             {
-                "sha": subject.removeprefix("blob:"),
-                "title": t["title"] if t else None,
+                "sha": sha,
+                "kind": mime.split("/")[0],
+                "title": t["title"] if t and (granted(sha) or not sensitive) else None,
+                "hidden": bool(t) and sensitive and not granted(sha),
                 "triage": method.words(Prop.TRIAGE, v),
                 "priority": method.priority(v["content"], v["reliability"]),
             }

@@ -339,7 +339,7 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
                 )
             ).all()
 
-    async def first_pass(self, i):
+    async def first_pass(self, i, title=False):
         sha, text = self.shas[i], POSTS[i][0]
         async with ext.async_session_factory() as s, s.begin():
             for prop, value, quote in (
@@ -349,6 +349,11 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
                     "Tel Ward",
                 ),
                 (Prop.LABEL, {"label": "Type, Martial, Shelling"}, "Tel Ward"),
+                *(
+                    [(Prop.TITLE, {"title": "Market shelled"}, "Tel Ward")]
+                    if title
+                    else []
+                ),
             ):
                 start = text.index(quote)
                 await append(
@@ -486,6 +491,17 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
         assert thread["comments"][0]["text"].splitlines()[1] == "*check the date"
         r = await reviewer.post(path, json={"item": item}, headers=reviewer.csrf)
         assert r.status_code == 404
+
+    async def test_todo_hides_a_sensitive_items_title(self):
+        for i in (0, 2):
+            await self.first_pass(i, title=True)
+        client = await self.client()
+        d = await (await client.get(f"/api/todo?investigation={CASE}")).get_json()
+        rows = {t["sha"]: t for t in d["triage"]}
+        ordinary, sensitive = rows[self.shas[0]], rows[self.shas[2]]
+        assert (ordinary["title"], ordinary["hidden"]) == ("Market shelled", False)
+        assert (sensitive["title"], sensitive["hidden"]) == (None, True)
+        assert ordinary["kind"] == sensitive["kind"] == "text"
 
     async def test_todo_lists_each_decision_once(self):
         await self.first_pass(0)

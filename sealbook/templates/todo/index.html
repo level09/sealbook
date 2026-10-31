@@ -37,8 +37,8 @@
 
     <section v-if="d.triage.length" class="td-sec" aria-labelledby="td-triage">
       <header><h2 id="td-triage">Items read for you</h2><span class="n">${ d.triage.length }</span><span class="why">check the first pass and sign it</span></header>
-      <a v-for="r in d.triage.slice(0, more.triage ? 999 : 8)" :key="r.sha" class="td-row" :href="'/evidence/' + r.sha"><i class="ti ti-file-text r-tile is-source" aria-hidden="true"></i>
-        <span><span class="t d-block"><bdi dir="auto">${ r.title || 'Untitled item' }</bdi></span><span class="s">${ r.triage.split(', ').slice(0, -1).join(', ') }</span></span><span class="td-pill" :class="{hi: r.priority === 'high'}">${ r.priority } priority</span></a>
+      <a v-for="r in d.triage.slice(0, more.triage ? 999 : 8)" :key="r.sha" class="td-row" :href="'/evidence/' + r.sha"><i class="ti r-tile is-source" :class="KIND_ICON[r.kind] || 'ti-file-text'" aria-hidden="true"></i>
+        <span><span class="t d-block"><bdi dir="auto">${ r.title || (r.hidden ? 'Title hidden: sensitive item' : 'Untitled item') }</bdi></span><span class="s">${ r.triage.split(', ').slice(0, -1).join(', ') }</span></span><span class="td-pill" :class="{hi: r.priority === 'high'}">${ r.priority } priority</span></a>
       <a v-if="d.triage.length > 8 && !more.triage" href="#" class="td-more" @click.prevent="more.triage = true">Show ${ d.triage.length - 8 } more</a>
     </section>
 
@@ -74,6 +74,8 @@
 const EVENT = {airstrike: 'Airstrike', shelling: 'Shelling', ground_attack: 'Ground attack', explosion: 'Explosion', arrest: 'Arrest', killing: 'Killing', raid: 'Raid'};
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const day = s => { const [y, m, d] = s.split('-'); return `${+d} ${MON[m - 1]} ${y}`; };
+// The item's kind, with the icons Sources and the thumbnails use.
+const KIND_ICON = {image: 'ti-photo', video: 'ti-video', audio: 'ti-volume', text: 'ti-file-text', application: 'ti-file'};
 function plural(n, one, many) { return `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`; }
 
 window.app = Vue.createApp({
@@ -83,7 +85,7 @@ window.app = Vue.createApp({
     total() { return this.d?.total || 0; },
   },
   methods: {
-    plural, hue: findingHue,
+    plural, hue: findingHue, KIND_ICON,
     ago(at) { const h = Math.round((Date.now() - new Date(at)) / 36e5); return h < 1 ? 'just now' : h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`; },
     groupTitle(g) {
       const s = g.summary, where = s.place ? (s.place.en || s.place.ar) : s.town;
