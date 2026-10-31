@@ -107,6 +107,7 @@ ROUTE_WORDS = {
     "local": "a model on a private server",
     "cloud-zdr": "a hosted model that keeps no data",
     "cloud": "a hosted model",
+    "vision": "Google Cloud Vision text detection",
 }
 LATE = (
     "Not read yet: it arrived before a model was set up for this work. One is set "

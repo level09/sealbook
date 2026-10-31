@@ -129,7 +129,9 @@ class Config(stk.Config):
     # MODEL_ANTHROPIC (e.g. claude-opus-5-5, with ANTHROPIC_API_KEY) is last: Anthropic
     # keeps API data for a period, so a policy row must allow it, for public sources.
     # cloud-zdr defaults to Gemma 4 31B, which read the Arabic demo register almost
-    # exactly (2026-10-25); MODEL_CLOUD_ZDR= (empty) turns it off.
+    # exactly (2026-10-25); MODEL_CLOUD_ZDR= (empty) turns it off. GOOGLE_VISION_API_KEY
+    # turns on the vision route, Google Cloud Vision text detection, which the policy
+    # prefers for OCR of ordinary sources: it reads text and never describes a picture.
     RUN_MODELS = {
         r: m
         for r, m in (
@@ -139,6 +141,12 @@ class Config(stk.Config):
                 ("cloud-zdr", "google/gemma-4-31b-it"),
                 ("cloud", ""),
                 ("anthropic", ""),
+                (
+                    "vision",
+                    "DOCUMENT_TEXT_DETECTION"
+                    if os.environ.get("GOOGLE_VISION_API_KEY")
+                    else "",
+                ),
             )
         )
         if m

@@ -143,6 +143,7 @@ policy row to `{local}` so nothing falls back to a hosted model.
 | `MODEL_CLOUD` | OpenRouter model for ordinary sources |
 | `ANTHROPIC_API_KEY` | Key for the `anthropic` route (not zero retention; see Proactive agents) |
 | `MODEL_ANTHROPIC` | Claude model for OCR and extraction on the `anthropic` route, tried last; a source uses it only when its policy row allows `anthropic`, so set that for public material only |
+| `GOOGLE_VISION_API_KEY` | Turns on the `vision` route: Google Cloud Vision document text detection, which the policy prefers for OCR of ordinary sources (Arabic and English hints). Sensitive sources never use it unless a policy row allows `vision` for them |
 
 Checked here on 2026-10-25: `google/gemma-4-31b-it` on the zero-retention route read the
 demo register scan, Arabic headers, names, mothers, places and dates, almost exactly in

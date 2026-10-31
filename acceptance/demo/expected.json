@@ -45,8 +45,8 @@
           557
         ],
         "ocr": {
-          "start": 289,
-          "end": 305
+          "start": 230,
+          "end": 246
         }
       },
       {
@@ -60,8 +60,8 @@
           565
         ],
         "ocr": {
-          "start": 322,
-          "end": 326
+          "start": 263,
+          "end": 267
         }
       },
       {
@@ -75,8 +75,8 @@
           568
         ],
         "ocr": {
-          "start": 329,
-          "end": 332
+          "start": 270,
+          "end": 273
         }
       },
       {
@@ -90,8 +90,8 @@
           562
         ],
         "ocr": {
-          "start": 315,
-          "end": 319
+          "start": 256,
+          "end": 260
         }
       },
       {
@@ -105,8 +105,8 @@
           627
         ],
         "ocr": {
-          "start": 354,
-          "end": 370
+          "start": 291,
+          "end": 307
         }
       },
       {
@@ -120,8 +120,8 @@
           635
         ],
         "ocr": {
-          "start": 386,
-          "end": 390
+          "start": 323,
+          "end": 327
         }
       },
       {
@@ -135,8 +135,8 @@
           638
         ],
         "ocr": {
-          "start": 393,
-          "end": 396
+          "start": 330,
+          "end": 333
         }
       },
       {
@@ -150,8 +150,8 @@
           633
         ],
         "ocr": {
-          "start": 380,
-          "end": 383
+          "start": 317,
+          "end": 320
         }
       },
       {
@@ -165,8 +165,8 @@
           697
         ],
         "ocr": {
-          "start": 418,
-          "end": 433
+          "start": 351,
+          "end": 366
         }
       },
       {
@@ -180,8 +180,8 @@
           705
         ],
         "ocr": {
-          "start": 446,
-          "end": 450
+          "start": 379,
+          "end": 383
         }
       },
       {
@@ -195,8 +195,8 @@
           709
         ],
         "ocr": {
-          "start": 453,
-          "end": 463
+          "start": 386,
+          "end": 396
         }
       },
       {
@@ -210,8 +210,8 @@
           700
         ],
         "ocr": {
-          "start": 423,
-          "end": 426
+          "start": 356,
+          "end": 359
         }
       },
       {
@@ -225,8 +225,8 @@
           767
         ],
         "ocr": {
-          "start": 485,
-          "end": 498
+          "start": 414,
+          "end": 427
         }
       },
       {
@@ -240,8 +240,8 @@
           775
         ],
         "ocr": {
-          "start": 511,
-          "end": 515
+          "start": 440,
+          "end": 444
         }
       },
       {
@@ -255,8 +255,8 @@
           778
         ],
         "ocr": {
-          "start": 518,
-          "end": 522
+          "start": 447,
+          "end": 451
         }
       },
       {
@@ -270,8 +270,8 @@
           770
         ],
         "ocr": {
-          "start": 489,
-          "end": 492
+          "start": 418,
+          "end": 421
         }
       }
     ],
@@ -312,8 +312,8 @@
           584
         ],
         "ocr": {
-          "start": 132,
-          "end": 147
+          "start": 96,
+          "end": 111
         }
       },
       {
@@ -327,8 +327,8 @@
           677
         ],
         "ocr": {
-          "start": 158,
-          "end": 167
+          "start": 114,
+          "end": 123
         }
       },
       {
@@ -342,15 +342,15 @@
           763
         ],
         "ocr": {
-          "start": 178,
-          "end": 186
+          "start": 126,
+          "end": 134
         }
       }
     ],
     "ocr_missed": []
   },
   "documentation_note.pdf": {
-    "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as stk.discovery.indexing.pdf_pages",
+    "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as sealbook.discovery.indexing.pdf_pages",
     "text_len": 647,
     "facts": [
       {
@@ -392,7 +392,7 @@
     ]
   },
   "released_detainee_statement.pdf": {
-    "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as stk.discovery.indexing.pdf_pages",
+    "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as sealbook.discovery.indexing.pdf_pages",
     "text_len": 833,
     "facts": [
       {
@@ -452,7 +452,7 @@
     ]
   },
   "testimony_reem.pdf": {
-    "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as stk.discovery.indexing.pdf_pages",
+    "extractor": "pypdf PdfReader(...).pages[0].extract_text(), as sealbook.discovery.indexing.pdf_pages",
     "text_len": 382,
     "facts": [
       {

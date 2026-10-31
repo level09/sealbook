@@ -1,10 +1,13 @@
 """Model routes: one OpenAI-compatible chat client, a route is a base URL plus key.
 The anthropic route speaks the native Messages API, translated both ways, because
-Anthropic's OpenAI-compatible endpoint ignores response_format. The policy table
-decides which routes a run may use; there is no fallback."""
+Anthropic's OpenAI-compatible endpoint ignores response_format. The vision route is
+Google Cloud Vision text detection, spoken the same way: a chat body with an image
+in, the detected text as the answer out. The policy table decides which routes a
+run may use; there is no fallback."""
 
 from __future__ import annotations
 
+import json
 import os
 import re
 from dataclasses import dataclass
@@ -16,6 +19,7 @@ from sealbook.settings import Config
 
 OPENROUTER = "https://openrouter.ai/api/v1"
 ANTHROPIC = "https://api.anthropic.com"
+VISION = "https://vision.googleapis.com/v1/images:annotate"
 TIMEOUT = httpx.Timeout(120.0, connect=10.0)
 # A hard cap on thinking plus answer. Opus 5.5 always thinks, so this leaves room
 # for that while an answer here is a few hundred tokens.
@@ -86,6 +90,8 @@ def _target(route: Route) -> tuple[str, str | None]:
         return _env("ROUTE_LOCAL_BASE_URL"), os.environ.get("ROUTE_LOCAL_API_KEY")
     if route is Route.ANTHROPIC:
         return ANTHROPIC, _env("ANTHROPIC_API_KEY")
+    if route is Route.VISION:
+        return VISION, _env("GOOGLE_VISION_API_KEY")
     return OPENROUTER, _env("OPENROUTER_API_KEY")
 
 
@@ -167,6 +173,46 @@ def _from_messages(data: dict) -> dict:
     }
 
 
+def _to_vision(body: dict) -> dict:
+    """The image of a chat body as one text detection request. Arabic and English
+    hints; the prompt is the generative routes' and Vision has none."""
+    (url,) = (
+        p["image_url"]["url"]
+        for m in body["messages"]
+        if isinstance(m["content"], list)
+        for p in m["content"]
+        if p["type"] == "image_url"
+    )
+    return {
+        "requests": [
+            {
+                "image": {"content": url.partition(";base64,")[2]},
+                "features": [{"type": body["model"]}],
+                "imageContext": {"languageHints": ["ar", "en"]},
+            }
+        ]
+    }
+
+
+def from_vision(data: dict, model: str) -> dict:
+    """A text detection response as the structured OCR answer callers read."""
+    (result,) = data["responses"]
+    if "error" in result:
+        raise RouteError(f"vision error: {result['error']}")
+    text = result.get("fullTextAnnotation", {}).get("text", "")
+    answer = {"has_text": bool(text.strip()), "text": text}
+    return {
+        "model": f"google-cloud-vision/{model}",
+        "provider": "Google Cloud Vision",
+        "choices": [
+            {
+                "message": {"role": "assistant", "content": json.dumps(answer)},
+                "finish_reason": "stop",
+            }
+        ],
+    }
+
+
 async def chat(
     route: Route, body: dict, transport: httpx.AsyncBaseTransport | None = None
 ) -> Served:
@@ -179,6 +225,9 @@ async def chat(
         body = _to_messages(body)
         endpoint = f"{base}/v1/messages"
         headers = {"x-api-key": key, "anthropic-version": "2023-06-01"}
+    elif route is Route.VISION:
+        body, model = _to_vision(body), body["model"]
+        endpoint, headers = base, {"x-goog-api-key": key}
     else:
         endpoint = f"{base.rstrip('/')}/chat/completions"
         headers = {"Authorization": f"Bearer {key}"} if key else {}
@@ -199,6 +248,8 @@ async def chat(
         raise RouteError(f"{route} error: {data['error']}")
     if route is Route.ANTHROPIC:
         data = _from_messages(data)
+    if route is Route.VISION:
+        data = from_vision(data, model)
     if not data.get("model"):
         raise RouteError(f"{route} response names no served model")
     if route is Route.LOCAL:

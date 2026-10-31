@@ -203,6 +203,7 @@ async def transcribe(c) -> str:
     duration, has_audio = await asyncio.to_thread(probe, path)
     if not has_audio:
         await c.emit("input_read", drop_reason="no_audio_track", duration_ms=duration)
+        await _watch(c, blob)
         return chain.sha256(chain.canon({"blob": blob.sha256, "audio": False}))
     model, provenance = await asyncio.to_thread(load_model)
     window_end = min(duration, cursor + Config.SPEECH_CHUNK_SECONDS * 1000)
@@ -340,6 +341,7 @@ async def _finish(c, source, lines):
     """Join every run's segments into the transcript claim extraction reads."""
     if not lines:
         await c.emit("statements_written", drop_reason="no_speech", written=0)
+        await _watch(c, source)
         return
     text = "\n".join(lines)
     transcript = await blobs.put(
@@ -359,6 +361,17 @@ async def _finish(c, source, lines):
         )
         await c.s.flush()
         await c.emit("extract_queued")
+    await _watch(c, source, transcript.sha256)
+
+
+async def _watch(c, source, transcript: str | None = None):
+    """A video's first pass reads its frames with the transcript, once speech is
+    read, so it waits for this run."""
+    from sealbook.ingest.service import queue_read
+
+    if source.mime.startswith("video/") and c.acq:
+        extra = {"transcript": transcript} if transcript else {}
+        await queue_read(c.s, c.acq, "assess", source.sha256, **extra)
 
 
 def init_app(app):

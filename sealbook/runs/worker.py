@@ -8,6 +8,7 @@ import base64
 import io
 import logging
 import re
+import subprocess
 import uuid
 from calendar import monthrange
 from collections.abc import Awaitable, Callable
@@ -54,6 +55,7 @@ from sealbook.research.capture import capture
 from sealbook.runs import routes
 from sealbook.settings import Config
 from sealbook.sheets.extract import extract_sheet
+from sealbook.thumbs import make as thumbs
 from sealbook.thumbs.tool import thumbnail
 from sealbook.watch import matcher
 
@@ -398,27 +400,71 @@ async def extract(c: Ctx) -> str | None:
         c.s.add(
             matcher.match_run(agent, c.run.inputs["acquisition"], blob.sha256, names)
         )
-    # A photo gets the first pass that looks at the picture (queued by ocr) instead.
+    # A photo gets the first pass that looks at the picture (queued by ocr) and a
+    # video one on its frames and transcript (queued by transcribe) instead.
     source = await c.s.get(Blob, c.acq.blob_sha256) if c.acq else None
-    if source and not source.mime.startswith("image/"):
+    if source and not source.mime.startswith(("image/", "video/")):
         await queue_read(c.s, c.acq, "assess", blob.sha256)
     return c.run.raw_output_ref
 
 
+VIDEO_FRAMES = 8
+
+
+def _frames(path, duration: float) -> tuple[list[dict], list[int]]:
+    """Up to VIDEO_FRAMES frames spread over a video, as chat image parts, each
+    after its number and second, and the ms of each frame sent."""
+    content, sent = [], []
+    count = max(1, min(VIDEO_FRAMES, int(duration)))
+    for i in range(count):
+        at = duration * (i + 0.5) / count
+        try:
+            frame = thumbs.frame_at(path, at, 768)
+        except (ValueError, subprocess.CalledProcessError):
+            continue
+        out = io.BytesIO()
+        frame.save(out, "JPEG", quality=85)
+        url = f"data:image/jpeg;base64,{base64.b64encode(out.getvalue()).decode()}"
+        sent.append(round(at * 1000))
+        content += [
+            {"type": "text", "text": f"Frame {len(sent)} at {int(at)} s"},
+            {"type": "image_url", "image_url": {"url": url}},
+        ]
+    if not sent:
+        raise ValueError("no video frame could be decoded")
+    return content, sent
+
+
 async def assess(c: Ctx) -> str | None:
-    """The first pass of the analyst's method: on the text extraction read, or on
-    the picture itself for a photo."""
+    """The first pass of the analyst's method: on the text extraction read, on the
+    picture itself for a photo, or on a video's frames and transcript together."""
     blob = await c.s.get(Blob, c.run.inputs["blobs"][0])
-    raw = blobs.read(blob, Config.BLOB_DIR)
     photo = blob.mime.startswith("image/")
-    if photo:
+    video = blob.mime.startswith("video/")
+    if video:
+        path = await asyncio.to_thread(blobs.verified_path, blob, Config.BLOB_DIR)
+        duration = (await asyncio.to_thread(thumbs.probe, path))["duration"]
+        user, frames_ms = await asyncio.to_thread(_frames, path, duration)
+        transcript = c.run.inputs.get("transcript")
+        said = (
+            blobs.read(await c.s.get(Blob, transcript), Config.BLOB_DIR).decode()
+            if transcript
+            else None
+        )
+        user.append(
+            {"type": "text", "text": f"Transcript:\n{said}" if said else "No speech."}
+        )
+        system, schema = method.WATCH_SYSTEM, method.WATCH_SCHEMA
+        await c.emit("input_read", frames=len(frames_ms), chars=len(said or ""))
+    elif photo:
+        raw = blobs.read(blob, Config.BLOB_DIR)
         width, height = Image.open(io.BytesIO(raw)).size
         system, schema = method.SEE_SYSTEM, method.SEE_SCHEMA
         url = f"data:{blob.mime};base64,{base64.b64encode(raw).decode()}"
         user = [{"type": "image_url", "image_url": {"url": url}}]
         await c.emit("input_read", bytes=blob.size)
     else:
-        text = raw.decode("utf-8")
+        text = blobs.read(blob, Config.BLOB_DIR).decode("utf-8")
         system, schema, user = method.SYSTEM, method.SCHEMA, text
         await c.emit("input_read", chars=len(text))
     c.run.prompt_hash = chain.sha256(chain.canon([system, schema]))
@@ -434,14 +480,25 @@ async def assess(c: Ctx) -> str | None:
         }
     )
     answer = orjson.loads(routes.content(served))
-    parts, dropped = (
-        method.seen(answer, width, height) if photo else method.items(answer, text)
-    )
+    if video:
+        found, dropped = method.watched(answer, frames_ms, round(duration * 1000), said)
+        spans = {"video": blob.sha256, "transcript": transcript}
+        parts = [(prop, value, spans[w], span) for prop, value, w, span in found]
+    else:
+        found, dropped = (
+            method.seen(answer, width, height) if photo else method.items(answer, text)
+        )
+        parts = [(prop, value, blob.sha256, span) for prop, value, span in found]
     for _ in range(dropped):
         await c.emit(
-            "dropped", drop_reason="box_unusable" if photo else "quote_not_in_text"
+            "dropped",
+            drop_reason="box_unusable"
+            if photo
+            else "rest_unusable"
+            if video
+            else "quote_not_in_text",
         )
-    for prop, value, span in parts:
+    for prop, value, span_blob, span in parts:
         await write.append(
             c.s,
             StatementIn(
@@ -450,7 +507,7 @@ async def assess(c: Ctx) -> str | None:
                 value=value,
                 author_id=c.run.principal_id,
                 run_id=c.run.id,
-                span_blob=blob.sha256,
+                span_blob=span_blob,
                 span=span,
             ),
             sign=c.sign,
@@ -461,10 +518,24 @@ async def assess(c: Ctx) -> str | None:
 
 # --- ocr -------------------------------------------------------------------------
 
+# A structured answer: asked for plain text, a hosted model wrote "There is no text
+# in this image." for a photo without text, which was stored as its text.
 OCR_PROMPT = (
     "Transcribe all text in this image exactly as written, in its original script. "
-    "Output only the transcription. Output nothing if the image has no text."
+    "has_text: whether the image shows any written text at all; text: the "
+    "transcription, each line of the image on its own line (a table row is one "
+    "line), nothing else, empty when there is no text."
 )
+OCR_SCHEMA = {
+    "name": "ocr",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["has_text", "text"],
+        "properties": {"has_text": {"type": "boolean"}, "text": {"type": "string"}},
+    },
+}
 
 
 async def ocr(c: Ctx) -> str | None:
@@ -475,7 +546,7 @@ async def ocr(c: Ctx) -> str | None:
     await c.emit("input_read", bytes=blob.size)
     if c.acq:
         await queue_read(c.s, c.acq, "assess", blob.sha256)
-    c.run.prompt_hash = chain.sha256(chain.canon([OCR_PROMPT]))
+    c.run.prompt_hash = chain.sha256(chain.canon([OCR_PROMPT, OCR_SCHEMA]))
     served = await c.call(
         {
             "messages": [
@@ -487,11 +558,13 @@ async def ocr(c: Ctx) -> str | None:
                     ],
                 }
             ],
+            "response_format": {"type": "json_schema", "json_schema": OCR_SCHEMA},
             "temperature": 0,
             **({"reasoning_effort": "none"} if c.run.route == "local" else {}),
         }
     )
-    text = routes.content(served)
+    answer = orjson.loads(routes.content(served))
+    text = answer["text"] if answer["has_text"] else ""
     if not text.strip():
         await c.emit("statements_written", drop_reason="ocr_empty", written=0)
         return c.run.raw_output_ref

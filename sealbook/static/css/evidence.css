@@ -96,6 +96,8 @@ body.dark-mode .evp {
 .ev-pline { all: unset; box-sizing: border-box; display: flex; gap: 8px; align-items: baseline; width: 100%; padding: 4px 6px; border-radius: 5px; cursor: pointer; font-size: 13.5px; }
 .ev-pline .ev-plab { flex: none; width: 48px; }
 .ev-pline .ev-pv { flex: 1; min-width: 0; }
+/* A title is two lines, English then Arabic: each line takes its own direction. */
+.ev-pline .ev-pv.two { white-space: pre-line; unicode-bidi: plaintext; text-align: start; }
 .ev-pline .ev-at { flex: none; }
 .ev-pline.ev-line { color: var(--ink-2); padding-inline-start: 62px; }
 .ev-pline:hover, .ev-pline:focus-visible { background: var(--wash); }

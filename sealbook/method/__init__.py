@@ -78,7 +78,10 @@ def words(prop: str, value: dict) -> str:
     if prop == Prop.LABEL:
         seen = value.get("basis") == "observed"
         return f"{'Seen' if seen else 'Alleged'}: {value['label']}"
-    return value[{Prop.TITLE: "title", Prop.LABEL: "label"}.get(prop, "line")]
+    if prop == Prop.TITLE:
+        # Older passes have no Arabic title.
+        return "\n".join(filter(None, (value["title"], value.get("title_ar"))))
+    return value["line"]
 
 
 def _rows(name: str) -> list[dict]:

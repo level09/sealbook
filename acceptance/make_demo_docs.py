@@ -4,11 +4,12 @@ truth into acceptance/demo/, and record the app's OCR of the two scans once.
 Everything here is invented: the people, the branch, the documentation groups.
 
   uv run python -m acceptance.make_demo_docs          # render, reuse recorded OCR
-  uv run python -m acceptance.make_demo_docs --ocr    # also record OCR (needs OPENROUTER_API_KEY)
+  uv run python -m acceptance.make_demo_docs --ocr    # also record OCR (needs a key)
 
-OCR is recorded, never written by hand: the app's own prompt goes to MODEL_CLOUD on
-the cloud route (both scans are ordinary, which the policy allows), and ocr.json
-keeps the answer as received. A recording whose image or prompt no longer matches
+OCR is recorded, never written by hand: the app's own request goes to Google Cloud
+Vision (GOOGLE_VISION_API_KEY), the route the policy prefers for OCR of ordinary
+sources, or else to MODEL_CLOUD on the cloud route, and ocr.json keeps the answer as
+received. A recording whose image or prompt no longer matches
 fails the run until it is recorded again.
 """
 
@@ -320,13 +321,22 @@ def pdf(browser, html, name, facts):
 # ---- OCR, recorded once --------------------------------------------------------------
 
 
-def ocr_request(image: bytes):
-    """The request the worker's ocr tool sends, for the cloud route's model."""
-    from sealbook.runs.worker import OCR_PROMPT
+def ocr_route():
+    """Vision when its key is set, as the policy prefers for OCR, else MODEL_CLOUD."""
+    from sealbook.ledger.contracts import Route
+
+    if os.environ.get("GOOGLE_VISION_API_KEY"):
+        return Route.VISION, "DOCUMENT_TEXT_DETECTION"
+    return Route.CLOUD, os.environ["MODEL_CLOUD"]
+
+
+def ocr_request(image: bytes, model: str) -> dict:
+    """The request the worker's ocr tool sends."""
+    from sealbook.runs.worker import OCR_PROMPT, OCR_SCHEMA
 
     url = f"data:image/jpeg;base64,{base64.b64encode(image).decode()}"
-    return OCR_PROMPT, {
-        "model": os.environ["MODEL_CLOUD"],
+    return {
+        "model": model,
         "messages": [
             {
                 "role": "user",
@@ -336,27 +346,29 @@ def ocr_request(image: bytes):
                 ],
             }
         ],
+        "response_format": {"type": "json_schema", "json_schema": OCR_SCHEMA},
         "temperature": 0,
     }
 
 
 def prompt_hash():
     from sealbook.ledger import chain
-    from sealbook.runs.worker import OCR_PROMPT
+    from sealbook.runs.worker import OCR_PROMPT, OCR_SCHEMA
 
-    return chain.sha256(chain.canon([OCR_PROMPT]))
+    return chain.sha256(chain.canon([OCR_PROMPT, OCR_SCHEMA]))
 
 
 def record_ocr(name: str, image: bytes) -> dict:
-    from sealbook.ledger.contracts import Route
     from sealbook.runs import routes
 
-    _, body = ocr_request(image)
-    served = asyncio.run(routes.chat(Route.CLOUD, body))
+    route, model = ocr_route()
+    body = ocr_request(image, model)
+    served = asyncio.run(routes.chat(route, body))
+    answer = json.loads(routes.content(served))
     return {
         "image": f"{name}.jpg",
         "image_sha256": hashlib.sha256(image).hexdigest(),
-        "route": str(Route.CLOUD),
+        "route": str(route),
         "endpoint": served.endpoint,
         "model_requested": body["model"],
         "model_served": served.model,
@@ -364,7 +376,7 @@ def record_ocr(name: str, image: bytes) -> dict:
         "prompt_hash": prompt_hash(),
         "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "recorded_by": "acceptance/make_demo_docs.py --ocr",
-        "text": routes.content(served),
+        "text": answer["text"] if answer["has_text"] else "",
         "raw": served.raw.decode(),
     }
 

@@ -35,6 +35,7 @@ class Route(enum.StrEnum):
     CLOUD_ZDR = "cloud-zdr"
     CLOUD = "cloud"
     ANTHROPIC = "anthropic"
+    VISION = "vision"  # Google Cloud Vision text detection, for OCR only
 
 
 class Sensitivity(enum.StrEnum):

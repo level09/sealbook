@@ -343,13 +343,12 @@ def _model_setting(route: str) -> str:
 async def _route(
     session: AsyncSession, tool: str, acq: Acquisition
 ) -> tuple[Route | None, str]:
-    """The most private route the policy allows that has a model configured, or None
-    and the reason in words. Nothing allowed and configured is reported, never
-    rerouted."""
+    """The first route in the policy row's order that has a model configured, or None
+    and the reason in words. Rows list routes most private first, except where an
+    engine fits the task better (OCR prefers text detection to a generative model).
+    Nothing allowed and configured is reported, never rerouted."""
     policy = resolve(await write.policies(session), tool, acq.doc_type, acq.sensitivity)
-    route = next(
-        (r for r in Route if r in policy.routes and r in Config.RUN_MODELS), None
-    )
+    route = next((Route(r) for r in policy.routes if r in Config.RUN_MODELS), None)
     if route or not policy.routes:
         return route, (
             f"The policy for {acq.sensitivity} sources allows no model for "
@@ -413,10 +412,10 @@ async def queue_transcribe(session: AsyncSession, acq: Acquisition) -> dict:
 
 
 async def queue_read(
-    session: AsyncSession, acq: Acquisition, tool: str, sha: str
+    session: AsyncSession, acq: Acquisition, tool: str, sha: str, **extra
 ) -> dict:
-    """Queue OCR or extraction of `sha` (the source, or text derived from it) once;
-    a failed run may be queued again."""
+    """Queue OCR, extraction or the first pass of `sha` (the source, or text derived
+    from it) once, with `extra` inputs; a failed run may be queued again."""
     known = await session.scalar(
         select(Run.id)
         .where(
@@ -435,7 +434,7 @@ async def queue_read(
     route, reason = await _route(session, tool, acq)
     if route is None:
         return {"queued": None, "why": "no_model", "reason": reason}
-    inputs = {"blobs": [sha], "acquisition": str(acq.id)}
+    inputs = {"blobs": [sha], "acquisition": str(acq.id)} | extra
     if tool == "ocr":
         inputs |= await extract_target(session, acq)
     run = Run(
@@ -464,7 +463,11 @@ async def queue_processing(session: AsyncSession, acq: Acquisition, mime: str) -
         )
         return {"queued": None, "reason": reason}
     if tool == "transcribe":
-        return await queue_transcribe(session, acq)
+        queued = await queue_transcribe(session, acq)
+        if not queued["queued"] and mime.startswith("video/"):
+            # Nothing will read its speech, so the frames' first pass need not wait.
+            await queue_read(session, acq, "assess", acq.blob_sha256)
+        return queued
     return await queue_read(session, acq, tool, acq.blob_sha256)
 
 

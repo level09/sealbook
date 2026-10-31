@@ -2,7 +2,9 @@
 fact-only description and alleged labels, each resting on words quoted from the item.
 The worker's assess tool sends SYSTEM and SCHEMA and writes what `items` keeps; for a
 photo it sends SEE_SYSTEM and SEE_SCHEMA, and each part rests on a box in the picture
-(`seen`), with observed labels instead of alleged ones."""
+(`seen`), with observed labels instead of alleged ones. A video gets WATCH_SYSTEM and
+WATCH_SCHEMA: frames from it and its transcript in one call, each part resting on a
+frame's second or on words said (`watched`)."""
 
 from sealbook.agents.read import DATA_ONLY
 from sealbook.ledger.contracts import Prop
@@ -28,7 +30,8 @@ SYSTEM = (
     "sentence; "
     "title, a short title in English of what actually occurred, like 'Shelling hits "
     "buildings' or 'Security forces arrest three men', never the source's headline, "
-    "with title_quote, the words it rests on; "
+    "with title_quote, the words it rests on, and title_ar, the same title in "
+    "Arabic; "
     f"description, at most {MAX_LINES} lines in English, each one fact the item states "
     "or shows, with no judgment or guess, each with quote, the words it rests on; "
     "labels, alleged labels from the list that the item states and at least partly "
@@ -50,6 +53,7 @@ SCHEMA = {
             "triage_quote",
             "why",
             "title",
+            "title_ar",
             "title_quote",
             "description",
             "labels",
@@ -61,6 +65,7 @@ SCHEMA = {
             "triage_quote": _QUOTED,
             "why": {"type": "string"},
             "title": {"type": "string"},
+            "title_ar": {"type": "string"},
             "title_quote": _QUOTED,
             "description": {
                 "type": "array",
@@ -88,6 +93,10 @@ SCHEMA = {
 }
 
 
+def _title(answer: dict) -> dict:
+    return {"title": answer["title"].strip(), "title_ar": answer["title_ar"].strip()}
+
+
 def specific(labels: list[str]) -> set[str]:
     """Labels with no more specific label of their own also chosen."""
     return {lb for lb in labels if not any(o.startswith(lb + ", ") for o in labels)}
@@ -103,7 +112,7 @@ def items(answer: dict, text: str) -> tuple[list[tuple[Prop, dict, dict]], int]:
             {k: answer[k] for k in ("content", "reliability", "why")},
             answer["triage_quote"],
         ),
-        (Prop.TITLE, {"title": answer["title"].strip()}, answer["title_quote"]),
+        (Prop.TITLE, _title(answer), answer["title_quote"]),
     ]
     parts += [
         (Prop.DESCRIPTION, {"line": d["line"].strip()}, d["quote"])
@@ -133,7 +142,8 @@ SEE_SYSTEM = (
     "promotional), reliability (no_evidence, some_evidence or strong_evidence that "
     "a war crime or human-rights violation was committed, from what is visible), "
     "triage_box and why; a short English title of what the photo shows, like "
-    "'Damaged residential street', with title_box; "
+    "'Damaged residential street', with title_box, and title_ar, the same title in "
+    "Arabic; "
     f"description, at most {MAX_LINES} lines, each one visible fact with its box; "
     "labels, observed labels from the list that the photo clearly shows, each with "
     "its box. A box is [x0, y0, x1, y1] on a 0 to 1000 scale of the photo's width "
@@ -152,6 +162,7 @@ SEE_SCHEMA = {
             "triage_box",
             "why",
             "title",
+            "title_ar",
             "title_box",
             "description",
             "labels",
@@ -162,6 +173,7 @@ SEE_SCHEMA = {
             "triage_box": _BOX,
             "why": {"type": "string"},
             "title": {"type": "string"},
+            "title_ar": {"type": "string"},
             "title_box": _BOX,
             "description": {
                 "type": "array",
@@ -217,7 +229,7 @@ def seen(
             {k: answer[k] for k in ("content", "reliability", "why")},
             answer["triage_box"],
         ),
-        (Prop.TITLE, {"title": answer["title"].strip()}, answer["title_box"]),
+        (Prop.TITLE, _title(answer), answer["title_box"]),
     ]
     parts += [
         (Prop.DESCRIPTION, {"line": d["line"].strip()}, d["box"])
@@ -241,6 +253,180 @@ def seen(
     return out, dropped
 
 
+WATCH_SYSTEM = (
+    "You do the first pass of a human-rights analyst's method on one video, given as "
+    "numbered frames taken from it in order, each with its time, and the transcript "
+    "of its speech when it has any. Use only what the frames show and the speech "
+    "says, never outside knowledge. Return: lang, the language code of the speech, "
+    "or 'en' when there is none; content (incident, post_incident_recent, "
+    "post_incident, non_incident, interview, report, media, document or "
+    "promotional); reliability (no_evidence, some_evidence or strong_evidence that "
+    "a war crime or human-rights violation was committed); why, one sentence; a "
+    "short English title of what actually occurred, like 'Shelling hits buildings', "
+    "and title_ar, the same title in Arabic; "
+    f"description, at most {MAX_LINES} lines in English, each one fact shown or "
+    "said, with no judgment or guess; seen_labels, observed labels from their list "
+    "that a frame clearly shows; said_labels, alleged labels from their list that "
+    "the speech states and at least partly supports. The triage, the title and "
+    "each line rest on a frame (frame, its number, quote empty) or on words said "
+    "(quote, copied character for character from the transcript, frame 0). Each "
+    "seen label has its frame, each said label its quote. " + DATA_ONLY
+)
+_REST = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["frame", "quote"],
+    "properties": {"frame": {"type": "integer"}, "quote": {"type": "string"}},
+}
+
+
+def _labelled(names, key, kind):
+    return {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["label", key],
+            "properties": {"label": {"enum": list(names)}, key: kind},
+        },
+    }
+
+
+WATCH_SCHEMA = {
+    "name": "first_pass_watched",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": [
+            "lang",
+            "content",
+            "reliability",
+            "why",
+            "triage_rests",
+            "title",
+            "title_ar",
+            "title_rests",
+            "description",
+            "seen_labels",
+            "said_labels",
+        ],
+        "properties": {
+            "lang": {"type": "string"},
+            "content": {"enum": list(CONTENT)},
+            "reliability": {"enum": list(RELIABILITY)},
+            "why": {"type": "string"},
+            "triage_rests": _REST,
+            "title": {"type": "string"},
+            "title_ar": {"type": "string"},
+            "title_rests": _REST,
+            "description": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["line", "rests"],
+                    "properties": {"line": {"type": "string"}, "rests": _REST},
+                },
+            },
+            "seen_labels": _labelled(observed_labels(), "frame", {"type": "integer"}),
+            "said_labels": _labelled(alleged_labels(), "quote", _QUOTED),
+        },
+    },
+}
+
+
+def watched(
+    answer: dict, frames_ms: list[int], duration_ms: int, transcript: str | None
+) -> tuple[list[tuple[Prop, dict, str, dict]], int]:
+    """(prop, value, where, span) for each part of a video's answer that rests on a
+    frame it was sent (where "video", span the frame's second) or on words in the
+    transcript (where "transcript", span their characters), and how many did not."""
+
+    def at(rest):
+        frame, quote = rest["frame"], rest["quote"]
+        if 1 <= frame <= len(frames_ms):
+            ms = frames_ms[frame - 1]
+            return "video", {"ms": [ms, min(ms + 1000, duration_ms)]}, {}
+        start = transcript.find(quote) if transcript and quote.strip() else -1
+        if start < 0:
+            return None
+        return (
+            "transcript",
+            {"start": start, "end": start + len(quote)},
+            {"text": quote},
+        )
+
+    triage = {k: answer[k] for k in ("content", "reliability", "why")}
+    parts = [
+        (Prop.TRIAGE, triage, answer["triage_rests"]),
+        (Prop.TITLE, _title(answer), answer["title_rests"]),
+    ]
+    parts += [
+        (Prop.DESCRIPTION, {"line": d["line"].strip()}, d["rests"])
+        for d in answer["description"][:MAX_LINES]
+    ]
+    seen = {}
+    keep = specific([lb["label"] for lb in answer["seen_labels"]])
+    for lb in answer["seen_labels"]:
+        if lb["label"] in keep:
+            seen.setdefault(lb["label"], {"frame": lb["frame"], "quote": ""})
+    parts += [
+        (Prop.LABEL, {"label": label, "basis": "observed"}, rest)
+        for label, rest in seen.items()
+    ]
+    said = {}
+    keep = specific([lb["label"] for lb in answer["said_labels"]])
+    for lb in answer["said_labels"]:
+        if lb["label"] in keep:
+            said.setdefault(lb["label"], {"frame": 0, "quote": lb["quote"]})
+    parts += [(Prop.LABEL, {"label": label}, rest) for label, rest in said.items()]
+    out, dropped = [], 0
+    for prop, value, rest in parts:
+        found = at(rest)
+        if found is None:
+            dropped += 1
+            continue
+        where, span, quoted = found
+        out.append((prop, value | quoted | {"lang": answer["lang"]}, where, span))
+    return out, dropped
+
+
 assert specific(["A", "A, B", "C"]) == {"A, B", "C"}
 assert region([0, 0, 500, 1000], 200, 100) == {"page": 1, "bbox": [0, 0, 100, 100]}
 assert region([10, 10, 10, 20], 200, 100) is None
+_w = {
+    "lang": "ar",
+    "content": "incident",
+    "reliability": "some_evidence",
+    "why": "",
+    "triage_rests": {"frame": 2, "quote": ""},
+    "title": "Shelling",
+    "title_ar": "قصف",
+    "title_rests": {"frame": 0, "quote": "قصف"},
+    "description": [{"line": "x", "rests": {"frame": 9, "quote": ""}}],
+    "seen_labels": [],
+    "said_labels": [],
+}
+assert watched(_w, [0, 5000], 5500, "بعد قصف") == (
+    [
+        (
+            Prop.TRIAGE,
+            {
+                "content": "incident",
+                "reliability": "some_evidence",
+                "why": "",
+                "lang": "ar",
+            },
+            "video",
+            {"ms": [5000, 5500]},
+        ),
+        (
+            Prop.TITLE,
+            {"title": "Shelling", "title_ar": "قصف", "text": "قصف", "lang": "ar"},
+            "transcript",
+            {"start": 4, "end": 7},
+        ),
+    ],
+    1,
+)

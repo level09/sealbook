@@ -2,18 +2,20 @@
 
 import hashlib
 import os
+import subprocess
 import tempfile
 import unittest
 import uuid
 from datetime import UTC, date, datetime
 from io import BytesIO
+from pathlib import Path
 from unittest import mock
 
 import httpx
 import orjson
 from alembic import command
 from PIL import Image
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from stk.migrations import (
@@ -771,7 +773,8 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             extract_route="local",
             extract_model="m/e",
         )
-        await work_once(self.Session, transport=self.transport(completion(TEXT)))
+        answer = orjson.dumps({"has_text": True, "text": TEXT}).decode()
+        await work_once(self.Session, transport=self.transport(completion(answer)))
         self.assertEqual((await self.get_run(run_id)).status, "done")
         async with self.Session() as s:
             derived = (
@@ -786,6 +789,103 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
             )
             # Extraction keeps the route its own policy chose, not the OCR one.
             self.assertEqual((child.route, child.model_requested), ("local", "m/e"))
+
+    async def test_ocr_without_text_stores_nothing(self):
+        # A generative model once wrote this sentence for a photo with no text.
+        said = {"has_text": False, "text": "There is no text in this image."}
+        llm = await self.queue(data=b"\x89PNG one", mime="image/png", tool="ocr")
+        vision = await self.queue(
+            data=b"\x89PNG two", mime="image/png", tool="ocr", route="vision"
+        )
+
+        def handle(request):
+            self.requests.append(request)
+            if request.url.host == "vision.googleapis.com":
+                return httpx.Response(200, json={"responses": [{}]})
+            return httpx.Response(200, json=completion(orjson.dumps(said).decode()))
+
+        with mock.patch.dict(os.environ, {"GOOGLE_VISION_API_KEY": "test"}):
+            for _ in range(4):
+                await work_once(self.Session, transport=httpx.MockTransport(handle))
+        (sent,) = [r for r in self.requests if r.url.host == "vision.googleapis.com"]
+        body = orjson.loads(sent.content)["requests"][0]
+        self.assertEqual(body["features"], [{"type": "vendor/model-x"}])
+        self.assertEqual(sent.headers["x-goog-api-key"], "test")
+        for run_id in (llm, vision):
+            run = await self.get_run(run_id)
+            self.assertEqual(run.status, "done", run.error)
+            async with self.Session() as s:
+                written = await s.scalar(
+                    select(func.count()).where(Statement.run_id == run_id)
+                )
+            self.assertEqual(written, 0)
+        self.assertEqual(
+            (await self.get_run(vision)).provider_served, "Google Cloud Vision"
+        )
+
+    async def test_video_first_pass_rests_on_frames_and_speech(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, "clip.mp4")
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-v",
+                    "error",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    "testsrc2=size=64x64:rate=5:duration=4",
+                    "-pix_fmt",
+                    "yuv420p",
+                    out,
+                ],
+                check=True,
+            )
+            clip = Path(out).read_bytes()
+        said = "the market was shelled"
+        async with self.Session() as s, s.begin():
+            transcript = await blobs.put(
+                s, said.encode(), "text/plain; charset=utf-8", Config.BLOB_DIR
+            )
+        run_id = await self.queue(
+            data=clip, mime="video/mp4", tool="assess", transcript=transcript.sha256
+        )
+        rest = {"frame": 2, "quote": ""}
+        answer = {
+            "lang": "en",
+            "content": "incident",
+            "reliability": "some_evidence",
+            "why": "The speaker says it.",
+            "triage_rests": {"frame": 0, "quote": "was shelled"},
+            "title": "Market shelled",
+            "title_rests": rest,
+            "description": [
+                {"line": "A test card.", "rests": {"frame": 7, "quote": ""}}
+            ],
+            "seen_labels": [],
+            "said_labels": [],
+        }
+        transport = self.transport(completion(orjson.dumps(answer).decode()))
+        await work_once(self.Session, transport=transport)
+        run = await self.get_run(run_id)
+        self.assertEqual(run.status, "done", run.error)
+        sent = orjson.loads(self.requests[0].content)["messages"][1]["content"]
+        # Four seconds give four frames, then the transcript.
+        self.assertEqual(sum(p["type"] == "image_url" for p in sent), 4)
+        self.assertEqual(sent[-1]["text"], f"Transcript:\n{said}")
+        async with self.Session() as s:
+            rows = {
+                st.prop: st
+                for st in (
+                    await s.execute(select(Statement).where(Statement.run_id == run_id))
+                ).scalars()
+            }
+        # The line on frame 7 of 4 is dropped; the others rest where they say.
+        self.assertEqual(set(rows), {Prop.TRIAGE, Prop.TITLE})
+        self.assertEqual(rows[Prop.TRIAGE].span_blob, transcript.sha256)
+        self.assertEqual(rows[Prop.TRIAGE].span, {"start": 11, "end": 22})
+        self.assertEqual(rows[Prop.TITLE].span, {"ms": [1500, 2500]})
+        self.assertEqual(rows[Prop.TITLE].subject, rows[Prop.TRIAGE].subject)
 
     @unittest.skipUnless(os.environ.get("OPENROUTER_API_KEY"), "no OPENROUTER_API_KEY")
     async def test_live_openrouter_extract(self):

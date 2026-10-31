@@ -90,8 +90,11 @@ class Recorded(Ctx):
         stored = await blobs.put(self.s, raw, "application/json", Config.BLOB_DIR)
         self.run.raw_output_ref = stored.sha256
         await self.emit("model_called")
+        data = orjson.loads(raw)
+        if rec["route"] == "vision":
+            data = routes.from_vision(data, rec["model_requested"])
         return routes.Served(
-            orjson.loads(raw),
+            data,
             raw,
             rec["endpoint"],
             rec["model_served"],
