@@ -37,7 +37,7 @@
 
     <section v-if="d.triage.length" class="td-sec" aria-labelledby="td-triage">
       <header><h2 id="td-triage">Items read for you</h2><span class="n">${ d.triage.length }</span><span class="why">check the first pass and sign it</span></header>
-      <a v-for="r in d.triage.slice(0, more.triage ? 999 : 8)" :key="r.sha" class="td-row" :href="'/evidence/' + r.sha"><i class="ti r-tile is-source" :class="KIND_ICON[r.kind] || 'ti-file-text'" aria-hidden="true"></i>
+      <a v-for="r in d.triage.slice(0, more.triage ? 999 : 8)" :key="r.sha" class="td-row" :href="'/evidence/' + r.sha"><i class="ti r-tile is-source" :class="kindIcon(r.kind)" aria-hidden="true"></i>
         <span><span class="t d-block"><bdi dir="auto">${ r.title || (r.hidden ? 'Title hidden: sensitive item' : 'Untitled item') }</bdi></span><span class="s">${ r.triage.split(', ').slice(0, -1).join(', ') }</span></span><span class="td-pill" :class="{hi: r.priority === 'high'}">${ r.priority } priority</span></a>
       <a v-if="d.triage.length > 8 && !more.triage" href="#" class="td-more" @click.prevent="more.triage = true">Show ${ d.triage.length - 8 } more</a>
     </section>
@@ -85,7 +85,8 @@ window.app = Vue.createApp({
     total() { return this.d?.total || 0; },
   },
   methods: {
-    plural, hue: findingHue, KIND_ICON,
+    plural, hue: findingHue,
+    kindIcon(kind) { return KIND_ICON[kind] || 'ti-file-text'; },
     ago(at) { const h = Math.round((Date.now() - new Date(at)) / 36e5); return h < 1 ? 'just now' : h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`; },
     groupTitle(g) {
       const s = g.summary, where = s.place ? (s.place.en || s.place.ar) : s.town;
