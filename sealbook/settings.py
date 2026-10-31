@@ -141,10 +141,11 @@ class Config(stk.Config):
     # route's model.
     OCR_MODEL = os.environ.get("OCR_MODEL", "google/gemini-4-argon")
     # The first pass (triage, title, description, labels) on OpenRouter, for text,
-    # photos and video. Empty uses the route's model. A stronger model found about
-    # twice the alleged labels analysts gave in a comparison on analyst-labelled
-    # records; it stays opt-in until a person has checked that comparison's judge.
-    ASSESS_MODEL = os.environ.get("ASSESS_MODEL", "")
+    # photos and video. On analyst-labelled records Gemini 3.8 Flash proposed far more
+    # of the analysts' alleged labels than Haiku, level with Sonnet at less cost; GPT
+    # Luna's provider filter refused some testimonies (2026-10-31).
+    # ASSESS_MODEL= (empty) uses the route's model.
+    ASSESS_MODEL = os.environ.get("ASSESS_MODEL", "google/gemini-3.8-flash")
     RUN_MODELS = {
         r: m
         for r, m in (
