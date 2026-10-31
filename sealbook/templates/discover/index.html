@@ -134,7 +134,7 @@
             <template v-if="placeChoice && group.summary.window"> Time: ${ span(group.summary.window) }.</template> </template><template v-else-if="group.summary.town">No place is written: <bdi dir="auto">${ group.summary.town }</bdi> is not in the gazetteer. </template>
           One passkey gesture records the incident, ${ plural(keptReports, 'report') } as support and ${ plural(keptLinks, 'link') } accepted. Undo works per statement or for the whole gesture.</div>
         <div class="pa-3 d-flex ga-2 flex-wrap align-center">
-          <v-btn id="dv-sign" color="primary" prepend-icon="ti ti-signature" :disabled="keptPosts.length < 2 || !keptLinks || !title.trim()" :loading="busy" @click="acceptGroup">Create incident and sign</v-btn>
+          <v-btn id="dv-sign" color="primary" prepend-icon="ti ti-signature" :disabled="keptPosts.length < 2 || !keptLinks || !title.trim() || needsPlace" :loading="busy" @click="acceptGroup">Create incident and sign</v-btn>
           <v-btn variant="outlined" prepend-icon="ti ti-x" @click="rejecting = true">Not one event</v-btn>
           <v-btn v-if="dropped.length" variant="text" prepend-icon="ti ti-arrow-back-up" @click="dropped = []">Keep all</v-btn>
           <span v-if="keptPosts.length < 2" class="text-caption dv-muted">Keep at least two posts.</span>
@@ -263,6 +263,8 @@ window.app = Vue.createApp({
     keptPosts() { return (this.group?.posts || []).filter(p => !this.dropped.includes(p.sha)); },
     keptLinks() { return (this.group?.links || []).filter(l => !this.dropped.includes(l.a) && !this.dropped.includes(l.b)).length; },
     keptReports() { return this.keptPosts.reduce((n, p) => n + p.reports.length, 0); },
+    // A town that can mean several places needs one chosen: the day is recorded with it.
+    needsPlace() { const s = this.group?.summary; return !!s && !s.place && s.choices.length > 0 && !this.placeChoice; },
     degree() { const d = {}; for (const l of this.group?.links || []) { d[l.a] = (d[l.a] || 0) + 1; d[l.b] = (d[l.b] || 0) + 1; } return d; },
     towns() { return [...new Set((this.group?.posts || []).flatMap(p => this.postTowns(p).map(t => t.place?.en || t.name)))]; },
     canSign() { return this.keep.length > 0 && (this.incident || this.title.trim()); },

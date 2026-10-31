@@ -545,12 +545,14 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
         d = await (await client.get(f"/api/discover/groups/{g['id']}")).get_json()
         assert len(d["summary"]["choices"]) == 2
         item = {"group": g["id"], "kept": self.shas[:2], "title": "t"}
-        r = await client.post(
-            "/api/review/groups/options",
-            json={"item": item | {"place": str(uuid.uuid4())}},
-            headers=client.csrf,
-        )
-        assert r.status_code == 400
+        for extra in ({"place": str(uuid.uuid4())}, {}):
+            # A stranger place, or none: the incident would lose its place and day.
+            r = await client.post(
+                "/api/review/groups/options",
+                json={"item": item | extra},
+                headers=client.csrf,
+            )
+            assert r.status_code == 400, extra
         _, out = await self.sign(
             client, "/api/review/groups/options", item | {"place": str(other.id)}
         )

@@ -397,6 +397,9 @@ async def plan(
         one = next((c for c in cands if str(c.id) == place), None)
         if one is None:
             raise ValueError("the place must be one the reports' town can mean")
+    elif one is None and len(cands) > 1:
+        # The day is recorded with the place, so signing here would lose both.
+        raise ValueError(f"choose which place {s['town']} means")
     if one and s["window"]:
         lo, hi = (datetime.fromisoformat(d).date() for d in s["window"])
         out.append(
