@@ -308,3 +308,15 @@
     if (data.generated_at) gen.textContent = `From docs/status.md, updated ${st.updated}. Data generated ${data.generated_at}.`;
   }
 })();
+
+// The walkthrough: one drawn play control on the poster, then the browser's own.
+(() => {
+  const fig = document.querySelector(".walkthrough");
+  if (!fig) return;
+  const video = fig.querySelector("video");
+  fig.querySelector(".wt-play").addEventListener("click", () => {
+    fig.classList.add("playing");
+    video.controls = true;
+    video.play();
+  });
+})();
