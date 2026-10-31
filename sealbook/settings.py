@@ -128,8 +128,10 @@ class Config(stk.Config):
     # the policy allows that has a model; none means the file waits, unprocessed.
     # MODEL_ANTHROPIC (e.g. claude-opus-5-5, with ANTHROPIC_API_KEY) is last: Anthropic
     # keeps API data for a period, so a policy row must allow it, for public sources.
-    # cloud-zdr defaults to Gemma 4 31B, which read the Arabic demo register almost
-    # exactly (2026-10-25); MODEL_CLOUD_ZDR= (empty) turns it off. GOOGLE_VISION_API_KEY
+    # cloud-zdr defaults to Claude Haiku 5.5, served by zero-retention providers: on
+    # 2026-10-31 it found every planted person and town in the extraction eval, where
+    # Gemma 4 missed towns and looped on a photo's labels (docs/agent-eval.md);
+    # MODEL_CLOUD_ZDR= (empty) turns it off. GOOGLE_VISION_API_KEY
     # turns on the vision route, Google Cloud Vision text detection, which the policy
     # prefers for OCR of ordinary sources: it reads text and never describes a picture.
     # OCR on OpenRouter (cloud-zdr, cloud) uses its own model: on the demo's Arabic
@@ -144,7 +146,7 @@ class Config(stk.Config):
             (r, os.environ.get(f"MODEL_{r.upper().replace('-', '_')}", d))
             for r, d in (
                 ("local", ""),
-                ("cloud-zdr", "google/gemma-4-31b-it"),
+                ("cloud-zdr", "anthropic/claude-haiku-5.5"),
                 ("cloud", ""),
                 ("anthropic", ""),
                 (

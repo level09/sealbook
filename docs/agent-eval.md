@@ -407,6 +407,23 @@ a post has none, and planted towns found in a report's place words. On 2026-10-2
 person and no event and found every planted person and town. The OpenRouter
 models could not be scored that day: the key had reached its spending limit.
 
+On 2026-10-31, two trials each on OpenRouter's zero-retention route:
+
+| Model | Invented people | People found | Towns found | Invented events | Price in/out per M tokens |
+| --- | --- | --- | --- | --- | --- |
+| `anthropic/claude-haiku-5.5` | 0, 0 | 1.0, 1.0 | 1.0, 1.0 | 0, 0 | $0.10 / $0.50 |
+| `google/gemini-3.1-flash-lite` | 0, 0 | 1.0, 1.0 | 1.0, 1.0 | 0, 0 | $0.25 / $1.50 |
+| `openai/gpt-5.6-luna` | 0, 0 | 1.0, 1.0 | 0.929, 1.0 | 0, 0 | $0.20 / $1.20 |
+| `google/gemma-4-31b-it` | 0, 0 | 1.0, 1.0 | 0.857, 0.857 | 0, 0 | $0.20 / $0.40 |
+| `deepseek/deepseek-v4.1-flash` | 0, 0 | 1.0, 1.0 | 0.929, 0.857 | 1, 0 | $0.05 / $0.50 |
+
+`mistralai/mistral-small-2603` and `qwen/qwen3.8-flash` failed every call on that
+route. Haiku is now the `cloud-zdr` default, so extraction and every first pass run
+on it; OCR keeps `OCR_MODEL`. On the same day Gemma 4 wrote one photo's first pass,
+then repeated an empty-boxed label until its 16,384 tokens ran out, in every try;
+Haiku wrote that photo's pass in 7 s for $0.0006 with fitting labels. A schema cap
+on list length would stop such a loop, but Gemini rejects `maxItems`.
+
 ## Known gaps
 
 - One synthetic case, 132 claims. The numbers say nothing about archive scale or

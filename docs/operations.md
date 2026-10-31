@@ -123,7 +123,8 @@ Images are read by OCR, then claims are read from the text; text files, transcri
 and each PDF page with text go straight to extraction. Nothing runs until a route
 has a model. A run uses the most private route its policy row allows that has a
 model set. By default that is `cloud-zdr`: OpenRouter with zero data retention,
-serving `google/gemma-4-31b-it` unless `MODEL_CLOUD_ZDR` names another model.
+serving `anthropic/claude-haiku-5.5` unless `MODEL_CLOUD_ZDR` names another model;
+OCR uses `OCR_MODEL` instead.
 Sensitive sources, agents and embeddings may use `local` or `cloud-zdr`
 (`sealbook_0002`). A deployment that wants nothing to leave its own machines sets
 `ROUTE_LOCAL_BASE_URL` and `MODEL_LOCAL` (Ollama, vLLM, or a private endpoint on
@@ -137,7 +138,7 @@ policy row to `{local}` so nothing falls back to a hosted model.
 | `ROUTE_LOCAL_TIMEOUT` | Seconds one local call may take, default 120; the run lease is this plus a minute, at least 5 minutes |
 | `MODEL_LOCAL` | Private endpoint model for OCR and extraction; it must accept images |
 | `OPENROUTER_API_KEY` | Key for both cloud routes |
-| `MODEL_CLOUD_ZDR` | OpenRouter model, sent with `provider.zdr` so only zero-retention providers serve it; default `google/gemma-4-31b-it` |
+| `MODEL_CLOUD_ZDR` | OpenRouter model, sent with `provider.zdr` so only zero-retention providers serve it; default `anthropic/claude-haiku-5.5` (chosen on 2026-10-31 over Gemma 4, see [agent-eval](agent-eval.md)) |
 | `ROUTE_CLOUD_ZDR_PROVIDERS` | Empty by default, which pins nothing: any zero-retention provider may serve. Set to comma-separated OpenRouter provider slugs (`deepinfra,google-vertex/us-east5`) and every `cloud-zdr` chat and embedding call also sends them as `provider.only`; a response whose served provider is not on the list fails the run or search. OpenRouter reports a display name ("DeepInfra"), not a slug, so a name matches when it equals a pin's base slug (before the first `/`) after both are lowercased and cut to letters and digits. A provider whose display name does not fold to its slug always fails; pick another provider or clear the pin |
 | `EMBEDDING_ROUTE` | `cloud-zdr` (default): `EMBEDDING_MODEL` on OpenRouter, default `google/gemini-embedding-2`, one item per call; `local`: an Ollama-style `/api/embed` server at `EMBEDDING_URL` |
 | `MODEL_CLOUD` | OpenRouter model for ordinary sources |
@@ -160,7 +161,7 @@ a photo's poster text in 4 s. Both local thinking models are called with
 `reasoning_effort: none`.
 
 ```dotenv
-# Default: nothing to set but OPENROUTER_API_KEY (MODEL_CLOUD_ZDR=google/gemma-4-31b-it).
+# Default: nothing to set but OPENROUTER_API_KEY (MODEL_CLOUD_ZDR=anthropic/claude-haiku-5.5).
 # A private endpoint instead, which every source then uses:
 ROUTE_LOCAL_BASE_URL=http://127.0.0.1:11434/v1
 ROUTE_LOCAL_TIMEOUT=900

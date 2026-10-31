@@ -39,6 +39,7 @@ RETRYABLE = frozenset(READ_TOOLS) | {
     "thumbnail",
     "geotag",
     "capture",
+    "assess",
 }
 LABEL = {
     "ocr": "Reading the text in the image",
