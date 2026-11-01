@@ -10,7 +10,7 @@
             </v-card-text>
         </v-card>
         <v-card>
-            <v-card-title class="pa-6 pb-2">Briefs in ${ caseSel || 'all investigations' }</v-card-title>
+            <v-card-title class="pa-6 pb-2">Briefs in ${ caseSel ? caseName(caseSel) : 'all investigations' }</v-card-title>
             <v-list v-if="briefs.length">
                 <v-list-item v-for="b in briefs" :key="b.id" :href="'/packages/brief/' + b.id">
                     <v-list-item-title>${ b.title }</v-list-item-title>

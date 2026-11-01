@@ -101,11 +101,15 @@ async def create(
     return case
 
 
-async def ensure(db: AsyncSession, slug: str, by=None) -> Case:
+async def ensure(
+    db: AsyncSession, slug: str, by=None, name=None, description=""
+) -> Case:
     """For seeds and scripts that write acquisitions directly, not for intake."""
     found = await db.scalar(select(Case).where(Case.slug == slug))
     if found is None:
-        found = Case(slug=slug, name=slug, description="", created_by=by)
+        found = Case(
+            slug=slug, name=name or slug, description=description, created_by=by
+        )
         db.add(found)
         await db.flush()
     return found

@@ -21,6 +21,7 @@ from quart import (
 from quart_security import auth_required, current_user
 from sqlalchemy import func, select
 
+from sealbook.cases.models import Case
 from sealbook.ledger.contracts import PRIVATE_PROPS, Prop, StatementIn
 from sealbook.ledger.models import Payload, RunEvent, Statement
 from sealbook.ledger.write import append, principal_for_user
@@ -91,8 +92,9 @@ async def page():
 
 @monitor.get("/api/monitor/investigations")
 async def investigations():
-    """Case switcher options for the top bar on every page."""
-    return _json({"items": await data.investigations(g.db_session)})
+    """Case switcher options for the top bar on every page, with each case's name."""
+    names = dict((await g.db_session.execute(select(Case.slug, Case.name))).all())
+    return _json({"items": await data.investigations(g.db_session), "names": names})
 
 
 @monitor.get("/api/monitor/panels")

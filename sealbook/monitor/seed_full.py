@@ -511,8 +511,11 @@ async def seed_full(session, app) -> dict:
         raise click.ClickException(f"{CASE} is already seeded")
     s = Seeder(session)
     s.case = CASE
-    for slug in (CASE, EVAL):
-        await ensure_case(session, slug)
+    for slug, name in (
+        (CASE, "Branch 999 and Jdeideh"),
+        (EVAL, "Search evaluation set"),
+    ):
+        await ensure_case(session, slug, name=name)
     owner, colleague, third = await users(session, app)
     senior = await s.analyst("senior-analyst", CASE)
     extractor = await system_agent(session, "extractor")

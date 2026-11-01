@@ -62,7 +62,7 @@
 <v-container fluid class="dv-page py-4">
   <div class="dv-head">
     <h1>Discover</h1>
-    <p v-if="loaded">${ plural(items.length, 'finding') } proposed by agents in ${ caseSel || 'all investigations' }, ${ newCount } new since you last looked</p>
+    <p v-if="loaded">${ plural(items.length, 'finding') } proposed by agents in ${ caseSel ? caseName(caseSel) : 'all investigations' }, ${ newCount } new since you last looked</p>
     <p v-else>Loading</p>
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>

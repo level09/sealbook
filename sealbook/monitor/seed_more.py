@@ -89,6 +89,7 @@ def R(who, spelling, place, prop, d1, d2=None, event=None):
 # People are (Arabic, English, English variant) per key.
 CASES = {
     "case-demo-03": {
+        "name": "Al Jadida siege, 2016",
         "title": "Aleppo, Al Jadida quarter under siege, 2016",
         "people": {
             "a1": ("حسام وليد الحلبي", "Hussam Walid al-Halabi", "Husam Waleed Halabi"),
@@ -258,6 +259,7 @@ CASES = {
         ],
     },
     "case-demo-04": {
+        "name": "Raqqa displacement, 2017",
         "title": "Displacement from Raqqa, 2017",
         "people": {
             "b1": (
@@ -434,6 +436,7 @@ CASES = {
         ],
     },
     "case-demo-05": {
+        "name": "Branch 418 detentions",
         "title": "Detention and disappearance, Branch 418 near Homs, 2012 to 2014",
         "people": {
             "c1": ("طارق منير الشامي", "Tarek Munir al-Shami", "Tariq Mounir Shami"),
@@ -633,6 +636,7 @@ CASES = {
         ],
     },
     "case-demo-06": {
+        "name": "Aleppo market shelling",
         "title": "Market shelling, Aleppo, November 2016",
         "people": {
             "d1": (
@@ -922,7 +926,7 @@ async def decide(s, reviewer, senior, plan: dict) -> None:
 
 async def seed_case(s, session, case_id, case, ctx) -> dict:
     s.case = case_id
-    await ensure_case(session, case_id)
+    await ensure_case(session, case_id, name=case["name"], description=case["title"])
     owner, analysts, senior, reviewer, extractor, importer = ctx
     mine = [owner, *analysts]
     principals = [

@@ -17,7 +17,7 @@
 {% endblock %}
 {% block content %}
 <v-container fluid class="in-page py-4">
-  <div class="in-head"><h1>Incidents</h1><p v-if="items">${ plural(items.length, 'accepted incident') } in ${ caseSel || 'all investigations' }</p></div>
+  <div class="in-head"><h1>Incidents</h1><p v-if="items">${ plural(items.length, 'accepted incident') } in ${ caseSel ? caseName(caseSel) : 'all investigations' }</p></div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3">${ error }</v-alert>
   <div v-if="items && items.length" class="in-list" role="list">
     <a v-for="i in items" :key="i.id" class="in-row" role="listitem" :href="'/incidents/' + i.id">

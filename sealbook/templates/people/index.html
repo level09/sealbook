@@ -15,7 +15,7 @@
             </v-card-text>
             <v-divider></v-divider>
             <div class="px-6 pt-4 text-caption text-medium-emphasis">
-                ${ caption } in ${ caseSel || 'all investigations' }
+                ${ caption } in ${ caseSel ? caseName(caseSel) : 'all investigations' }
             </div>
             <v-list>
                 <v-list-item v-if="!shown.length">${ empty }</v-list-item>

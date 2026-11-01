@@ -299,7 +299,7 @@ async def seed(session) -> dict:
     s = Seeder(session)
     if await seeded(session):
         raise click.ClickException(f"{CASE} is already seeded")
-    await ensure_case(session, CASE)
+    await ensure_case(session, CASE, name="Branch 999 register, 2013")
 
     analyst = await s.analyst("analyst-1")
     hasher = await s.principal("hasher")

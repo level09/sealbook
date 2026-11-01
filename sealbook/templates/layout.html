@@ -96,7 +96,7 @@
                 <template #append v-if="n.count"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
             </v-list-item>
             <v-list-subheader v-if="caseList.length" class="sb-sub">Cases</v-list-subheader>
-            <v-list-item v-for="c in caseList" :key="c" :title="c" prepend-icon="ti ti-folder" :active="!!caseTab && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
+            <v-list-item v-for="c in caseList" :key="c" class="sb-case" :title="caseName(c)" prepend-icon="ti ti-folder" :active="!!caseTab && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
             <v-list-item v-if="caseList.length" title="All cases" prepend-icon="ti ti-folders" :active="!!caseTab && !caseSel" color="primary" @click="openCase('all')"></v-list-item>
         </v-list>
         <template #append>
@@ -124,10 +124,10 @@
         <header v-if="caseTab" class="case-head">
             <div class="case-title">
                 <div>
-                    <h1 class="text-title-large">${ caseSel || 'All cases' }</h1>
+                    <h1 class="text-title-large">${ caseSel ? caseName(caseSel) : 'All cases' }</h1>
                     <p v-if="caseFacts">${ caseFacts }</p>
                 </div>
-                <v-btn color="primary" variant="flat" prepend-icon="ti ti-upload" href="/ingest/">${ caseSel ? 'Add evidence to this case' : 'Add evidence' }</v-btn>
+                <v-btn color="primary" variant="flat" prepend-icon="ti ti-upload" :href="caseSel ? '/ingest/?investigation=' + encodeURIComponent(caseSel) : '/ingest/'">${ caseSel ? 'Add evidence to this case' : 'Add evidence' }</v-btn>
             </div>
             <nav class="case-tabs" aria-label="Case pages">
                 <a v-for="t in caseTabs" :key="t.to" :href="t.to" :class="{on: t === caseTab}" :aria-current="t === caseTab ? 'page' : null">${ t.title }<span v-if="t.count != null" class="n">${ t.count }</span></a>
@@ -250,6 +250,7 @@
                 caseSel: storedCase(),
                 caseList: [],
                 caseDetails: [],
+                caseNames: {},
                 shellQ: new URLSearchParams(location.search).get('q') || '',
                 palOpen: false,
                 palQ: '',
@@ -295,9 +296,9 @@
             },
             caseInfo() { return this.caseDetails.find(c => c.slug === this.caseSel) || null; },
             caseOptions() {
-                return [...this.caseList.map(c => ({title: c, value: c})), {title: 'All investigations', value: 'all'}];
+                return [...this.caseList.map(c => ({title: this.caseName(c), value: c})), {title: 'All investigations', value: 'all'}];
             },
-            caseLabel() { return this.caseSel || 'All investigations'; },
+            caseLabel() { return this.caseSel ? this.caseName(this.caseSel) : 'All investigations'; },
             unreadCount() { return this.navCounts.notifications || 0; },
             palAll() {
                 const pages = [
@@ -319,6 +320,8 @@
             bellOpen(open) { if (open) this.loadNotes(false); },
         },
         methods: {
+            // A case's name as people gave it; its slug is the key filters carry.
+            caseName(slug) { return this.caseNames[slug] || slug; },
             logout() {
                 document.getElementById('logout-form').submit();
             },
@@ -440,7 +443,7 @@
             window.addEventListener('keydown', this._shellKey);
             this._connectWs();
             this.loadNavCounts();
-            if (canRead) axios.get('/api/monitor/investigations').then(r => { this.caseList = r.data.items; });
+            if (canRead) axios.get('/api/monitor/investigations').then(r => { this.caseList = r.data.items; this.caseNames = r.data.names; });
             if (canRead && this.caseTab) axios.get('/api/cases').then(r => { this.caseDetails = r.data.items; }).catch(() => {});
             {% endif %}
         },

@@ -141,6 +141,8 @@ export function mount(boot) {
         this.error = '';
         try {
           this.it = (await api.get(`/api/evidence/${boot.sha}/item`)).data;
+          // The item's case is the page's case: the rail and its counts follow it.
+          if (this.it.investigation && this.caseSel !== this.it.investigation) { this.caseSel = this.it.investigation; this.loadNavCounts(); }
           document.title = `${this.it.title}, ${DOC[this.it.doc_type] || 'Evidence'}`;
           if (boot.with) this.other = (await api.get(`/api/evidence/${boot.with}/item`)).data;
           if (!boot.segment && !this.it.claims.length) this.tab = this.it.copies.length ? 'dups' : this.relations.length ? 'rel' : 'read';

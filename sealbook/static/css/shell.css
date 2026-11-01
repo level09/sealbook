@@ -152,6 +152,7 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .sb-rail.v-navigation-drawer { border-right: 1px solid var(--line) !important; }
 .sb-rail .v-list-item--active { font-weight: 600; }
 .sb-rail .v-list-item-title { white-space: normal; }
+.sb-rail .sb-case .v-list-item-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sb-rail .sb-sub { min-height: 28px; font-size: 11.5px; color: var(--ink-3); }
 .sb-rail .sb-foot { border-top: 1px solid var(--line); padding-top: 4px; }
 .sb-rail .sb-foot .v-list-item { min-height: 32px; }

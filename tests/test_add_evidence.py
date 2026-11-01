@@ -172,6 +172,7 @@ class IntakeTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(listed["case-rr"]["description"], "Detentions in 2013")
         switcher = await (await client.get("/api/monitor/investigations")).get_json()
         self.assertEqual(switcher["items"], ["case-r", "case-rr"])
+        self.assertEqual(switcher["names"]["case-rr"], listed["case-rr"]["name"])
 
     async def test_intake_refuses_an_unknown_case_and_bad_fields(self):
         client = await self.client()

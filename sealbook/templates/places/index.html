@@ -21,7 +21,7 @@
 <v-container fluid class="en-page py-4">
   <div class="d-flex align-baseline ga-3 flex-wrap mb-3">
     <h1 class="text-headline-small">Places</h1>
-    <p class="en-muted ma-0">Where claims resolve in ${ caseSel || 'all investigations' }. Names stay unresolved until a person confirms a place.</p>
+    <p class="en-muted ma-0">Where claims resolve in ${ caseSel ? caseName(caseSel) : 'all investigations' }. Names stay unresolved until a person confirms a place.</p>
   </div>
   <section class="en-panel">
     <v-tabs v-model="tab" density="compact" class="px-2" style="border-bottom: 1px solid var(--line)">
