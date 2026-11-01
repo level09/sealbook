@@ -35,6 +35,8 @@ from sealbook.agents import (
 )
 from sealbook.agents.read import FIXED, Claim, Handles
 from sealbook.cases import service as cases
+from sealbook.collaboration import intake
+from sealbook.collaboration.notifications import notify
 from sealbook.ledger.contracts import Prop, Route, Tier
 from sealbook.ledger.models import Blob, Principal, Run, Statement
 from sealbook.ledger.write import principal_for_user, record_acquisition, verify_db
@@ -725,6 +727,64 @@ class AgentRunTest(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn(
             "Bassel", " ".join(x["text"] or "" for x in shown["brief"]["who"])
         )
+
+    async def test_brief_without_agents_is_written_by_rules_and_listed(self):
+        """Agents off: the finished batch still gets a brief, counted and written
+        by rules, recorded as such, listed for its owner until read."""
+        off = mock.patch("sealbook.agents.views.missing", return_value=["AGENT_MODEL"])
+        with off:
+            async with ext.async_session_factory() as s:
+                await intake.agents(s, self.batch, CASE, self.user.id)
+                [run] = await brief.runs(s, self.batch)
+                self.assertEqual(
+                    (run.model_requested, run.route), (read.RULES, "local")
+                )
+                linked = await s.scalar(select(func.count()).where(Run.tool == "link"))
+                self.assertEqual(linked, 0)
+                await notify(
+                    s,
+                    self.user.id,
+                    "intake_done",
+                    "Intake finished",
+                    "2 runs done",
+                    "/sources",
+                    f"batch:{self.batch}",
+                )
+                rid = run.id
+            await process(ext.async_session_factory, rid)
+            async with ext.async_session_factory() as s:
+                run = await s.get(Run, rid)
+                self.assertEqual(run.status, "done", run.error)
+                self.assertEqual(
+                    (run.model_served, run.provider_served), (read.RULES, "sealbook")
+                )
+                self.assertNotIn("demo", run.inputs)
+            client = self.app.test_client()
+            headers = await self.login(client)
+            listed = orjson.loads(
+                await (
+                    await client.get(f"/api/agents/briefs?investigation={CASE}")
+                ).get_data()
+            )
+            [item] = listed["items"]
+            self.assertTrue(item["version"]["rules"])
+            self.assertEqual(len(item["brief"]["arrived"]), 2)
+            again = await client.post(
+                "/api/agents/brief",
+                json={"item": {"batch": self.batch}},
+                headers=headers,
+            )
+            self.assertEqual(again.status_code, 202)
+            read_ = await client.post(
+                "/api/notifications/read",
+                json={"item": {"ids": [item["notification"]]}},
+                headers=headers,
+            )
+            self.assertEqual(read_.status_code, 200)
+            listed = orjson.loads(
+                await (await client.get("/api/agents/briefs")).get_data()
+            )
+            self.assertEqual(listed["items"], [])
 
     async def test_linker_proposes_once_and_respects_rejection(self):
         _, out = await self.agent("link", focus=f"batch:{self.batch}")

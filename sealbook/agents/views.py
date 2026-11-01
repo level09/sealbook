@@ -23,7 +23,7 @@ from sealbook.agents import (
     tasks,
 )
 from sealbook.agents.models import AgentTask
-from sealbook.agents.read import read_output
+from sealbook.agents.read import RULES, read_output
 from sealbook.collaboration.models import Notification
 from sealbook.ledger.models import Acquisition, Blob, Run, Statement
 from sealbook.ledger.write import principal_for_user
@@ -201,8 +201,6 @@ async def regenerate():
         .limit(1)
     ):
         abort(404)
-    if gap := missing():
-        return _json({"reason": "off", "missing": gap}, 409)
     if any(r.status in ("queued", "running") for r in await brief.runs(db, batch)):
         return _json(
             {"reason": "busy", "message": "A new version is being written."}, 409
@@ -210,7 +208,9 @@ async def regenerate():
     await principal_for_user(
         db, current_user.id, current_user.name or current_user.email
     )
-    run = await brief.queue(db, batch, current_user.id, Config.AGENT_MODEL)
+    # With the agents off the brief is written by its rules alone.
+    model = RULES if missing() else Config.AGENT_MODEL
+    run = await brief.queue(db, batch, current_user.id, model)
     await db.commit()
     return _json({"run": str(run.id)}, 202)
 

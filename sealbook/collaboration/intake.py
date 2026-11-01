@@ -79,14 +79,20 @@ async def _finished(Session, run_id):  # noqa: N803
 
 
 async def agents(s, batch, investigation, owner):
-    """The linker first, so the brief can name the links it proposed. Off until the
-    local route and an agent model are set; a batch then simply has no brief."""
-    from sealbook.agents import brief, linker
+    """The linker first, so the brief can name the links it proposed. With the
+    agents off there is no linker, and the brief is written by its rules alone:
+    the counts, and one templated line per connection and disagreement."""
+    from sealbook.agents import brief, linker, read
     from sealbook.agents.views import missing
     from sealbook.settings import Config
 
-    if missing() or not investigation or await brief.runs(s, batch):
+    if not investigation or await brief.runs(s, batch):
         return
-    await linker.queue(s, investigation, owner, Config.AGENT_MODEL, f"batch:{batch}")
-    await brief.queue(s, batch, owner, Config.AGENT_MODEL)
+    if missing():
+        await brief.queue(s, batch, owner, read.RULES)
+    else:
+        await linker.queue(
+            s, investigation, owner, Config.AGENT_MODEL, f"batch:{batch}"
+        )
+        await brief.queue(s, batch, owner, Config.AGENT_MODEL)
     await s.commit()

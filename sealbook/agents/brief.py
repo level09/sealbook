@@ -587,8 +587,9 @@ def payload(g: dict, cands: dict, lines: dict) -> dict:
 
 
 def fixed_answer(p: dict) -> dict:
-    """The demo and test stand-in for the model: one templated sentence per
-    candidate, every citation it was given, the first five actions in order."""
+    """The brief without a model (agents off, the demo, tests): one templated
+    sentence per candidate, every citation it was given, the first five actions in
+    order."""
 
     def cites(*groups):
         return [c["h"] for g in groups for c in g]
@@ -757,6 +758,13 @@ async def brief(c) -> str:
         lambda a: validate(a, cands, h, g["case"].claims)[1],
     )
     written, dropped = validate(asked["answer"], cands, h, g["case"].claims)
+    # A live model may skip every step (deepseek-v4.1-flash did on the demo batch);
+    # the steps are built by rule, so the rule order stands in.
+    by_rule = not written["next"] and bool(cands["actions"])
+    if by_rule:
+        written["next"] = validate(fixed_answer(p), cands, h, g["case"].claims)[0][
+            "next"
+        ]
     sections = lines | written
     # Recheck what every line cites against the ledger as it stands now.
     gone = await invisible(c.s, sections)
@@ -772,6 +780,7 @@ async def brief(c) -> str:
         "investigation": g["investigation"],
         "sections": sections,
         "dropped": dropped,
+        "next_by_rule": by_rule,
         "valid": asked["valid"],
         "cost": {
             k: asked[k] for k in ("seconds", "prompt_tokens", "completion_tokens")
@@ -818,7 +827,8 @@ async def queue(db, batch: str, user_id: int, model: str) -> Run:
     run = Run(
         principal_id=agent.id,
         tool=TOOL,
-        route=Config.AGENT_ROUTE,
+        # Rules call no model; they run on this server.
+        route="local" if model == read.RULES else Config.AGENT_ROUTE,
         model_requested=model,
         inputs={"batch": batch, "for_user": user_id},
     )
@@ -836,6 +846,7 @@ def _cost(run: Run, out: dict | None) -> dict:
         "model": run.model_served or run.model_requested,
         "route": run.route,
         "fixed": run.model_requested == read.FIXED,
+        "rules": run.model_requested == read.RULES,
         "seconds": cost.get("seconds"),
         "tokens": (cost.get("prompt_tokens") or 0)
         + (cost.get("completion_tokens") or 0)

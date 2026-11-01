@@ -30,6 +30,7 @@ export const IntakeBrief = {
       const v = this.data?.version;
       if (!v) return '';
       if (v.fixed) return 'Fixed demo output, no model ran.';
+      if (v.rules) return 'Counted and written by rules; no model is set up, so no links were looked for.';
       const parts = [`Written by ${v.model} on the ${v.route} route`];
       if (v.seconds != null) parts.push(`in ${Math.round(v.seconds)} s`);
       if (v.tokens) parts.push(`${v.tokens.toLocaleString()} tokens`);
@@ -64,9 +65,8 @@ export const IntakeBrief = {
     <template v-else-if="!brief">
       <p v-if="data.pending" class="ib-muted"><v-progress-circular indeterminate size="14" width="2" class="me-1"></v-progress-circular> The brief is being written.</p>
       <p v-else-if="data.failed" class="ib-muted">The brief could not be written: {{ data.failed.error }}</p>
-      <p v-else-if="data.missing.length" class="ib-muted">No brief: the agents are off until {{ data.missing.join(' and ') }} {{ data.missing.length > 1 ? 'are' : 'is' }} set on the server.</p>
       <p v-else class="ib-muted">No brief was written for this batch.</p>
-      <v-btn v-if="!compact && !data.pending && !data.missing.length" size="small" variant="outlined" prepend-icon="ti ti-sparkles" :loading="busy" @click="regenerate">Write a brief</v-btn>
+      <v-btn v-if="!compact && !data.pending" size="small" variant="outlined" prepend-icon="ti ti-sparkles" :loading="busy" @click="regenerate">Write a brief</v-btn>
     </template>
     <template v-else>
       <section v-for="s in shown" :key="s.key" class="ib-sec" :class="'ib-' + s.key">
@@ -86,7 +86,7 @@ export const IntakeBrief = {
         <span class="ib-muted"><i class="ti ti-robot" aria-hidden="true"></i> {{ cost }} Every line cites the claims it rests on; nothing here is accepted.</span>
         <template v-if="!compact">
           <v-select v-if="versions.length > 1" :model-value="version" :items="versions" density="compact" hide-details variant="outlined" class="ib-ver" aria-label="Brief version" @update:model-value="pick"></v-select>
-          <v-btn size="small" variant="text" prepend-icon="ti ti-refresh" :loading="busy || !!data.pending" :disabled="!!data.missing.length" @click="regenerate">Write again</v-btn>
+          <v-btn size="small" variant="text" prepend-icon="ti ti-refresh" :loading="busy || !!data.pending" @click="regenerate">Write again</v-btn>
         </template>
       </div>
     </template>

@@ -33,6 +33,9 @@ from sealbook.search.arabic import name_keys
 from sealbook.settings import Config
 
 FIXED = "sealbook-demo-fixed-output"
+# No model is set up: the agent's own rule-written answer, which a run records as
+# such, not as a demo.
+RULES = "sealbook-rules"
 
 
 @dataclass(frozen=True)
@@ -342,7 +345,7 @@ async def ask(
     c, name: str, system: str, payload: dict, schema: dict, fixed, check=None
 ) -> dict:
     """One structured call on the run's route, or the fixed answer when the run asked
-    for the demo model. Returns {"answer", "valid", "seconds", tokens}; an answer
+    for the demo model or for rules (no model set up). Returns {"answer", "valid", "seconds", tokens}; an answer
     that breaks the schema is reported invalid and used as empty.
 
     A model answer that breaks the schema, or holds items the agent's own `check`
@@ -368,11 +371,15 @@ async def ask(
         "reasoning_effort": Config.AGENT_REASONING,
     }
     usage = {}
-    if c.run.model_requested == FIXED:
+    if c.run.model_requested in (FIXED, RULES):
         answer = fixed(payload)
-        raw = orjson.dumps({"model": FIXED, "answer": answer, "demo": True})
-        c.run.endpoint, c.run.model_served = "demo:fixed-output", FIXED
-        c.run.provider_served = "demo"
+        demo = c.run.model_requested == FIXED
+        raw = orjson.dumps(
+            {"model": c.run.model_requested, "answer": answer, "demo": demo}
+        )
+        c.run.endpoint = "demo:fixed-output" if demo else "rules"
+        c.run.model_served = c.run.model_requested
+        c.run.provider_served = "demo" if demo else "sealbook"
         c.run.raw_output_ref = (
             await blobs.put(c.s, raw, "application/json", Config.BLOB_DIR)
         ).sha256
