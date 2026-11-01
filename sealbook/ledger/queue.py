@@ -14,6 +14,9 @@ from sealbook.settings import Config
 # A model call must end inside its run's lease, or another worker reclaims the run
 # and calls again.
 LEASE = timedelta(seconds=max(300, Config.ROUTE_LOCAL_TIMEOUT + 60))
+# Search indexing waits behind reads, so what a person just added is read first
+# even when a case's whole archive is queued for indexing.
+BACKGROUND = ["embed", "embed_actor", "index", "match", "discover"]
 
 _CLAIM = text(
     """
@@ -24,7 +27,7 @@ _CLAIM = text(
         where ((status = 'queued' and available_at <= now())
             or (status = 'running' and lease_until < now()))
           and (cardinality(cast(:tools as text[])) = 0 or tool = any(cast(:tools as text[])))
-        order by available_at
+        order by tool = any(cast(:background as text[])), available_at
         for update skip locked
         limit 1
     )
@@ -35,7 +38,11 @@ _CLAIM = text(
 
 async def claim(session: AsyncSession, tools: list[str] | None = None) -> Run | None:
     """Claim the next due run, or None. Commit promptly so the lease is visible."""
-    params = {"lease": LEASE.total_seconds(), "tools": tools or []}
+    params = {
+        "lease": LEASE.total_seconds(),
+        "tools": tools or [],
+        "background": BACKGROUND,
+    }
     run_id = (await session.execute(_CLAIM, params)).scalar()
     return await session.get(Run, run_id) if run_id else None
 

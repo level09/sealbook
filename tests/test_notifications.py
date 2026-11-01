@@ -248,6 +248,14 @@ class NotificationTest(CollabCase):
                 )
                 s.add(run)
                 runs.append(run)
+                # Search indexing still queued does not hold the batch open.
+                s.add(
+                    Run(
+                        principal_id=who.id,
+                        tool="embed",
+                        inputs={"acquisition": str(acq.id)},
+                    )
+                )
             await s.flush()
             ids = [r.id for r in runs]
             runs[0].status = "done"

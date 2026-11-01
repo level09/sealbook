@@ -276,6 +276,19 @@ class LedgerDbTest(LedgerDbCase):
             await s.rollback()
             await t.rollback()
 
+    async def test_reads_are_claimed_before_older_indexing(self):
+        """A read queued after a backlog of indexing runs is claimed first."""
+        read, index = f"q-{uuid.uuid4().hex}", "index"
+        async with self.Session() as s, s.begin():
+            s.add(Run(principal_id=self.agent.id, tool=index))
+            await s.flush()
+            s.add(Run(principal_id=self.agent.id, tool=read))
+        async with self.Session() as s:
+            await s.begin()
+            first = await queue.claim(s, [index, read])
+            self.assertEqual(first.tool, read)
+            await s.rollback()
+
 
 if __name__ == "__main__":
     unittest.main()

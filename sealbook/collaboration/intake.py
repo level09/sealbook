@@ -10,6 +10,7 @@ from sqlalchemy import Text, cast, func, select, text
 
 from sealbook.collaboration.models import Notification
 from sealbook.collaboration.notifications import notify
+from sealbook.ledger import queue
 from sealbook.ledger.models import Acquisition, Principal, Run
 
 log = logging.getLogger(__name__)
@@ -44,7 +45,11 @@ async def _finished(Session, run_id):  # noqa: N803
             (
                 await s.execute(
                     select(Run.status, func.count())
-                    .where(Run.inputs["acquisition"].astext.in_(ids))
+                    .where(
+                        Run.inputs["acquisition"].astext.in_(ids),
+                        # Search indexing may trail; the brief and links read claims.
+                        Run.tool.not_in(queue.BACKGROUND),
+                    )
                     .group_by(Run.status)
                 )
             ).all()
