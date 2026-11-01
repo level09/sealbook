@@ -18,9 +18,17 @@ workflow with the typing gone.
    scenarios for To do, the work steps, the first pass and same-event groups.
 4. **A brief without a model.** Done 2026-11-01. Counts and rule-written lines when the
    agents are off; rule-ordered next steps when a model skips them.
-5. **Import from Bayanat.** Pending. Read Bayanat's JSON export into sources and claims
+5. **Work together, live.** Done 2026-11-01. To do, Sources, the rail counts and an
+   item's page follow colleagues' assignments, returns, decisions and review requests
+   without a reload, across server processes, and an item's page says who else has it
+   open.
+6. **Pictures found by what they show.** Done 2026-11-01. The first pass's words for a
+   photo or video are searchable in English and Arabic and compared with what texts
+   say, labelled as unconfirmed. They do not tie a picture to one event: it names no
+   place or date.
+7. **Import from Bayanat.** Pending. Read Bayanat's JSON export into sources and claims
    signed with the provenance "imported from Bayanat", so a team brings its work along.
-6. **First hour, tested.** Pending. An analyst from the team works a batch on
+8. **First hour, tested.** Pending. An analyst from the team works a batch on
    app.sealbook.org from upload to a finalized item, and what slows them becomes the
    next list.
 
@@ -141,3 +149,9 @@ Descriptions, titles and labels were done as the first pass (2026-10-31).
   then use its word boxes to draw OCR claims on the scan.
 - Video frames chosen at scene changes rather than evenly; description lines in Arabic.
 - Case tabs that switch without a page load, with a count on every tab.
+- A photo's own place and date (geolocation, file dates) fed to the same-event rule, so
+  a bare picture can join an event; today it never does.
+- Runner results (a first pass done, new claims) reloading To do and Sources live, as
+  people's work already does.
+- A stronger agent model for the intake brief: the default skipped every model section
+  in a live run (2026-11-01).
