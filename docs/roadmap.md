@@ -3,7 +3,28 @@
 This is the one plan. [Status](status.md) says what exists; this file says what comes
 next, in order. Update both in the same change.
 
-## Now: the analyst's method, done first by agents (2026-10-31)
+## Now: Bayanat analysts at home (2026-11-01)
+
+The team works in Bayanat today. The first hour in Sealbook should feel like their own
+workflow with the typing gone.
+
+1. **Their work steps.** Done 2026-11-01, see [status](status.md). Each item shows its
+   stage in Bayanat's words (Machine created, Assigned, Updated, Peer review, Returned,
+   Finalized), with assign, mark updated and return on the item, and To do opens on
+   Assigned to you.
+2. **One queue.** Done 2026-11-01. The Desk points to To do instead of repeating it, and
+   a set read as two findings is one row.
+3. **Their words in the Guide.** Done 2026-11-01. A Bayanat to Sealbook table and
+   scenarios for To do, the work steps, the first pass and same-event groups.
+4. **A brief without a model.** Done 2026-11-01. Counts and rule-written lines when the
+   agents are off; rule-ordered next steps when a model skips them.
+5. **Import from Bayanat.** Pending. Read Bayanat's JSON export into sources and claims
+   signed with the provenance "imported from Bayanat", so a team brings its work along.
+6. **First hour, tested.** Pending. An analyst from the team works a batch on
+   app.sealbook.org from upload to a finalized item, and what slows them becomes the
+   next list.
+
+## Done: the analyst's method, done first by agents (2026-10-31)
 
 Investigators coming from Bayanat (open source, AGPL-3.0) work by its published
 methodology: triage each item by content and reliability, give it an analyst title and a
@@ -108,7 +129,7 @@ notifications, watches and the research service.
 
 ## Gaps to close
 
-Descriptions, titles and labels moved to Now, step 1.
+Descriptions, titles and labels were done as the first pass (2026-10-31).
 
 1. **Typed relations with stated certainty.** Family, command, membership and document
    relations between subjects, pinned to evidence, with human certainty kept separate from

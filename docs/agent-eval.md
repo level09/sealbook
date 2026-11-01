@@ -419,8 +419,8 @@ On 2026-10-31, two trials each on OpenRouter's zero-retention route:
 | `deepseek/deepseek-v4.1-flash` | 0, 0 | 1.0, 1.0 | 0.929, 0.857 | 1, 0 | $0.05 / $0.50 |
 
 `mistralai/mistral-small-2603` and `qwen/qwen3.8-flash` failed every call on that
-route. Haiku is now the `cloud-zdr` default, so extraction and every first pass run
-on it; OCR keeps `OCR_MODEL`. On the same day Gemma 4 wrote one photo's first pass,
+route. Haiku is now the `cloud-zdr` default, so extraction runs on it; OCR keeps
+`OCR_MODEL`, and the first pass moved to its own `ASSESS_MODEL` the same day. On the same day Gemma 4 wrote one photo's first pass,
 then repeated an empty-boxed label until its 16,384 tokens ran out, in every try;
 Haiku wrote that photo's pass in 7 s for $0.0006 with fitting labels. A schema cap
 on list length would stop such a loop, but Gemini rejects `maxItems`.

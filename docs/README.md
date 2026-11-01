@@ -17,7 +17,7 @@ describes the code, its decisions and its limits for contributors.
 | [stk upstream notes](stk-upstream.md) | Framework issues and reusable pieces found while building Sealbook |
 | [Plan](roadmap.md) | The one plan: what comes next, in order |
 | [Research](research.md) | Borrowed patterns and DigUp references |
-| [Model choice](models.md) | Current local multimodal recommendation, alternatives and validation gap |
+| [Model choice](models.md) | The embedding model: hosted default, the private-server alternative and the validation gap |
 | [Development](development.md) | Detailed stk conventions |
 | [Design](design.md) | Requirements, core model, controls and dated research |
 

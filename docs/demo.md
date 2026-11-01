@@ -82,20 +82,21 @@ shows. Mark read, or open it in the Inbox, and the panel goes. The colleague
 
 Open `/desk`. Since you left lists the colleagues' and agents' work grouped by who
 and what, in plain words ("AI proposed 17 ages from Family intake sheet, version 1",
-"senior-analyst accepted 26 claims"). Needs you shows two review requests from analyst-2 (the Jdeideh arrest
-place and the corrected name حسن), a mention on that correction thread, and two
-assignments: the transfer order due in two days and the witness clip three days
-overdue. Mentions and replies name the claim and source they are about, as the
-bell does. Findings waiting lists what discovery proposed; Recent evidence shows the
-newest sources with their titles, kind and file name. Notice that nothing here is a fact yet: each row
-names its source and what it waits on.
+"senior-analyst accepted 26 claims"). The Next line counts what waits on you and opens
+To do, where Assigned to you lists the transfer order due in two days and the witness
+clip three days overdue, Asked of you the two review requests from analyst-2 (the
+Jdeideh arrest place and the corrected name حسن), and Items read for you the
+missing-person post with its first pass (the other, the appeal for Lina, is assigned to
+analyst-2). Recent evidence shows the newest sources
+with their titles, kind and file name. Notice that nothing here is a fact yet: each
+row names its source and what it waits on.
 
 The bell holds stored notifications: assigned work, replies, the mention, and
 "Intake finished" for the roster batch once the worker is done with it.
 
 ## Read your inbox
 
-Open `/inbox` from the rail. One list holds everything addressed to you, newest
+Open `/inbox` from the bell. One list holds everything addressed to you, newest
 first: the two requests from analyst-2 and the one you sent, the threads with
 replies and the mention, the transfer order due in two days, the witness clip
 overdue, and the finished intake batches. Unread items carry a dot; opening one

@@ -21,6 +21,7 @@ pg_trgm; it does not run its evidence migrations on SQLite.
 uv run stk db upgrade       # stk's migrations, then Sealbook's
 uv run stk install          # admin user
 uv run stk run              # localhost:5000
+uv run stk runner           # reads, indexes and agents: the queued runs
 uv run stk verify --json    # gate before every merge
 uv run stk smoke --json
 ```

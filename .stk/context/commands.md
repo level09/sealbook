@@ -29,7 +29,7 @@ Agent-operability commands:
 - `uv run stk smoke`
 - `uv run stk smoke --json`
 - `uv run stk report`
-- `uv run stk worker` (durable evidence jobs)
+- `uv run stk runner` (durable evidence runs; `--tool` limits it to some tools)
 - `uv run stk enrich --investigation case-name --limit 100` (local discovery jobs)
 - `uv run stk enrich --investigation case-name --limit 100 --after ACQUISITION_UUID` (next acquisition batch)
 - `uv run python -m acceptance.check_workflow` (populated local search/review browser check)

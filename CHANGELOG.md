@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased
+
+- The analyst's method, first pass by agents: triage, a title in English and
+  Arabic, fact-only description lines and Bayanat's alleged labels on text, photos
+  and video, each resting on the words, box or second it came from; peer review
+  with +label, -label and *note; roles and violation categories on incidents.
+- To do: one list of what waits on the analyst, opening on Assigned to you; the
+  Desk points there instead of repeating it; a shared presence and a candidate
+  incident over one set are one row.
+- Work stages in Bayanat's words on every item (Machine created, Assigned,
+  Updated, Peer review, Returned, Finalized), with assign, mark updated and return
+  on the evidence page and a Stage column on Sources.
+- The Guide opens with a Bayanat to Sealbook table and covers To do, the work
+  stages, the first pass and same-event groups.
+- The intake brief is written by its rules when no agent model is set up, and
+  next steps fall back to the rule order when a model skips them.
+- A case is one page with a tab per case page; same-event groups become incidents
+  in one decision.
+- Models: Gemini 4 Argon for OCR, Gemini 3.8 Flash for the first pass
+  (`ASSESS_MODEL`), Claude Haiku 5.5 as the zero-retention default.
+- stk 17.3.1: evidence runs are `uv run stk runner`; httpx2 and stk's netguard.
+- Docker Compose runs the runner, keeps evidence in a volume and serves TLS through
+  Caddy.
+- Plain words where offsets and internal names showed: "quoted text" instead of
+  character positions, "Content credentials" for C2PA, resemblances instead of the
+  noticer.
+
 ## v0.2.0-alpha, 2026-10-29
 
 First tagged alpha. Not production ready; measurements are on synthetic data and
