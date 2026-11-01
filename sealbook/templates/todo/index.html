@@ -24,7 +24,7 @@
 <v-container fluid class="td-page py-4">
   <div class="td-head">
     <h1>To do</h1>
-    <p v-if="d">${ total ? plural(total, 'thing') + ' waiting on you in ' + (caseSel || 'all investigations') + ', biggest first' : 'Nothing is waiting on you in ' + (caseSel || 'all investigations') }</p>
+    <p v-if="d">${ total ? plural(total, 'decision') + ' waiting on you in ' + (caseSel ? caseName(caseSel) : 'all investigations') + ', biggest first' : 'Nothing is waiting on you in ' + (caseSel ? caseName(caseSel) : 'all investigations') }${ d.claims ? ', and ' + (d.claims_more ? d.claims + ' or more' : d.claims.toLocaleString()) + ' single claims in Review' : '' }</p>
     <p v-else>Loading</p>
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3">${ error }</v-alert>
@@ -68,7 +68,7 @@
         <span><span class="t d-block">${ d.claims_more ? d.claims + ' or more claims' : plural(d.claims, 'claim') } waiting in Review</span><span class="s">accept or reject each with the source beside it</span></span><span class="td-pill">open</span></a>
     </section>
 
-    <v-empty-state v-if="!total" icon="ti ti-circle-check" title="Nothing waiting on you">
+    <v-empty-state v-if="!total && !d.claims" icon="ti ti-circle-check" title="Nothing waiting on you">
       <template #text>Add evidence and Sealbook reads it, then lists here what needs your decision.</template>
       <template #actions><v-btn href="/ingest" prepend-icon="ti ti-upload" variant="outlined">Add evidence</v-btn></template>
     </v-empty-state>

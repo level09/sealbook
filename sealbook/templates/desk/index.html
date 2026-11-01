@@ -36,7 +36,7 @@
 {% block content %}
 <v-container fluid class="desk-page py-4">
   <div class="desk-head">
-    <h1>${ caseSel || 'All investigations' }</h1>
+    <h1>${ caseSel ? caseName(caseSel) : 'All investigations' }</h1>
     <p>${ recentTotal === null ? 'Loading' : plural(recentTotal, 'source') }</p>
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
@@ -141,7 +141,7 @@ window.app = Vue.createApp({
     next() {
       if (this.waiting === null || !this.ev.loaded) return null;
       const todo = '/todo' + (this.caseSel ? '?investigation=' + encodeURIComponent(this.caseSel) : '');
-      if (this.waiting) return {text: `${plural(this.waiting, 'thing')} waiting on you, biggest first.`, href: todo, action: 'Open To do'};
+      if (this.waiting) return {text: `${plural(this.waiting, 'decision')} waiting on you, biggest first.`, href: todo, action: 'Open To do'};
       if (!this.ev.total) return {text: 'This case has no evidence yet. Add the first files or links.', href: '/ingest/', action: 'Add evidence'};
       return {text: 'Nothing is waiting on you. Search the case or browse its sources.', href: '/sources' + (this.caseSel ? '?investigation=' + encodeURIComponent(this.caseSel) : ''), action: 'Browse sources'};
     },

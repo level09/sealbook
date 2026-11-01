@@ -8,7 +8,7 @@
     <div class="ev"><v-skeleton-loader type="image, paragraph"></v-skeleton-loader><v-skeleton-loader type="list-item-three-line@4"></v-skeleton-loader><v-skeleton-loader type="list-item-two-line@4"></v-skeleton-loader></div>
   </template>
   <template v-if="it">
-    <nav class="ev-crumbs" aria-label="Breadcrumb"><span>${ it.investigation }</span> / <a href="/evidence">Evidence</a> / <span>${ it.title }</span></nav>
+    <nav class="ev-crumbs" aria-label="Breadcrumb"><span>${ caseName(it.investigation) }</span> / <a href="/evidence">Evidence</a> / <span>${ it.title }</span></nav>
     <div class="ev-head">
       <h1><i :class="ICON[it.kind]" class="r-tile is-source me-1" aria-hidden="true"></i>${ it.title } <span class="muted font-weight-medium">${ [DOC[it.doc_type] !== it.title ? DOC[it.doc_type] : null, it.filename !== it.title ? it.filename : null].filter(Boolean).join(', ') }</span></h1>
       <p class="mono muted" :title="it.sha256">${ short(it.sha256) }</p>
@@ -51,7 +51,7 @@
           <v-btn size="small" variant="text" :href="'/evidence/' + other.sha256" prepend-icon="ti ti-external-link">Open</v-btn>
           <v-btn size="small" variant="text" :href="'/evidence/' + it.sha256" prepend-icon="ti ti-x">Close</v-btn></header>
         <evidence-viewer :item="other" :claims="otherClaims" :marks="otherMarks" :focus="otherAt" :read="otherRead" :read-error="otherReadError" @revealed="revealed" @retry-read="loadOtherRead"></evidence-viewer>
-        <p v-if="otherCopy" class="ev-note pa-3">${ otherCopy.kind }: ${ otherCopy.why }. Here ${ ms(otherCopy.here[0]) }, there ${ ms(otherCopy.there[0]) }.</p>
+        <p v-if="otherCopy" class="ev-note pa-3">${ otherCopy.kind }: ${ otherCopy.why }.<template v-if="it.kind !== 'image'"> Here ${ ms(otherCopy.here[0]) }, there ${ ms(otherCopy.there[0]) }.</template></p>
       </section>
       <section v-else class="ev-panel ev-claims" aria-labelledby="ev-h-claims">
         <header><h2 id="ev-h-claims">Claims</h2><span class="muted">${ claims.length } from this source</span>
@@ -115,7 +115,7 @@
           <v-tabs-window-item value="dups">
             <div v-for="(d, i) in it.copies" :key="d.id" class="ev-row ev-rel" :class="{sel: cursor.list === 'copies' && cursor.i === i}" tabindex="-1" :data-row="'copies:' + i" @click="focusRow('copies', i)">
               <div class="d-flex ga-2 align-center"><media-thumb :locked="!doc(d.other).revealed" :sha="d.other" :kind="doc(d.other).kind" :file="doc(d.other).file" :caption="false" :width="72" :height="44"></media-thumb><div><strong>${ d.kind }</strong> <a :href="'/evidence/' + d.other">${ doc(d.other).title }</a> <v-chip size="x-small" color="agent" variant="tonal">${ d.tier }</v-chip>
-                <div class="why">${ d.why }. Here ${ ms(d.here[0]) }, there ${ ms(d.there[0]) }${ d.there[1] > d.there[0] ? ' to ' + ms(d.there[1]) : '' }.</div></div>
+                <div class="why">${ d.why }.<template v-if="it.kind !== 'image'"> Here ${ ms(d.here[0]) }, there ${ ms(d.there[0]) }${ d.there[1] > d.there[0] ? ' to ' + ms(d.there[1]) : '' }.</template></div></div>
                 <span class="ms-auto text-no-wrap" :class="d.strength === 'strong' ? 'font-weight-bold' : 'muted'">${ d.strength }</span></div>
               <div class="d-flex ga-1 mt-1 flex-wrap">
                 <template v-if="canDecide(d)"><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-check" @click.stop="decide(d, 'accept')">Confirm</v-btn><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-x" @click.stop="decide(d, 'reject')">Reject</v-btn></template>

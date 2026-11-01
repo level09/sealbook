@@ -151,16 +151,17 @@ def moments(value: dict, as_query: bool) -> tuple[list[int], list[int]]:
 def copy_reason(value: dict) -> tuple[str, str, str]:
     """(kind, why, strength) of a media match, read from its own measurements."""
     if pic := value.get("picture"):
-        n, (hit, total) = len(pic["sample_pairs"]), pic["query_coverage"]
+        hit, total = pic["query_coverage"]
         why = (
-            f"{n} frame pair{'s' if n != 1 else ''} within Hamming distance "
-            f"{pic['max_distance']}, {hit} of {total} distinct query frames matched"
+            "The same picture by its fingerprint, even resized or recompressed"
+            if total == 1
+            else f"{hit} of {total} sampled frames show the same picture"
         )
         return "Re-upload", why, "strong"
     snd = value["sound"]
     why = (
-        f"{snd['aligned_landmarks']} of {snd['shared_landmarks']} shared sound "
-        f"landmarks agree on an offset of {snd['offset_ms'] / 1000:.2f} s"
+        f"The same sound: {snd['aligned_landmarks']} of {snd['shared_landmarks']} "
+        "matching points line up"
     )
     strong = snd["aligned_landmarks"] >= SOUND_STRONG_LANDMARKS
     return "Same recording", why, "strong" if strong else "weak"

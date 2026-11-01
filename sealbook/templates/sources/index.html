@@ -33,7 +33,7 @@
 <v-container fluid class="src-page py-4">
   <div class="src-head">
     <h1 class="text-headline-small">Sources</h1>
-    <p>${ total === null ? 'Loading' : total.toLocaleString() }${ filtered ? ' matching' : '' } in ${ caseSel || 'all investigations' }</p>
+    <p>${ total === null ? 'Loading' : total.toLocaleString() }${ filtered ? ' matching' : '' } in ${ caseSel ? caseName(caseSel) : 'all investigations' }</p>
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
   <section class="src-panel">
@@ -89,7 +89,7 @@
       <template #item.claims="{ item }"><span :title="item.pending ? item.pending + ' pending review' : null">${ item.claims }</span></template>
       <template #item.findings="{ item }"><span v-if="item.findings" class="text-agent"><i class="ti ti-robot" aria-hidden="true"></i> ${ item.findings }</span></template>
       <template #item.assignee="{ item }"><span v-if="item.assignee" class="text-no-wrap">${ item.assignee.name }<span v-if="item.due" class="text-caption" :class="late(item.due) ? 'text-overdue' : 'src-muted'" :title="'due ' + item.due">${ (late(item.due) ? ' overdue ' : ' due ') + item.due.slice(5) }</span></span><span v-else class="src-muted">unassigned</span></template>
-      <template #item.stage="{ item }"><span class="text-no-wrap" :class="{'src-muted': ['New', 'Machine created'].includes(item.stage)}">${ item.stage }</span></template>
+      <template #item.stage="{ item }"><span class="text-no-wrap" :class="{'src-muted': ['New', 'Machine created'].includes(item.stage)}">${ item.stage }</span><v-chip v-if="['failed', 'processing'].includes(item.status)" size="x-small" variant="outlined" class="ms-1" :color="item.status === 'failed' ? 'negative' : undefined">${ item.status }</v-chip></template>
       <template #item.status="{ item }"><v-chip size="small" variant="outlined" :color="item.status === 'needs review' ? 'agent' : item.status === 'failed' ? 'negative' : undefined">${ item.status }</v-chip></template>
       <template #no-data><v-empty-state icon="ti ti-files-off" title="No sources match" text="Clear a filter or pick another case."></v-empty-state></template>
     </v-data-table-server>
@@ -136,7 +136,7 @@ const ALL_HEADERS = [
   {title: 'Credentials', key: 'c2pa', align: 'center'}, {title: 'Claims', key: 'claims', align: 'end'},
   {title: 'Open findings', key: 'findings', align: 'end'}, {title: 'Status', key: 'status'},
 ];
-const DEFAULT_COLS = ['type', 'title', 'pass', 'stage', 'assignee', 'acquired_at', 'claims', 'status'];
+const DEFAULT_COLS = ['type', 'title', 'pass', 'stage', 'assignee', 'acquired_at', 'claims'];
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* per-viewer convenience only */ } },

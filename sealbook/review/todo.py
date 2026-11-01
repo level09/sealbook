@@ -218,8 +218,9 @@ async def todo(db, user, investigation: str | None) -> dict:
     )
     read = [r for r in read if f"blob:{r['sha']}" not in taken]
     return {
-        # The page heading and the rail badge both show this number.
-        "total": len(work) + len(mine) + len(read) + len(groups) + len(found) + claims,
+        # The page heading and the rail badge both show this number: the decisions
+        # listed one by one. Single claims are the case's backlog, counted apart.
+        "total": len(work) + len(mine) + len(read) + len(groups) + len(found),
         "assigned": work,
         "asked": mine,
         "triage": read,
