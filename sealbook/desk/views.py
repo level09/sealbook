@@ -49,11 +49,6 @@ async def needs():
     return output(await data.needs(g.db_session, current_user, *_args()))
 
 
-@bp.get("/api/desk/findings")
-async def findings():
-    return output(await data.findings(g.db_session, *_args()))
-
-
 @bp.get("/api/desk/recent")
 async def recent():
     f = sources.parse(request.args, current_user.id)

@@ -219,6 +219,38 @@ class AssignmentTest(CollabCase):
         status, _ = await self.bulk(eve, self.blob_subjects())
         self.assertEqual(status, 403)
 
+    async def test_stage_follows_the_work_and_todo_lists_it(self):
+        """Assigned, updated, returned: the item's stage, the assignee's To do and
+        the shared triage list all follow the one assignment row."""
+        alice, bob = await self.client("alice"), await self.client("bob")
+        sha = self.blobs["inv-a"][0]
+
+        async def stage():
+            body = await (await bob.get(f"/api/evidence/{sha}/item")).get_json()
+            assert "work" in body, body
+            return body["work"]["stage"], body["work"]["assignment"]
+
+        self.assertEqual((await stage())[1], None)
+        await self.bulk(alice, [f"blob:{sha}"], to="bob")
+        word, a = await stage()
+        self.assertEqual((word, a["assignee"]["id"]), ("Assigned", self.ids["bob"]))
+        todo = await (await bob.get("/api/todo?investigation=inv-a")).get_json()
+        self.assertEqual([r["sha"] for r in todo["assigned"]], [sha])
+        self.assertNotIn(sha, [r["sha"] for r in todo["triage"]])
+        for who, status, want in (
+            (bob, "done", "Updated"),
+            (alice, "returned", "Returned"),
+        ):
+            r = await who.patch(
+                f"/api/assignments/{a['id']}",
+                headers=who.csrf,
+                json={"item": {"status": status}},
+            )
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual((await stage())[0], want)
+        todo = await (await bob.get("/api/todo?investigation=inv-a")).get_json()
+        self.assertEqual(todo["assigned"][0]["status"], "returned")
+
 
 if __name__ == "__main__":
     unittest.main()

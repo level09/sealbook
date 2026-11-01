@@ -5,6 +5,7 @@ from sqlalchemy import Text, and_, func, or_, select
 from sqlalchemy.orm import aliased
 
 from sealbook import method
+from sealbook.collaboration.models import Assignment
 from sealbook.discovery.evidence import granted
 from sealbook.discovery.service import available
 from sealbook.ledger.contracts import Prop, Tier
@@ -16,8 +17,10 @@ from sealbook.ledger.models import (
     Statement,
     StatementTier,
 )
+from sealbook.monitor import data as mdata
 from sealbook.monitor import filter as mfilter
 from sealbook.review import events, findings, queue
+from sealbook.sources import data as sources
 
 LIMIT = 50
 
@@ -81,6 +84,69 @@ async def asked(db, user) -> list[dict]:
     ]
 
 
+async def _about(db, shas) -> dict:
+    """The item's kind, and whether its free-text title must stay hidden: sensitive
+    when any acquisition says so or none set it, as on the evidence page."""
+    return {
+        sha: (mime, sensitive)
+        for sha, mime, sensitive in await db.execute(
+            select(
+                Blob.sha256,
+                Blob.mime,
+                func.coalesce(
+                    func.bool_or(Acquisition.sensitivity == "sensitive"), True
+                ),
+            )
+            .outerjoin(Acquisition, Acquisition.blob_sha256 == Blob.sha256)
+            .where(Blob.sha256.in_(shas))
+            .group_by(Blob.sha256, Blob.mime)
+        )
+    }
+
+
+async def assigned(db, user, investigation: str | None) -> list[dict]:
+    """Items assigned to this person that are still theirs to work: open ones, and
+    ones a colleague returned. Returned first, then by due date."""
+    q = select(Assignment).where(
+        Assignment.assignee_id == user.id,
+        Assignment.status.in_(("open", "returned")),
+        Assignment.subject.startswith("blob:"),
+    )
+    if investigation:
+        q = q.where(Assignment.investigation == investigation)
+    rows = list(
+        await db.scalars(
+            q.order_by(
+                Assignment.status != "returned",
+                Assignment.due.asc().nulls_last(),
+                Assignment.updated_at,
+            ).limit(LIMIT)
+        )
+    )
+    shas = [a.subject.removeprefix("blob:") for a in rows]
+    about, passes = await _about(db, shas), await sources.first_passes(db, shas)
+    ctx = await mdata.Context.load(db, blobs=shas)
+    out = []
+    for a, sha in zip(rows, shas, strict=True):
+        mime, sensitive = about[sha]
+        # The first-pass title is free text that may name people; the item's own
+        # title is shown as on Sources.
+        title = (passes.get(sha) or {}).get("title")
+        if title and sensitive and not granted(sha):
+            title = None
+        out.append(
+            {
+                "sha": sha,
+                "kind": mime.split("/")[0],
+                "title": title or ctx.doc(sha)["title"],
+                "status": a.status,
+                "due": a.due and a.due.isoformat(),
+                "priority": a.priority,
+            }
+        )
+    return out
+
+
 async def triage(db, investigation: str | None) -> list[dict]:
     """Items whose first pass waits, high priority first."""
     title = aliased(Statement)
@@ -106,24 +172,7 @@ async def triage(db, investigation: str | None) -> list[dict]:
             .order_by(Statement.recorded_at)
         )
     ).all()
-    shas = {subject.removeprefix("blob:") for subject, _, _ in rows}
-    # The item's kind, and whether its free-text title must stay hidden: sensitive
-    # when any acquisition says so or none set it, as on the evidence page.
-    about = {
-        sha: (mime, sensitive)
-        for sha, mime, sensitive in await db.execute(
-            select(
-                Blob.sha256,
-                Blob.mime,
-                func.coalesce(
-                    func.bool_or(Acquisition.sensitivity == "sensitive"), True
-                ),
-            )
-            .outerjoin(Acquisition, Acquisition.blob_sha256 == Blob.sha256)
-            .where(Blob.sha256.in_(shas))
-            .group_by(Blob.sha256, Blob.mime)
-        )
-    }
+    about = await _about(db, {subject.removeprefix("blob:") for subject, _, _ in rows})
     seen, out = set(), []
     for subject, v, t in rows:
         if subject in seen or v is None:
@@ -146,14 +195,32 @@ async def triage(db, investigation: str | None) -> list[dict]:
 
 
 async def todo(db, user, investigation: str | None) -> dict:
-    found = await findings.queue(db, user, investigation)
+    found, shown = [], set()
+    # Shared presence and a candidate incident over one set are one row: the
+    # stronger, naming the other reading.
+    for f in await findings.queue(db, user, investigation):
+        if f["id"] not in shown:
+            found.append(f)
+            shown |= {f["id"], *(g["id"] for g in f["also"])}
     groups = await events.groups(db, user, investigation)
     claims = len(await queue.ids(db, user, "open", investigation))
     mine = await asked(db, user)
+    work = await assigned(db, user, investigation)
     read = await triage(db, investigation)
+    # An assigned item is its assignee's: listed above for them, not for everyone.
+    taken = set(
+        await db.scalars(
+            select(Assignment.subject).where(
+                Assignment.subject.in_([f"blob:{r['sha']}" for r in read]),
+                Assignment.status.in_(("open", "returned")),
+            )
+        )
+    )
+    read = [r for r in read if f"blob:{r['sha']}" not in taken]
     return {
         # The page heading and the rail badge both show this number.
-        "total": len(mine) + len(read) + len(groups) + len(found) + claims,
+        "total": len(work) + len(mine) + len(read) + len(groups) + len(found) + claims,
+        "assigned": work,
         "asked": mine,
         "triage": read,
         "groups": [
@@ -172,6 +239,7 @@ async def todo(db, user, investigation: str | None) -> dict:
                 "label": f["label"],
                 "reason": f["reason"],
                 "band": f["band"],
+                "also": [g["label"] for g in f["also"]],
             }
             for f in found
         ],

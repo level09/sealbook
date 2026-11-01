@@ -18,6 +18,7 @@ from sqlalchemy import func, literal, or_, select, text, true
 from sqlalchemy.orm import aliased
 
 from sealbook import blobs
+from sealbook.collaboration import stage
 from sealbook.discovery.models import EmbeddingSpace, Segment, SegmentEmbedding
 from sealbook.discovery.service import available
 from sealbook.ledger import write
@@ -888,6 +889,7 @@ async def item(db, sha: str, user) -> dict | None:
         "custody": custody,
         "threads": await threads(db, decided, user),
         "history": history,
+        "work": (await stage.stages(db, investigation, [sha]))[sha] | {"me": user.id},
     }
 
 

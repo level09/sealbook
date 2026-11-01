@@ -22,13 +22,9 @@ from sealbook.ledger.models import (
     Blob,
     Payload,
     Principal,
-    Run,
     Statement,
     StatementTier,
 )
-from sealbook.people import data as people
-from sealbook.places.models import Place
-from sealbook.review.findings import band
 from sealbook.sources import data as sources
 from sealbook.sources.data import DERIVED, _blob, title
 
@@ -377,91 +373,6 @@ async def needs(db, user, investigation, page, per_page) -> dict:
         )
     )
     return {"items": items, "total": total, "asks": asks}
-
-
-async def findings(db, investigation, page, per_page) -> dict:
-    """Open discovery findings, strongest first, with their places by name."""
-    offset = _paging(page, per_page)
-    q = (
-        select(FindingKey, Payload.value)
-        .outerjoin(Statement, Statement.id == FindingKey.statement_id)
-        .outerjoin(Payload, Payload.commitment == Statement.commitment)
-        .where(FindingKey.state == "open")
-    )
-    ran = select(func.count()).where(Run.tool == "discover")
-    if investigation:
-        q = q.where(FindingKey.investigation == investigation)
-        ran = ran.where(Run.inputs["investigation"].astext == investigation)
-    total = await db.scalar(select(func.count()).select_from(q.subquery()))
-    rows = (
-        await db.execute(
-            q.order_by(
-                FindingKey.rank.desc(), FindingKey.created_at.desc(), FindingKey.key
-            )
-            .offset(offset)
-            .limit(per_page)
-        )
-    ).all()
-    place_ids = {
-        uuid.UUID(p.removeprefix("place:"))
-        for _, v in rows
-        for p in (v or {}).get("places", ())
-    }
-    places = {}
-    if place_ids:
-        places = {
-            f"place:{i}": en or ar
-            for i, en, ar in await db.execute(
-                select(Place.id, Place.name_en, Place.name_ar).where(
-                    Place.id.in_(place_ids)
-                )
-            )
-        }
-    named = await people.names(
-        db,
-        sorted(
-            {
-                p.removeprefix("person:")
-                for _, v in rows
-                for p in (v or {}).get("people", ())
-            }
-        ),
-    )
-    items = [
-        {
-            "key": fk.key,
-            "kind": fk.kind,
-            "investigation": fk.investigation,
-            "rank": fk.rank,
-            "band": band(fk.kind, fk.features or {}),
-            "features": fk.features or {},
-            "members": len(fk.members or ()),
-            "people": [p.removeprefix("person:") for p in (v or {}).get("people", ())],
-            "places": [places.get(p) for p in (v or {}).get("places", ())],
-            "place_ids": [
-                p.removeprefix("place:") for p in (v or {}).get("places", ())
-            ],
-            "month": (v or {}).get("month"),
-            "at": fk.created_at.isoformat(),
-        }
-        for fk, v in rows
-    ]
-
-    # Two kinds over the same people, places and month are one set read twice.
-    def same(i):
-        return (tuple(sorted(i["people"])), tuple(sorted(i["place_ids"])), i["month"])
-
-    for i in items:
-        i["also"] = next(
-            (j["kind"] for j in items if j["kind"] != i["kind"] and same(j) == same(i)),
-            None,
-        )
-    return {
-        "names": named,
-        "items": items,
-        "total": total,
-        "ran": bool(await db.scalar(ran)),
-    }
 
 
 def mark_new(items, at: datetime):

@@ -190,7 +190,7 @@ window.app = Vue.createApp({
     },
     mark(t) { return esc(t).replace(/(^|\s)@([^\s@,.;:!?]+)/g, '$1<strong>@$2</strong>'); },
     nameOf(id) { return this.analysts.find(u => u.id === id)?.name || 'a colleague'; },
-    spanLabel(s) { return !s ? '' : s.bbox ? `region on page ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.page ? `page ${s.page}` : s.start != null ? `characters ${s.start} to ${s.end}` : ''; },
+    spanLabel(s) { return !s ? '' : s.bbox ? `region on page ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.page ? `page ${s.page}` : s.start != null ? 'quoted text' : ''; },
     // A claim as a person reads it; never an id or a raw value.
     sentence(req) {
       const c = req.proposal, file = c.doc?.title, v = c.display && !/^[{[]/.test(c.display) ? c.display : null;
@@ -237,7 +237,7 @@ window.app = Vue.createApp({
       return {key: 'note:' + n.id, kind: 'note', n, at: n.at, notes: [n], unread: !n.isSeen, icon: ICON[n.kind] || 'ti ti-bell', label: LABEL[n.kind] || 'Notice',
         title: n.title, sub: [LABEL[n.kind], n.subtitle].filter(Boolean).join(', '), tags: [{assigned: 'work', intake_done: 'intake', decision: 'decisions', mention: 'threads', reply: 'threads'}[n.kind]].filter(Boolean)};
     },
-    // Desk "Needs you" labels assigned work in one batch; page through it for the assignments only.
+    // The needs API labels assigned work in one batch; page through it for the assignments only.
     async work() {
       const out = [];
       for (let page = 1; page <= 5; page++) {

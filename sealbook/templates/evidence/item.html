@@ -18,6 +18,18 @@
       </div>
     </div>
 
+    <div class="ev-work" aria-label="Work on this item">
+      <span class="ev-stage">${ it.work.stage }</span>
+      <span class="muted">${ workText }</span>
+      <span class="ms-auto d-flex ga-2 flex-wrap">
+        <v-btn v-if="mine && ['open', 'returned'].includes(work.status)" size="small" color="primary" variant="flat" prepend-icon="ti ti-check" :loading="working" @click="setWork('done')">Mark updated</v-btn>
+        <v-btn v-if="work && work.status === 'done' && !mine" size="small" variant="outlined" prepend-icon="ti ti-arrow-back-up" :loading="working" @click="setWork('returned')">Return to ${ work.assignee.name }</v-btn>
+        <v-btn v-if="!mine && (!work || work.status === 'done')" size="small" variant="outlined" prepend-icon="ti ti-user-check" :loading="working" @click="assignTo(it.work.me)">Assign to me</v-btn>
+        <v-menu><template #activator="{ props }"><v-btn v-bind="props" size="small" variant="outlined" prepend-icon="ti ti-user-plus" @click="loadPeople">Assign to</v-btn></template>
+          <v-list density="compact" max-height="320"><v-list-item v-for="a in people" :key="a.id" :title="a.name" :subtitle="a.open + ' open'" @click="assignTo(a.id)"></v-list-item><v-list-item v-if="!people.length" title="Loading"></v-list-item></v-list></v-menu>
+      </span>
+    </div>
+
     <div class="ev" :class="{side: other, mapping: mapping}">
       <section class="ev-panel ev-stick" aria-label="Preview">
         <evidence-viewer ref="viewer" :item="it" :claims="claims" :marks="marks" :sel="sel" :focus="focusMs" :page="pdfPage" :read="read" :read-error="readError" :hl="hl" :highlight="excerpt?.match || ''" @select="pick" @revealed="revealed" @retry-read="loadRead"></evidence-viewer>
@@ -87,7 +99,7 @@
         <v-divider></v-divider>
         <v-tabs-window v-model="tab">
           <v-tabs-window-item value="read"><div class="pa-3">
-            <div v-if="excerpt" class="mb-3"><p class="ev-note mb-1">Opened at ${ boot.segment.location.page ? 'page ' + boot.segment.location.page + ', ' : '' }characters ${ excerpt.span.start } to ${ excerpt.span.end }, extracted text, verify against the original</p><div class="ev-tx" dir="auto">${ excerpt.before }<mark class="hit">${ excerpt.match }</mark>${ excerpt.after }</div></div>
+            <div v-if="excerpt" class="mb-3"><p class="ev-note mb-1">Opened at the passage you searched for${ boot.segment.location.page ? ', page ' + boot.segment.location.page : '' }. Extracted text: check it against the original</p><div class="ev-tx" dir="auto">${ excerpt.before }<mark class="hit">${ excerpt.match }</mark>${ excerpt.after }</div></div>
             <p v-if="!it.revealed" class="ev-note">Show the sensitive item to read the text taken from it. Its values stay masked until then.</p>
             <template v-else-if="it.kind === 'image'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text a model read from the image; check it against the scan</p><div class="ev-tx" dir="auto">${ p.text }</div></div></template><p v-else class="ev-note mb-2">Values were read per region of the image; no text was read from it. Select a value to see its box.</p></template>
             <template v-else-if="it.kind === 'pdf'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text layer, page ${ p.location.page }</p><div class="ev-tx" dir="auto">${ p.text }</div></div></template><p v-else class="ev-note">No text layer was read from this PDF.</p></template>
@@ -137,7 +149,7 @@
               <template v-for="k in ['note', 'excerpt_of', 'licence', 'author', 'credit', 'attribution', 'date_original']" :key="k"><template v-if="it.context[k]"><dt>${ k.replace('_', ' ') }</dt><dd dir="auto">${ it.context[k] }</dd></template></template>
               <dt>SHA-256</dt><dd class="mono">${ it.sha256 }</dd>
               <dt>MD5</dt><dd class="mono">${ it.md5 }</dd>
-              <dt>C2PA</dt><dd><template v-if="!it.c2pa">not checked</template><template v-else-if="c2pa === 'absent'"><i class="ti ti-shield-off" aria-hidden="true"></i> No content credentials in the file</template>
+              <dt>Content credentials</dt><dd><template v-if="!it.c2pa">not checked</template><template v-else-if="c2pa === 'absent'"><i class="ti ti-shield-off" aria-hidden="true"></i> No content credentials in the file</template>
                 <template v-else><v-chip size="small" :color="it.c2pa.codes?.length ? 'warning' : 'success'" variant="outlined" prepend-icon="ti ti-shield-check">${ c2pa }</v-chip> ${ it.c2pa.issuer || '' } <span class="muted">${ (it.c2pa.codes || []).join(', ') }</span></template></dd>
               <template v-if="it.fingerprint"><dt>Fingerprint</dt><dd class="mono">${ it.fingerprint.algorithm }, artifact ${ short(it.fingerprint.artifact) }</dd></template>
               <template v-if="it.liveness"><dt>Link check</dt><dd>${ it.liveness.display } <span class="muted">${ it.liveness.recorded_at.slice(0, 10) }</span></dd></template>

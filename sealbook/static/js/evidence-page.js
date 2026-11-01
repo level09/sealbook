@@ -27,7 +27,7 @@ const iso = t => `\u2068${t}\u2069`;
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 // A place more sources than this name folds behind one summary line.
 const FOLD_PLACE = 3;
-const spanLabel = s => !s ? '' : s.bbox ? `region, p. ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.start != null ? `characters ${s.start} to ${s.end}` : '';
+const spanLabel = s => !s ? '' : s.bbox ? `region, p. ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.start != null ? 'quoted text' : '';
 
 export function mount(boot) {
   // Outside data: Vue's proxy breaks EventSource methods.
@@ -38,7 +38,7 @@ export function mount(boot) {
       return {boot, masked: MASKED, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
         cursor: {list: 'claims', i: -1}, excerpt: null, threadId: null, thread: null, threadBusy: false, comment: '',
         ask: {open: false, statement: null, reviewer: null, reason: '', busy: false}, analysts: [], relate: {open: false, row: null, value: 'same_recording'},
-        snack: {show: false, text: ''}, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
+        snack: {show: false, text: ''}, people: [], working: false, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
     },
     computed: {
       claims() {return this.it ? this.it.claims.map(c => ({...c, label: prop(c.prop), value: this.read?.values?.[c.id] ?? c.display})) : [];},
@@ -76,6 +76,14 @@ export function mount(boot) {
         const seen = new Set();
         return [...this.it.copies, ...this.it.relations].filter(r => r.other && r.other !== this.it.sha256 && !seen.has(r.other + r.kind) && seen.add(r.other + r.kind))
           .map(r => ({key: r.other + r.kind, kind: r.kind === 'Nearest by meaning' ? 'Similar meaning' : r.kind, o: this.it.docs[r.other], href: this.side(r)}));
+      },
+      work() {return this.it?.work.assignment;},
+      mine() {return this.work?.assignee.id === this.it?.work.me;},
+      workText() {
+        const w = this.work, due = w?.due ? `, due ${w.due}` : '';
+        if (!w) return 'Not assigned yet';
+        const who = this.mine ? 'you' : w.assignee.name;
+        return {open: `Assigned to ${who}${due}`, done: `${this.mine ? 'You' : w.assignee.name} marked it updated`, returned: `Returned to ${who} for changes`}[w.status];
       },
       threadsByAbout() {const m = {}; (this.it?.threads || []).forEach(t => (m[t.about] ||= []).push(t)); return m;},
       c2pa() {const v = this.it?.c2pa; return v && (v.status || v.result);},
@@ -188,6 +196,25 @@ export function mount(boot) {
       enter() {const r = this.current; if (!r) return; if (this.cursor.list === 'claims') this.openSpan(r); else if (r.fold) this.fold(r); else if (r.other) location.href = `/evidence/${r.other}`;},
       // A media time when the line rests on a transcript; text needs no position.
       at(c) {const t = this.msAt(c.span); return t != null ? ms(t) : '';},
+      async loadPeople() {
+        if (!this.people.length) this.people = (await api.get('/api/analysts', {params: {investigation: this.it.investigation}})).data.items;
+      },
+      async assignTo(id) {
+        this.working = true;
+        try {
+          await api.post('/api/assignments/bulk', {item: {investigation: this.it.investigation, subjects: ['blob:' + this.it.sha256], assignee: id, priority: this.work?.priority || 'normal'}});
+          this.say(id === this.it.work.me ? 'Assigned to you' : 'Assigned');
+          await this.refresh();
+        } catch (err) {this.say(err.response?.data?.error || message(err));} finally {this.working = false;}
+      },
+      async setWork(status) {
+        this.working = true;
+        try {
+          await api.patch(`/api/assignments/${this.work.id}`, {item: {status}});
+          this.say(status === 'done' ? 'Marked updated' : 'Returned for changes');
+          await this.refresh();
+        } catch (err) {this.say(err.response?.data?.error || message(err));} finally {this.working = false;}
+      },
       async peerReview() {
         await this.askAbout(this.pass.triage);
         if (this.ask.open && !this.ask.reason) this.ask.reason = 'Peer review of the first pass: triage, title, description and labels.';

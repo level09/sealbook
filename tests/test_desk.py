@@ -338,13 +338,8 @@ class DeskTest(unittest.IsolatedAsyncioTestCase):
         other = await self.get(c, "needs", investigation=Y)
         self.assertEqual(other["total"], 0)
 
-    async def test_findings_and_recent(self):
+    async def test_recent(self):
         c = await self.client()
-        found = await self.get(c, "findings", investigation=X)
-        self.assertEqual((found["total"], found["ran"]), (1, True))
-        self.assertEqual(found["items"][0]["features"]["sources"], 2)
-        none = await self.get(c, "findings", investigation=Y)
-        self.assertEqual((none["total"], none["ran"]), (0, False))
         recent = await self.get(c, "recent", investigation=X, per_page=10)
         rows = {r["sha256"]: r for r in recent["items"]}
         self.assertEqual(set(rows), {self.list_sha, self.photo_sha})

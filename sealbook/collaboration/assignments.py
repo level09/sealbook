@@ -218,7 +218,7 @@ async def bulk(db, user, item):
             "assigned",
             "Work assigned to you",
             f"{changed} item{'s' if changed != 1 else ''}",
-            f"/sources?investigation={quote(investigation)}&assignee=me",
+            f"/todo?investigation={quote(investigation)}",
             None,
         )
     return {"assigned": changed, "unchanged": len(subjects) - changed}
@@ -267,7 +267,7 @@ async def update(db, user, assignment_id, item):
             "assigned",
             "Work assigned to you",
             "1 item",
-            f"/sources?investigation={quote(a.investigation)}&assignee=me",
+            f"/todo?investigation={quote(a.investigation)}",
             None,
         )
     return row(a)

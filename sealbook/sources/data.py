@@ -18,6 +18,7 @@ from sqlalchemy.orm import aliased
 from stk.user.models import User
 
 from sealbook import method
+from sealbook.collaboration import stage
 from sealbook.collaboration.models import Assignment
 from sealbook.discovery.models import FindingKey
 from sealbook.ledger.contracts import ASSESSED_PROPS, EXTRACTED_PROPS, Prop, Tier
@@ -393,8 +394,9 @@ def with_counts(rows, investigation, groups: set, everything: bool):
         pending = claims.c.pending if "claims" in groups else rows.c.pending
         status = case(
             (runs.c.failed, "failed"),
-            (runs.c.busy, "processing"),
+            # A queued index run on an item already read must not hide its claims.
             (func.coalesce(pending, 0) > 0, "needs review"),
+            (runs.c.busy, "processing"),
             else_="indexed",
         )
         q = q.add_columns(status.label("status"))
@@ -493,8 +495,10 @@ async def listing(db, f: dict) -> dict:
         )
     items = [_row(m) for m in found]
     passes = await first_passes(db, [i["sha256"] for i in items])
+    work = await stage.stages(db, inv, [i["sha256"] for i in items])
     for item in items:
         item["pass"] = passes.get(item["sha256"])
+        item["stage"] = work[item["sha256"]]["stage"]
         # A first-pass title is free text that may name people (monitor PERSONAL).
         if item["pass"] and item["sensitive"]:
             item["pass"] |= {"title": None, "title_ar": None}
