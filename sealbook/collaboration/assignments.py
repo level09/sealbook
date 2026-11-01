@@ -136,10 +136,11 @@ def _check(priority, due):
         raise ValueError("due must be an ISO date") from None
 
 
-async def _commit(db):
-    """The partial unique index refuses a second open assignment for one subject."""
+async def _commit(db, flush=False):
+    """The partial unique index refuses a second open assignment for one subject,
+    at the flush of a racing insert or at commit."""
     try:
-        await db.commit()
+        await (db.flush() if flush else db.commit())
     except IntegrityError as exc:
         await db.rollback()
         if "uq_assignment_open_subject" in str(exc):
@@ -186,11 +187,7 @@ async def bulk(db, user, item):
                 updated_at=now,
             )
             db.add(a)
-            try:
-                await db.flush()
-            except IntegrityError:
-                await _commit(db)  # rolls back and raises the 400
-                raise
+            await _commit(db, flush=True)
             action, detail = "assigned", {"to": assignee}
         else:
             if (a.assignee_id, a.due, a.priority) == (assignee, due, priority):
