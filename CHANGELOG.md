@@ -30,6 +30,9 @@
   links no longer wait for its indexing.
 - Cases show their names; the demo cases have short ones. Add evidence from a
   case opens on that case, and an evidence page keeps its case in the rail.
+- Live work: To do, Sources, the rail counts and the evidence page follow
+  colleagues' assignments, returns, decisions and review requests without a
+  reload, across server processes; the evidence page says who else has it open.
 - A case taken from a link or an evidence page stays selected on the incident
   and person pages opened next. Sources' default columns fit a 1280 px screen.
 - To do counts decisions; single claims are counted apart.

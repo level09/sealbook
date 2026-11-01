@@ -38,7 +38,7 @@ export function mount(boot) {
       return {boot, masked: MASKED, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
         cursor: {list: 'claims', i: -1}, excerpt: null, threadId: null, thread: null, threadBusy: false, comment: '',
         ask: {open: false, statement: null, reviewer: null, reason: '', busy: false}, analysts: [], relate: {open: false, row: null, value: 'same_recording'},
-        snack: {show: false, text: ''}, people: [], working: false, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
+        snack: {show: false, text: ''}, people: [], viewers: {}, working: false, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
     },
     computed: {
       claims() {return this.it ? this.it.claims.map(c => ({...c, label: prop(c.prop), value: this.read?.values?.[c.id] ?? c.display})) : [];},
@@ -78,6 +78,7 @@ export function mount(boot) {
           .map(r => ({key: r.other + r.kind, kind: r.kind === 'Nearest by meaning' ? 'Similar meaning' : r.kind, o: this.it.docs[r.other], href: this.side(r)}));
       },
       work() {return this.it?.work.assignment;},
+      viewing() {return Object.values(this.viewers).map(v => v.name).join(', ');},
       mine() {return this.work?.assignee.id === this.it?.work.me;},
       workText() {
         const w = this.work, due = w?.due ? `, due ${w.due}` : '';
@@ -298,6 +299,16 @@ export function mount(boot) {
       document.addEventListener('keydown', this.key);
       await this.load();
       if (this.it) this.follow();
+      // A colleague's change to this item reloads it; their tab open on it shows here.
+      // A viewer not heard from for two heartbeats has gone.
+      this.followWork(() => this.refresh(), boot.sha, m => {
+        const {[m.user]: _, ...rest} = this.viewers;
+        this.viewers = m.state === 'left' ? rest : {...rest, [m.user]: {name: m.name, at: Date.now()}};
+      });
+      setInterval(() => {
+        const fresh = Object.entries(this.viewers).filter(([, v]) => Date.now() - v.at < 35000);
+        if (fresh.length !== Object.keys(this.viewers).length) this.viewers = Object.fromEntries(fresh);
+      }, 5000);
     },
   });
   Object.assign(app.config.globalProperties, {ICON, DOC});

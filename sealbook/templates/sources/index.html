@@ -309,6 +309,7 @@ window.app = Vue.createApp({
     document.addEventListener('keydown', this.onKey);
     if (this.mode === 'grid') this.load();
     this.loadWork();
+    this.followWork(() => { this.load(); this.loadWork(); });
   },
   beforeUnmount() { document.removeEventListener('keydown', this.onKey); },
 });

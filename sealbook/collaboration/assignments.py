@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from stk.user.models import User
 
+from sealbook.collaboration import live
 from sealbook.collaboration.models import (
     PRIORITIES,
     STATUSES,
@@ -170,7 +171,7 @@ async def bulk(db, user, item):
             .with_for_update()
         )
     }
-    now, changed = datetime.now(UTC), 0
+    now, changed = datetime.now(UTC), []
     for s in subjects:
         a = existing.get(s)
         if a is None:
@@ -206,7 +207,9 @@ async def bulk(db, user, item):
                 assignment_id=a.id, actor_id=user.id, action=action, detail=detail
             )
         )
-        changed += 1
+        changed.append(s)
+    if changed:
+        await live.work(db, changed, user.id, investigation)
     await _commit(db)
     if changed and assignee != user.id:
         await notify(
@@ -214,11 +217,11 @@ async def bulk(db, user, item):
             assignee,
             "assigned",
             "Work assigned to you",
-            f"{changed} item{'s' if changed != 1 else ''}",
+            f"{len(changed)} item{'s' if len(changed) != 1 else ''}",
             f"/todo?investigation={quote(investigation)}",
             None,
         )
-    return {"assigned": changed, "unchanged": len(subjects) - changed}
+    return {"assigned": len(changed), "unchanged": len(subjects) - len(changed)}
 
 
 async def update(db, user, assignment_id, item):
@@ -256,6 +259,7 @@ async def update(db, user, assignment_id, item):
                 assignment_id=a.id, actor_id=user.id, action=action, detail=detail
             )
         )
+    await live.work(db, [a.subject], user.id, a.investigation)
     await _commit(db)
     if "reassigned" in changes and a.assignee_id != user.id:
         await notify(

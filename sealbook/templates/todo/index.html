@@ -106,7 +106,7 @@ window.app = Vue.createApp({
       catch (err) { this.error = err.response?.data?.description || err.message; }
     },
   },
-  mounted() { this.load(); },
+  mounted() { this.load(); this.followWork(() => this.load()); },
 });
 registerStkComponents(app);
 app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');

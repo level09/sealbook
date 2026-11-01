@@ -12,6 +12,7 @@ from quart import Blueprint, Response, abort, g, render_template, request, url_f
 from quart_security import auth_required, current_user
 from sqlalchemy import func, select
 
+from sealbook.collaboration import live
 from sealbook.collaboration import service as collaboration
 from sealbook.discovery import service as discovery
 from sealbook.discovery.models import FindingKey
@@ -396,6 +397,11 @@ async def commit():
                 )
             )
         ).scalar()
+    )
+    await live.work(
+        db,
+        [st.subject for st in written] + [t.subject for t in targets if t],
+        current_user.id,
     )
     await db.commit()
     for t in {t.id: t for t in targets if t}.values():

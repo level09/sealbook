@@ -5,11 +5,15 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from unittest import mock
 
+import asyncpg
+import orjson
 import stk.extensions as ext
 from sqlalchemy import select, text, update
+from sqlalchemy.engine import make_url
 from sqlalchemy.exc import DBAPIError
 
 from sealbook.collaboration.models import Assignment, AssignmentEvent, Notification
+from sealbook.monitor.stream import CHANNEL
 from tests.collab_case import POSTGRES, CollabCase
 
 
@@ -250,6 +254,35 @@ class AssignmentTest(CollabCase):
             self.assertEqual((await stage())[0], want)
         todo = await (await bob.get("/api/todo?investigation=inv-a")).get_json()
         self.assertEqual(todo["assigned"][0]["status"], "returned")
+
+    async def test_open_pages_hear_of_an_assignment_at_commit(self):
+        """Every process hears it on the shared channel, by subject only."""
+        url = self.app.config["SQLALCHEMY_DATABASE_URI"]
+        conn = await asyncpg.connect(
+            make_url(url).set(drivername="postgresql").render_as_string(False)
+        )
+        heard = asyncio.Queue()
+        await conn.add_listener(CHANNEL, lambda *a: heard.put_nowait(a[-1]))
+        try:
+            alice = await self.client("alice")
+            subjects = self.blob_subjects()[:1]
+            self.assertEqual((await self.bulk(alice, subjects))[0], 201)
+            msg = orjson.loads(await asyncio.wait_for(heard.get(), 5))
+            # A refused change says nothing.
+            self.assertEqual((await self.bulk(alice, ["nonsense"]))[0], 400)
+            await asyncio.sleep(0.3)
+            self.assertTrue(heard.empty())
+        finally:
+            await conn.close()
+        self.assertEqual(
+            msg,
+            {
+                "kind": "work",
+                "investigation": "inv-a",
+                "subjects": subjects,
+                "by": self.ids["alice"],
+            },
+        )
 
 
 if __name__ == "__main__":

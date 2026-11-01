@@ -9,7 +9,6 @@ from quart import (
     Blueprint,
     Response,
     abort,
-    current_app,
     g,
     make_response,
     redirect,
@@ -27,7 +26,7 @@ from sealbook.ledger.models import Payload, RunEvent, Statement
 from sealbook.ledger.write import append, principal_for_user
 from sealbook.monitor import data
 from sealbook.monitor import filter as mfilter
-from sealbook.monitor.stream import Hub, events
+from sealbook.monitor.stream import events, shared
 from sealbook.places import resolve
 
 monitor = Blueprint("monitor", __name__)
@@ -261,13 +260,8 @@ async def stream():
     db = g.pop("db_session", None)
     if db is not None:
         await db.close()
-    if "monitor_hub" not in current_app.extensions:
-        current_app.extensions["monitor_hub"] = Hub(
-            current_app.config["SQLALCHEMY_DATABASE_URI"]
-        )
-    hub = current_app.extensions["monitor_hub"]
     response = await make_response(
-        events(hub, f, last_id, uniquifier, token),
+        events(shared(), f, last_id, uniquifier, token),
         {
             "Content-Type": "text/event-stream",
             "Cache-Control": "no-store",

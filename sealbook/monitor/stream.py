@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 import asyncpg
 import orjson
 import stk.extensions as ext
+from quart import current_app
 from quart_security import SecurityState
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
@@ -34,35 +35,37 @@ class Hub:
             .set(drivername="postgresql")
             .render_as_string(hide_password=False)
         )
-        self.queues: set[asyncio.Queue] = set()
+        self.queues: dict[asyncio.Queue, tuple[str, ...]] = {}
         self.conn = None
         self.lock = asyncio.Lock()
 
     @asynccontextmanager
-    async def subscribe(self):
+    async def subscribe(self, kinds=("run_event",)):
+        """A run_event arrives as its id, any other kind as its whole payload."""
         queue = asyncio.Queue(maxsize=QUEUE_SIZE)
         async with self.lock:
             if self.conn is None:
                 self.conn = await asyncpg.connect(self.dsn)
                 await self.conn.add_listener(CHANNEL, self._on_notify)
                 self.conn.add_termination_listener(self._on_lost)
-            self.queues.add(queue)
+            self.queues[queue] = kinds
         try:
             yield queue
         finally:
             async with self.lock:
-                self.queues.discard(queue)
+                self.queues.pop(queue, None)
                 if not self.queues and self.conn is not None:
                     conn, self.conn = self.conn, None
                     await conn.close()
 
     def _on_notify(self, _conn, _pid, _channel, payload):
         msg = orjson.loads(payload)
-        if msg.get("kind") != "run_event":
-            return
-        for queue in self.queues:
+        kind = msg.get("kind")
+        for queue, kinds in self.queues.items():
+            if kind not in kinds:
+                continue
             try:
-                queue.put_nowait(msg["id"])
+                queue.put_nowait(msg["id"] if kind == "run_event" else msg)
             except asyncio.QueueFull:
                 # A slow tab is cut off; it reconnects and replays from Last-Event-ID.
                 while not queue.empty():
@@ -73,6 +76,15 @@ class Hub:
         self.conn = None
         for queue in self.queues:
             queue.put_nowait(None)
+
+
+def shared() -> Hub:
+    """This process's hub, made on first use."""
+    if "monitor_hub" not in current_app.extensions:
+        current_app.extensions["monitor_hub"] = Hub(
+            current_app.config["SQLALCHEMY_DATABASE_URI"]
+        )
+    return current_app.extensions["monitor_hub"]
 
 
 def sse(row: dict) -> str:

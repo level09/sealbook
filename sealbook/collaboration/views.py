@@ -1,16 +1,27 @@
+import re
 import uuid
 from datetime import UTC, date, datetime, timedelta
 
 import orjson
-from quart import Blueprint, Response, abort, g, render_template, request
+from quart import (
+    Blueprint,
+    Response,
+    abort,
+    g,
+    make_response,
+    render_template,
+    request,
+    session,
+)
 from quart_security import auth_required, current_user
 from sqlalchemy import select
 from stk.user.models import User
 
-from sealbook.collaboration import assignments, notifications, service
+from sealbook.collaboration import assignments, live, notifications, service
 from sealbook.ledger import write
 from sealbook.ledger.contracts import Prop, Refused
 from sealbook.ledger.models import Payload, Principal, Statement
+from sealbook.monitor.stream import shared
 
 bp = Blueprint("collaboration", __name__)
 
@@ -129,6 +140,7 @@ async def create():
     row = await service.request_review(
         db, proposal, current_user, reviewer, item.get("reason")
     )
+    await live.work(db, [proposal.subject], current_user.id)
     await db.commit()
     await service.assigned(db, reviewer, row.id, proposal.id)
     return output({"id": str(row.id), "proposal": str(proposal.id)}, 201)
@@ -244,3 +256,25 @@ async def analyst_picker():
     return output(
         await assignments.analysts(g.db_session, request.args.get("investigation"))
     )
+
+
+@bp.get("/api/live")
+async def live_stream():
+    """Work events, and who else has the evidence page `sha` open."""
+    sha = request.args.get("sha") or None
+    if sha is not None and not re.fullmatch(r"[0-9a-f]{64}", sha):
+        abort(400, description="sha must be a sha256 hex digest")
+    if "text/event-stream" not in request.headers.get("Accept", ""):
+        abort(406, description="this is an event stream")
+    user = {"user": current_user.id, "name": current_user.name or current_user.email}
+    uniquifier, token = current_user.get_id(), session.get("_id")
+    # Long-lived: hand the request's connection back to the pool now.
+    db = g.pop("db_session", None)
+    if db is not None:
+        await db.close()
+    response = await make_response(
+        live.stream(shared(), user, sha, uniquifier, token),
+        {"Content-Type": "text/event-stream", "X-Accel-Buffering": "no"},
+    )
+    response.timeout = None
+    return response

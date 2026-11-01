@@ -21,6 +21,7 @@
     <div class="ev-work" aria-label="Work on this item">
       <span class="ev-stage">${ it.work.stage }</span>
       <span class="muted">${ workText }</span>
+      <span v-if="viewing" class="muted" role="status"><i class="ti ti-eye" aria-hidden="true"></i> Also open by ${ viewing }</span>
       <span class="ms-auto d-flex ga-2 flex-wrap">
         <v-btn v-if="mine && ['open', 'returned'].includes(work.status)" size="small" color="primary" variant="flat" prepend-icon="ti ti-check" :loading="working" @click="setWork('done')">Mark updated</v-btn>
         <v-btn v-if="work && work.status === 'done' && !mine" size="small" variant="outlined" prepend-icon="ti ti-arrow-back-up" :loading="working" @click="setWork('returned')">Return to ${ work.assignee.name }</v-btn>
