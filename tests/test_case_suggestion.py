@@ -144,7 +144,7 @@ class CaseSuggestionTest(unittest.IsolatedAsyncioTestCase):
             ties = {s["sha256"]: s["ties"][0] for s in e["sources"]}
             self.assertEqual(set(ties), {a, b})
             self.assertEqual(ties[a]["kind"], "person")
-            self.assertEqual(ties[a]["where"], "characters 0 to 20")
+            self.assertEqual(ties[a]["where"], "quoted text")
             self.assertEqual((ties[b]["kind"], ties[b]["when"]), ("place", "May 2013"))
             self.assertEqual([s["sha256"] for s in e["unmatched"]], [c])
             self.assertIsNone(got["new_case"])

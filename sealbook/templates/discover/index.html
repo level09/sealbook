@@ -292,7 +292,7 @@ window.app = Vue.createApp({
       return [EVENT[s.kind] || 'Event', where, s.window && this.span(s.window)].filter(Boolean);
     },
     span(w) { return w[0] === w[1] ? fmt(w[0]) : `${fmt(w[0])} to ${fmt(w[1])}`; },
-    where(s) { return !s ? 'whole item' : 'start' in s ? `characters ${s.start} to ${s.end}` : s.page ? `region on page ${s.page}` : s.ms ? `${(s.ms[0] / 1000).toFixed(1)} s` : 'whole item'; },
+    where(s) { return !s ? 'whole item' : 'start' in s ? 'quoted text' : s.page ? `region on page ${s.page}` : s.ms ? `${(s.ms[0] / 1000).toFixed(1)} s` : 'whole item'; },
     // The finding names people by identity cluster; a member's subject is one mention in it.
     personOf: m => m.cluster,
     // People without a name the reader may see, numbered in order within the finding.

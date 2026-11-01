@@ -142,8 +142,7 @@ const app = createApp({
       if (l.page) out.push('page ' + l.page);
       // A frame is a moment, not a span.
       if (Array.isArray(l.ms)) out.push(l.ms[1] - l.ms[0] < 1000 ? 'at ' + this.clock(l.ms[0]) : this.clock(l.ms[0]) + ' to ' + this.clock(l.ms[1]));
-      if (h.span && h.span.start !== undefined && h.type === 'passage') out.push('characters ' + h.span.start + ' to ' + h.span.end);
-      if (h.also && h.also.length) out.push(h.also.length + ' more in this source');
+            if (h.also && h.also.length) out.push(h.also.length + ' more in this source');
       if (h.type === 'place' && h.claims) out.push(h.claims + (h.claims === 1 ? ' linked claim' : ' linked claims'));
       if (h.tier) out.push(h.tier);
       return out.length ? ' · ' + out.join(', ') : '';

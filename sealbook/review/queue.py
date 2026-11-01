@@ -97,7 +97,7 @@ def where(span, sha, source, segments, timelines) -> dict:
         page = segments.get(sha)
         if page:
             return {"label": f"page {page}", "page": page}
-        return {"label": f"characters {span['start']} to {span['end']}"}
+        return {"label": "quoted text"}
     return {"label": "the whole item"}
 
 

@@ -454,7 +454,7 @@ window.app = createApp({
     gapText(days) { return days >= 60 ? `${Math.round(days / 30.4)} months, no evidence` : `${days} ${days === 1 ? 'day' : 'days'}, no evidence`; },
     spanText(span) {
       if (!span) return 'none';
-      if ('start' in span) return `characters ${span.start} to ${span.end}`;
+      if ('start' in span) return 'quoted text';
       if ('page' in span) return `page ${span.page}, box ${span.bbox.join(', ')}`;
       if ('ms' in span) return `${span.ms[0] / 1000}s to ${span.ms[1] / 1000}s`;
       return JSON.stringify(span);

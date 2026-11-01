@@ -133,7 +133,7 @@ export const EvidenceViewer = {
       if (!mark) return;
       centre(box, mark); pulse(mark);
       const before = this.read.text.slice(0, c.span.start), line = before.split('\n').length;
-      this.where = `${c.label || c.prop}: line ${line}, characters ${c.span.start} to ${c.span.end}`;
+      this.where = `${c.label || c.prop}: line ${line}`;
     },
     retryMedia() {this.mediaError = null; this.nonce++;},
     // A media element's error says nothing about why; ask the server for one byte.

@@ -80,7 +80,7 @@ class ReviewPageTest(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(item["value"]["text"])
         self.assertTrue(item["person"]["masked"])
         self.assertEqual(item["source"]["sha256"], self.sha)
-        self.assertTrue(item["where"]["label"].startswith("characters"))
+        self.assertEqual(item["where"]["label"], "quoted text")
         self.assertEqual(item["proposer"]["kind"], "extractor")
         self.assertEqual(item["proposer"]["name"], "AI extraction")
         self.assertEqual(item["request"]["by"]["name"], "analyst")

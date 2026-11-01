@@ -29,7 +29,7 @@ export const NoticerPanel = {
         this.report = data; this.error = '';
         if (data.pending) this.timer = setTimeout(() => this.load(), 4000);
         else if (was) this.$emit('changed');
-      } catch { if (gen === this.gen) this.error = 'Could not load what the noticer found.'; }
+      } catch { if (gen === this.gen) this.error = 'Could not load the resemblances.'; }
     },
     async check() {
       this.starting = true; this.note = '';
@@ -39,7 +39,7 @@ export const NoticerPanel = {
         await this.load();
       } catch (e) {
         if (e.response?.data?.reason === 'busy') await this.load();
-        else this.note = e.response?.data?.message || 'Could not start the noticer.';
+        else this.note = e.response?.data?.message || 'Could not start looking for resemblances.';
       } finally { this.starting = false; }
     },
     other(item) { return this.sha && item.there.href === '/evidence/' + this.sha ? item.here : item.there; },
@@ -57,7 +57,7 @@ export const NoticerPanel = {
   template: `<section aria-label="Noticer" style="min-width: 0; max-width: 100%; overflow-wrap: anywhere">
     <div class="d-flex align-center flex-wrap ga-2"><h3 style="font-size: 15px">This resembles</h3><v-spacer></v-spacer>
       <v-btn v-if="!sha" size="small" variant="outlined" :disabled="!ready" :loading="!!busy" @click="check">Check now</v-btn></div>
-    <p class="text-medium-emphasis mb-2">Resemblances the noticer proposes. Nothing here is a match until a person decides.</p>
+    <p class="text-medium-emphasis mb-2">Items Sealbook found that resemble this one. Nothing here is a match until a person decides.</p>
     <p v-if="error" role="alert">{{ error }}</p>
     <p v-if="note" role="status">{{ note }}</p>
     <p v-if="busy" aria-live="polite">Reading the case for resemblances.</p>

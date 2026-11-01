@@ -117,8 +117,11 @@ async def peaks(sha):
 
 @bp.get("/api/evidence/<sha>/thumbs")
 async def describe(sha):
-    """What exists for this source: kind, strip cell timestamps, page count, version."""
-    m = await manifest(sha)
+    """What exists for this source: kind, strip cell timestamps, page count, version.
+    204 until the thumbnail tool has run, as for the tile."""
+    m = await manifest(sha, missing_ok=True)
+    if m is None:
+        return Response(status=204)
     return output(
         {
             "kind": m["kind"],

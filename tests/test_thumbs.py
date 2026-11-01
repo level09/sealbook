@@ -207,7 +207,7 @@ class ThumbEndpointTest(unittest.IsolatedAsyncioTestCase):
         r = await client.get(f"/api/evidence/{blob.sha256}/thumb?size=160")
         self.assertEqual(r.status_code, 204)
         self.assertEqual(
-            (await client.get(f"/api/evidence/{blob.sha256}/thumbs")).status_code, 404
+            (await client.get(f"/api/evidence/{blob.sha256}/thumbs")).status_code, 204
         )
 
     async def test_a_filler_without_bytes_says_no_file(self):

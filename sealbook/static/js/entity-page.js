@@ -17,7 +17,7 @@ const iso = t => new Date(t).toISOString().slice(0, 10);
 const ms = v => { const s = Math.max(0, Math.round((v || 0) / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 export const plural = (n, one, many) => `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`;
 export const human = s => (s || '').replaceAll('_', ' ');
-export const spanLabel = s => !s ? 'whole item' : s.bbox ? `region on page ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.page ? `page ${s.page}` : s.start != null ? `characters ${s.start} to ${s.end}` : 'whole item';
+export const spanLabel = s => !s ? 'whole item' : s.bbox ? `region on page ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.page ? `page ${s.page}` : s.start != null ? 'quoted text' : 'whole item';
 export const metres = m => m == null ? null : m < 1000 ? `${m} m` : `${(m / 1000).toFixed(1).replace(/\.0$/, '')} km`;
 export const placeName = p => p ? (p.name_en || p.en || p.name_ar || p.ar || 'Unnamed place') : 'Unnamed place';
 const KINDS = {shared_presence: 'Shared presence', candidate_incident: 'Candidate incident'};
