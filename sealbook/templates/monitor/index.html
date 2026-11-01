@@ -492,14 +492,9 @@ window.app = createApp({
       const linkedDocument = push ? null : new URLSearchParams(location.search).get('document');
       const url = `${location.pathname}?filter=${this.query()}`;
       if (push) history.pushState(null, '', url); else history.replaceState(null, '', url);
-      // ponytail: the stream opens a beat after the panels load because `stk smoke`
-      // waits for network idle, which an open stream never reaches. The `after`
-      // cursor replays anything committed in between, so the delay loses nothing;
-      // drop it once smoke stops waiting on networkidle.
       this.refresh().then(() => {
         if (linkedDocument) this.loadDoc(linkedDocument);
-        clearTimeout(this._connectTimer);
-        this._connectTimer = setTimeout(() => this.connect(), 1500);
+        this.connect();
       });
     },
     clearTime() { this.filter.time = null; this.applyFilter(); },

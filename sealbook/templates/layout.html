@@ -336,22 +336,17 @@
             // in this case settles, the rail counts reload, and onWork runs when the burst
             // touched the item `sha` (any change when no sha is given). With a sha,
             // onPresence hears who else has that item open.
-            // ponytail: opens a beat after load because `stk smoke` waits for network idle,
-            // which an open stream never reaches (as the monitor page does); a change in
-            // that beat shows on the next one. Drop the delay once smoke stops waiting.
             followWork(onWork, sha, onPresence) {
-                setTimeout(() => {
-                    const es = new EventSource('/api/live' + (sha ? '?sha=' + sha : ''));
-                    let settle, hit = false;
-                    es.addEventListener('work', e => {
-                        const m = JSON.parse(e.data);
-                        if (m.investigation && this.caseSel && m.investigation !== this.caseSel) return;
-                        hit ||= !sha || !m.subjects || m.subjects.includes('blob:' + sha);
-                        clearTimeout(settle);
-                        settle = setTimeout(() => { this.loadNavCounts(); if (hit) onWork(); hit = false; }, 400);
-                    });
-                    if (onPresence) es.addEventListener('presence', e => onPresence(JSON.parse(e.data)));
-                }, 1500);
+                const es = new EventSource('/api/live' + (sha ? '?sha=' + sha : ''));
+                let settle, hit = false;
+                es.addEventListener('work', e => {
+                    const m = JSON.parse(e.data);
+                    if (m.investigation && this.caseSel && m.investigation !== this.caseSel) return;
+                    hit ||= !sha || !m.subjects || m.subjects.includes('blob:' + sha);
+                    clearTimeout(settle);
+                    settle = setTimeout(() => { this.loadNavCounts(); if (hit) onWork(); hit = false; }, 400);
+                });
+                if (onPresence) es.addEventListener('presence', e => onPresence(JSON.parse(e.data)));
             },
             // From the rail: on a case page, follow the case there; elsewhere open its To do.
             openCase(c) {

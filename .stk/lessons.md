@@ -1,4 +1,4 @@
 # Lessons
 
-- `stk smoke` loads pages until network idle, so a page that opens an EventSource on load never finishes; open the stream a beat after load, or smoke should ignore text/event-stream requests.
-- A second `stk run` on a taken port fails with "Address already in use" in its log while the first, reloading Python but not templates, keeps serving: kill the port's listener before restarting, or template edits look ignored.
+- `stk smoke` timed out on a page that opens an EventSource on load under Playwright 1.60 (networkidle never reached); Playwright 1.64 does not count the stream, so this app requires playwright>=1.64.1 and opens streams at once.
+- A `stk run` started in the background on a taken port exits with code 3 and logs "Address already in use" while the old server keeps serving; check the log or the port's listener before assuming edits were applied.
