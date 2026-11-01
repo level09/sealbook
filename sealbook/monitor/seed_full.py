@@ -65,6 +65,52 @@ APPEAL = """<h1>نداء: لينا عمر النجار</h1>
 <p>من يعرف عنها أي شيء يرجى التواصل مع أخيها.</p>
 """
 
+# The first pass a model would give the two missing-person posts, fixed so the
+# seed shows To do's "Items read for you" without calling one. Quotes are copied
+# from the posts; a last sighting alone supports no alleged label.
+FIRST_PASS = {
+    "post": {
+        "lang": "ar",
+        "content": "non_incident",
+        "reliability": "some_evidence",
+        "triage_quote": "شوهد يوسف آخر مرة في دوما يوم 2013-05-02",
+        "why": "A family appeal gives a last sighting; it does not say what happened.",
+        "title": "Family reports Yousef missing in Douma",
+        "title_ar": "عائلة تبلغ عن فقدان يوسف في دوما",
+        "title_quote": "مفقود: Yousef Khaled Al-Ali",
+        "description": [
+            {
+                "line": "Yousef was last seen in Douma on 2 May 2013.",
+                "quote": "شوهد يوسف آخر مرة في دوما يوم 2013-05-02",
+            },
+            {
+                "line": "He was leaving his home in the morning.",
+                "quote": "عند خروجه من البيت صباحا",
+            },
+            {"line": "He is 22 years old.", "quote": "عمره 22 عاما"},
+        ],
+        "labels": [],
+    },
+    "appeal": {
+        "lang": "ar",
+        "content": "non_incident",
+        "reliability": "some_evidence",
+        "triage_quote": "آخر مرة شوهدت لينا في حي الجديدة بحلب يوم 2014-02-11 قرب الحاجز",
+        "why": "An appeal places her near a checkpoint when last seen; no arrest is stated.",
+        "title": "Lina last seen near a checkpoint in Aleppo",
+        "title_ar": "آخر مشاهدة للينا قرب حاجز في حلب",
+        "title_quote": "نداء: لينا عمر النجار",
+        "description": [
+            {
+                "line": "Lina was last seen in Al-Jdeideh, Aleppo, on 11 February 2014.",
+                "quote": "آخر مرة شوهدت لينا في حي الجديدة بحلب يوم 2014-02-11",
+            },
+            {"line": "She was near the checkpoint.", "quote": "قرب الحاجز"},
+        ],
+        "labels": [],
+    },
+}
+
 # key: (file, mime, origin, doc_type, sensitivity, extra context)
 COMMONS = "url:https://commons.wikimedia.org/wiki/File:"
 FILES = {
@@ -548,6 +594,8 @@ async def seed_full(session, app) -> dict:
             await flows.ocr(s, key, recorded[Path(name).stem])
         clip = truth["witness_clip.ogg"]
         await flows.transcript(s, "witness", clip["sentences"], clip["duration_ms"])
+        for key, answer in FIRST_PASS.items():
+            await flows.first_pass(s, key, answer)
         await session.commit()
 
         llm = {

@@ -77,6 +77,30 @@ class Fixed(Ctx):
 
 
 @dataclass
+class Answered(Ctx):
+    """A worker context whose model call returns one fixed answer, for a tool that
+    sends the whole item, such as the first pass."""
+
+    answer: dict = field(default=None)
+
+    async def call(self, body: dict) -> routes.Served:
+        data = {
+            "model": FIXED,
+            "choices": [
+                {
+                    "finish_reason": "stop",
+                    "message": {"content": orjson.dumps(self.answer).decode()},
+                }
+            ],
+        }
+        raw = orjson.dumps(data)
+        stored = await blobs.put(self.s, raw, "application/json", Config.BLOB_DIR)
+        self.run.raw_output_ref = stored.sha256
+        await self.emit("model_called")
+        return routes.Served(data, raw, "demo:fixed-output", FIXED, "demo")
+
+
+@dataclass
 class Recorded(Ctx):
     """A worker context whose model call answers with a response recorded once from
     the real route (acceptance/demo/ocr.json), so a tool runs its own writer on
@@ -201,6 +225,23 @@ async def ocr(s, key: str, rec: dict) -> None:
     await write.seal_run(s.s, run, ref)
     s.blobs[f"{key}_ocr"] = hashlib.sha256(rec["text"].encode()).hexdigest()
     s.texts[f"{key}_ocr"] = rec["text"]
+
+
+async def first_pass(s, key: str, answer: dict) -> None:
+    """The first pass of the analyst's method on the text item `key`, written by the
+    worker's own assess tool from a fixed answer. Left unconfirmed, so it waits in
+    To do as a live one does."""
+    acq = await _acq(s, key)
+    run = await s.s.scalar(
+        select(Run).where(
+            Run.tool == "assess",
+            Run.inputs["blobs"][0].astext == s.blobs[key],
+            Run.status == "queued",
+        )
+    ) or Run(principal_id=(await system_agent(s.s, "extractor")).id, tool="assess")
+    run.inputs = {"blobs": [s.blobs[key]], "acquisition": str(acq.id)}
+    c = await _start(s, run, acq, "first pass", Answered, answer=answer)
+    await write.seal_run(s.s, run, await worker.assess(c))
 
 
 async def transcript(s, key: str, sentences: list[dict], duration_ms: int) -> None:
