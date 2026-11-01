@@ -386,6 +386,22 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             mdata.display(label, Prop.LABEL), "Seen: Property/Buildings, Damaged"
         )
+        # Its words become text derived from the photo, indexed as its description.
+        [(derived, source)] = [
+            (st, v) for st, v in rows if st.prop == Prop.DERIVED_FROM
+        ]
+        async with self.Session() as s:
+            text = blobs.read(await s.get(Blob, derived.subject[5:]), Config.BLOB_DIR)
+            index = await s.scalar(
+                select(Run).where(
+                    Run.tool == "index",
+                    Run.inputs["blobs"][0].astext == derived.subject[5:],
+                )
+            )
+        self.assertEqual(text.decode(), "Damaged wall\nجدار متضرر\nA wall has a hole.")
+        [photo] = {st.subject for st, _ in rows if st.prop == Prop.TITLE}
+        self.assertEqual(source, {"blob": photo[5:]})
+        self.assertEqual(index.inputs["segment_kind"], "description")
 
     async def test_a_reported_event_keeps_only_place_words_the_text_has(self):
         text = "Warplanes struck the market in Kafr Nabl on 2016-05-17.\n"
@@ -883,8 +899,9 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
                     await s.execute(select(Statement).where(Statement.run_id == run_id))
                 ).scalars()
             }
-        # The line on frame 7 of 4 is dropped; the others rest where they say.
-        self.assertEqual(set(rows), {Prop.TRIAGE, Prop.TITLE})
+        # The line on frame 7 of 4 is dropped; the others rest where they say, and
+        # the title is kept as the video's description text.
+        self.assertEqual(set(rows), {Prop.TRIAGE, Prop.TITLE, Prop.DERIVED_FROM})
         self.assertEqual(rows[Prop.TRIAGE].span_blob, transcript.sha256)
         self.assertEqual(rows[Prop.TRIAGE].span, {"start": 11, "end": 22})
         self.assertEqual(rows[Prop.TITLE].span, {"ms": [1500, 2500]})

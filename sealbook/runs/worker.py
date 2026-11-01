@@ -515,7 +515,47 @@ async def assess(c: Ctx) -> str | None:
             sign=c.sign,
         )
     await c.emit("statements_written", written=len(parts), dropped=dropped)
+    if photo or video:
+        await _describe(c, blob, parts)
     return c.run.raw_output_ref
+
+
+async def _describe(c: Ctx, blob: Blob, parts) -> None:
+    """The first pass's words for a picture or video, kept as text derived from it
+    (so erasing the item covers it) and indexed as its `description` segment: search
+    finds a photo by what it shows, and the Noticer compares that with what texts
+    say. Shown as the first pass's description, never as text read from the item."""
+    lines = [
+        line
+        for prop, value, *_ in parts
+        for line in (
+            (value["title"], value["title_ar"])
+            if prop == Prop.TITLE
+            else (value["line"],)
+            if prop == Prop.DESCRIPTION
+            else ()
+        )
+        if line
+    ]
+    if not lines:
+        return
+    derived = await blobs.put(
+        c.s, "\n".join(lines).encode(), "text/plain; charset=utf-8", Config.BLOB_DIR
+    )
+    await write.append(
+        c.s,
+        StatementIn(
+            subject=f"blob:{derived.sha256}",
+            prop=Prop.DERIVED_FROM,
+            value={"blob": blob.sha256},
+            author_id=c.run.principal_id,
+            run_id=c.run.id,
+        ),
+        sign=c.sign,
+    )
+    await discovery.queue(
+        c.s, c.acq, derived.mime, blob_sha256=derived.sha256, kind="description"
+    )
 
 
 # --- ocr -------------------------------------------------------------------------

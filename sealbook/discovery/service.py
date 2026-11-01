@@ -96,7 +96,7 @@ def available(sha):
 
 
 async def queue(
-    db, acq, mime, blob_sha256=None, rebuild=False, location=None, ordinal=0
+    db, acq, mime, blob_sha256=None, rebuild=False, location=None, ordinal=0, kind=None
 ):
     from sealbook.ingest.service import system_agent
 
@@ -151,7 +151,8 @@ async def queue(
                 "acquisition": str(acq.id),
                 "rebuild": rebuild,
                 "location": location or {},
-                "segment_kind": "page" if location and "page" in location else "text",
+                "segment_kind": kind
+                or ("page" if location and "page" in location else "text"),
                 "ordinal": ordinal,
             },
         )

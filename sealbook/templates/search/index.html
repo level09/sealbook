@@ -129,7 +129,7 @@ const app = createApp({
       if (h.type === 'media') return {frame: 'ti ti-movie', audio: 'ti ti-wave-sine', image: 'ti ti-photo', page_image: 'ti ti-file-text'}[h.kind] || 'ti ti-photo';
       return {person: 'ti ti-user', place: 'ti ti-map-pin', source: 'ti ti-file', passage: 'ti ti-align-left', claim: 'ti ti-quote', finding: 'ti ti-bulb', incident: 'ti ti-alert-triangle'}[h.type] || 'ti ti-point';
     },
-    kindLabel(h) { return h.type === 'media' || h.type === 'passage' ? (h.kind || h.type).replace('_', ' ') : h.type === 'claim' ? h.prop.replace(/_/g, ' ') : h.type; },
+    kindLabel(h) { return h.kind === 'description' ? 'first pass description, unconfirmed' : h.type === 'media' || h.type === 'passage' ? (h.kind || h.type).replace('_', ' ') : h.type === 'claim' ? h.prop.replace(/_/g, ' ') : h.type; },
     score(h) { return h.why.score ?? h.why.near?.score ?? null; },
     // An exact reason says why it matched; "near by meaning" then adds nothing.
     why(h) {
@@ -139,6 +139,7 @@ const app = createApp({
     },
     where(h) {
       const l = h.location || {}, out = [];
+      if (h.kind === 'description') out.push("in the first pass's description, unconfirmed");
       if (l.page) out.push('page ' + l.page);
       // A frame is a moment, not a span.
       if (Array.isArray(l.ms)) out.push(l.ms[1] - l.ms[0] < 1000 ? 'at ' + this.clock(l.ms[0]) : this.clock(l.ms[0]) + ' to ' + this.clock(l.ms[1]));

@@ -176,6 +176,8 @@ def where(kind: str, location: dict) -> str:
         return f"the frame at {ms(location['ms'][0])}"
     if kind == "audio":
         return f"audio {ms(location['ms'][0])} to {ms(location['ms'][1])}"
+    if kind == "description":
+        return "the first pass's description"
     if location.get("page"):
         return f"page {location['page']}"
     return "the whole image" if kind == "image" else "a passage"
@@ -516,6 +518,9 @@ async def near_pairs(db, sha: str, fam: list[str], investigation) -> list[dict]:
             seg.source_sha256.not_in(fam),
             mfilter.blob_clause(case, seg.source_sha256),
             available(seg.source_sha256),
+            # Two first-pass descriptions share the model's wording, not a scene:
+            # a description is compared with what sources say, never another one.
+            or_(seg.kind != "description", mine_seg.kind != "description"),
         )
         .order_by(distance)
         .limit(4)
@@ -604,13 +609,20 @@ MARKUP = re.compile(r"<(style|script)\b[\s\S]*?</\1>|<[^>]+>", re.IGNORECASE)
 EXCERPT = 140
 
 
+def _quoted(words, kind, location):
+    if not words:
+        return where(kind, location)
+    quoted = f"\u201c{words}\u201d"
+    return f"{where(kind, location)}, {quoted}" if kind == "description" else quoted
+
+
 def lead(kind, location, source, their_kind, theirs, d, mine=None, other=None):
     """A nearest-by-meaning row. The distance stays out of the sentence: a band
     word reads plainly, and the number is for the tooltip. Passages are quoted
     when their source may be read."""
     if mine or other:
-        here = f"\u201c{mine}\u201d" if mine else where(kind, location)
-        there = f"\u201c{other}\u201d" if other else where(their_kind, theirs)
+        here = _quoted(mine, kind, location)
+        there = _quoted(other, their_kind, theirs)
         why = f"Here: {here}. There: {there}."
     else:
         why = (
@@ -937,6 +949,8 @@ async def content_read(db, sha: str, blob: Blob) -> dict:
                 Segment.source_sha256 == sha,
                 Segment.text_sha256.is_not(None),
                 Segment.text_sha256 != sha,
+                # A machine's words about the item, not text read from it.
+                Segment.kind != "description",
             )
             .distinct(Segment.text_sha256)
             .order_by(Segment.text_sha256)

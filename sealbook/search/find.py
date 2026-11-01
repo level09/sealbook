@@ -36,7 +36,7 @@ TYPES = (
     "findings",
     "incidents",
 )
-TEXT_KINDS = {"text", "page"}
+TEXT_KINDS = {"text", "page", "description"}
 PICTURE_KINDS = {"image", "frame", "page_image"}
 CONTEXT = 80
 MARKUP = re.compile(r"<(style|script)\b[\s\S]*?</\1>|<[^>]+>", re.IGNORECASE)
