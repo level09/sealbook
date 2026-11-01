@@ -222,10 +222,6 @@ window.app = Vue.createApp({
       }
     },
   },
-  created() {
-    const p = new URLSearchParams(location.search);
-    if (p.has('investigation')) this.caseSel = p.get('investigation') || null;
-  },
   mounted() { document.addEventListener('keydown', this.onKey); this.loadBrief(); this.loadWaiting(); },
   beforeUnmount() { document.removeEventListener('keydown', this.onKey); },
 });

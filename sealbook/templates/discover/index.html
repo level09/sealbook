@@ -450,10 +450,6 @@ window.app = Vue.createApp({
     asking(v) { if (v) this.loadAnalysts().catch(this.fail); },
     assigning(v) { if (v) this.loadAnalysts().catch(this.fail); },
   },
-  created() {
-    const p = new URLSearchParams(location.search);
-    if (p.has('investigation')) this.caseSel = p.get('investigation') || null;
-  },
   mounted() { this.load(); document.addEventListener('keydown', this.onKey); },
   beforeUnmount() { document.removeEventListener('keydown', this.onKey); },
 });

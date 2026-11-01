@@ -30,6 +30,8 @@
   links no longer wait for its indexing.
 - Cases show their names; the demo cases have short ones. Add evidence from a
   case opens on that case, and an evidence page keeps its case in the rail.
+- A case taken from a link or an evidence page stays selected on the incident
+  and person pages opened next. Sources' default columns fit a 1280 px screen.
 - To do counts decisions; single claims are counted apart.
 - Two concurrent bulk assignments of one item answer 400, not 500.
 - Plain words where offsets and internal names showed (a photo's copy says "the

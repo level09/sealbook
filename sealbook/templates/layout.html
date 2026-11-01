@@ -436,6 +436,13 @@
             try { saved = localStorage.getItem('stk-theme'); } catch {}
             this.setTheme(saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
             if (this.caseSel === 'all') this.caseSel = null;
+            // A link that names its case (a notification, Add evidence) switches to it, so the
+            // records opened next (an incident, a person) stay in that case.
+            const asked = new URLSearchParams(location.search);
+            if (asked.has('investigation')) {
+                this.caseSel = asked.get('investigation') || null;
+                try { localStorage.setItem('sb.case', this.caseSel ?? 'all'); } catch {}
+            }
         },
         mounted() {
             document.getElementById('sb-boot')?.remove();

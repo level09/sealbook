@@ -12,8 +12,8 @@
 .src-bulk .v-field { background: rgb(var(--v-theme-surface)); color: rgb(var(--v-theme-on-surface)); }
 .src-bulk .v-btn.v-btn--disabled { color: rgba(var(--v-theme-surface), .75) !important; border-color: rgba(var(--v-theme-surface), .45) !important; }
 .src-muted { color: rgba(var(--v-theme-on-surface), .6); }
-.src-trunc { max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.src-pass { padding: 4px 0; } .src-pass .src-trunc { max-width: 300px; } .src-ar { text-align: left; font-size: 13px; color: rgba(var(--v-theme-on-surface), .7); }
+.src-trunc { max-width: min(340px, 18vw); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.src-pass { padding: 4px 0; } .src-pass .src-trunc { max-width: min(300px, 16vw); } .src-ar { text-align: left; font-size: 13px; color: rgba(var(--v-theme-on-surface), .7); }
 .src-table td, .src-table th { font-variant-numeric: tabular-nums; }
 .src-table tr.src-cur td { background: rgba(var(--v-theme-primary), .08); }
 .src-table tr.src-cur td:first-child { box-shadow: inset 3px 0 0 rgb(var(--v-theme-primary)); }
@@ -88,7 +88,7 @@
       <template #item.c2pa="{ item }"><v-tooltip :text="c2Text(item.c2pa)"><template #activator="{ props }"><i v-bind="props" :class="c2Icon(item.c2pa)" style="font-size: 16px" :aria-label="c2Text(item.c2pa)"></i></template></v-tooltip></template>
       <template #item.claims="{ item }"><span :title="item.pending ? item.pending + ' pending review' : null">${ item.claims }</span></template>
       <template #item.findings="{ item }"><span v-if="item.findings" class="text-agent"><i class="ti ti-robot" aria-hidden="true"></i> ${ item.findings }</span></template>
-      <template #item.assignee="{ item }"><span v-if="item.assignee" class="text-no-wrap">${ item.assignee.name }<span v-if="item.due" class="text-caption" :class="late(item.due) ? 'text-overdue' : 'src-muted'" :title="'due ' + item.due">${ (late(item.due) ? ' overdue ' : ' due ') + item.due.slice(5) }</span></span><span v-else class="src-muted">unassigned</span></template>
+      <template #item.assignee="{ item }"><span v-if="item.assignee" class="text-no-wrap">${ item.assignee.name }<span v-if="item.due" class="text-caption d-block" :class="late(item.due) ? 'text-overdue' : 'src-muted'" :title="'due ' + item.due">${ (late(item.due) ? 'overdue ' : 'due ') + item.due.slice(5) }</span></span><span v-else class="src-muted">unassigned</span></template>
       <template #item.stage="{ item }"><span class="text-no-wrap" :class="{'src-muted': ['New', 'Machine created'].includes(item.stage)}">${ item.stage }</span><v-chip v-if="['failed', 'processing'].includes(item.status)" size="x-small" variant="outlined" class="ms-1" :color="item.status === 'failed' ? 'negative' : undefined">${ item.status }</v-chip></template>
       <template #item.status="{ item }"><v-chip size="small" variant="outlined" :color="item.status === 'needs review' ? 'agent' : item.status === 'failed' ? 'negative' : undefined">${ item.status }</v-chip></template>
       <template #no-data><v-empty-state icon="ti ti-files-off" title="No sources match" text="Clear a filter or pick another case."></v-empty-state></template>
@@ -305,11 +305,6 @@ window.app = Vue.createApp({
     },
   },
   watch: { mode(v) { store.set('sources-mode', v); if (v === 'grid') this.load(); } },
-  created() {
-    // A notification link names its investigation; it wins over the stored switcher.
-    const p = new URLSearchParams(location.search);
-    if (p.has('investigation')) this.caseSel = p.get('investigation') || null;
-  },
   mounted() {
     document.addEventListener('keydown', this.onKey);
     if (this.mode === 'grid') this.load();

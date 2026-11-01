@@ -118,9 +118,6 @@ export function mount(boot) {
       finished(done) { if (done) this.loadCases(); },
     },
     async mounted() {
-      const asked = new URLSearchParams(location.search).get('investigation');
-      if (asked) this.caseSel = asked;
-      if (this.caseSel === 'all') this.caseSel = null;
       await this.loadCases();
       const reopen = new URLSearchParams(location.search).get('batch');
       if (reopen) await this.reopen(reopen);
