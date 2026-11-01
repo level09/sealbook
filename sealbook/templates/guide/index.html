@@ -47,6 +47,8 @@
 .gd-kv dt { color: var(--ink-3); }
 .gd-kv dd { margin: 0; font-family: var(--mono); overflow-wrap: anywhere; word-break: break-all; }
 .gd-kv dd.plain { font-family: inherit; word-break: normal; }
+.gd-gloss { font-size: 13px; gap: 6px 14px; }
+.gd-gloss dt { color: var(--ink); font-weight: 600; }
 .gd-kv mark { background: var(--negative-wash); color: var(--negative); outline: 1px solid var(--negative-line); border-radius: 2px; }
 .gd-tree { max-width: 100%; height: auto; display: block; }
 .gd-tree rect { fill: var(--panel); stroke: var(--line-strong); }
@@ -90,6 +92,13 @@
     </nav>
     <div class="gd-main">
       <p v-if="!shown.length && !trustShown" class="gd-empty">No task matches. Clear the filter to see them all.</p>
+      <section v-if="!q && !area" id="from-bayanat" class="en-panel gd-s" aria-labelledby="h-bayanat">
+        <header><h2 id="h-bayanat">Coming from Bayanat</h2></header>
+        <div class="en-body">
+          <p class="gd-who">The same work under the words you know. Bayanat's word on the left, where it lives here on the right.</p>
+          <dl class="gd-kv gd-gloss"><template v-for="[b, here] in g.bayanat" :key="b"><dt>${ b }</dt><dd class="plain">${ here }</dd></template></dl>
+        </div>
+      </section>
       <section v-for="s in shown" :key="s.id" :id="s.id" class="en-panel gd-s" :aria-labelledby="'h-' + s.id">
         <header>
           <h2 :id="'h-' + s.id">${ s.title }</h2>

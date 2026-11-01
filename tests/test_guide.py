@@ -53,6 +53,8 @@ def words():
         yield from (link["label"] for link in s["links"])
     for t in content.TRUST:
         yield from (t["title"], t["body"])
+    for pair in content.BAYANAT:
+        yield from pair
 
 
 class ContentTest(unittest.TestCase):

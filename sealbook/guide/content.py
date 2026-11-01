@@ -1,6 +1,7 @@
-"""The Guide's words: one scenario per task, in the order an investigator meets
-them, and the chapter on why the record holds. Every claim here was checked
-against the code; change the text with the behaviour it describes."""
+"""The Guide's words: Bayanat's words beside Sealbook's, one scenario per task in
+the order an investigator meets them, and the chapter on why the record holds.
+Change the text with the behaviour it describes; tests/test_guide.py opens every
+link as an analyst."""
 
 CASE = "case-demo-02"
 
@@ -15,38 +16,144 @@ AREAS = [
 ]
 
 AGENTS_OFF = (
-    "Agents run on the agent model route, the local one unless an administrator "
-    "allows another. Without a model and that route's settings they say they are "
-    "off and why."
+    "Agents run on OpenRouter's zero-retention route unless an administrator sets "
+    "AGENT_ROUTE=local for a private endpoint. Without a key or a model for that "
+    "route they say they are off and why."
 )
+
+# For analysts who know Bayanat: its word, then where the same work lives here.
+BAYANAT = [
+    ("Bulletin", "A source: one item of evidence with its file, custody and claims."),
+    (
+        "Machine Created",
+        "Machine created: the first pass read the item and waits for a person.",
+    ),
+    ("Assigned to me", "To do, Assigned to you. Assign from Sources or the item."),
+    ("Updated", "Updated: the assignee pressed Mark updated on the item."),
+    (
+        "Peer Review Assigned",
+        "Peer review: the first pass was sent to a colleague with Send for peer "
+        "review.",
+    ),
+    (
+        "+Label / -Label / *note",
+        "The same notes in the peer review thread; the item's assignee applies them.",
+    ),
+    ("Revisited", "Returned: a colleague sent it back, and it is on top of To do."),
+    ("Finalized", "Finalized: a person accepted the first pass with their passkey."),
+    (
+        "Incident",
+        "An incident, made when you accept posts that report one event or a "
+        "candidate incident.",
+    ),
+    (
+        "Actor",
+        "A person, with every claim about them and the sources that make them.",
+    ),
+    ("Location", "A place, from the gazetteer, confirmed by a person."),
+    (
+        "Export request",
+        "A package: a brief whose every sentence cites signed claims, attested by "
+        "two people.",
+    ),
+]
 
 SCENARIOS = [
     {
-        "id": "start-at-the-desk",
+        "id": "start-in-todo",
         "area": "decide",
-        "title": "Start your day at the Desk",
+        "title": "Start your day in To do",
         "who": "Any analyst, first thing, or after time away from a case.",
         "steps": [
-            "Pick the case in the switcher at the top. Every page follows it.",
-            "Since you left groups what colleagues and agents did, in plain words.",
-            "Needs you lists review requests, mentions and work assigned to you, "
-            "with due and overdue dates.",
-            "Findings waiting and Recent evidence show what discovery proposed and "
-            "what arrived, each with its source.",
+            "Open the case from Cases in the rail, then To do. Every page of the "
+            "case follows it.",
+            "Assigned to you comes first, items a reviewer returned on top, then by "
+            "due date.",
+            "Asked of you holds review requests from colleagues.",
+            "Items read for you are first passes nobody holds yet. Posts that report "
+            "one event and Patterns across the case are links to decide in one go.",
+            "Single claims counts the names, dates and places waiting in Review.",
+            "The Desk shows what changed since you left and what arrived; the bell "
+            "and Inbox hold mentions and replies.",
         ],
         "ai": [
-            "Counts of what agents proposed since you left, such as ages read "
-            "from an intake sheet."
+            "First passes, proposed links and patterns. Each row says what it rests on."
         ],
-        "you": [
-            "What to open first. Nothing on the Desk is a fact yet: each row "
-            "names its source and what it waits on."
-        ],
-        "result": "A short list of what needs you today, each row a link.",
+        "you": ["What to open first. Nothing in To do is a fact until you sign it."],
+        "result": "One list of what waits on you, biggest decisions first.",
         "links": [
-            {"label": "Desk for the demo case", "href": "/desk"},
-            {"label": "Inbox", "href": "/inbox"},
+            {"label": "To do for the demo case", "href": "/todo"},
+            {"label": "Desk", "href": "/desk"},
         ],
+    },
+    {
+        "id": "work-an-item",
+        "area": "decide",
+        "title": "Work an item from assigned to finalized",
+        "who": "You lead a case and hand items to analysts, as in Bayanat.",
+        "steps": [
+            "On Sources, select items, pick an analyst and a due date, and press "
+            "Assign. On one item, use Assign to or Assign to me.",
+            "The item shows its stage in Bayanat's words: Machine created, "
+            "Assigned, Updated, Peer review, Returned, Finalized.",
+            "The analyst checks the first pass and decides its claims, then presses "
+            "Mark updated.",
+            "Once it is updated, a colleague can Return it; it goes back on top of "
+            "the analyst's To do. Or send the first pass for peer review.",
+            "Accepting the first pass with a passkey finalizes the item.",
+        ],
+        "ai": ["The first pass and the claims to decide."],
+        "you": ["Who works it, when it is done, and whether it is final."],
+        "result": "An item with its stage, its assignee and every step on record.",
+        "links": [
+            {"label": "Sources in the demo case", "href": "/sources"},
+            {"label": "To do", "href": "/todo"},
+        ],
+    },
+    {
+        "id": "check-a-first-pass",
+        "area": "decide",
+        "title": "Check the first pass on an item",
+        "who": "An item was read for you: a post, a document, a photo or a video.",
+        "steps": [
+            "Open it from Items read for you in To do.",
+            "The first pass gives a triage (what the item is, how far it shows a "
+            "violation, and a priority), a title in English and Arabic, a "
+            "description of facts and Bayanat's alleged labels.",
+            "Click any line to see the words, the box in the photo or the second "
+            "of the video it rests on.",
+            "If it is right, Accept the first pass: one passkey gesture signs every "
+            "open line. If some lines are wrong, decide them one by one below.",
+            "Or Send for peer review: the colleague answers in the thread with "
+            "+label, -label and *note, or No review needed.",
+        ],
+        "ai": [
+            "Every line of the first pass, each resting on the item's own words or "
+            "pixels, never on outside knowledge."
+        ],
+        "you": ["Which lines hold. Nothing is accepted on your behalf."],
+        "result": "A finalized item whose title, description and labels you signed.",
+        "links": [{"label": "To do", "href": "/todo"}],
+        "needs": AGENTS_OFF,
+    },
+    {
+        "id": "one-event-many-posts",
+        "area": "connect",
+        "title": "Turn posts about one event into an incident",
+        "who": "Several posts, photos or videos report the same strike or arrest.",
+        "steps": [
+            "To do lists them under Posts that report one event: the kind of "
+            "event, the place and the dates.",
+            "Open the group: each post with the words and the place that tie it to "
+            "the others.",
+            "Click a post that is about something else to drop it; it stays in the "
+            "queue. One decision creates the incident and links every kept post.",
+        ],
+        "ai": ["The grouping and the reasons for each link."],
+        "you": ["Which posts belong, and whether it is one incident."],
+        "result": "An incident with its sources, place and dates.",
+        "links": [{"label": "To do", "href": "/todo"}],
+        "needs": AGENTS_OFF,
     },
     {
         "id": "import-a-sheet",
@@ -208,8 +315,8 @@ SCENARIOS = [
         "steps": [
             "When a batch finishes, the linker reads it against the case, then a "
             "brief is written for the person who added it.",
-            "The Desk shows the newest brief you have not read on top. Inbox has "
-            "it as Intake finished.",
+            "The Desk shows the newest brief you have not read on top. Inbox, from "
+            "the bell, has it as Intake finished.",
             "It says what arrived, who is new and who is known, where and when, "
             "what it connects to and what disagrees.",
             "Up to five next steps, each a link: review claims, decide links, "
@@ -270,8 +377,8 @@ SCENARIOS = [
         "title": "See who was held together",
         "who": "You want people placed at one place in one month, across sources.",
         "steps": [
-            "Open Discover. Findings are built from accepted or corroborated, dated "
-            "claims at confirmed places.",
+            "Open a row under Patterns across the case in To do. Findings are built "
+            "from accepted or corroborated, dated claims at confirmed places.",
             "Each reads as a sentence, such as 4 people held at Branch 999 in July "
             "2013, with a strength band. It is never a probability.",
             "Open one: a card per person with every claim behind it and where in "
@@ -288,7 +395,7 @@ SCENARIOS = [
         "result": "An incident with its people, place, dates and the statements it "
         "rests on, or a reasoned rejection.",
         "links": [
-            {"label": "Discover in the demo case", "href": "/discover"},
+            {"label": "To do in the demo case", "href": "/todo"},
             {"label": "Findings in Review", "href": "/review?box=findings"},
         ],
     },
@@ -403,7 +510,7 @@ SCENARIOS = [
         "who": "You need everyone in the case at once: who was held with whom, "
         "where they went, and how two people connect.",
         "steps": [
-            "Open Case map. Each row is a person, each segment a claim at a place, "
+            "Open the case's Case map tab. Each row is a person, each segment a claim at a place, "
             "solid when accepted, outlined when corroborated, hatched when "
             "unconfirmed.",
             "Bands mark two or more people at one place at the same time. Pick one "
@@ -428,13 +535,13 @@ SCENARIOS = [
         ],
         "you": [
             "Which band or path is worth a finding, a request to a colleague, or "
-            "a decision in Review or Discover."
+            "a decision in Review or To do."
         ],
         "result": "A view of the whole case in time and space, with every line "
         "traceable to its source.",
         "links": [
             {"label": "Case map", "href": "/case-map"},
-            {"label": "Discover the findings behind the bands", "href": "/discover"},
+            {"label": "The findings behind the bands", "href": "/todo"},
         ],
         "needs": "Places show only once someone confirms where a claimed name is. "
         "Reading the map logs a view per person, as a story does.",
@@ -545,7 +652,7 @@ SCENARIOS = [
         "title": "See every agent working for you",
         "who": "You want to know what runs on your behalf in a case, and when.",
         "steps": [
-            "Open Agents in the rail. It follows the case chosen in the top bar.",
+            "Open Agents in the rail. It follows the case you have open.",
             "One card per agent says what it does, when it runs, whether it is "
             "watching, checking now, paused and why, or off and what is missing.",
             "Each card names its last run and what came of it, and links to where "
