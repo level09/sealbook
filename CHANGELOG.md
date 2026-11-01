@@ -23,7 +23,17 @@
 - stk 17.3.1: evidence runs are `uv run stk runner`; httpx2 and stk's netguard.
 - Docker Compose runs the runner, keeps evidence in a volume and serves TLS through
   Caddy.
-- Plain words where offsets and internal names showed: "quoted text" instead of
+- Text gets claims on the zero-retention route: the extraction policy row had
+  been left on the private route, so hosted deployments read none
+  (`sealbook_0004`).
+- The runner reads new uploads before search indexing, and a batch's brief and
+  links no longer wait for its indexing.
+- Cases show their names; the demo cases have short ones. Add evidence from a
+  case opens on that case, and an evidence page keeps its case in the rail.
+- To do counts decisions; single claims are counted apart.
+- Two concurrent bulk assignments of one item answer 400, not 500.
+- Plain words where offsets and internal names showed (a photo's copy says "the
+  same picture by its fingerprint"): "quoted text" instead of
   character positions, "Content credentials" for C2PA, resemblances instead of the
   noticer.
 
