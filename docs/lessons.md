@@ -841,3 +841,7 @@ covers in the text it was read from (`span_blob`).
 - An OpenRouter key limit surfaces as 403 "Key limit exceeded" on every route and
   looked like slow models; read the run error before blaming the provider.
 
+- The site's film would not play inline on an iPhone while plain desktop and
+  emulated phones played it: a `<track>` on the `<video>` made iOS refuse the whole
+  film. Bisect with one attribute per test video on the real device; the captions are
+  now drawn over the film from the WebVTT file.

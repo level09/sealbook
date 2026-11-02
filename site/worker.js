@@ -1,4 +1,4 @@
-// Static files come from the assets binding; only /api/* and the films reach this code.
+// Static files come from the assets binding; only /api/*, the films and their captions reach this code.
 const LIMITS = { email: 254, use_case: 2000 };
 const PER_HOUR = 5;
 
@@ -83,7 +83,9 @@ export default {
     if (pathname === "/api/invite") {
       return request.method === "POST" ? invite(request, env, ctx) : reply(405, { error: "Use POST." });
     }
-    if (pathname.startsWith("/media/") && pathname.endsWith(".mp4")) return ranged(request, env);
+    // The phone's media player asks for byte ranges of the captions too, and refuses
+    // the whole film when they come back as a plain 200.
+    if (pathname.startsWith("/media/") && /\.(mp4|vtt)$/.test(pathname)) return ranged(request, env);
     return env.ASSETS.fetch(request);
   },
 };

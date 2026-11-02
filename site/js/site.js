@@ -348,7 +348,36 @@
     cap.prepend(p);
   };
   video.addEventListener("error", () => failed(`error ${video.error?.code}: ${video.error?.message || "no message"}, network state ${video.networkState}`));
-  fig.querySelector("track")?.addEventListener("error", () => failed("the captions did not load"));
+  // Captions are drawn over the film from its WebVTT file, not with a <track>: an
+  // iPhone refuses to play this film inline at all when it has one.
+  const cc = fig.querySelector(".wt-cc"), ccBtn = fig.querySelector(".wt-cc-btn");
+  let cues = null, ccOn = true;
+  const stamp = (v) => v.split(":").reduce((a, n) => a * 60 + Number(n), 0);
+  const showCue = () => {
+    const now = video.currentTime;
+    const cue = ccOn && cues?.find((c) => c.start <= now && now < c.end);
+    cc.hidden = !cue;
+    if (cue && cc.textContent !== cue.text) cc.textContent = cue.text;
+  };
+  video.addEventListener("play", () => {
+    ccBtn.hidden = false;
+    if (cues) return;
+    cues = [];
+    fetch(video.dataset.captions).then((r) => r.text()).then((text) => {
+      for (const block of text.split(/\r?\n\r?\n/)) {
+        const m = /([\d:.]+) --> ([\d:.]+)[^\n]*\n([\s\S]+)/.exec(block);
+        if (m) cues.push({ start: stamp(m[1]), end: stamp(m[2]), text: m[3].trim() });
+      }
+      showCue();
+    }).catch(() => {});
+  });
+  video.addEventListener("timeupdate", showCue);
+  ccBtn.addEventListener("click", () => {
+    ccOn = !ccOn;
+    ccBtn.setAttribute("aria-pressed", String(ccOn));
+    ccBtn.textContent = ccOn ? "Captions on" : "Captions off";
+    showCue();
+  });
   document.querySelectorAll("[data-seek]").forEach((b) => b.addEventListener("click", () => at(Number(b.dataset.seek))));
   video.addEventListener("timeupdate", () => {
     const now = video.currentTime;

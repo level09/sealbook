@@ -292,6 +292,11 @@ section[id] { scroll-margin-top: calc(var(--head) + 16px); }
 @media (max-width: 600px) { .wt-play { left: 50%; top: 50%; bottom: auto; padding: 6px; transform: translate(-50%, -50%); } .wt-play:hover { transform: translate(-50%, -50%); } .wt-play > span { display: none; } .wt-play svg { width: 48px; height: 48px; padding: 13px; } }
 .walkthrough figcaption { max-width: 70ch; margin: 10px 0 0; font-size: 13px; color: var(--ink-3); }
 .wt-fail { margin: 0 0 6px; color: var(--ink); font-size: 14px; }
+.wt-cc { position: absolute; left: 50%; bottom: 16%; transform: translateX(-50%); width: max-content; max-width: 86%; margin: 0; padding: 4px 10px;
+  border-radius: 6px; background: rgba(0, 0, 0, .72); color: #fff; font: 500 clamp(13px, 1.7vw, 19px)/1.35 var(--sans); text-align: center; pointer-events: none; }
+@media (max-width: 600px) { .wt-cc { bottom: 24%; padding: 2px 8px; font-size: 12px; } }
+.wt-cc-btn { margin-right: 6px; padding: 2px 10px; border: 1px solid var(--rule); border-radius: 999px; background: none; color: var(--ink-2); font: inherit; cursor: pointer; }
+.wt-cc-btn[aria-pressed="false"] { color: var(--ink-3); }
 .link { position: relative; z-index: 1; padding-left: 64px; margin-bottom: 120px; }
 .link::before {
   content: ""; position: absolute; left: 0; top: 2px; width: 23px; height: 23px; border-radius: 50%;
