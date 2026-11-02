@@ -291,6 +291,7 @@ section[id] { scroll-margin-top: calc(var(--head) + 16px); }
 .walkthrough.playing .wt-play { display: none; }
 @media (max-width: 600px) { .wt-play { left: 50%; top: 50%; bottom: auto; padding: 6px; transform: translate(-50%, -50%); } .wt-play:hover { transform: translate(-50%, -50%); } .wt-play > span { display: none; } .wt-play svg { width: 48px; height: 48px; padding: 13px; } }
 .walkthrough figcaption { max-width: 70ch; margin: 10px 0 0; font-size: 13px; color: var(--ink-3); }
+.wt-fail { margin: 0 0 6px; color: var(--ink); font-size: 14px; }
 .link { position: relative; z-index: 1; padding-left: 64px; margin-bottom: 120px; }
 .link::before {
   content: ""; position: absolute; left: 0; top: 2px; width: 23px; height: 23px; border-radius: 50%;

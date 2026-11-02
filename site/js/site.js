@@ -329,10 +329,26 @@
     // waits for the film's length to be known.
     if (video.readyState >= 1) video.currentTime = t;
     else if (t) video.addEventListener("loadedmetadata", () => { video.currentTime = t; }, { once: true });
-    video.play().catch(() => {}); // refused: the browser's own controls are showing
+    video.play().catch((e) => { if (e.name !== "AbortError") failed(`play refused, ${e.name}: ${e.message}`); });
     fig.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
   };
   fig.querySelector(".wt-play").addEventListener("click", () => at(0));
+  // If the page cannot play it, say why and offer the film on its own, which plays
+  // in the browser's own player.
+  const failed = (why) => {
+    const cap = fig.querySelector("figcaption");
+    if (cap.querySelector(".wt-fail")) return;
+    const p = document.createElement("p");
+    p.className = "wt-fail";
+    p.append(`The film could not play on this page (${why}). `);
+    const a = document.createElement("a");
+    a.href = video.currentSrc || video.src;
+    a.textContent = "Open the film on its own";
+    p.append(a, ".");
+    cap.prepend(p);
+  };
+  video.addEventListener("error", () => failed(`error ${video.error?.code}: ${video.error?.message || "no message"}, network state ${video.networkState}`));
+  fig.querySelector("track")?.addEventListener("error", () => failed("the captions did not load"));
   document.querySelectorAll("[data-seek]").forEach((b) => b.addEventListener("click", () => at(Number(b.dataset.seek))));
   video.addEventListener("timeupdate", () => {
     const now = video.currentTime;
