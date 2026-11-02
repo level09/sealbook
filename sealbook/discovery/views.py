@@ -23,6 +23,7 @@ from quart_security import current_user
 from sqlalchemy import select
 
 from sealbook import blobs
+from sealbook.bayanat import export as bayanat_export
 from sealbook.collaboration.views import guard, no_store
 from sealbook.discovery import coverage, embeddings, evidence, media, service
 from sealbook.discovery.models import Segment
@@ -430,6 +431,8 @@ async def media_blob(sha):
         "audio/x-m4a",
         "audio/aac",
         "audio/webm",
+        # A Bayanat export is revealed before its bulletins are read.
+        *bayanat_export.MIMES,
     }:
         abort(415, description="This file type cannot be previewed")
     return blob

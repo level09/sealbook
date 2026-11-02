@@ -52,6 +52,7 @@
                 <span><i class="ti ti-video" aria-hidden="true"></i>Video</span>
                 <span><i class="ti ti-world" aria-hidden="true"></i>Web pages</span>
                 <span><i class="ti ti-table" aria-hidden="true"></i>Spreadsheets (CSV, XLSX), messy ones too</span>
+                <span><i class="ti ti-database-import" aria-hidden="true"></i>Bayanat exports (JSON or zip)</span>
             </div>
             <div v-if="rec.on" class="rec" role="status" aria-live="polite">
                 <span class="dot" aria-hidden="true"></span><strong class="mono">${ clock(rec.s) }</strong>
@@ -238,6 +239,7 @@
                     </ol>
                     <a v-if="it.sha && it.acquisition" class="x text-caption" :href="'/evidence/' + it.sha" :aria-label="'Open ' + it.name">Open</a><span v-else class="x"></span>
                     <sheet-columns v-if="it.kind === 'sheet' && it.acquisition && !it.sheetConfirmed && !it.dup" :it="it" :fields="FIELDS" :stored="true" @confirmed="poll"></sheet-columns>
+                    <bayanat-import v-if="it.kind === 'bayanat' && it.acquisition && it.sha" :it="it"></bayanat-import>
                 </div>
             </template>
         </div>

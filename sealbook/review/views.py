@@ -558,6 +558,14 @@ async def first_pass_accept():
     )
 
 
+@review.post("/api/review/firstpass/imported/options")
+async def imported_accept():
+    item = await _item()
+    return await _planned(
+        lambda db, who: firstpass.imported(db, current_user, item.get("run"), who)
+    )
+
+
 @review.post("/api/review/incidents/violation/options")
 async def incident_violation():
     item = await _item()

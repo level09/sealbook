@@ -196,6 +196,35 @@ SCENARIOS = [
         "sensitivity; until then each item says it is waiting and why.",
     },
     {
+        "id": "import-from-bayanat",
+        "area": "bring",
+        "title": "Bring a case's work over from Bayanat",
+        "who": "Your team worked these bulletins in Bayanat and the case continues "
+        "here.",
+        "steps": [
+            "In Bayanat, export the bulletins as JSON, with media if you want the "
+            "photos and videos too, and download the zip once it is approved.",
+            "Open Add evidence, pick the case and drop the zip as it is.",
+            "Read what it holds: bulletins by status, how many an analyst worked, "
+            "labels not on the method's list, media present and missing, bulletins "
+            "already here. Import.",
+            "Each bulletin is now an item named Bayanat bulletin and its number; "
+            "its photos and videos are items of their own.",
+            "Accept what Bayanat's analysts decided, in one passkey gesture, or open "
+            "an item and decide its lines one by one.",
+        ],
+        "ai": [
+            "Nothing from Bayanat is accepted by the import: titles and labels wait "
+            "as proposals marked with the Bayanat status, analyst and reviewer.",
+            "Bulletins nobody worked in Bayanat get Sealbook's own first pass.",
+        ],
+        "you": ["Whether Bayanat's decisions stand here, all at once or line by line."],
+        "result": "The case's bulletins and media as items, with their analysts' "
+        "decisions signed by you.",
+        "links": [{"label": "Add evidence", "href": "/ingest/"}],
+        "needs": "Actors, incidents and links between bulletins are not imported yet.",
+    },
+    {
         "id": "upload-a-video",
         "area": "bring",
         "title": "Add a video or a recording",

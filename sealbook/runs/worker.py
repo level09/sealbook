@@ -403,9 +403,11 @@ async def extract(c: Ctx) -> str | None:
             matcher.match_run(agent, c.run.inputs["acquisition"], blob.sha256, names)
         )
     # A photo gets the first pass that looks at the picture (queued by ocr) and a
-    # video one on its frames and transcript (queued by transcribe) instead.
+    # video one on its frames and transcript (queued by transcribe) instead. A
+    # bulletin its Bayanat analysts worked already carries their pass as proposals.
     source = await c.s.get(Blob, c.acq.blob_sha256) if c.acq else None
-    if source and not source.mime.startswith(("image/", "video/")):
+    worked = source and (c.acq.context or {}).get("bayanat", {}).get("worked")
+    if source and not source.mime.startswith(("image/", "video/")) and not worked:
         await queue_read(c.s, c.acq, "assess", blob.sha256)
     return c.run.raw_output_ref
 

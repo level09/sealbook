@@ -8,6 +8,7 @@ import {IntakeBrief} from '/static/js/components/IntakeBrief.js';
 import {CaseSuggestion} from '/static/js/components/CaseSuggestion.js';
 import {SheetColumns, sheetState, confirmRows, fill} from '/static/js/components/SheetColumns.js';
 import {STEP} from '/static/js/components/SourceSteps.js';
+import {BayanatImport} from '/static/js/components/BayanatImport.js';
 
 const KIND = {
   image: {label: 'Image', icon: 'ti ti-photo', read: 'text'},
@@ -16,6 +17,7 @@ const KIND = {
   video: {label: 'Video', icon: 'ti ti-video', read: 'speech'},
   web: {label: 'Web page', icon: 'ti ti-world', read: 'text'},
   sheet: {label: 'Spreadsheet', icon: 'ti ti-table', read: 'rows'},
+  bayanat: {label: 'Bayanat export', icon: 'ti ti-database-import', read: 'bulletins'},
   text: {label: 'Text', icon: 'ti ti-file-text', read: 'text'},
   file: {label: 'File', icon: 'ti ti-file', read: 'contents'},
 };
@@ -31,6 +33,8 @@ const TONED = {you: 'you', model: 'wait', failed: 'fail', running: 'run', queued
 // are kept with it but do not get rows of their own.
 const PRIMARY = {web: 'page', images: 'media', videos: 'video'};
 const SHEET = /\.(csv|xlsx)$/i;
+// A Bayanat export is its JSON, or the zip holding it with its media.
+const BAYANAT = /\.(json|zip)$/i;
 
 const plural = (n, one, many) => `${n} ${n === 1 ? one : (many || one + 's')}`;
 const size = n => n > 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.max(0.1, n / 1e3).toFixed(1)} KB`;
@@ -38,6 +42,7 @@ const err = e => e.response?.data?.message || e.response?.data?.description || e
 
 function kindOf(name, mime) {
   if (SHEET.test(name) || /csv|spreadsheetml/.test(mime)) return 'sheet';
+  if (BAYANAT.test(name)) return 'bayanat';
   if (/^image\//.test(mime)) return 'image';
   if (/pdf/.test(mime) || /\.pdf$/i.test(name)) return 'pdf';
   if (/^audio\//.test(mime)) return 'audio';
@@ -504,6 +509,7 @@ export function mount(boot) {
     },
   });
   app.component('sheet-columns', SheetColumns);
+  app.component('bayanat-import', BayanatImport);
   app.component('intake-brief', IntakeBrief);
   app.component('case-suggestion', CaseSuggestion);
   registerStkComponents(app);

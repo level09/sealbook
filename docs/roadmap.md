@@ -26,8 +26,11 @@ workflow with the typing gone.
    photo or video are searchable in English and Arabic and compared with what texts
    say, labelled as unconfirmed. They do not tie a picture to one event: it names no
    place or date.
-7. **Import from Bayanat.** Pending. Read Bayanat's JSON export into sources and claims
-   signed with the provenance "imported from Bayanat", so a team brings its work along.
+7. **Import from Bayanat.** Done 2026-11-02. A Bayanat bulletin export (JSON, or the
+   zip with its media) dropped on Add evidence becomes one item per bulletin and per
+   media file; the analysts' titles and labels arrive as the item's first pass, marked
+   with the Bayanat status, analyst and peer reviewer, and one passkey gesture accepts
+   them all. Actors, incidents and bulletin relations are not imported yet.
 8. **First hour, tested.** Pending. An analyst from the team works a batch on
    app.sealbook.org from upload to a finalized item, and what slows them becomes the
    next list.

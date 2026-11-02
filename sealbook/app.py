@@ -3,6 +3,7 @@ from stk import Stk
 from sealbook import (
     agents,
     anchor,
+    bayanat,
     casemap,
     cases,
     collaboration,
@@ -58,6 +59,7 @@ extensions = [
     search,
     thumbs,
     sheets,
+    bayanat,
     research,
     cases,
     runs,

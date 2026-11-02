@@ -161,6 +161,7 @@ a:not(.v-btn, .v-list-item, .v-tab, .v-chip):hover {
 .sheet-cols > header { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: var(--raise); border-bottom: 1px solid var(--line); font-size: 12.5px; }
 .sheet-cols .says { padding: 10px 12px; font-size: 13px; color: var(--ink-2); margin: 0; max-width: 90ch; }
 .sheet-cols .says + .says { padding-top: 0; }
+.sheet-cols ul.says { padding-inline-start: 30px; }
 .sheet-cols .scroll { overflow-x: auto; }
 .sheet-cols table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
 .sheet-cols th, .sheet-cols td { padding: 6px 10px; border-top: 1px solid var(--line); text-align: start; vertical-align: top; white-space: nowrap; }

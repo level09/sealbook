@@ -33,7 +33,9 @@ async def stages(db, investigation: str | None, shas) -> dict[str, dict]:
     if investigation:
         latest = latest.where(Assignment.investigation == investigation)
     work = {a.subject: (a, name) for a, name in (await db.execute(latest)).all()}
-    # The newest first pass on each item, and whether a peer review of it is open.
+    # The newest first pass on each item, and whether a peer review of it is open:
+    # its triage line, or for a pass imported from Bayanat (which has no triage) its
+    # title or a label.
     request = aliased(Statement)
     asked = (
         select(request.id)
@@ -49,9 +51,16 @@ async def stages(db, investigation: str | None, shas) -> dict[str, dict]:
             await db.execute(
                 select(Statement.subject, StatementTier.tier, asked)
                 .join(StatementTier, StatementTier.statement_id == Statement.id)
-                .where(Statement.prop == Prop.TRIAGE, Statement.subject.in_(subjects))
+                .where(
+                    Statement.prop.in_((Prop.TRIAGE, Prop.TITLE, Prop.LABEL)),
+                    Statement.subject.in_(subjects),
+                )
                 .distinct(Statement.subject)
-                .order_by(Statement.subject, Statement.recorded_at.desc())
+                .order_by(
+                    Statement.subject,
+                    (Statement.prop == Prop.TRIAGE).desc(),
+                    Statement.recorded_at.desc(),
+                )
             )
         ).all()
     }

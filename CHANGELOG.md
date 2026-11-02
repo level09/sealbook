@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Import from Bayanat: drop a bulletin export (JSON, or the zip with its media) on
+  Add evidence, see what it holds, import it, and accept what Bayanat's analysts
+  decided (analyst titles, labels, verified labels) with one passkey gesture.
 - The analyst's method, first pass by agents: triage, a title in English and
   Arabic, fact-only description lines and Bayanat's alleged labels on text, photos
   and video, each resting on the words, box or second it came from; peer review

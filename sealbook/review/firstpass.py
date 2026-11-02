@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from sealbook.collaboration.service import check_reviewer
 from sealbook.ledger.contracts import ASSESSED_PROPS, Prop, StatementIn, Tier
-from sealbook.ledger.models import Statement, StatementTier
+from sealbook.ledger.models import Run, Statement, StatementTier
 
 
 async def plan(db, user, sha: str, author) -> tuple[str, list[StatementIn]]:
@@ -37,6 +37,40 @@ async def plan(db, user, sha: str, author) -> tuple[str, list[StatementIn]]:
     )
     for st in [triage, *open_] if triage else open_:
         await check_reviewer(db, st, user)
+    return _accept(open_, author)
+
+
+async def imported(db, user, run_id, author) -> tuple[str, list[StatementIn]]:
+    """Every first-pass line one Bayanat import proposed that is still open, in one
+    gesture; an item a colleague was asked to peer review stays theirs."""
+    try:
+        run = await db.get(Run, uuid.UUID(str(run_id)))
+    except ValueError:
+        run = None
+    if run is None or run.tool != "import_bayanat":
+        raise ValueError("send the import's run id")
+    open_ = []
+    for st in await db.scalars(
+        select(Statement)
+        .join(StatementTier, StatementTier.statement_id == Statement.id)
+        .where(
+            Statement.run_id == run.id,
+            Statement.prop.in_(ASSESSED_PROPS),
+            StatementTier.tier == Tier.UNCONFIRMED,
+        )
+        .order_by(Statement.recorded_at)
+    ):
+        try:
+            await check_reviewer(db, st, user)
+        except PermissionError:
+            continue
+        open_.append(st)
+    if not open_:
+        raise LookupError("nothing this import proposed is waiting for you")
+    return _accept(open_, author)
+
+
+def _accept(open_, author) -> tuple[str, list[StatementIn]]:
     gesture = str(uuid.uuid4())
     at = datetime.now(UTC).isoformat()
     return gesture, [
