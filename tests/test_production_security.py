@@ -531,14 +531,16 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
                     await db.commit()
 
     async def test_broadcast_is_targeted_and_queue_is_bounded(self):
-        from stk.websocket import _clients, broadcast
+        # stk 17.4 routes broadcast() through the stk_message table; each process
+        # hands a row to its sockets with _deliver, which is what is bounded here.
+        from stk.websocket import _clients, _deliver
 
         target, unrelated = asyncio.Queue(maxsize=2), asyncio.Queue(maxsize=2)
         _clients["fixture-target"] = {target}
         _clients["fixture-other"] = {unrelated}
         try:
             for _ in range(3):
-                await broadcast({"type": "notification"}, "fixture-target")
+                _deliver("fixture-target", '{"type": "notification"}')
             self.assertTrue(unrelated.empty())
             self.assertEqual(target.qsize(), 1)
             self.assertIsNone(target.get_nowait())

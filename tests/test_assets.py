@@ -51,8 +51,13 @@ class AssetTests(unittest.IsolatedAsyncioTestCase):
             self.assertRegex(assets.asset("js/vue.min.js"), r"\?v=[0-9a-f]{12}$")
 
     async def test_cache_headers(self):
-        client = create_app(AssetConfig).test_client()
-        versioned = await client.get("/static/css/app.css?v=abc")
+        app = create_app(AssetConfig)
+        client = app.test_client()
+        # Only the file's real version is cached for good; stk serves a stale or
+        # made-up ?v= as no-cache.
+        async with app.test_request_context("/"):
+            url = assets.asset("css/app.css")
+        versioned = await client.get(url)
         self.assertEqual(
             versioned.headers["Cache-Control"], "public, max-age=31536000, immutable"
         )

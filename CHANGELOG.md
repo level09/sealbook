@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- stk 17.4.1: notifications from the runner reach open tabs in the web process.
 - Import from Bayanat: drop a bulletin export (JSON, or the zip with its media) on
   Add evidence, see what it holds, import it, and accept what Bayanat's analysts
   decided (analyst titles, labels, verified labels) with one passkey gesture.

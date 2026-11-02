@@ -1930,7 +1930,7 @@ wheels = [
 
 [[package]]
 name = "quart-security"
-version = "2.1.1"
+version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosmtplib" },
@@ -1948,9 +1948,9 @@ dependencies = [
     { name = "webauthn" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/07/ca/47ba66b62c218735b9f373010d9bbaf0a928e0e92cfeb1df1deab759259d/quart_security-2.1.1.tar.gz", hash = "sha256:c51c8316d67911b10d735264a570db1f818e7d56b3ea2dce791bb07db9ba610b", size = 44261, upload-time = "2026-10-31T18:58:36.684Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/89/57c9ac93ded704454db3dd97c5932cee149bcded7aa4e002a8c2dd3e3b46/quart_security-2.2.0.tar.gz", hash = "sha256:b125b0fc1523b9fddc0929fb2d1bd63768c679bbdd4bbfffb03861f81a00d7d5", size = 45480, upload-time = "2026-11-01T12:04:07.306Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/f6/13ebb8f1861ac6a2d5f81c5613a984b004da08c2e80d09faa9a30633a11e/quart_security-2.1.1-py3-none-any.whl", hash = "sha256:71d2cef8e8635f1fcf479998b01eba4d061dcdbb6ee55db5cb1e18778d8ef7da", size = 51803, upload-time = "2026-10-31T18:58:35.256Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/54/775f754344c5602b87a59b3c6eba8db9793a18b1a7c14e47c2355f8ac479/quart_security-2.2.0-py3-none-any.whl", hash = "sha256:d3b7cd1ecabb0b9610417a10d6a056eaaf12a7959a43509af565b41942f92542", size = 52995, upload-time = "2026-11-01T12:04:05.767Z" },
 ]
 
 [[package]]
@@ -2278,7 +2278,7 @@ asyncio = [
 
 [[package]]
 name = "stkit"
-version = "17.3.1"
+version = "17.4.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosmtplib" },
@@ -2309,9 +2309,9 @@ dependencies = [
     { name = "webauthn" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/97/97/d74812cee92660c58fe8a6d2ebe77ffd4e525a15800e95a335df2f7d6b57/stkit-17.3.1.tar.gz", hash = "sha256:edfe922eea8f8089b92b27caebe2b8f9b4fa5d844ab4d0717b29a51e1c42727a", size = 1961001, upload-time = "2026-10-31T18:58:38.982Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ac/4c/610731cfc1344e32a7b63197e4e486e89e436f4dfcdc1f90f9f4389245db/stkit-17.4.1.tar.gz", hash = "sha256:88734a87e6a193a6eb15169ce7f01c826358d381520ca855d08f480de5307c43", size = 1965293, upload-time = "2026-11-02T14:18:49.888Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/62/b8/76080963fbac506c0a0e0d66e8ccf5af0c1d5f17bab757030ad9502ded56/stkit-17.3.1-py3-none-any.whl", hash = "sha256:ebaa5ba24647f4511b8a448fee8be466902109371fbfdaf4b8fe68abd2ee36ec", size = 1861877, upload-time = "2026-10-31T18:58:37.326Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/0a/8dca4ac29c37106ea533fe46b42114c0dd8bae07af55d4ab0900518b4629/stkit-17.4.1-py3-none-any.whl", hash = "sha256:f5fd93608862872e4779820bb54bdc08f328cfc7191203538edccacafa836f3b", size = 1864588, upload-time = "2026-11-02T14:18:48.043Z" },
 ]
 
 [package.optional-dependencies]
