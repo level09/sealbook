@@ -1,6 +1,6 @@
 # Current state
 
-Updated 2026-11-01. What Sealbook does today and its known limits. Every
+Updated 2026-11-02. What Sealbook does today and its known limits. Every
 measurement here was taken on synthetic data; no production archive or partner
 data was used. Counts from checks on real data, kept off this repository, are in
 [Agent evaluation](agent-eval.md).

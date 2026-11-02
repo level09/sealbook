@@ -325,9 +325,11 @@
   const at = (t) => {
     fig.classList.add("playing");
     video.controls = true;
-    const seek = () => { video.currentTime = t; video.play(); };
-    if (video.readyState >= 1) seek();
-    else { video.preload = "auto"; video.addEventListener("loadedmetadata", seek, { once: true }); video.load(); }
+    // Phones play only inside the tap itself, so play() is called now and the seek
+    // waits for the film's length to be known.
+    if (video.readyState >= 1) video.currentTime = t;
+    else if (t) video.addEventListener("loadedmetadata", () => { video.currentTime = t; }, { once: true });
+    video.play().catch(() => {}); // refused: the browser's own controls are showing
     fig.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
   };
   fig.querySelector(".wt-play").addEventListener("click", () => at(0));

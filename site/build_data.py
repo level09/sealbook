@@ -1783,21 +1783,15 @@ def build_status() -> dict:
     chunks = roadmap.split("## Further connected chunks")[1].strip().split("\n\n")[0]
     planned = [c.strip().rstrip(".") for c in re.sub(r"\s+", " ", chunks).split(";")]
     planned = [p[0].upper() + p[1:] + "." for p in planned]
-    planned_tail = []
-    gaps = roadmap.split("## Gaps to close")[1]
-    for title in (
-        "Descriptions and titles",
-        "Labels with observed and alleged basis",
-        "Typed relations with stated certainty",
-    ):
-        body = re.search(
-            re.escape(f"**{title}.**") + r"(.+?)(?:\n\d+\. |\Z)", gaps, re.S
-        ).group(1)
-        planned_tail.append(
-            f"{title}: "
-            + re.sub(r"\s+", " ", body).strip().split(". ")[0].rstrip(".")
-            + "."
+    gaps = roadmap.split("## Gaps to close")[1].split("\n## ")[0]
+    planned_tail = [
+        f"{title}: "
+        + re.sub(r"\s+", " ", body).strip().split(". ")[0].rstrip(".")
+        + "."
+        for title, body in re.findall(
+            r"^\d+\. \*\*(.+?)\.\*\*(.+?)(?=\n\d+\. |\Z)", gaps, re.S | re.M
         )
+    ]
     return {
         "areas": [{"area": a, "does": i, "limits": lim} for a, i, lim in rows],
         # Feature measurements first; the suite results follow.
