@@ -3,6 +3,7 @@
 ## Unreleased
 
 - stk 17.4.1: notifications from the runner reach open tabs in the web process.
+- stk 17.4.2: core models refer to each other by class, so an app model sharing a core name cannot break startup. Notification and McpToken must be named by class in any relationship.
 - Import from Bayanat: drop a bulletin export (JSON, or the zip with its media) on
   Add evidence, see what it holds, import it, and accept what Bayanat's analysts
   decided (analyst titles, labels, verified labels) with one passkey gesture.
