@@ -285,7 +285,8 @@ FILES |= {
         "channel:open-source/local-news",
         "news_article",
         "ordinary",
-        {"investigation": EVAL},
+        # A news passage's first line is its headline.
+        {"investigation": EVAL, "title": p.read_text().splitlines()[0]},
     )
     for p in sorted((ROOT / "retrieval").glob("*.txt"))
 }

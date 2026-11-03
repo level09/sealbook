@@ -127,7 +127,7 @@
     --c: var(--ink);
     --c-solid: var(--solid);
 }
-.v > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.v > span, .v > code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .v.by-agent { --c: var(--agent); --c-solid: var(--agent-solid); color: var(--agent); }
 .v.t-accepted { background: color-mix(in srgb, var(--accepted) 14%, var(--panel)); }
 .v.t-corroborated { border-color: var(--corroborated-line); }

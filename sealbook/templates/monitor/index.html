@@ -75,7 +75,7 @@
                             <span class="stage">${item.stage}</span><span class="tool" v-if="item.actor.kind !== 'extractor'">${item.work}</span>
                             <span class="counts">
                                 <template v-if="item.drop_reason">${item.drop_reason}</template>
-                                <template v-else-if="item.counts.statements"><button class="num" @click.stop="openList({run: item.run_id}, 'Statements from ' + item.work)">${item.counts.statements}</button> statements</template>
+                                <template v-else-if="item.counts.statements"><button class="num" @click.stop="openList({run: item.run_id}, 'Statements from ' + item.work)">${item.counts.statements}</button> ${item.counts.statements === 1 ? 'statement' : 'statements'}</template>
                                 <template v-else>${countsText(item.counts)}</template>
                             </span>
                             <time :datetime="item.at" :title="item.at">${clock(item.at)}</time>
@@ -359,6 +359,7 @@ const ValueChip = {
       <i v-if="s.actor.agent" class="ti ti-robot" aria-label="agent"></i>
       <span v-if="s.masked && !s.revealed" class="masked"><i class="ti ti-lock" aria-hidden="true"></i> masked</span>
       <span v-else-if="s.erased" class="masked">erased</span>
+      <code v-else-if="s.prop === 'sha256' || s.prop === 'md5'" class="mono" v-text="s.display"></code>
       <span v-else dir="auto" v-text="s.display"></span>
     </button>`,
 };
