@@ -296,7 +296,7 @@
                 </template>
                 <!-- statement list -->
                 <template v-else-if="page.kind === 'list'">
-                    <h3>${page.data.items.length} statements</h3>
+                    <h3>${page.data.items.length} ${page.data.items.length === 1 ? 'statement' : 'statements'}</h3>
                     <div class="sub">${page.title}</div>
                     <div v-for="(s, i) in visibleList" :key="s.id" class="list-row" :class="{sel: sideKeys && i === sel.side}">
                         <span><b>${label(s.prop)}</b> <span class="muted">${s.subject_label}</span></span>
