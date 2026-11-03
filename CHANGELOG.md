@@ -4,6 +4,7 @@
 
 - stk 17.4.1: notifications from the runner reach open tabs in the web process.
 - stk 17.4.2: core models refer to each other by class, so an app model sharing a core name cannot break startup. Notification and McpToken must be named by class in any relationship.
+- stk 17.5.0: `sealbook/seed.py` gives `stk smoke` and `stk db seed` both demo cases, so smoke renders every page with real rows. Fixed what that showed: "1 statements" in the runs feed, hashes read as words in a statement chip, news passages titled by file key on Sources.
 - Import from Bayanat: drop a bulletin export (JSON, or the zip with its media) on
   Add evidence, see what it holds, import it, and accept what Bayanat's analysts
   decided (analyst titles, labels, verified labels) with one passkey gesture.

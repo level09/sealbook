@@ -365,9 +365,11 @@ unit suite. `stk db check` migrates a disposable database and compares models; i
 does not upgrade the working database. The checks start the configured app, so
 know its database environment before running it.
 
-`stk smoke` uses a disposable database of the configured dialect. It checks
-parameterless pages, browser errors, requests and contrast. Exercise new populated
-search/review flows separately; empty-page smoke does not prove them.
+`stk smoke` uses a disposable database of the configured dialect, filled by
+`sealbook/seed.py` (both demo cases, as `stk demo-seed --full`). It checks
+parameterless pages with those rows for browser errors, requests, contrast and
+copy (raw hashes, snake_case tokens, "1 statements"). It does not click, so
+exercise new search/review flows separately.
 
 The populated workflow command uses a disposable PostgreSQL database, synthetic
 sources and local Chromium. It checks colleague assignment/discussion, two logged
