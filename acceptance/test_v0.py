@@ -174,6 +174,27 @@ POST_ITEMS = [
 ]
 
 
+FIRST_PASS = {
+    "lang": "ar",
+    "content": "document",
+    "reliability": "no_evidence",
+    "triage_quote": "",
+    "why": "",
+    "title": "",
+    "title_ar": "",
+    "title_quote": "",
+    "description": [],
+    "labels": [],
+}
+# A photo's first pass: empty boxes, so it writes nothing either.
+FIRST_PASS_SEEN = {
+    k: v
+    for k, v in FIRST_PASS.items()
+    if k not in ("lang", "triage_quote", "title_quote")
+} | {"triage_box": [], "title_box": []}
+FIRST_PASSES = {"first_pass": FIRST_PASS, "first_pass_seen": FIRST_PASS_SEEN}
+
+
 def completion(content: str) -> dict:
     return {
         "model": "local/qwen-test",
@@ -194,13 +215,21 @@ class Model:
         self.calls.append(request)
         if self.down:
             raise httpx2.ConnectError("connection refused")
-        messages = orjson.loads(request.content)["messages"]
+        body = orjson.loads(request.content)
+        messages = body["messages"]
+        schema = body.get("response_format", {}).get("json_schema", {}).get("name")
+        if schema in FIRST_PASSES:
+            # The scenario scripts no first pass: every quote is empty, so it writes nothing.
+            return httpx2.Response(
+                200, json=completion(orjson.dumps(FIRST_PASSES[schema]).decode())
+            )
         if isinstance(messages[0]["content"], list):
             # Ingest queues OCR for every image; only the register page has text.
             image = messages[0]["content"][1]["image_url"]["url"].partition(",")[2]
             register = base64.b64encode((DATA / DOCS["register"]["file"]).read_bytes())
             text = REGISTER_TEXT if image == register.decode() else ""
-            return httpx2.Response(200, json=completion(text))
+            answer = {"has_text": bool(text), "text": text}
+            return httpx2.Response(200, json=completion(orjson.dumps(answer).decode()))
         # PDF pages are read for claims too; a text the scenario did not script yields none.
         items = self.extractions.get(messages[1]["content"], [])
         return httpx2.Response(
@@ -656,7 +685,9 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
             drops = (
                 (
                     await s.execute(
-                        select(RunEvent.drop_reason).where(RunEvent.stage == "dropped")
+                        select(RunEvent.drop_reason)
+                        .join(Run, Run.id == RunEvent.run_id)
+                        .where(RunEvent.stage == "dropped", Run.tool == "extract")
                     )
                 )
                 .scalars()
@@ -757,7 +788,7 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
             "hits"
         ]
         post_p1 = self.s["post_st"][("P1", "last_seen")]
-        self.assertIn(post_p1[1], [h["subject"] for h in hits])
+        self.assertIn(post_p1[1], [h.get("subject") for h in hits])
         # The post and the register entry name him the same day in neighbouring
         # towns; the agent proposes they are one person, citing both.
         reg = self.s["register_st"]
@@ -1322,7 +1353,11 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
                 await self.mcp(token, "read", {"target": "search", "query": query})
             )["hits"]
             self.assertFalse(
-                [h for h in hits if h["subject"].removeprefix("person:") in members],
+                [
+                    h
+                    for h in hits
+                    if h.get("subject", "").removeprefix("person:") in members
+                ],
                 query,
             )
         sid = self.s["register_st"][("P1", "name")][0]
