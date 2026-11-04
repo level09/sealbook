@@ -203,12 +203,12 @@ No Celery. `stk/tasks.py` provides:
 
 ### Frontend
 
-Vue 3 + Vuetify loaded from static files (no build step). **Options API** (`data()`, `methods`, `mounted()`), NOT Composition API. Versions are pinned in `sealbook/static/VERSIONS.txt` and refreshed with `./vendor.sh`; see `.stk/context/frontend.md` before bumping Vuetify.
+Vue 3 + Vuetify loaded from static files (no build step). **Options API** (`data()`, `methods`, `mounted()`), NOT Composition API. Versions of what Sealbook vendors are in `sealbook/static/VENDORED.txt` (stk's own are in `stk/static/VERSIONS.txt`) and refreshed with `./vendor.sh`; see `.stk/context/frontend.md` before bumping Vuetify.
 
 - **Delimiters:** `${}` via `config.delimiters` (avoids Jinja `{{}}` conflicts)
 - **Layout mixin:** Every app uses `mixins: [layoutMixin]` for the shell (case switcher, search, Cmd-K palette, rail, hint bar, theme), WebSocket and notifications; its contract is in `.stk/context/frontend.md`
 - **Component registration:** Call `registerStkComponents(app)` before `.mount('#app')`
-- **Vuetify init:** `createVuetify(config.vuetifyConfig)` (config is in `static/js/config.js`)
+- **Vuetify init:** `createVuetify(config.vuetifyConfig)` (stk's `static/js/config.js`; Sealbook changes it in `configureApp`, `static/js/sealbook.js`)
 - **Icons:** Tabler Icons (`ti ti-pencil`, `ti ti-plus`, etc.), NOT Material Design Icons
 - **Server data:** Pass via `<script type="application/json" id="...">{{ data|tojson|safe }}</script>` placed in `{% block js %}`, never in `{% block content %}`: Vue strips `<script>` tags inside the `#app` mount element, so `getElementById(...)` returns null.
 - **Navigation:** Rail entries are `app.navigation.append({...})` in each extension's `init_app` (`title`, `icon`, `to`, `match`, optional `badge` naming a key of `/api/nav/counts`, `role: 'admin'` for access control). The layout reads them through `rail_navigation()`, without stk's Dashboard and Account sections

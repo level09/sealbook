@@ -199,3 +199,7 @@ a:not(.v-btn, .v-list-item, .v-tab, .v-chip):hover {
 .steps .st-failed > .ti, .steps .st-failed .st-word { color: var(--negative); }
 .steps .st-later, .steps .st-skipped { color: var(--ink-3); }
 .steps .st-skipped strong { font-weight: 500; }
+
+/* The brand has its own dark file: an invert filter would shift its colours. */
+body.dark-mode .logo-light { display: none; }
+body.dark-mode .logo-dark { display: inline; }

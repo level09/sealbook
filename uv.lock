@@ -2278,7 +2278,7 @@ asyncio = [
 
 [[package]]
 name = "stkit"
-version = "17.5.0"
+version = "17.9.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosmtplib" },
@@ -2309,9 +2309,9 @@ dependencies = [
     { name = "webauthn" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/12/42/1da6fc7c909142a864c3f17ddec06b3191e0e02c86992fe8080aaa123fc0/stkit-17.5.0.tar.gz", hash = "sha256:1b2b14fcafe570b043f3064b6dbfc0def42600e605365df1561e8fe3b24b2a2f", size = 1966998, upload-time = "2026-11-03T18:32:03.523Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4d/2f/8a6d6b3e5f73b8f0eae99e09220f68d1779831295b09f4c90157cdab93a6/stkit-17.9.6.tar.gz", hash = "sha256:34dc194f3104d1b5aab944bb9b75135fc15c9f3b45b5125c034836ea1175eb45", size = 1971646, upload-time = "2026-11-04T17:58:52.998Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ec/fe/290e6018d0b053b6e2b80c8d26d392348300257480f5c43cf406135fecdd/stkit-17.5.0-py3-none-any.whl", hash = "sha256:948c980a95a0b1de236a029e2aa9501f30367da2249cff2dd8075f50cff7514c", size = 1865411, upload-time = "2026-11-03T18:32:01.749Z" },
+    { url = "https://files.pythonhosted.org/packages/68/fb/4db64fe68b6eda2caa9ba4feda798c2cc4c2a8d363f9fc108137057dc330/stkit-17.9.6-py3-none-any.whl", hash = "sha256:fa22778d3321d0a749cb691c87a13cf5a2a8f14a9513cb17b20fd98a8dca6873", size = 1868042, upload-time = "2026-11-04T17:58:51.414Z" },
 ]
 
 [package.optional-dependencies]

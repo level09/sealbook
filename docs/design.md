@@ -265,7 +265,7 @@ Mechanics (no build step, no new dependencies):
 ## Colour roles (implemented 2026-10-24, kinds restored 2026-10-25)
 
 Paper and ink stay the ground; colour names a role, never decorates. Tokens live in
-`sealbook/static/css/shell.css`; `sealbook/static/js/config.js` mirrors the inks for
+`sealbook/static/css/shell.css`; `configureApp` in `sealbook/static/js/sealbook.js` mirrors the inks for
 Vuetify colour props, and the maps and timelines (`casemap.js`, `stories.js`,
 `monitor/mapview.js`, `entity-page.js`) read the tokens at runtime. Each role has an ink
 for text and glyphs (AA 4.5:1 on panel, page and its own wash in both themes), a `-wash`
@@ -336,7 +336,7 @@ How colour is used:
   their `href` (`/people/`, `/places/`, `/evidence/`, `/incidents/`), so a kind reads
   the same on every page; anchors that wrap a whole row keep their ink. A finding takes
   the hue of what it proposes: shared presence is person, candidate incident is
-  incident (`findingHue` in `components/index.js`). Subtype labels on a list of one
+  incident (`findingHue` in `static/js/sealbook.js`). Subtype labels on a list of one
   kind (Facility, Populated place on Places) stay neutral (`.r-neutral`).
 - Statuses show as chips and marks. Sensitive notices take the sensitive wash and ink;
   new chips take the new hue with a dot; unread marks are new, not violet.
@@ -363,7 +363,7 @@ as `color`, or it shows the hue only when selected.
 Ground (2026-10-24), tuned for long sessions: light is warm paper (bg #ecebe6, panel
 #fbfaf7, ink #1f2124, 15.5:1) instead of pure white; dark is lifted off near-black (bg
 #151619, panel #1c1d21, ink #d9dad6, 12:1) to cut halation. monitor.css, app.css and
-config.js mirror these values.
+sealbook.js (`configureApp`) mirror these values.
 
 Rule for tier against author: before a decision a mark shows its author (violet agent,
 ink person) on a hatch; once confirmed it shows its tier hue, and an agent-authored

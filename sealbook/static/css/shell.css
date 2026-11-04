@@ -36,7 +36,7 @@
    MapLibre and canvas read them. Each role has an ink for text and glyphs (AA on panel,
    bg and its own wash), a -wash for chip and tile grounds and a -line for edges, marks
    and link underlines (3:1 on panel). Colour never carries meaning alone: it rides on
-   a texture, icon or word. config.js mirrors the inks for Vuetify colour props; change
+   a texture, icon or word. sealbook.js mirrors the inks for Vuetify colour props; change
    both together. Maps and timelines read these tokens at runtime. Kinds (person, place, source, incident, story) have hues
    again; light inks sit at different lightness so they stay apart under deutan and
    protan simulation (acceptance/check_palette.py). */

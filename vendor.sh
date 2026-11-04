@@ -56,13 +56,13 @@ json.dump({"type": "FeatureCollection", "features": fs}, sys.stdout, separators=
 ' > "$STATIC/maplibre/region.geojson"
 echo "  $STATIC/maplibre/region.geojson"
 
-cat > "$STATIC/VERSIONS.txt" <<EOF
+cat > "$STATIC/VENDORED.txt" <<EOF
 maplibre-gl $MAPLIBRE_VERSION
 natural-earth-vector $NATURAL_EARTH_VERSION (ne_50m_admin_0_countries, monitor region)
 EOF
 
 echo
 echo "Vendored:"
-cat "$STATIC/VERSIONS.txt"
+cat "$STATIC/VENDORED.txt"
 echo
 echo "Next: uv run quart smoke"
