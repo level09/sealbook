@@ -108,7 +108,12 @@ class WatchTest(unittest.IsolatedAsyncioTestCase):
         )
         self.enterContext(
             mock.patch.dict(
-                os.environ, {"ROUTE_LOCAL_BASE_URL": "http://local.test/v1"}
+                os.environ,
+                # The first pass goes to OpenRouter; the mock transport answers it.
+                {
+                    "ROUTE_LOCAL_BASE_URL": "http://local.test/v1",
+                    "OPENROUTER_API_KEY": "k",
+                },
             )
         )
         self.enterContext(mock.patch.object(Config, "EMBEDDING_MODEL", None))
