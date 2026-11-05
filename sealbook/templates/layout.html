@@ -1,38 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
+{# Sealbook's shell on stk's layout: its own bar, rail, case header, hint bar, palette and layoutMixin. #}
+{% extends "stk/layout.html" %}
 
-<head>
-    <meta charset="utf-8">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config.APP_NAME }}</title>
-    {% if config.APP_DESCRIPTION %}<meta name="description" content="{{ config.APP_DESCRIPTION }}">{% endif %}
-    <meta name="author" content="{{ config.APP_NAME }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {{ import_map() }}
+{% block head_js %}
+<link rel="preload" href="/static/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/fonts/inter-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
+{% endblock %}
 
-    <link rel="stylesheet" href="{{ asset('css/vuetify.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('icons/tabler-icons.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/shell.css') }}">
-
-    <link rel="preload" href="/static/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="/static/fonts/inter-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
-    <style>[v-cloak] { display: none !important; }</style>
-
-    {% include "_head.html" %}
-    {% block css %}{% endblock %}
-    {% block head_js %}{% endblock %}
-</head>
-
-<body class="{% block body_class %} {% endblock %}">
+{% block body_start %}
 <!-- The shell frame at its mounted size, painted until Vue replaces it (see docs/lessons.md). -->
 <div id="sb-boot" class="sb-boot" aria-hidden="true">
     <div class="sb-boot-top"><span class="brand"><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></span></div>
     {% if current_user.is_authenticated %}<div class="sb-boot-rail"></div><div class="sb-boot-hints"></div><div class="sb-boot-bottom"></div>{% endif %}
 </div>
-<div id="app" v-cloak>
-<v-app>
+{% endblock %}
+
+{% block app_bar %}
     <v-app-bar density="compact" flat class="sb-top">
         <a class="brand" href="/todo"><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></a>
         {% if current_user.is_authenticated %}
@@ -84,7 +66,9 @@
         <v-btn href="/login" variant="text">Sign in</v-btn>
         {% endif %}
     </v-app-bar>
+{% endblock %}
 
+{% block sidebar %}
     {% if current_user.is_authenticated %}
     <v-navigation-drawer v-if="!isMobile" permanent width="188" class="sb-rail">
         <div class="px-2 pt-2"><v-btn block color="primary" variant="flat" prepend-icon="ti ti-upload" href="/ingest/">Add evidence</v-btn></div>
@@ -115,7 +99,9 @@
         </v-list>
     </v-bottom-sheet>
     {% endif %}
+{% endblock %}
 
+{% block main %}
     <v-main>
         {% if current_user.is_authenticated %}
         <!-- A case is one page: its header, then a tab per case page. Each tab is that page's own address. -->
@@ -132,10 +118,11 @@
             </nav>
         </header>
         {% endif %}
-        {% block content %}
-        {% endblock %}
+        {{ self.content() }}
     </v-main>
+{% endblock %}
 
+{% block app_end %}
     {% if current_user.is_authenticated %}
     <v-footer v-if="!isMobile" app height="30" class="sb-hints" aria-label="Keyboard shortcuts">
         <span v-for="h in shellHints" :key="h[0]"><v-hotkey :keys="h[0]" variant="tonal" density="compact"></v-hotkey>${ h[1] }</span>
@@ -164,62 +151,13 @@
         </v-list>
     </v-card></v-dialog>
     {% endif %}
+{% endblock %}
 
-        <!-- Flash messages (plain HTML - renders before Vue mounts) -->
-        {% set messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div id="flash-messages" class="flash-container">
-                {% for category, message in messages %}
-                    <div class="flash-message {{ category if category in ['success', 'warning', 'error', 'info'] else 'primary' }}">
-                        <span>{{ message }}</span>
-                        <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-</v-app>
-</div>
-
-{% if current_user.is_authenticated %}
-<!-- Logout is POST-only with CSRF (quart-security >= 1.4.1) -->
-<form id="logout-form" method="POST" action="/logout" hidden>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-</form>
-{% endif %}
-
-<!-- Flash message auto-hide (outside Vue template) -->
-{% if messages %}
-<script>
-    // Auto-hide flash messages after 5 seconds
-    setTimeout(function() {
-        const flashMessages = document.getElementById('flash-messages');
-        if (flashMessages) {
-            flashMessages.style.display = 'none';
-        }
-    }, 5000);
-</script>
-{% endif %}
-
-<!-- Core Scripts -->
-<script src="{{ asset('js/vue.min.js') }}"></script>
-<script src="{{ asset('js/config.js') }}"></script>
-<script src="{{ asset('js/vuetify.min.js') }}"></script>
-<script src="{{ asset('js/axios.min.js') }}"></script>
-<script>axios.defaults.headers.common["X-CSRFToken"] = document.querySelector('meta[name="csrf-token"]').content;</script>
-
-<!-- Navigation Data: each extension's app.navigation entries, in extension order.
-     `badge` names a key of /api/nav/counts; `match` is the path that marks the item current. -->
+{% block navigation %}
 <script>const stkNavigation = {{ app_navigation()|tojson }};</script>
+{% endblock %}
 
-<!-- stk Components -->
-<script src="{{ asset('js/components/TransitionExpand.js') }}"></script>
-<script src="{{ asset('js/components/VerticalNavLink.js') }}"></script>
-<script src="{{ asset('js/components/VerticalNavGroup.js') }}"></script>
-<script src="{{ asset('js/components/VerticalNavSectionTitle.js') }}"></script>
-<script src="{{ asset('js/components/NotificationDropdown.js') }}"></script>
-<script src="{{ asset('js/components/ThemeSwitcher.js') }}"></script>
-<script src="{{ asset('js/components/index.js') }}"></script>
-
+{% block layout_script %}
 <!-- Layout Base Script -->
 <script>
     // User roles passed from server
@@ -480,22 +418,4 @@
         }
     };
 </script>
-
-{% block js %}{% endblock %}
-
-<!-- Prefetch same-origin links on hover (Chrome). Skip mutating/auth routes. -->
-<script type="speculationrules">
-{
-  "prefetch": [{
-    "where": {
-      "and": [
-        { "href_matches": "/*" },
-        { "not": { "href_matches": ["/login/*", "/oauth/*", "/ws"] } }
-      ]
-    },
-    "eagerness": "moderate"
-  }]
-}
-</script>
-</body>
-</html>
+{% endblock %}

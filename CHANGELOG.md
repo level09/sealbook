@@ -6,6 +6,7 @@
 - stk 17.4.2: core models refer to each other by class, so an app model sharing a core name cannot break startup. Notification and McpToken must be named by class in any relationship.
 - stk 17.5.0: `sealbook/seed.py` gives `stk smoke` and `stk db seed` both demo cases, so smoke renders every page with real rows. Fixed what that showed: "1 statements" in the runs feed, hashes read as words in a statement chip, news passages titled by file key on Sources.
 - stk 17.9.6: Sealbook no longer copies stk's `config.js`, `components/index.js`, `layout.css` or sign-in layouts, so it gets stk's fixes, the theme set before mount among them. Its colours and shared helpers live in `static/js/sealbook.js` (`configureApp`), loaded from `templates/_head.html`; the sign-in pages extend stk's by name. `layout.html` stays Sealbook's own shell. Smoke now checks every signed-in page in the dark theme too.
+- stk 17.10.0: `layout.html` extends stk's layout and fills its blocks (`body_start`, `app_bar`, `sidebar`, `main`, `app_end`, `navigation`, `layout_script`) instead of copying it. `shell.css` loads from `_head.html`, so the sign-in pages get Sealbook's type and colours. Entity pages name their heading block `heading`, since `title` is now the browser tab's.
 - Import from Bayanat: drop a bulletin export (JSON, or the zip with its media) on
   Add evidence, see what it holds, import it, and accept what Bayanat's analysts
   decided (analyst titles, labels, verified labels) with one passkey gesture.

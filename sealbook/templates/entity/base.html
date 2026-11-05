@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{#- One layout for every entity page. A page fills crumbs, title, names, facts,
+{#- One layout for every entity page. A page fills crumbs, heading, names, facts,
     actions and side, and its script gives entityPage() a `relations` computed:
     [{key, title, icon, role, empty, items: [{id, href, name, why, chip: {cls, text}, title}]}]. -#}
 {% block css %}
@@ -17,7 +17,7 @@
     <nav class="en-crumbs" aria-label="Breadcrumb">{% block crumbs %}{% endblock %}</nav>
     <header class="en-head">
       <div>
-        <div class="en-title">{% block title %}{% endblock %}</div>
+        <div class="en-title">{% block heading %}{% endblock %}</div>
         {% block names %}{% endblock %}
         <dl class="en-facts">{% block facts %}{% endblock %}</dl>
       </div>

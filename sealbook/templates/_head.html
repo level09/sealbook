@@ -1,4 +1,5 @@
 {# Every layout, the sign-in pages' included, puts this in <head>; it replaces stk's. #}
+<link rel="stylesheet" href="{{ asset('css/shell.css') }}">
 <link rel="icon" href="{{ asset('img/sealbook-mark.svg') }}" type="image/svg+xml">
 <!-- Theme before first paint, so a dark page never flashes white. -->
 <script>try { const t = localStorage.getItem('stk-theme'); if (t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('dark-mode'); } catch {}</script>

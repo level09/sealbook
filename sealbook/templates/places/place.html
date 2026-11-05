@@ -1,6 +1,6 @@
 {% extends "entity/base.html" %}
 {% block crumbs %}<a href="/places">Places</a> / <span>${ e.kind_label }</span>{% endblock %}
-{% block title %}
+{% block heading %}
 <h1 dir="auto">${ e.name_ar }</h1><span v-if="e.name_en" class="alt" dir="auto">${ e.name_en }</span>
 <span class="r-chip is-place"><i class="ti ti-map-pin" aria-hidden="true"></i>${ e.kind_label }</span>
 {% endblock %}
