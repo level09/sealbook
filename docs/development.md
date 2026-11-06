@@ -5,7 +5,7 @@ The evidence application requires PostgreSQL; SQLite supports only isolated
 framework tests. Start with [architecture.md](architecture.md), [operations.md](operations.md)
 and [lessons.md](lessons.md). The conventions below are inherited from stk.
 
-stk is a dependency (`stkit>=17.1.0,<18`), not a fork. Sealbook's code is the
+stk is a dependency (`stkit>=17.10.0,<18`), not a fork. Sealbook's code is the
 `sealbook/` package: `sealbook/app.py` composes `Stk(__name__, config=Config,
 extensions=[...])` and `sealbook/settings.py` holds `class Config(stk.Config)`.
 Paths under `stk/` below name files in the installed stk package; never edit them.
@@ -211,7 +211,7 @@ Vue 3 + Vuetify loaded from static files (no build step). **Options API** (`data
 - **Vuetify init:** `createVuetify(config.vuetifyConfig)` (stk's `static/js/config.js`; Sealbook changes it in `configureApp`, `static/js/sealbook.js`)
 - **Icons:** Tabler Icons (`ti ti-pencil`, `ti ti-plus`, etc.), NOT Material Design Icons
 - **Server data:** Pass via `<script type="application/json" id="...">{{ data|tojson|safe }}</script>` placed in `{% block js %}`, never in `{% block content %}`: Vue strips `<script>` tags inside the `#app` mount element, so `getElementById(...)` returns null.
-- **Navigation:** Rail entries are `app.navigation.append({...})` in each extension's `init_app` (`title`, `icon`, `to`, `match`, optional `badge` naming a key of `/api/nav/counts`, `role: 'admin'` for access control). The layout reads them through `rail_navigation()`, without stk's Dashboard and Account sections
+- **Navigation:** Rail entries are `app.navigation.append({...})` in each extension's `init_app` (`title`, `icon`, `to`, `match`, optional `badge` naming a key of `/api/nav/counts`, `role: 'admin'` for access control). The layout reads them through stk's `app_navigation()`, without stk's Dashboard and Account sections
 - **JSON responses:** List endpoints use `orjson` via `import orjson as json` and `Response(json.dumps(data), content_type="application/json")`
 - **Request body:** Frontend sends mutations as `{item: {...}}`, extract with `json_data.get("item", {})`
 - **Template globals:** Vue template expressions cannot see page globals (a `const labels = {...}` in a script is undefined inside `${...}` and directives). Expose shared helpers with `app.config.globalProperties.labels = labels` before mount. The production Vue build fails such lookups silently (the cell renders nothing, columns shift), so `stk smoke` cannot catch it; check the rendered table.

@@ -2208,7 +2208,7 @@ requires-dist = [
     { name = "playwright", specifier = ">=1.64.1" },
     { name = "pypdf", specifier = ">=6.21,<7" },
     { name = "pypdfium2", specifier = ">=5,<6" },
-    { name = "stkit", specifier = ">=17.3.1,<18" },
+    { name = "stkit", specifier = ">=17.10.0,<18" },
     { name = "stkit", extras = ["full"], marker = "extra == 'full'" },
     { name = "yt-dlp", specifier = "==2026.10.21" },
 ]

@@ -29,8 +29,8 @@ registers its blueprints, commands and rail entries (`app.navigation`). Settings
 are `class Config(stk.Config)` in `sealbook/settings.py`. Never edit stk's files:
 they are replaced on every upgrade. Override a template or static file by putting
 one at the same path in `sealbook/templates/` or `sealbook/static/`; `stk/<name>`
-is the original. `layout.html` is a full override (Sealbook's shell differs from
-stk's); other overrides extend the original and fill blocks. Migrations live in
+is the original. Overrides extend the original and fill blocks; `layout.html`
+fills stk's layout blocks (`app_bar`, `sidebar`, `main`, `app_end`, `layout_script`). Migrations live in
 `sealbook/migrations/` and depend on stk's head.
 
 ## Where truth lives

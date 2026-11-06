@@ -43,7 +43,7 @@ the move needed from the app side, and what stk 17.0.x could offer instead.
 | --- | --- | --- |
 | `stk verify` ran a check that `GET /` returns 200, which failed an app whose `/` redirects | Fixed in stk 17.0.2: the check follows redirects | Done |
 | No documented way to replace stk's own `/` view | `sealbook/shell` swaps `app.view_functions["public.index"]` | Documented as the supported way in stk 17.0.2 |
-| The layout's `stk_navigation()` always wraps app entries in stk's Dashboard, Account and Administration sections | `sealbook/shell` adds a `rail_navigation()` global returning `app.navigation` only | Expose the app's entries on their own |
+| The layout's `stk_navigation()` always wraps app entries in stk's Dashboard, Account and Administration sections | The layout uses stk's `app_navigation()` | Done: stk exposes `app_navigation()` |
 | App commands landed under "Other" in `stk --help` | `STK_CLI_SECTIONS` in `sealbook/settings.py` | Added in stk 17.0.2 |
 | `stk db revision` writes `pgvector.sqlalchemy.bit.BIT`, `pgvector.sqlalchemy.halfvec.HALFVEC` and app `UserDefinedType` columns by module path with no import, and drops column-level `CheckConstraint`s (an Alembic limitation) | `sealbook_0001` imports pgvector's types, spells PostGIS types out locally and adds the three checks by hand | Import the modules of rendered types; warn about column-level checks |
 | `build_alembic_config(app, url)` needs an app, so a test that migrates a throwaway database before it builds its own app must import the module-level app | Tests import `sealbook.app.app` for that | Accept the app's import name or migrations directory |
@@ -52,7 +52,7 @@ the move needed from the app side, and what stk 17.0.x could offer instead.
 
 ## Found moving to stk 17.2 (2026-10-31)
 
-Sealbook depends on `stkit>=17.3.1,<18`. It runs its own queue as `stk runner` (stk's
+Sealbook depends on `stkit>=17.10.0,<18`. It runs its own queue as `stk runner` (stk's
 `worker` drains `stk_job`), uses `stk.utils.netguard` and `httpx2` throughout, and
 keeps its own MCP, notifications and evidence storage.
 
@@ -66,3 +66,13 @@ keeps its own MCP, notifications and evidence storage.
 | `netguard.stream` raises `TimeoutError` past its deadline, not an `httpx2` error, and the deadline covers the whole body | Callers catch both; downloads pass `timeout=900` | One line in the netguard docs |
 | Tests fake DNS by patching the private `netguard._resolve` | Patches `_resolve` | A public `resolve`, or a resolver hook |
 | stk's `worker` command took the name of Sealbook's | Renamed to `stk runner` | Done; the changelog said so |
+
+## Found moving to stk 17.9 and 17.10 (2026-11-04 to 2026-11-05)
+
+| Gap | What Sealbook does | For stk |
+| --- | --- | --- |
+| `stk smoke` never read the dev server's output, so the server blocked once the access log filled the pipe, and the dark pass hung | Ran smoke with the log drained until the fix | Done in 17.9.6 |
+| Sealbook copied stk's `config.js`, `components/index.js`, `layout.css` and sign-in layouts to change colours and defaults | `configureApp` in `static/js/sealbook.js`, loaded from `_head.html`; the sign-in pages extend stk's | Done in 17.9.x: `_head.html` and `configureApp` |
+| `layout.html` was a full copy, since stk's layout had no blocks for the bar, the content area, what follows it, or the mixin | Fills `body_start`, `app_bar`, `sidebar`, `main`, `app_end`, `navigation` and `layout_script` | Done in 17.10.0 |
+| stk's layout names the tab title block `title`, which an app may already use for an in-page heading | Entity pages call theirs `heading` | A line in the upgrade notes |
+
