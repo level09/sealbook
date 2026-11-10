@@ -65,6 +65,37 @@ class SecurityCompatibilityTests(unittest.IsolatedAsyncioTestCase):
         async with self.app.test_app():
             pass
 
+    async def test_expired_form_returns_to_its_page_and_then_works(self):
+        client = self.app.test_client()
+        form = {"email": "user@example.com", "password": "TestPassword123!"}
+        await client.get("/login")
+        stale = await client.post("/login", form={**form, "csrf_token": "old"})
+        self.assertEqual(stale.status_code, 303)
+        self.assertEqual(stale.headers["Location"], "/login")
+        page = await (await client.get("/login")).get_data(as_text=True)
+        self.assertIn("That page had expired", page)
+        async with client.session_transaction() as cookie:
+            form["csrf_token"] = cookie["_csrf_token"]
+        self.assertEqual((await client.post("/login", form=form)).status_code, 302)
+
+    async def test_expired_form_never_redirects_off_site(self):
+        client = self.app.test_client()
+        away = await client.post(
+            "/login",
+            form={"csrf_token": "old"},
+            headers={"Referer": "https://elsewhere.example/steal"},
+        )
+        self.assertEqual(away.headers["Location"], "/login")
+        back = await client.post(
+            "/logout",
+            form={"csrf_token": "old"},
+            headers={"Referer": "http://localhost/todo?x=1"},
+        )
+        self.assertEqual(back.headers["Location"], "/todo")
+        api = await client.post("/api/cases", json={"item": {}})
+        self.assertEqual(api.status_code, 400)
+        self.assertEqual((await api.get_json())["message"], "Invalid CSRF token")
+
     async def test_logout_rejects_copied_cookie(self):
         client = self.app.test_client()
         saved = await self.login(client)
