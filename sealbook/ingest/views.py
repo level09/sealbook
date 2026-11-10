@@ -127,6 +127,12 @@ async def peek():
     return _json(out)
 
 
+@bp_ingest.get("/answer")
+async def answer_page():
+    """What a batch added to its case, on one page (`/api/agents/answer`)."""
+    return await render_template("ingest/answer.html")
+
+
 @bp_ingest.get("/batch/<batch>")
 async def batch_status(batch):
     return _json(await batches.status(g.db_session, batch))

@@ -941,12 +941,13 @@ async def show(db, user, batch: str, version: str | None = None) -> dict:
     }
 
 
-async def log_view(db, user, run: Run, ids: list[str]) -> None:
+async def log_view(db, user, run: Run | None, ids: list[str], subject=None) -> None:
     """One access record per reader, brief version and login session, naming the
-    claims whose values the brief showed."""
+    claims whose values the brief showed. A page with no run of its own (a batch's
+    answer) names its `subject` instead."""
     me = await write.principal_for_user(db, user.id, user.name or user.email)
     key = view_session()
-    subject = f"brief:{run.id}"
+    subject = subject or f"brief:{run.id}"
     seen = await db.scalar(
         select(Statement.id)
         .join(Payload, Payload.commitment == Statement.commitment)

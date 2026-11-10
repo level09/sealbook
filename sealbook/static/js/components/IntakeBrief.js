@@ -69,6 +69,7 @@ export const IntakeBrief = {
       <v-btn v-if="!compact && !data.pending" size="small" variant="outlined" prepend-icon="ti ti-sparkles" :loading="busy" @click="regenerate">Write a brief</v-btn>
     </template>
     <template v-else>
+      <p class="ib-one"><a :href="'/ingest/answer?batch=' + batch"><i class="ti ti-layout-list" aria-hidden="true"></i> Read this batch as one answer</a></p>
       <section v-for="s in shown" :key="s.key" class="ib-sec" :class="'ib-' + s.key">
         <h3>{{ s.title }}</h3>
         <p v-if="!brief[s.key].length" class="ib-muted">{{ s.key === 'disagrees' ? 'Nothing in this batch disagrees with an accepted claim.' : 'Nothing the brief could cite.' }}</p>
@@ -98,6 +99,8 @@ const STYLE = `
 .ib-sec { margin: 0 0 10px; }
 .ib-sec h3 { font-size: 12px; font-weight: 650; margin: 0 0 4px; color: var(--ink-2, inherit); text-transform: none; }
 .ib-sec ul { margin: 0; padding-inline-start: 18px; }
+.ib-one { margin: 0 0 8px; }
+.ib-grid .ib-one { grid-column: 1 / -1; padding: 8px 12px 0; }
 .ib-sec ul.ib-next { list-style: none; padding-inline-start: 0; }
 .ib-sec li { margin: 2px 0; line-height: 1.45; overflow-wrap: anywhere; }
 .ib-act { display: inline-flex; gap: 6px; align-items: baseline; font-weight: 550; }

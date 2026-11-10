@@ -13,6 +13,7 @@ from quart_security import auth_required, current_user
 from sqlalchemy import select
 
 from sealbook.agents import (
+    answer,
     approximate,
     brief,
     contradictions,
@@ -188,6 +189,29 @@ async def read_brief():
     except LookupError:
         abort(404)
     return _json(out | {"missing": missing()})
+
+
+@bp_agents.get("/answer")
+async def read_answer():
+    """What a batch adds to its case, as one page (`sealbook/agents/answer.py`). The
+    batch by its id, or the batch a source arrived in."""
+    batch = request.args.get("batch")
+    if not batch and re.fullmatch(r"[0-9a-f]{64}", request.args.get("source") or ""):
+        batch = await g.db_session.scalar(
+            select(Acquisition.context["batch"].astext)
+            .where(
+                Acquisition.blob_sha256 == request.args["source"],
+                Acquisition.context["batch"].astext.is_not(None),
+            )
+            .order_by(Acquisition.at.desc())
+            .limit(1)
+        )
+        if batch is None:
+            abort(404)
+    try:
+        return _json(await answer.show(g.db_session, current_user, _batch(batch)))
+    except LookupError:
+        abort(404)
 
 
 @bp_agents.post("/brief")

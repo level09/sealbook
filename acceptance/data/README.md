@@ -13,3 +13,9 @@ Everything here is invented. Every person is fictional; "Branch 999" (الفرع
 Regenerate (needs `ffmpeg`, `c2patool`, and `OPENROUTER_API_KEY` only if `../voice/` is missing): `uv run python acceptance/make_case.py`. PNG, OGG, HTML and JSON are byte-stable; the PDF (creation date) and the JPG (C2PA claim time and ids) differ per run.
 
 The five paper documents of the demo case live in `../demo/`, made by `../make_demo_docs.py`: `detainee_list.jpg` and `dormitory_roster.jpg` (scanned forms, the roster filled in by hand in Aref Ruqaa), `documentation_note.pdf`, `released_detainee_statement.pdf` and `testimony_reem.pdf` (text-layer PDFs from fictional documentation groups). `expected.json` there holds each claimed value's pixel box on the scans, its span in the recorded OCR text when OCR wrote it exactly, and its span in pypdf's page text for the PDFs. `ocr.json` is the app's OCR prompt answered once by `google/gemini-3.1-flash-lite` on OpenRouter, kept as received with model, provider, time, prompt hash and image sha256; it is never edited. `uv run python -m acceptance.make_demo_docs` re-renders and refuses when the scans no longer match the recording; `--ocr` records again (needs `OPENROUTER_API_KEY`). The JPGs are byte-stable; the PDFs differ per run (creation date).
+
+`../demo/recordings/` holds five more synthetic recordings for the demo's batch
+answer (a mother, a sister, a released detainee, a neighbour and one clip of room
+tone), made by `uv run python acceptance/make_recordings.py` with the same voice
+route as the witness clip, one voice per speaker. `recordings.json` is their script
+with each sentence's time. Every name in them is invented.

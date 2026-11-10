@@ -68,8 +68,9 @@ class DemoSeedTest(unittest.IsolatedAsyncioTestCase):
                 await seed_full(s, self.app)
         self.assertEqual(out["counts"]["watch hits"], 4)
         self.assertEqual(out["counts"]["open findings"], 4)
-        self.assertEqual(out["counts"]["intake briefs"], 2)
+        self.assertEqual(out["counts"]["intake briefs"], 3)
         self.assertGreaterEqual(out["counts"]["agent links"], 3)
+        await self.recordings_read_as_one_answer(owner)
         while await work_once(ext.async_session_factory):
             pass
         async with ext.async_session_factory() as s:
@@ -196,9 +197,10 @@ class DemoSeedTest(unittest.IsolatedAsyncioTestCase):
         provenance = await s.scalar(
             select(func.count()).where(Run.model_served == "sealbook-demo-fixed-output")
         )
-        # The transcript, two sheet extractions, the linker and brief per batch, the
-        # standing question and the first pass of the two missing-person posts.
-        self.assertEqual(provenance, 10)
+        # The transcripts (the witness clip and four family recordings), two sheet
+        # extractions, the linker and brief per batch, the standing question and the
+        # first pass of the two missing-person posts.
+        self.assertEqual(provenance, 16)
         # Team work: notifications for every active analyst, overdue work.
         for email in ("analyst-2@example.com", "analyst-3@example.com"):
             user = await s.scalar(select(User).where(User.email == email))
@@ -230,6 +232,50 @@ class DemoSeedTest(unittest.IsolatedAsyncioTestCase):
                 )
             )
         )
+
+    async def recordings_read_as_one_answer(self, owner):
+        """The five family recordings come back as one page: the brother proposed as
+        row 1 of the detainee list, told apart from his namesake, every line cited."""
+        from sealbook.agents import answer
+        from sealbook.ledger.models import Acquisition, Statement
+
+        async with ext.async_session_factory() as s:
+            batch = await s.scalar(
+                select(Acquisition.context["batch"].astext).where(
+                    Acquisition.context["file"].astext == "rec_mother"
+                )
+            )
+            async with self.app.test_request_context("/"):
+                a = await answer.show(s, await s.get(User, owner.id), batch)
+            views = await s.scalar(
+                select(func.count()).where(Statement.subject == f"answer:{batch}")
+            )
+        self.assertEqual(views, 1, "showing values is logged once")
+        self.assertEqual([r["lines"] for r in a["recordings"]], [5, 5, 5, 4, 0])
+        self.assertTrue(
+            all(r["quote"]["cites"][0]["play"] for r in a["recordings"][:4])
+        )
+        self.assertEqual(len(a["who"]), 1, "only the same-person proposal")
+        who = a["who"][0]
+        self.assertIn("محمد احمد الخطيب", who["head"]["text"])
+        self.assertIn("محمد أحمد الخطيب", who["head"]["text"])
+        tags = [c["tag"] for c in who["checks"]]
+        self.assertEqual(tags.count("agrees"), 2, who["checks"])
+        self.assertIn("not him", tags)
+        self.assertIn("&with=", who["beside"])
+        self.assertEqual(a["again"][0]["n"], 4, "his name is in four recordings")
+        # Three sources give the January arrest: one step, cited three times.
+        self.assertEqual(len(a["path"][0]["cites"]), 3)
+        self.assertEqual(a["missing"]["text"], "No record after 28 February 2014")
+        self.assertTrue(a["others"])
+        self.assertIn(
+            {"step": "Fingerprint", "where": "this server", "runs": 5, "here": True},
+            a["ran"],
+        )
+        self.assertEqual(a["next"]["href"], who["review"])
+        cited = (who["head"], *who["checks"], *a["again"], *a["path"], *a["others"])
+        for part in cited:
+            self.assertTrue(part["cites"], part)
 
 
 @unittest.skipUnless(POSTGRES, "demo seed needs Postgres (set SQLALCHEMY_DATABASE_URI)")

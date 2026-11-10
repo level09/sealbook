@@ -41,6 +41,12 @@ from sealbook.watch.models import Watch
 
 CASE = "case-demo-02"
 ROOT = Path(__file__).resolve().parents[2] / "acceptance"
+# The man four family recordings name (N1) and a cellmate one of them names (O1):
+# new records, so the linker has to propose who they are.
+N1, O1 = (
+    f"person:{uuid.uuid5(uuid.NAMESPACE_URL, f'sealbook-demo/{CASE}/{p}')}"
+    for p in ("N1", "O1")
+)
 R1, R2, K1, K2, K2E, L1, L2, Z1, RM, B1, F1, S1, W1 = (
     f"person:{uuid.uuid5(uuid.NAMESPACE_URL, f'sealbook-demo/{CASE}/{p}')}"
     for p in (
@@ -296,6 +302,11 @@ TITLES = {
     "register": "Branch 999 register, scanned page",
     "transfer": "Transfer order 4471",
     "witness": "Witness clip, recorder 04",
+    "rec_mother": "Family interview, mother",
+    "rec_sister": "Family interview, sister",
+    "rec_released": "Call with a released detainee",
+    "rec_neighbour": "Voice note from a neighbour",
+    "rec_silence": "Voice note, forwarded",
     "photo": "Damaged building, Aleppo",
     "post": "Missing person post, first capture",
     "post_v2": "Missing person post, recapture",
@@ -503,6 +514,77 @@ async def factual(session, subject, prop):
         .order_by(Statement.recorded_at)
         .limit(1)
     )
+
+
+async def family_recordings(s: Seeder, collector, extractor, llm) -> str:
+    """Five recordings dropped as one batch (`acceptance/make_recordings.py`): a mother,
+    a sister, a released detainee and a neighbour each say part of what the Branch 999
+    detainee list holds about its row 1, under the spelling speech to text writes. One
+    has no speech and is left for the worker to find that out. The claims attach to a
+    new person, so who he is stays a question for the linker and then a reviewer."""
+    truth = json.loads((ROOT / "demo/recordings/recordings.json").read_text())
+    batch = str(uuid.uuid4())
+    for name in ("mother", "sister", "released", "neighbour", "silence"):
+        await intake(
+            s,
+            f"rec_{name}",
+            (ROOT / f"demo/recordings/{name}.ogg").read_bytes(),
+            "audio/ogg",
+            "device:recorder-07",
+            collector,
+            "witness_statement",
+            "ordinary",
+            {"batch": batch},
+        )
+        if clip := truth[f"{name}.ogg"]["sentences"]:
+            await flows.transcript(
+                s, f"rec_{name}", clip, truth[f"{name}.ogg"]["duration_ms"]
+            )
+    await s.s.commit()
+    name, branch = "محمد احمد الخطيب", "بالفرع تسعمية وتسعة وتسعين"
+    feb = ["2014-02-01", "2014-02-28"]
+    said = {
+        "mother": [
+            (N1, Prop.NAME, name, name, None),
+            (N1, Prop.BIRTH_DATE, "1979", "الألف وتسعمية وتسعة وسبعين", None),
+            (N1, Prop.ARRESTED_AT, "حمص", "بحمص", ["2014-01-25", "2014-01-31"]),
+            (N1, Prop.DETENTION_BRANCH, "الفرع 999", branch, None),
+        ],
+        "sister": [
+            (N1, Prop.NAME, name, name, None),
+            (N1, Prop.MOTHER_NAME, "ليلى", "ليلى", None),
+            (N1, Prop.BIRTH_DATE, "1979", "الألف وتسعمية وتسعة وسبعين", None),
+            (N1, Prop.DETENTION_BRANCH, "الفرع 999", branch, None),
+        ],
+        "released": [
+            (N1, Prop.NAME, name, name, None),
+            (N1, Prop.DETAINED_AT, "الفرع 999", branch, feb),
+            (O1, Prop.NAME, "عمر حسن الزين", "عمر حسن الزين", None),
+            (O1, Prop.DETAINED_AT, "الفرع 999", branch, feb),
+            (N1, Prop.LAST_SEEN, "الفرع 999", "ما عاد شفت محمد", ["2014-02-28"]),
+        ],
+        "neighbour": [
+            (N1, Prop.NAME, "محمد", "محمد", None),
+            (N1, Prop.MOTHER_NAME, "ليلى", "ليلى", None),
+            (N1, Prop.ARRESTED_AT, "حمص", "بيتو", ["2014-01-01", "2014-01-31"]),
+        ],
+    }
+    for rec, claims in said.items():
+        run = await s.run(extractor, "extract", [f"rec_{rec}_tx"], **llm)
+        for who, prop, value, needle, valid in claims:
+            await s.say(
+                run,
+                f"rec_{rec}_tx",
+                who,
+                prop,
+                ar(value),
+                needle,
+                valid=valid,
+                evidence=[E.SPOKEN],
+            )
+        await s.done(run, len(claims))
+    await s.s.commit()
+    return batch
 
 
 async def seed_full(session, app) -> dict:
@@ -1151,8 +1233,9 @@ async def seed_full(session, app) -> dict:
 
     # The proactive agents on both batches, with the fixed answer so the demo reads
     # the same without a model: the linker first, then the brief that names its links.
+    heard = await family_recordings(s, mine, extractor, llm)
     agents = await flows.agents(
-        session, owner, [batch["batch"], sheet_batch], colleague=colleague
+        session, owner, [batch["batch"], sheet_batch, heard], colleague=colleague
     )
     return {
         "investigation": CASE,

@@ -31,7 +31,12 @@ workflow with the typing gone.
    media file; the analysts' titles and labels arrive as the item's first pass, marked
    with the Bayanat status, analyst and peer reviewer, and one passkey gesture accepts
    them all. Actors, incidents and bulletin relations are not imported yet.
-8. **First hour, tested.** Pending. An analyst from the team works a batch on
+8. **A batch as one answer.** Done 2026-11-10, see [status](status.md). Several
+   recordings dropped together come back as one page: who they may be about in an
+   older source, what they agree on, the path, who else was there, what is missing
+   and the one decision it waits on. The Guide opens on it, and names the Bayanat
+   words that have no equivalent here yet.
+9. **First hour, tested.** Pending. An analyst from the team works a batch on
    app.sealbook.org from upload to a finalized item, and what slows them becomes the
    next list.
 

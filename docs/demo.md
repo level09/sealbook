@@ -67,6 +67,24 @@ links that switch to `case-demo-02`, and ends with Why the record holds: one
 accepted claim from this case recomputed in the browser, hash by hash, with a
 control that changes one character and shows where the check breaks.
 
+## Five recordings, one answer
+
+Open Guide and press Open the answer, or open the newest intake brief and choose Read
+this batch as one answer. The batch is five recordings a family brought: a mother, a
+sister, a released detainee, a neighbour, and one voice note with no speech. The page
+says the man they name may be row 1 of the Branch 999 detainee list, which writes his
+name with a hamza the recordings' text lacks. Mother's name and birth year agree, and
+the list's second man of the same name is told apart by his mother's name. Below:
+each recording with the line that names him (the time chip opens the recording at
+that second), what several recordings give (his name in four, Branch 999 in three,
+January 2014 in two), the path if it is one person, who else the list and the call
+put at Branch 999, and "No record after 28 February 2014". Decide in Review opens the
+same question with both records side by side. Nothing is joined until you sign.
+
+The recordings are synthetic (`acceptance/make_recordings.py`), 20 to 30 seconds
+each, and four carry a transcript copied from the script they were spoken from; the
+fifth is read by the worker, which finds no speech. Where each step ran says so.
+
 ## Start at the Desk
 
 The top panel is the intake brief for the newest batch you added that you have not

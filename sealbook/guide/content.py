@@ -24,12 +24,13 @@ AGENTS_OFF = (
 # The first ten minutes, in order: one sentence, one thing to notice, one screen.
 FIRST = [
     {
-        "title": "Open your To do",
-        "minutes": 1,
-        "text": "Everything waiting on you in one list, biggest decisions first.",
-        "notice": "every row names its source.",
-        "open": "Open To do",
-        "href": "/todo",
+        "title": "See five recordings as one answer",
+        "minutes": 2,
+        "text": "Five voice notes about one man came in as a batch. One page says "
+        "who he may be, what they agree on and what is missing.",
+        "notice": "every line opens its recording at that second.",
+        "open": "Open the answer",
+        "href": "/ingest/answer?source=66434e632bc836da3b8db56a522bc9a4a297fdef9982468a83055f80c7d6a936",
     },
     {
         "title": "Check a first pass",
@@ -41,7 +42,7 @@ FIRST = [
         "href": "/todo",
     },
     {
-        "title": "Add a voice note",
+        "title": "Add your own voice note",
         "minutes": 3,
         "text": "Record or drop one on Add evidence. It comes back as text, line "
         "by line with times.",
@@ -91,6 +92,35 @@ BAYANAT = [
     ),
     ("Location", "A place, from the gazetteer, confirmed by a person."),
     (
+        "Human Created",
+        "No status for it. Every source records who added it and how it arrived.",
+    ),
+    (
+        "Senior Updated, Senior Reviewed",
+        "No senior stage. Any colleague can return an item or answer a peer "
+        "review, and each decision names who signed it.",
+    ),
+    ("My Review List", "To do, Asked of you."),
+    ("Origin ID", "No field for it yet."),
+    ("Source link", "The address a source was captured from, kept with it."),
+    ("Ref", "No field for it yet."),
+    (
+        "Events",
+        "Dated claims on a person: arrested, detained, transferred, last seen. "
+        "The person's story puts them in order.",
+    ),
+    (
+        "Comment on every save",
+        "Not asked. Each decision is a signed entry saying who, what and when; a "
+        "rejection can carry its reason.",
+    ),
+    ("Bad import label", "No equivalent yet."),
+    (
+        "Related bulletins",
+        "Links the linker proposes and you decide: same person, same event, and "
+        "copies found by fingerprint. No part of a series or other yet.",
+    ),
+    (
         "Export request",
         "A package: a brief whose every sentence cites signed claims, attested by "
         "two people.",
@@ -98,6 +128,73 @@ BAYANAT = [
 ]
 
 SCENARIOS = [
+    {
+        "id": "recordings-one-answer",
+        "area": "bring",
+        "title": "Drop recordings and read one answer",
+        "who": "Several interviews or voice notes arrived about one person.",
+        "steps": [
+            "Open Add evidence and pick the case, or make one with New case. A case "
+            "can start from any file: a recording, a photo, a scan or a sheet.",
+            "Drop the recordings together. One drop is one batch.",
+            "Each is turned into text on this server, line by line with times. A "
+            "recording with no speech says so.",
+            "Open the batch as one page from its brief: who the recordings may be "
+            "about, what they agree on, the path, who else was there, what is missing.",
+            "Each line names its sources. A recording's chip opens it at that second.",
+            "Decide the same-person question in Review. Until then nothing is joined.",
+        ],
+        "ai": [
+            "Claims read from each transcript.",
+            "A same-person proposal, with the fields that agree and the namesakes "
+            "told apart.",
+        ],
+        "you": ["Whether it is the same person.", "Which claims hold."],
+        "result": "One page that says what the batch added and the one decision it "
+        "waits on.",
+        "needs": "Transcription needs the speech model. The same-person proposal "
+        "needs the agents' model; without it the page still shows the transcripts "
+        "and what they agree on. The demo's recordings are a few seconds each and "
+        "synthetic: long field interviews have not been measured.",
+        "links": [
+            {
+                "label": "Five family recordings as one answer",
+                "href": "/ingest/answer?source=66434e632bc836da3b8db56a522bc9a4a297fdef9982468a83055f80c7d6a936",
+            }
+        ],
+    },
+    {
+        "id": "document-a-missing-person",
+        "area": "connect",
+        "title": "Document a missing person",
+        "who": "A family reports someone taken, and documentation arrives over time.",
+        "steps": [
+            "Add each piece of documentation as its own source: an interview, a "
+            "list, a post.",
+            "The claims read from it give the person their events: arrested, "
+            "detained, transferred, last seen, each dated and resting on its source.",
+            "A detention site or a gravesite is a place of its own, apart from the "
+            "town or district around it.",
+            "Make an incident only for one event that took a group, from posts that "
+            "report it or a candidate incident.",
+            "Open the person's story for the path, its gaps and where the record ends.",
+        ],
+        "ai": [
+            "The person's events as dated claims.",
+            "Who may be the same person in an older source.",
+        ],
+        "you": [
+            "Which claims hold. A missing person is not recorded as dead unless a "
+            "source says remains were identified.",
+            "Whether a witness who must stay unnamed gets a record at all.",
+        ],
+        "result": "One person with a dated path, its sources and an honest open end. "
+        "A package covers other people's names for the audience it is made for.",
+        "links": [
+            {"label": "People in the demo case", "href": "/people"},
+            {"label": "Stories", "href": "/stories"},
+        ],
+    },
     {
         "id": "start-in-todo",
         "area": "decide",
@@ -197,7 +294,7 @@ SCENARIOS = [
     {
         "id": "import-a-sheet",
         "area": "bring",
-        "title": "Start a case from a spreadsheet",
+        "title": "Read an intake spreadsheet",
         "who": "A partner sent an intake sheet of family reports and you are "
         "opening the case.",
         "steps": [
