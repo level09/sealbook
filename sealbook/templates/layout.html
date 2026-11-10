@@ -419,13 +419,3 @@
     };
 </script>
 {% endblock %}
-
-{# A page brings its own app in this block. One that does not (the error pages) still
-   has to mount, or v-cloak keeps the whole page blank. #}
-{% block js %}
-<script>
-const app = Vue.createApp({mixins: [layoutMixin], delimiters: config.delimiters});
-registerStkComponents(app);
-app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
-</script>
-{% endblock %}
