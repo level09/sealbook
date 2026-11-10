@@ -54,6 +54,9 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
 - `js/demo-*.js`, `css/demo-*.css`: one script and stylesheet per chapter demo.
 - `js/hero.js`, `css/hero.css`: the opening photo turning into its picture fingerprint. The
   PDQ value is hardcoded there; recompute it if `media/street_photo.jpg` changes.
+- `js/iso.js`, `css/iso.css`: the opening's isometric picture of the whole flow
+  (`figure[data-iso]`): files, the reader, hatched proposals, the signing ring and the
+  sealed book, drawn from one `box()` helper in the page's own colours.
 - `js/diagrams.js`, `css/diagrams.css`: an animated diagram above each chapter demo,
   one `figure[data-diagram]` per section. Values are copied from `data/case.json` by hand,
   so update them when the case is rebuilt. Outside `.copy`, so the chain does not hash them.

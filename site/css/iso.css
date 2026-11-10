@@ -1,0 +1,43 @@
+/* The opening's isometric flow (js/iso.js). Tiers keep the page's encoding:
+   hatched violet is unconfirmed, solid ink is accepted. */
+.iso { margin: 36px 0 0; max-width: 46rem; overflow-x: auto; }
+/* ponytail: phones scroll the picture sideways, like .diagram; draw a narrow layout if phone readers complain */
+.iso svg { display: block; width: 100%; min-width: 520px; height: auto; overflow: visible; }
+.iso figcaption { margin-top: 14px; font: 400 13px/1.5 var(--mono); color: var(--ink-3); }
+
+.iso polygon, .iso .who path, .iso .who circle { stroke: var(--ink); stroke-width: 1.2; stroke-linejoin: round; }
+.iso .blk .t { fill: var(--paper); }
+.iso .blk .l { fill: var(--paper-2); }
+.iso .blk .r { fill: var(--paper-3); }
+
+.iso .belt polygon { stroke: var(--rule); }
+.iso .belt .t { fill: var(--paper-2); }
+.iso .belt .l, .iso .belt .r { fill: var(--paper-3); }
+.iso .lane { fill: none; stroke: var(--rule); stroke-width: 1.2; stroke-dasharray: 3 5; }
+
+.iso .tint .t { fill: var(--violet-wash); }
+.iso .ink-ln line, .iso .lens circle, .iso .sign circle, .iso .seal circle { fill: none; vector-effect: non-scaling-stroke; }
+.iso .ink-ln line { stroke: var(--ink-3); stroke-width: 1.2; }
+
+.iso .slot { fill: var(--ink); }
+.iso .lens .ring { stroke: var(--violet); stroke-width: 1.5; }
+.iso .lens .eye { fill: var(--violet); stroke: none; }
+
+.iso .sign circle { stroke: var(--violet); stroke-width: 2; fill: var(--violet-wash); }
+.iso .who path, .iso .who circle { fill: var(--ink); }
+.iso .who .shade { fill: var(--paper-3); }
+
+.iso .hatch-bg { fill: var(--violet-wash); }
+.iso .hatch-ln { stroke: var(--violet); stroke-width: 1.4; }
+.iso .draft polygon { stroke: var(--violet); stroke-dasharray: 3 2; }
+.iso .blk.fact polygon { fill: var(--ink); stroke: var(--paper); stroke-width: 1; }
+
+.iso .blk.cover polygon { fill: var(--ink); stroke: var(--ink); }
+.iso .pages .l, .iso .pages .r { fill: var(--paper); }
+.iso .seal circle { stroke: var(--paper); stroke-width: 1.5; }
+.iso .seal circle:last-child { fill: var(--violet); stroke: none; }
+
+.iso .lead { stroke: var(--rule); stroke-width: 1.2; }
+.iso text.ttl { font: 500 16px var(--sans); fill: var(--ink); }
+.iso text.ttl .n { font: 400 12px var(--mono); fill: var(--violet); }
+.iso text.sub { font: 400 12px var(--mono); fill: var(--ink-3); }
