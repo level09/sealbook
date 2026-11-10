@@ -147,7 +147,7 @@
 /* intake brief */
 .ae .brief > header .who { display: inline-flex; gap: 8px; align-items: center; }
 .ae .av { width: 24px; height: 24px; border-radius: 50%; background: var(--av-agent); color: var(--av-agent-ink); display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
-.ae .brief .ib { padding: 0; }
+.ae .brief .ib { padding: 14px; }
 .ae .finish { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 12px 14px; border-top: 1px solid var(--line); }
 
 @media (max-width: 959px) {
