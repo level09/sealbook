@@ -1,32 +1,86 @@
 {% extends "layout.html" %}
 {% block css %}<link rel="stylesheet" href="{{ asset('css/entity.css') }}">
 <style>
-.gd-page { max-width: 1240px; }
-.gd-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
-.gd-head h1 { font-size: 20px; font-weight: 650; letter-spacing: -.02em; margin: 0; }
-.gd-head p { margin: 0; color: var(--ink-3); max-width: 70ch; }
-.gd-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
-.gd-bar .v-text-field { max-width: 340px; min-width: 220px; }
+.gd-page { max-width: 1120px; }
+.gd-start { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr); gap: 28px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 26px 28px 20px; }
+.gd-start h1 { font-size: 26px; font-weight: 650; letter-spacing: -.025em; margin: 0 0 6px; }
+.gd-lede { font-size: 16px; line-height: 1.5; color: var(--ink-2); max-width: 58ch; margin: 0; }
+.gd-rules { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; }
+.gd-rules li { display: flex; gap: 10px; align-items: center; }
+.gd-sw { width: 18px; height: 18px; border-radius: 4px; flex: none; }
+.gd-sw.draft { border: 1.5px dashed var(--agent); background: repeating-linear-gradient(45deg, var(--agent-wash) 0 3px, var(--agent-solid) 3px 4.5px); }
+.gd-sw.fact { background: var(--accepted); }
+/* the flow drawing (js/guide-flow.js): hatched violet is proposed, solid green is accepted, as everywhere in the app */
+.gd-flow { margin: 0; overflow-x: auto; }
+.gd-flow svg { display: block; width: 100%; min-width: 480px; height: auto; overflow: visible; }
+.gd-flow figcaption { margin-top: 8px; font-size: 12px; color: var(--ink-3); }
+.gd-flow polygon, .gd-flow .who path, .gd-flow .who circle { stroke: var(--ink); stroke-width: 1.2; stroke-linejoin: round; }
+.gd-flow .blk .t { fill: var(--panel); }
+.gd-flow .blk .l { fill: var(--raise); }
+.gd-flow .blk .r { fill: var(--line); }
+.gd-flow .belt polygon { stroke: var(--line-strong); }
+.gd-flow .belt .t { fill: var(--raise); }
+.gd-flow .belt .l, .gd-flow .belt .r { fill: var(--line); }
+.gd-flow .lane { fill: none; stroke: var(--line-strong); stroke-width: 1.2; stroke-dasharray: 3 5; }
+.gd-flow .tint .t { fill: var(--agent-wash); }
+.gd-flow .ink-ln line, .gd-flow .lens circle, .gd-flow .sign circle, .gd-flow .seal circle { fill: none; vector-effect: non-scaling-stroke; }
+.gd-flow .ink-ln line { stroke: var(--ink-3); stroke-width: 1.2; }
+.gd-flow .slot { fill: var(--ink); }
+.gd-flow .lens .ring { stroke: var(--agent); stroke-width: 1.5; }
+.gd-flow .lens .eye { fill: var(--agent); stroke: none; }
+.gd-flow .sign circle { stroke: var(--agent); stroke-width: 2; fill: var(--agent-wash); }
+.gd-flow .who path, .gd-flow .who circle { fill: var(--ink); }
+.gd-flow .who .shade { fill: var(--line); stroke: none; }
+.gd-flow .hatch-bg { fill: var(--agent-wash); }
+.gd-flow .hatch-ln { stroke: var(--agent); stroke-width: 1.4; }
+.gd-flow .draft polygon { stroke: var(--agent); stroke-dasharray: 3 2; }
+.gd-flow .blk.fact polygon { fill: var(--accepted); stroke: var(--panel); stroke-width: 1; }
+.gd-flow .blk.cover polygon { fill: var(--ink); stroke: var(--ink); }
+.gd-flow .pages .l, .gd-flow .pages .r { fill: var(--panel); }
+.gd-flow .seal circle { stroke: var(--panel); stroke-width: 1.5; }
+.gd-flow .seal circle:last-child { fill: var(--accepted); stroke: none; }
+.gd-flow .lead { stroke: var(--line-strong); stroke-width: 1.2; }
+.gd-flow text.ttl { font-size: 16px; font-weight: 600; fill: var(--ink); }
+.gd-flow text.ttl .n { font-family: var(--mono); font-size: 12px; font-weight: 400; fill: var(--agent); }
+.gd-flow text.sub { font-family: var(--mono); font-size: 12px; fill: var(--ink-3); }
+
+.gd-sec { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 30px 0 12px; }
+.gd-sec h2 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; margin: 0; }
+.gd-sec p { margin: 0; color: var(--ink-3); }
+.gd-first { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 0; }
+.gd-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.gd-card .gd-num { font-family: var(--mono); font-size: 11px; color: var(--agent); }
+.gd-card h3 { font-size: 14.5px; font-weight: 650; margin: 0; }
+.gd-card p { margin: 0 0 6px; color: var(--ink-2); line-height: 1.5; }
+.gd-card .gd-see { font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 8px; margin: auto 0 4px; }
+.gd-card .v-btn { align-self: flex-start; }
+
+.gd-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.gd-bar .v-text-field { max-width: 300px; min-width: 200px; }
 .gd-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--ink-2); font: inherit; cursor: pointer; }
 .gd-chip[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); background: var(--wash); font-weight: 600; }
-.gd-grid { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 20px; align-items: start; }
-.gd-toc { position: sticky; top: 64px; max-height: calc(100vh - 110px); overflow: auto; font-size: 12.5px; }
-.gd-toc h3 { font-size: 11.5px; font-weight: 650; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; margin: 12px 0 4px; }
-.gd-toc a { display: block; padding: 3px 0; color: var(--ink-2); text-decoration: none; }
-.gd-toc a:hover { color: var(--ink); text-decoration: underline; }
 .gd-main { display: grid; gap: 14px; min-width: 0; }
+.gd-grp { font-size: 11.5px; font-weight: 650; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; margin: 0; padding: 12px 16px 6px; background: var(--raise); border-top: 1px solid var(--line); }
+.gd-grp:first-child { border-top: 0; }
 .gd-s { scroll-margin-top: 60px; }
+.gd-row { border-top: 1px solid var(--line); }
+.gd-sum { display: grid; grid-template-columns: 250px minmax(0, 1fr) 20px; gap: 16px; align-items: baseline; width: 100%; padding: 10px 16px; border: 0; background: none; color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.gd-sum:hover, .gd-row.open .gd-sum { background: var(--raise); }
+.gd-sum b { font-weight: 600; }
+.gd-sum span { color: var(--ink-3); }
+.gd-sum .ti { color: var(--ink-3); transition: transform .15s; }
+.gd-row.open .gd-sum .ti { transform: rotate(90deg); }
+.gd-body { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; padding: 8px 16px 18px; }
 .gd-s > header h2 { font-size: 15px; }
 .gd-s > header .gd-hash { color: var(--ink-3); text-decoration: none; margin-inline-start: auto; }
 .gd-who { color: var(--ink-2); margin: 0 0 8px; }
-.gd-steps { margin: 0 0 10px; padding-inline-start: 20px; display: grid; gap: 4px; line-height: 1.5; }
-.gd-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-.gd-split > div { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
-.gd-split h4 { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 650; margin: 0 0 4px; }
-.gd-split ul { margin: 0; padding-inline-start: 18px; line-height: 1.5; }
-.gd-ai { background: var(--agent-wash); border-color: var(--agent-solid) !important; }
-.gd-ai h4 { color: var(--agent); }
-.gd-end { margin: 0 0 6px; }
+.gd-steps { margin: 0; padding-inline-start: 20px; display: grid; gap: 5px; line-height: 1.5; align-content: start; }
+.gd-roles { display: grid; gap: 8px; margin: 0 0 10px; }
+.gd-roles div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; }
+.gd-roles dt { font-weight: 600; }
+.gd-roles .ai dt { color: var(--agent); }
+.gd-roles dd { margin: 0; color: var(--ink-2); line-height: 1.5; }
+.gd-roles dd span { display: block; }
 .gd-needs { display: flex; gap: 6px; color: var(--ink-3); font-size: 12.5px; margin: 0 0 8px; }
 .gd-open { display: flex; flex-wrap: wrap; gap: 8px; }
 .gd-trust { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
@@ -60,9 +114,10 @@
 .gd-legend { font-size: 12px; color: var(--ink-3); margin: 6px 0 0; }
 .gd-empty { color: var(--ink-3); }
 @media (max-width: 959px) {
-  .gd-grid { grid-template-columns: 1fr; }
-  .gd-toc { display: none; }
-  .gd-split, .gd-check { grid-template-columns: 1fr; }
+  .gd-start, .gd-body, .gd-check { grid-template-columns: 1fr; }
+  .gd-first { grid-template-columns: 1fr 1fr; }
+  .gd-sum { grid-template-columns: minmax(0, 1fr) 20px; }
+  .gd-sum span { display: none; }
   .gd-kv { grid-template-columns: 1fr; }
   .gd-kv dt { margin-top: 4px; }
 }
@@ -70,55 +125,75 @@
 {% endblock %}
 {% block content %}
 <v-container fluid class="gd-page py-4">
-  <div class="gd-head">
-    <h1>Guide</h1>
-    <p v-if="g.demo">Each task as it happens in the demo case. Open it switches the case to ${ g.case } and takes you to the real screen.</p>
-    <p v-else>Each task as it happens in the demo case, which is not on this server. Open it takes you to the real screen in your current case.</p>
+  <section v-show="!q && !area" class="gd-start" aria-labelledby="h-start">
+    <div>
+      <h1 id="h-start">Sealbook reads. You decide.</h1>
+      <p class="gd-lede">Every file you add is read for you and comes back as proposals, each pointing at the words, the box or the second it rests on. Nothing is a fact until you sign it.</p>
+      <ul class="gd-rules">
+        <li><span class="gd-sw draft" aria-hidden="true"></span>Hatched and violet: proposed by AI, waiting for a person</li>
+        <li><span class="gd-sw fact" aria-hidden="true"></span>Solid green: accepted by a named person with a passkey</li>
+      </ul>
+    </div>
+    <figure class="gd-flow" ref="flow" v-once><figcaption>One file's path through Sealbook.</figcaption></figure>
+  </section>
+
+  <template v-if="!q && !area">
+    <div class="gd-sec"><h2>Your first ten minutes</h2><p>Four things to try, in order.</p></div>
+    <ol class="gd-first">
+      <li v-for="(f, i) in g.first" :key="f.title" class="gd-card">
+        <span class="gd-num">0${ i + 1 } · ${ f.minutes } min</span>
+        <h3>${ f.title }</h3>
+        <p>${ f.text }</p>
+        <span class="gd-see">Notice: ${ f.notice }</span>
+        <v-btn :href="f.href" size="small" :variant="i ? 'outlined' : 'flat'" :color="i ? undefined : 'primary'" append-icon="ti ti-arrow-up-right" @click="open(f.href, $event)">${ f.open }</v-btn>
+      </li>
+    </ol>
+  </template>
+
+  <div class="gd-sec">
+    <h2>Every task</h2>
+    <p v-if="g.demo">Each as it happens in the demo case. Open it switches the case to ${ g.case } and takes you to the real screen.</p>
+    <p v-else>Each as it happens in the demo case, which is not on this server. Open it takes you to the real screen in your current case.</p>
   </div>
   <div class="gd-bar" role="search">
     <v-text-field v-model="q" density="compact" hide-details clearable prepend-inner-icon="ti ti-filter" placeholder="Filter tasks, such as sheet or passkey" aria-label="Filter tasks"></v-text-field>
     <button type="button" class="gd-chip" :aria-pressed="!area" @click="area = null">All</button>
     <button v-for="a in g.areas" :key="a.id" type="button" class="gd-chip" :aria-pressed="area === a.id" @click="area = area === a.id ? null : a.id"><i :class="a.icon" aria-hidden="true"></i>${ a.title }</button>
+    <button type="button" class="gd-chip" :aria-pressed="area === 'bayanat'" @click="area = area === 'bayanat' ? null : 'bayanat'"><i class="ti ti-language" aria-hidden="true"></i>Bayanat's words</button>
   </div>
-  <div class="gd-grid">
-    <nav class="gd-toc" aria-label="Tasks">
-      <template v-for="a in g.areas" :key="a.id">
-        <template v-if="shownIn(a.id).length || (a.id === 'trust' && trustShown)">
-          <h3>${ a.title }</h3>
-          <a v-for="s in shownIn(a.id)" :key="s.id" :href="'#' + s.id">${ s.title }</a>
-          <a v-if="a.id === 'trust' && trustShown" href="#why-the-record-holds">Why the record holds</a>
-        </template>
-      </template>
-    </nav>
-    <div class="gd-main">
-      <p v-if="!shown.length && !trustShown" class="gd-empty">No task matches. Clear the filter to see them all.</p>
-      <section v-if="!q && !area" id="from-bayanat" class="en-panel gd-s" aria-labelledby="h-bayanat">
+  <div class="gd-main">
+      <p v-if="!shown.length && !trustShown && area !== 'bayanat'" class="gd-empty">No task matches. Clear the filter to see them all.</p>
+      <section v-if="area === 'bayanat'" id="from-bayanat" class="en-panel gd-s" aria-labelledby="h-bayanat">
         <header><h2 id="h-bayanat">Coming from Bayanat</h2></header>
         <div class="en-body">
           <p class="gd-who">The same work under the words you know. Bayanat's word on the left, where it lives here on the right.</p>
           <dl class="gd-kv gd-gloss"><template v-for="[b, here] in g.bayanat" :key="b"><dt>${ b }</dt><dd class="plain">${ here }</dd></template></dl>
         </div>
       </section>
-      <section v-for="s in shown" :key="s.id" :id="s.id" class="en-panel gd-s" :aria-labelledby="'h-' + s.id">
-        <header>
-          <h2 :id="'h-' + s.id">${ s.title }</h2>
-          <span class="r-chip r-neutral">${ areaTitle(s.area) }</span>
-          <a class="gd-hash" :href="'#' + s.id" :aria-label="'Link to ' + s.title"><i class="ti ti-link" aria-hidden="true"></i></a>
-        </header>
-        <div class="en-body">
-          <p class="gd-who">${ s.who }</p>
-          <ol class="gd-steps"><li v-for="(t, i) in s.steps" :key="i" dir="auto">${ t }</li></ol>
-          <div class="gd-split">
-            <div class="gd-ai"><h4><i class="ti ti-sparkles" aria-hidden="true"></i> AI proposes</h4><ul><li v-for="(t, i) in s.ai" :key="i">${ t }</li></ul></div>
-            <div><h4><i class="ti ti-signature" aria-hidden="true"></i> You decide</h4><ul><li v-for="(t, i) in s.you" :key="i">${ t }</li></ul></div>
-          </div>
-          <p class="gd-end"><strong>You end up with</strong> ${ s.result }</p>
-          <p v-if="s.needs" class="gd-needs"><i class="ti ti-plug" aria-hidden="true"></i><span>${ s.needs }</span></p>
-          <div class="gd-open">
-            <v-btn v-for="l in s.links" :key="l.href" :href="l.href" size="small" variant="outlined" prepend-icon="ti ti-arrow-up-right" @click="open(l.href, $event)">${ l.label }</v-btn>
-          </div>
-        </div>
-      </section>
+      <div v-if="shown.length" class="en-panel">
+        <template v-for="a in g.areas" :key="a.id">
+          <template v-if="shownIn(a.id).length">
+            <h3 class="gd-grp">${ a.title }</h3>
+            <div v-for="s in shownIn(a.id)" :key="s.id" :id="s.id" class="gd-s gd-row" :class="{open: openId === s.id}">
+              <button type="button" class="gd-sum" :aria-expanded="openId === s.id" :aria-controls="'b-' + s.id" @click="toggle(s.id)"><b>${ s.title }</b><span>${ s.who }</span><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+              <div v-if="openId === s.id" :id="'b-' + s.id" class="gd-body">
+                <ol class="gd-steps"><li v-for="(t, i) in s.steps" :key="i" dir="auto">${ t }</li></ol>
+                <div>
+                  <dl class="gd-roles">
+                    <div class="ai"><dt>AI proposes</dt><dd><span v-for="(t, i) in s.ai" :key="i">${ t }</span></dd></div>
+                    <div><dt>You decide</dt><dd><span v-for="(t, i) in s.you" :key="i">${ t }</span></dd></div>
+                    <div><dt>You end up with</dt><dd>${ s.result }</dd></div>
+                  </dl>
+                  <p v-if="s.needs" class="gd-needs"><i class="ti ti-plug" aria-hidden="true"></i><span>${ s.needs }</span></p>
+                  <div class="gd-open">
+                    <v-btn v-for="l in s.links" :key="l.href" :href="l.href" size="small" variant="outlined" prepend-icon="ti ti-arrow-up-right" @click="open(l.href, $event)">${ l.label }</v-btn>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </template>
+      </div>
 
       <section v-if="trustShown" id="why-the-record-holds" class="en-panel gd-s" aria-labelledby="h-trust">
         <header><h2 id="h-trust">Why the record holds</h2><span class="r-chip r-neutral">Trust</span>
@@ -172,11 +247,11 @@
           </template>
         </div>
       </section>
-    </div>
   </div>
 </v-container>
 {% endblock %}
 {% block js %}
+<script src="{{ asset('js/guide-flow.js') }}"></script>
 <script type="application/json" id="guide-data">{{ guide|tojson|safe }}</script>
 <script>
 const enc = new TextEncoder();
@@ -219,7 +294,7 @@ const app = Vue.createApp({
   data() {
     const g = JSON.parse(document.getElementById('guide-data').textContent);
     return {
-      g, q: '', area: null, proof: null, proofError: '', tamper: false, level: 0, checks: [], tree: {nodes: [], h: 40}, POS: 9,
+      g, q: '', area: null, openId: null, proof: null, proofError: '', tamper: false, level: 0, checks: [], tree: {nodes: [], h: 40}, POS: 9,
       LEVELS: ['Edit the row only', 'Also rewrite its row hash', 'Also rewrite its chain entry', 'Also rewrite every later entry'],
       STATE: {
         holds: {word: 'Holds', icon: 'ti-circle-check', cls: 'tier-accepted'},
@@ -246,7 +321,10 @@ const app = Vue.createApp({
   watch: {tamper: 'verify', level: 'verify'},
   methods: {
     shownIn(id) { return this.shown.filter(s => s.area === id); },
-    areaTitle(id) { return this.g.areas.find(a => a.id === id).title; },
+    toggle(id) {
+      this.openId = this.openId === id ? null : id;
+      history.replaceState(null, '', this.openId ? '#' + id : location.pathname);
+    },
     propLabel(p) { const t = p.replace(/_/g, ' '); return t[0].toUpperCase() + t.slice(1); },
     open(href, e) {
       if (!this.g.demo || e.metaKey || e.ctrlKey || e.shiftKey) return;
@@ -326,7 +404,11 @@ const app = Vue.createApp({
   mounted() {
     this.load();
     // Vue renders the sections after load, so the browser's own jump to #id missed them.
-    if (location.hash) this.$nextTick(() => document.getElementById(location.hash.slice(1))?.scrollIntoView());
+    guideFlow(this.$refs.flow);
+    const id = location.hash.slice(1);
+    if (id === 'from-bayanat') this.area = 'bayanat';
+    if (this.g.scenarios.some(s => s.id === id)) this.openId = id;
+    if (id) this.$nextTick(() => document.getElementById(id)?.scrollIntoView());
   },
 });
 const ANCHOR = {ots: 'OpenTimestamps', tsa: 'Time-stamp authority', partner: 'Partner copy'};

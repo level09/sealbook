@@ -60,6 +60,7 @@ async def page():
             "case": content.CASE,
             "demo": demo is not None,
             "areas": content.AREAS,
+            "first": content.FIRST,
             "scenarios": content.SCENARIOS,
             "trust": content.TRUST,
             "bayanat": content.BAYANAT,

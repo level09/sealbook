@@ -21,6 +21,45 @@ AGENTS_OFF = (
     "route they say they are off and why."
 )
 
+# The first ten minutes, in order: one sentence, one thing to notice, one screen.
+FIRST = [
+    {
+        "title": "Open your To do",
+        "minutes": 1,
+        "text": "Everything waiting on you in one list, biggest decisions first.",
+        "notice": "every row names its source.",
+        "open": "Open To do",
+        "href": "/todo",
+    },
+    {
+        "title": "Check a first pass",
+        "minutes": 3,
+        "text": "Open an item read for you. Click any line to see what it rests "
+        "on, then accept it.",
+        "notice": "one signature accepts the whole pass.",
+        "open": "Items read for you",
+        "href": "/todo",
+    },
+    {
+        "title": "Add a voice note",
+        "minutes": 3,
+        "text": "Record or drop one on Add evidence. It comes back as text, line "
+        "by line with times.",
+        "notice": "speech is turned into text on this server.",
+        "open": "Add evidence",
+        "href": "/ingest",
+    },
+    {
+        "title": "Ask a colleague",
+        "minutes": 3,
+        "text": "Send an item's first pass for peer review. Their To do changes "
+        "in front of them, with no reload.",
+        "notice": "the reply lands in your Inbox.",
+        "open": "Open Sources",
+        "href": "/sources",
+    },
+]
+
 # For analysts who know Bayanat: its word, then where the same work lives here.
 BAYANAT = [
     ("Bulletin", "A source: one item of evidence with its file, custody and claims."),
