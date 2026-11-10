@@ -152,8 +152,18 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .sb-rail.v-navigation-drawer { border-right: 1px solid var(--line) !important; }
 .sb-rail .v-list-item--active { font-weight: 600; }
 .sb-rail .v-list-item-title { white-space: normal; }
-.sb-rail .sb-case .v-list-item-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sb-rail .sb-sub { min-height: 28px; font-size: 11.5px; color: var(--ink-3); }
+/* Icon and label sit together: Vuetify's nav spacer is 32px, which reads as a hole in a 188px rail. */
+.sb-rail .v-list-item__prepend > .v-list-item__spacer { width: 10px; }
+.sb-rail .v-list-item__prepend > .v-icon { font-size: 18px; }
+.sb-rail .v-list--nav .v-list-item { min-height: 34px; }
+/* A case is its name. No icon (every case had the same one), aligned under the labels
+   above, and two lines before it is cut, so "Branch 999 register" and "Branch 999 and
+   Jdeideh" read apart. */
+.sb-rail .sb-case { padding-inline-start: 38px; min-height: 30px; }
+.sb-rail .sb-case .v-list-item-title { font-size: 13px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; hyphens: none; color: var(--ink-2); }
+.sb-rail .sb-case.v-list-item--active .v-list-item-title { color: var(--ink); }
+.sb-rail .sb-all .v-list-item-title { color: var(--ink-3); }
+.sb-rail .sb-sub { min-height: 26px; padding-inline-start: 38px !important; font-size: 11.5px; color: var(--ink-3); }
 .sb-rail .sb-foot { border-top: 1px solid var(--line); padding-top: 4px; }
 .sb-rail .sb-foot .v-list-item { min-height: 32px; }
 
