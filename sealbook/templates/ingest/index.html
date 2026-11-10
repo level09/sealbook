@@ -112,24 +112,24 @@
             <div v-if="search.tab === 'web'">
                 <div v-for="r in search.groups.web" :key="r.id" class="res" tabindex="0" role="checkbox" :aria-checked="String(isPicked(r))" @click="toggle(r)" @keydown.space.prevent="toggle(r)" @keydown.enter.prevent="toggle(r)">
                     <v-checkbox-btn :model-value="isPicked(r)" density="compact" tabindex="-1" aria-hidden="true" class="mt-n1"></v-checkbox-btn>
-                    <div><div class="t" dir="auto">${ r.title }</div><div class="u">${ shortUrl(r.url) }<span v-if="r.date">, ${ day(r.date) }</span></div></div>
+                    <div><div class="t" dir="auto">${ r.title }</div><div class="u">${ shortUrl(r.url) }<span v-if="r.date">, ${ day(r.date) }</span> <a class="op" :href="r.url" target="_blank" rel="noopener noreferrer" @click.stop @keydown.stop><i class="ti ti-external-link" aria-hidden="true"></i>Open it</a></div></div>
                     <span v-if="r.in_case.length" class="r-chip is-source" :title="r.in_case[0].why"><i class="ti ti-check" aria-hidden="true"></i>Already in this case</span><span v-else></span>
                     <div class="s" dir="auto">${ r.description } <a v-if="r.in_case.length" :href="'/evidence/' + r.in_case[0].sha256" @click.stop>Open the source</a></div>
                 </div>
             </div>
             <div v-if="search.tab === 'images'" class="imgs">
-                <button v-for="r in search.groups.images" :key="r.id" type="button" class="imgc" :class="{ on: isPicked(r) }" :aria-pressed="String(isPicked(r))" @click="toggle(r)">
+                <div v-for="r in search.groups.images" :key="r.id" class="imgc" :class="{ on: isPicked(r) }" tabindex="0" role="checkbox" :aria-checked="String(isPicked(r))" @click="toggle(r)" @keydown.space.prevent="toggle(r)" @keydown.enter.prevent="toggle(r)">
                     <div class="im" :style="r.thumb ? { backgroundImage: 'url(/api/research/thumb/' + r.id + ')' } : {}"></div>
                     <span class="ck" aria-hidden="true"><i v-if="isPicked(r)" class="ti ti-check"></i></span>
                     <span v-if="r.in_case.length" class="in r-chip is-source" :title="r.in_case[0].why"><i class="ti ti-check" aria-hidden="true"></i>In this case</span>
-                    <div class="cap"><div dir="auto">${ r.title }</div><div class="u">${ r.domain }</div></div>
-                </button>
+                    <div class="cap"><div dir="auto">${ r.title }</div><div class="u">${ r.domain } <a class="op" :href="r.url" target="_blank" rel="noopener noreferrer" @click.stop @keydown.stop><i class="ti ti-external-link" aria-hidden="true"></i>Open it</a></div></div>
+                </div>
             </div>
             <div v-if="search.tab === 'videos'">
                 <div v-for="r in search.groups.videos" :key="r.id" class="res vid" tabindex="0" role="checkbox" :aria-checked="String(isPicked(r))" @click="toggle(r)" @keydown.space.prevent="toggle(r)" @keydown.enter.prevent="toggle(r)">
                     <v-checkbox-btn :model-value="isPicked(r)" density="compact" tabindex="-1" aria-hidden="true" class="mt-n1"></v-checkbox-btn>
                     <div class="vt" :style="r.thumb ? { backgroundImage: 'url(/api/research/thumb/' + r.id + ')' } : {}"></div>
-                    <div><div class="t" dir="auto">${ r.title }</div><div class="u">${ shortUrl(r.url) }<span v-if="r.date">, ${ day(r.date) }</span></div></div>
+                    <div><div class="t" dir="auto">${ r.title }</div><div class="u">${ shortUrl(r.url) }<span v-if="r.date">, ${ day(r.date) }</span> <a class="op" :href="r.url" target="_blank" rel="noopener noreferrer" @click.stop @keydown.stop><i class="ti ti-external-link" aria-hidden="true"></i>Open it</a></div></div>
                     <span v-if="r.in_case.length" class="r-chip is-source" :title="r.in_case[0].why"><i class="ti ti-check" aria-hidden="true"></i>Already in this case</span><span v-else></span>
                     <div class="s" dir="auto">${ r.description }</div>
                 </div>

@@ -48,7 +48,7 @@ function noPasskeyNotice(err, anchor) {
   Object.assign(box.querySelector('a'), {href: err.setupUrl, textContent: 'Set up a passkey'});
   if (!document.getElementById('pk-needed-css')) {
     document.head.append(Object.assign(document.createElement('style'), {id: 'pk-needed-css', textContent:
-      '.pk-needed{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0;padding:8px 10px;border:1px solid var(--line-strong,#c9c9c3);border-radius:6px;background:var(--panel,#fff);color:var(--ink,#18191b);font-size:13px;line-height:1.45}' +
+      '.pk-needed{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0;padding:8px 10px;border:1px solid var(--line-strong,#c9c9c3);border-radius:6px;background:var(--panel,#fff);color:var(--ink,#18191b);font-size:13px;line-height:1.45}' +
       '.pk-needed .pk-setup{font-weight:600;color:inherit;text-underline-offset:2px}'}));
   }
   const at = anchor && anchor !== document.body && anchor.closest('.v-btn, button') || null;
