@@ -131,7 +131,7 @@
                 <v-btn color="primary" variant="flat" prepend-icon="ti ti-upload" :href="caseSel ? '/ingest/?investigation=' + encodeURIComponent(caseSel) : '/ingest/'">${ caseSel ? 'Add evidence to this case' : 'Add evidence' }</v-btn>
             </div>
             <nav class="case-tabs" aria-label="Case pages">
-                <a v-for="t in caseTabs" :key="t.to" :href="t.to" :class="{on: t === caseTab}" :aria-current="t === caseTab ? 'page' : null">${ t.title }<span v-if="t.count != null" class="n">${ t.count }</span></a>
+                <a v-for="t in caseTabs" :key="t.to" :href="t.to" :class="{on: t === caseTab}" :aria-current="t === caseTab ? 'page' : null"><i v-if="t.icon" :class="t.icon" aria-hidden="true"></i>${ t.title }<span v-if="t.count != null" class="n">${ t.count }</span></a>
             </nav>
         </header>
         {% endif %}

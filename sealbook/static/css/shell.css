@@ -229,6 +229,7 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .case-title p { margin: 2px 0 0; color: var(--ink-2); }
 .case-tabs { display: flex; gap: 4px; margin-top: 12px; border-bottom: 1px solid var(--line-strong); overflow-x: auto; }
 .case-tabs a { padding: 9px 12px 8px; color: var(--ink-2); text-decoration: none; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.case-tabs a > i { font-size: 16px; margin-inline-end: 6px; vertical-align: -2px; }
 .case-tabs a:hover { color: var(--ink); }
 .case-tabs a.on { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
 .case-tabs a:focus-visible { outline: 2px solid var(--agent); outline-offset: -2px; }
