@@ -185,6 +185,19 @@ class ReviewPageTest(unittest.IsolatedAsyncioTestCase):
         # PENDING is process-wide; other tests may leave their own entries.
         self.assertFalse([key for key in PENDING if key[0] == uid])
 
+    async def test_a_background_request_never_sets_where_sign_in_goes(self):
+        client = self.app.test_client()
+        r = await client.get("/api/live?sha=" + "a" * 64)
+        self.assertEqual(r.status_code, 302)
+        r = await client.get(r.headers["Location"], headers={"Sec-Fetch-Mode": "cors"})
+        self.assertEqual(r.status_code, 401)
+        async with client.session_transaction() as sess:
+            self.assertNotIn("security_next", sess)
+        r = await client.get(
+            "/login?next=/todo", headers={"Sec-Fetch-Mode": "navigate"}
+        )
+        self.assertEqual(r.status_code, 200)
+
     async def test_passkey_setup_returns_to_the_page_that_asked(self):
         uid = await self.colleague()
         client = await self.client("colleague@example.com")

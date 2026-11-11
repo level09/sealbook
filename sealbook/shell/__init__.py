@@ -24,6 +24,20 @@ def init_app(app):
     # use that hook once stk ships one.
     app.view_functions["public.index"] = index
 
+    @app.before_request
+    async def no_login_form_for_background_requests():
+        # A live stream or XHR that outlives its session is redirected to /login,
+        # and the form would keep that address as where to go after sign-in: the
+        # next person to sign in landed on /api/live. Only a navigation gets the form.
+        mode = request.headers.get("Sec-Fetch-Mode")
+        if (
+            request.endpoint == "security.login"
+            and request.method == "GET"
+            and mode
+            and mode != "navigate"
+        ):
+            return {"message": "Sign in again"}, 401
+
     def _is_api_request():
         return (
             request.path.startswith("/api/")
