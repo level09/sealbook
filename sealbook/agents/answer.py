@@ -63,7 +63,9 @@ def where_ran(route, endpoint, model) -> str:
     if model == RULES or route is None:
         return "this server"
     if route == "local":
-        return "your own model server" if endpoint else "this server"
+        # Speech to text runs in process and records its device as the endpoint.
+        own = endpoint and not endpoint.startswith("local:")
+        return "your own model server" if own else "this server"
     return HOSTED.get(route, "hosted model")
 
 

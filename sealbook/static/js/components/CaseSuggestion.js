@@ -78,8 +78,8 @@ export const CaseSuggestion = {
         <p class="cs-line"><i class="ti ti-check" aria-hidden="true"></i> Recorded {{ n(done.elsewhere.recorded, 'source') }} in <bdi>{{ done.elsewhere.name }}</bdi><template v-if="done.elsewhere.already">; {{ n(done.elsewhere.already, 'was', 'were') }} there already</template>. {{ done.elsewhere.recorded === 1 ? 'It stays' : 'They stay' }} in <bdi>{{ homeName }}</bdi> too. <a :href="href(done.elsewhere.slug)">{{ done.elsewhere.recorded === 1 ? 'Open it there' : 'Open them there' }}</a></p>
       </template>
       <template v-else>
-        <h3><i class="ti ti-robot r-ink is-agent" aria-hidden="true"></i><span>{{ e.sources.length }} of {{ n(s.read, 'source') }} look like <bdi>{{ e.name }}</bdi></span><span class="cs-by">Case suggestion, by rule</span></h3>
-        <p class="cs-muted">They name people or places already in <bdi>{{ e.name }}</bdi><template v-if="e.window">, where those are dated {{ e.window }}</template>.</p>
+        <h3><i class="ti ti-robot r-ink is-agent" aria-hidden="true"></i><span>{{ e.sources.length }} of {{ n(s.read, 'source') }} {{ e.sources.length === 1 ? 'looks' : 'look' }} like <bdi>{{ e.name }}</bdi></span><span class="cs-by">Case suggestion, by rule</span></h3>
+        <p class="cs-muted">{{ e.sources.length === 1 ? 'It names' : 'They name' }} people or places already in <bdi>{{ e.name }}</bdi><template v-if="e.window">, where those are dated {{ e.window }}</template>.</p>
         <ul class="cs-src">
           <li v-for="src in e.sources" :key="src.sha256">
             <v-checkbox-btn v-if="choosing" v-model="picked" :value="src.sha256" density="compact" :aria-label="'Add ' + src.title"></v-checkbox-btn>
