@@ -211,9 +211,9 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 
 /* One type and surface scale for every page. :where keeps it weaker than any page
    rule, so a page states only what differs. */
-:where(.v-main) h1 { font-size: 18px; font-weight: 650; letter-spacing: -.02em; line-height: 1.3; margin: 0; }
-:where(.v-main) h2 { font-size: 15px; font-weight: 650; letter-spacing: -.01em; line-height: 1.35; margin: 0; }
-:where(.v-main) h3 { font-size: 13.5px; font-weight: 650; line-height: 1.4; margin: 0; }
+:where(.v-main) h1 { font-size: 18px; font-weight: 650; letter-spacing: -.02em; line-height: 1.3; }
+:where(.v-main) h2 { font-size: 15px; font-weight: 650; letter-spacing: -.01em; line-height: 1.35; }
+:where(.v-main) h3 { font-size: 13.5px; font-weight: 650; line-height: 1.4; }
 /* Weight and spacing of card titles are set in app.css. */
 .v-main .v-card-title { font-size: 15px; line-height: 1.4; }
 .v-main .v-selection-control .v-label { font-size: 13px; }

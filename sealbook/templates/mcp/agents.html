@@ -6,7 +6,10 @@
         <p v-if="overview?.off" role="alert" class="mb-4"><i class="ti ti-plug-off" aria-hidden="true"></i> ${ overview.off }</p>
 
         <h2 class="mb-2">Working for you in ${ caseReady ? caseName(caseSel) : 'a case' }</h2>
-        <p v-if="!caseReady" class="mb-4">Choose a case in the top bar to see the agents working for you there.</p>
+        <div v-if="!caseReady" class="mb-6">
+            <p class="mb-2">Agents work inside one case. Choose the case to see them.</p>
+            <div class="d-flex flex-wrap ga-2"><v-btn v-for="c in caseList" :key="c" prepend-icon="ti ti-folder" @click="openCase(c)">${ caseName(c) }</v-btn></div>
+        </div>
         <p v-else-if="error" role="alert" class="mb-4">${ error }</p>
         <div v-else-if="overview" class="ag-grid mb-6">
             <v-card v-for="a in overview.agents" :key="a.key" border class="pa-4" :class="{'ag-wide': a.key === 'noticer'}">

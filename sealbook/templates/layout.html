@@ -87,14 +87,14 @@
             <v-menu v-if="railMini && caseList.length" location="end" offset="6">
                 <template #activator="{ props }"><v-list-item v-bind="props" v-tooltip:end="'Cases'" prepend-icon="ti ti-folders" title="Cases" aria-label="Cases" :active="!!caseTab && caseTab.badge !== 'todo'" color="primary"></v-list-item></template>
                 <v-list density="compact" class="sb-cases" min-width="220" max-width="300" aria-label="Cases">
-                    <v-list-item v-for="c in caseList" :key="c" :title="caseName(c)" :active="!!caseTab && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
+                    <v-list-item v-for="c in caseList" :key="c" :title="caseName(c)" :active="(!!caseTab || staysOnCase) && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
                     <v-divider></v-divider>
                     <v-list-item title="All cases" :active="!!caseTab && !caseSel && caseTab.badge !== 'todo'" color="primary" @click="openCase('all')"></v-list-item>
                 </v-list>
             </v-menu>
             <template v-else>
             <v-list-subheader v-if="caseList.length" class="sb-sub"><v-icon icon="ti ti-folders"></v-icon>Cases</v-list-subheader>
-            <v-list-item v-for="c in caseList" :key="c" class="sb-case" :title="caseName(c)" :active="!!caseTab && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
+            <v-list-item v-for="c in caseList" :key="c" class="sb-case" :title="caseName(c)" :active="(!!caseTab || staysOnCase) && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
             <v-list-item v-if="caseList.length" class="sb-case sb-all" title="All cases" :active="!!caseTab && !caseSel && caseTab.badge !== 'todo'" color="primary" @click="openCase('all')"></v-list-item>
             </template>
         </v-list>
@@ -251,6 +251,8 @@
                 const path = location.pathname.replace(/\/$/, '');
                 return this.caseTabs.find(t => path === t.match) || null;
             },
+            // Agents, following and export are not case tabs, yet they show one case at a time.
+            staysOnCase() { return !!this.useCase && this.railItems.find(x => x.current)?.group === 'more'; },
             caseFacts() {
                 const c = this.caseInfo;
                 if (!c) return '';
@@ -314,7 +316,10 @@
             // From the rail: on a case page, follow the case there; elsewhere open its To do.
             openCase(c) {
                 this.switchCase(c);
-                if (!this.caseTab) location.href = '/todo';
+                if (this.staysOnCase) return;
+                // Every case together has no To do of its own (the rail's To do is that list), so it opens on the first case page.
+                if (c === 'all') { if (!this.caseTab || this.caseTab.badge === 'todo') location.href = this.caseTabs.find(t => t.badge !== 'todo')?.to || '/todo'; }
+                else if (!this.caseTab) location.href = '/todo';
             },
             loadNavCounts() {
                 axios.get('/api/nav/counts', {params: {investigation: this.caseSel || undefined}}).then(r => { this.navCounts = r.data; }).catch(() => {});
