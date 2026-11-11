@@ -20,6 +20,7 @@
     <v-app-bar density="compact" flat class="sb-top">
         <a class="brand" href="/todo?investigation="><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></a>
         {% if current_user.is_authenticated %}
+        <v-tooltip v-if="!isMobile" :text="(railMini ? 'Show the sidebar' : 'Hide the sidebar') + ' (Cmd B)'" location="bottom"><template #activator="{ props }"><v-icon-btn v-bind="props" class="sb-fold" :icon="railMini ? 'ti ti-layout-sidebar-left-expand' : 'ti ti-layout-sidebar-left-collapse'" variant="text" :aria-label="railMini ? 'Show the sidebar' : 'Hide the sidebar'" :aria-expanded="!railMini" @click="foldRail"></v-icon-btn></template></v-tooltip>
         <v-autocomplete v-if="isMobile" class="case-sw" :model-value="caseSel ?? 'all'" :items="caseOptions" density="compact" variant="outlined" hide-details auto-select-first prepend-inner-icon="ti ti-folder" :menu-props="{contentClass: 'case-sw-menu'}" aria-label="Switch investigation" @update:model-value="switchCase"></v-autocomplete>
         <form class="qbox" action="/search" role="search">
             <v-text-field id="q" name="q" v-model="shellQ" density="compact" variant="outlined" hide-details prepend-inner-icon="ti ti-search" placeholder="Search names, hashes, passages, frames" aria-label="Search evidence, people, places and identifiers" autocomplete="off">
@@ -92,7 +93,7 @@
                 </v-list>
             </v-menu>
             <template v-else>
-            <v-list-subheader v-if="caseList.length" class="sb-sub">Cases</v-list-subheader>
+            <v-list-subheader v-if="caseList.length" class="sb-sub"><v-icon icon="ti ti-folders"></v-icon>Cases</v-list-subheader>
             <v-list-item v-for="c in caseList" :key="c" class="sb-case" :title="caseName(c)" :active="!!caseTab && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
             <v-list-item v-if="caseList.length" class="sb-case sb-all" title="All cases" :active="!!caseTab && !caseSel && caseTab.badge !== 'todo'" color="primary" @click="openCase('all')"></v-list-item>
             </template>
@@ -100,9 +101,6 @@
         <template #append>
             <v-list nav density="compact" class="sb-foot" aria-label="More">
                 <v-list-item v-for="n in railItems.filter(x => x.group === 'more')" :key="n.title" v-tooltip:end="railMini ? n.title : null" :aria-label="n.title" density="compact" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null"></v-list-item>
-                <v-list-item v-tooltip:end="railMini ? 'Widen the sidebar (Cmd B)' : null" density="compact" class="sb-fold" :prepend-icon="railMini ? 'ti ti-layout-sidebar-left-expand' : 'ti ti-layout-sidebar-left-collapse'" title="Collapse" :aria-label="railMini ? 'Widen the sidebar' : 'Narrow the sidebar'" :aria-expanded="!railMini" @click="foldRail">
-                    <template #append><v-hotkey keys="meta+b" variant="tonal" density="compact"></v-hotkey></template>
-                </v-list-item>
             </v-list>
             <div v-if="!railMini" class="px-3 pb-3 text-caption text-medium-emphasis">${ caseLabel }</div>
         </template>
@@ -222,7 +220,7 @@
                 shellHelp: false,
                 isDark: false,
                 shellHints: [['/', 'search'], ['meta+k', 'go to']],
-                shellKeys: [['/', 'Focus search'], ['meta+k', 'Go to a page, person or document'], ['meta+b', 'Narrow or widen the sidebar'], ['shift+/', 'Keyboard shortcuts'], ['escape', 'Leave a field or close']],
+                shellKeys: [['/', 'Focus search'], ['meta+k', 'Go to a page, person or document'], ['meta+b', 'Hide or show the sidebar'], ['shift+/', 'Keyboard shortcuts'], ['escape', 'Leave a field or close']],
                 _ws: null,
                 _wsRetry: 1000,
             };

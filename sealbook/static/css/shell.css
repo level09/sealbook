@@ -141,7 +141,9 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 /* top bar */
 .sb-top.v-app-bar { border-bottom: 1px solid var(--line) !important; }
 .sb-top .v-toolbar__content { gap: 10px; padding: 0 12px; }
-.sb-top .brand { display: flex; align-items: center; gap: 7px; font-weight: 700; letter-spacing: -.02em; text-decoration: none; color: var(--ink); width: 178px; flex: none; }
+.sb-top .brand { display: flex; align-items: center; gap: 7px; font-weight: 700; letter-spacing: -.02em; text-decoration: none; color: var(--ink); width: 128px; flex: none; }
+.sb-top .sb-fold { color: var(--ink-2); }
+.sb-top .sb-fold .v-icon { font-size: 20px; }
 .sb-top .brand:hover { opacity: 1; }
 /* The brand spans the rail, so the switcher starts clear of the rail's edge. */
 .case-sw { width: 236px; max-width: 236px; flex: none; }
@@ -163,15 +165,18 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .sb-rail .sb-case .v-list-item-title { font-size: 13px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; hyphens: none; color: var(--ink-2); }
 .sb-rail .sb-case.v-list-item--active .v-list-item-title { color: var(--ink); }
 .sb-rail .sb-all .v-list-item-title { color: var(--ink-3); }
-.sb-rail .sb-sub { min-height: 26px; padding-inline-start: 38px !important; font-size: 11.5px; color: var(--ink-3); }
+.sb-rail .sb-sub { min-height: 30px; margin-top: 6px; padding-inline-start: 8px !important; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+.sb-rail .sb-sub .v-list-subheader__text { display: flex; align-items: center; gap: 10px; }
+.sb-rail .sb-sub .v-icon { font-size: 18px; opacity: var(--v-medium-emphasis-opacity); }
 .sb-rail .sb-foot { border-top: 1px solid var(--line); padding-top: 4px; }
 .sb-rail .sb-foot .v-list-item { min-height: 32px; }
-.sb-rail .sb-fold { color: var(--ink-3); }
-/* icons only: the same items, centred, with names in tooltips and cases behind one folder */
+/* icons only: the same items on one centre line, names in tooltips, cases behind one folder */
 .sb-rail.mini .sb-add { width: 40px; height: 36px; border-radius: 6px; }
-.sb-rail.mini .v-list-item { position: relative; justify-content: center; padding-inline: 0; }
+.sb-rail.mini .v-list { padding-inline: 8px; }
+.sb-rail.mini .v-list--nav .v-list-item { position: relative; display: flex; justify-content: center; min-height: 36px; padding: 0; margin-bottom: 4px; }
 .sb-rail.mini .v-list-item__prepend > .v-list-item__spacer, .sb-rail.mini .v-list-item__content, .sb-rail.mini .v-list-item__append { display: none; }
-.sb-rail.mini .sb-has::after { content: ''; opacity: 1; border: 0; position: absolute; left: auto; bottom: auto; top: 6px; right: 10px; width: 7px; height: 7px; border-radius: 50%; background: var(--new); box-shadow: 0 0 0 2px var(--panel); }
+.sb-rail.mini .v-list-item__prepend > .v-icon { font-size: 20px; margin: 0; }
+.sb-rail.mini .sb-has::after { content: ''; opacity: 1; border: 0; position: absolute; left: auto; bottom: auto; top: 6px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--new); box-shadow: 0 0 0 2px var(--panel); }
 .sb-cases .v-list-item-title { font-size: 13px; white-space: normal; }
 .sb-mini .sb-boot-rail { width: 56px; }
 .sb-mini .sb-boot-hints { left: 56px; }
