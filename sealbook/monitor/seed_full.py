@@ -6,6 +6,7 @@ and `stk runner` afterwards for search, media matches and vectors."""
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
 import shutil
@@ -29,7 +30,7 @@ from sealbook.discovery import service as discovery
 from sealbook.ingest.service import agent_run, ingest_bytes, system_agent
 from sealbook.ledger.contracts import EvidenceKind as E
 from sealbook.ledger.contracts import Prop, Tier
-from sealbook.ledger.models import Statement, StatementTier
+from sealbook.ledger.models import Acquisition, Statement, StatementTier
 from sealbook.ledger.write import principal_for_user, record_acquisition
 from sealbook.monitor import seed_flows as flows
 from sealbook.monitor.seed import P1, P2, Seeder, locate, seeded
@@ -516,6 +517,36 @@ async def factual(session, subject, prop):
     )
 
 
+LLM = {
+    "route": "local",
+    "endpoint": "http://127.0.0.1:8000/v1",
+    "model_requested": "qwen3-vl-4b",
+    "model_served": "qwen3-vl-4b-sy-demo",
+    "provider_served": "local-vllm",
+    "prompt_hash": "0" * 64,
+}
+
+
+async def add_recordings(session, app) -> str:
+    """The five recordings for a demo case seeded before they existed: additive,
+    refuses when the case is missing or already holds them, never deletes."""
+    if not await seeded(session, CASE):
+        raise click.ClickException(f"{CASE} is not seeded: stk demo-seed --full")
+    first = hashlib.sha256((ROOT / "demo/recordings/mother.ogg").read_bytes())
+    if await session.scalar(
+        select(Acquisition.id).where(Acquisition.blob_sha256 == first.hexdigest())
+    ):
+        raise click.ClickException(f"{CASE} already holds the recordings")
+    s = Seeder(session)
+    s.case = CASE
+    owner = (await users(session, app))[0]
+    mine = await principal_for_user(session, owner.id, owner.name or owner.email)
+    extractor = await system_agent(session, "extractor")
+    heard = await family_recordings(s, mine, extractor, LLM)
+    await flows.agents(session, owner, [heard], question=False)
+    return heard
+
+
 async def family_recordings(s: Seeder, collector, extractor, llm) -> str:
     """Five recordings dropped as one batch (`acceptance/make_recordings.py`): a mother,
     a sister, a released detainee and a neighbour each say part of what the Branch 999
@@ -684,14 +715,7 @@ async def seed_full(session, app) -> dict:
             await flows.first_pass(s, key, answer)
         await session.commit()
 
-        llm = {
-            "route": "local",
-            "endpoint": "http://127.0.0.1:8000/v1",
-            "model_requested": "qwen3-vl-4b",
-            "model_served": "qwen3-vl-4b-sy-demo",
-            "provider_served": "local-vllm",
-            "prompt_hash": "0" * 64,
-        }
+        llm = LLM
         say = s.say
         names = []
 

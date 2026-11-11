@@ -665,7 +665,12 @@ async def seeded(session, case=CASE) -> bool:
     default=0,
     help="Also add N synthetic filler sources to case-scale-demo (no model runs).",
 )
-def demo_seed(full, more, scale):
+@click.option(
+    "--recordings",
+    is_flag=True,
+    help="Add the five family recordings to a case-demo-02 seeded before them.",
+)
+def demo_seed(full, more, scale, recordings):
     """Write a small synthetic case through the ledger write path (dev only)."""
     app = click.get_current_context().ensure_object(ScriptInfo).load_app()
     if app.config.get("STK_ENV") not in ("development", "testing"):
@@ -677,6 +682,12 @@ def demo_seed(full, more, scale):
         from sealbook.sources import scale as filler
 
         async with ext.async_session_factory() as session:
+            if recordings:
+                from sealbook.monitor.seed_full import add_recordings
+
+                batch = await add_recordings(session, app)
+                console.print(f"Added the five recordings as batch {batch}.")
+                return
             if scale and await seeded(session, filler.DEMO):
                 raise click.ClickException(f"{filler.DEMO} is already seeded")
             if not (more or scale) or full and not await seeded(session):

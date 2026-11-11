@@ -673,7 +673,9 @@ async def reply(s, request_id, author, text) -> None:
     await collaboration.comment_notices(s.s, request_id, found, author, text)
 
 
-async def agents(session, owner, batches: list[str], colleague=None) -> dict:
+async def agents(
+    session, owner, batches: list[str], colleague=None, question=True
+) -> dict:
     """The linker and the intake brief for each batch, run by the worker's own code
     on the fixed answer (`sealbook-demo-fixed-output`, a demo note in the inputs).
     Batches belong to whoever collected them: the owner's, or the colleague's."""
@@ -709,16 +711,18 @@ async def agents(session, owner, batches: list[str], colleague=None) -> dict:
         )
         links += len(out["written"])
         briefs += 1
-    question = AgentTask(
+    if not question:
+        return {"links": links, "briefs": briefs}
+    task = AgentTask(
         user_id=owner.id,
         investigation=case,
         kind="standing",
         spec={"question": "Tell me when anyone is placed at Branch 999."},
         every_seconds=86400,
     )
-    session.add(question)
+    session.add(task)
     await session.flush()
-    run = await tasks.queue(session, question, [], model=FIXED)
+    run = await tasks.queue(session, task, [], model=FIXED)
     await session.commit()
     await process(ext.async_session_factory, run.id)
     return {"links": links, "briefs": briefs}
