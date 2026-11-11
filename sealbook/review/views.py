@@ -464,7 +464,9 @@ async def _item() -> dict:
 async def todo_page():
     # The starter card that points back at this page would open itself.
     first = [f for f in await first_cards(g.db_session) if f["href"] != "/todo"]
-    return await render_template("todo/index.html", first=first)
+    # Asked for here, not at the first Accept, where it would stop a decision midway.
+    passkey = await attest.registered(g.db_session, current_user)
+    return await render_template("todo/index.html", first=first, passkey=passkey)
 
 
 @review.get("/api/todo")

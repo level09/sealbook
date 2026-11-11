@@ -514,7 +514,10 @@ class EventGroupsTest(unittest.IsolatedAsyncioTestCase):
         r = await client.get(f"/api/review/queue?box=open&investigation={CASE}")
         props = {i["prop"] for i in (await r.get_json())["items"]}
         assert not props & {"relation", "triage", "label"}, props
-        assert (await client.get("/todo")).status_code == 200
+        page = await client.get("/todo")
+        assert page.status_code == 200
+        # This analyst signs with a passkey, so the start page does not ask for one.
+        assert 'id="td-passkey-data">true<' in await page.get_data(as_text=True)
 
     async def test_an_ambiguous_town_is_placed_by_the_analyst(self):
         async with ext.async_session_factory() as s, s.begin():

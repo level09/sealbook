@@ -60,7 +60,7 @@
   <template v-if="d">
     <section v-if="go" class="td-go" aria-labelledby="td-go">
       <i :class="go.icon" aria-hidden="true"></i>
-      <div><span class="k">Start here</span><h2 id="td-go"><bdi dir="auto">${ go.title }</bdi></h2><p>${ go.why }</p></div>
+      <div><span class="k">${ go.k || 'Start here' }</span><h2 id="td-go"><bdi dir="auto">${ go.title }</bdi></h2><p>${ go.why }</p></div>
       <v-btn color="primary" :href="go.href" append-icon="ti ti-arrow-right">${ go.action }</v-btn>
     </section>
     <section v-if="brief" class="td-brief" aria-labelledby="td-brief">
@@ -134,6 +134,7 @@
 {% endblock %}
 {% block js %}
 <script type="application/json" id="td-first-data">{{ first|tojson }}</script>
+<script type="application/json" id="td-passkey-data">{{ passkey|tojson }}</script>
 <script type="module">
 import {IntakeBrief} from '/static/js/components/IntakeBrief.js';
 import {verb, prep, where, changeHref, plural} from '/static/js/changes.js';
@@ -144,6 +145,7 @@ const day = s => { const [y, m, d] = s.split('-'); return `${+d} ${MON[m - 1]} $
 // The item's kind, with the icons Sources and the thumbnails use.
 const KIND_ICON = {image: 'ti-photo', video: 'ti-video', audio: 'ti-volume', text: 'ti-file-text', application: 'ti-file'};
 const FIRST = JSON.parse(document.getElementById('td-first-data').textContent);
+const PASSKEY = JSON.parse(document.getElementById('td-passkey-data').textContent);
 // Per-viewer conveniences only: which starter cards were opened, and whether they are hidden.
 const kept = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } };
 
@@ -160,6 +162,7 @@ window.app = Vue.createApp({
     },
     // The one thing to open first: the top row of the list below, said as a sentence.
     go() {
+      if (!PASSKEY) return {k: 'One step before your first decision', icon: 'ti ti-fingerprint', title: 'Set up your passkey', why: 'Every decision you sign carries it, so the record shows it was you. One touch on this device, about ten seconds.', href: '/wan-register?next=/todo', action: 'Set up passkey'};
       const d = this.d, a = d.assigned[0], q = d.asked[0], t = d.triage[0], g = d.groups[0], f = d.findings[0];
       if (a) return {icon: 'ti ti-user-check', title: a.title, why: a.status === 'returned' ? 'Returned to you for changes. Read the comment, fix its claims, then mark it updated.' : 'Assigned to you. Read it, decide its claims, then mark it updated.', href: '/evidence/' + a.sha, action: 'Open it'};
       if (q) return {icon: 'ti ti-message-question', title: q.reason, why: `${q.from} is waiting for your decision.`, href: q.incident ? '/incidents/' + q.incident : '/review?request=' + q.request, action: 'Review it'};
