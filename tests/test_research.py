@@ -183,6 +183,7 @@ class PureTest(unittest.TestCase):
         self.assertEqual(q[0]["kinds"], ["web"])
         for bad in (
             [],
+            ["Lina Najjar"],
             [{"text": "", "kinds": ["web"]}],
             [{"text": "x", "kinds": ["maps"]}],
             [{"text": "x" * 301, "kinds": ["web"]}],

@@ -134,7 +134,9 @@ def clean(queries) -> list[dict]:
         raise ValueError(f"send 1 to {MAX_QUERIES} queries")
     out = []
     for q in queries:
-        text = " ".join(str((q or {}).get("text", "")).split())
+        if not isinstance(q, dict):
+            raise ValueError("a query is an object with text and kinds")
+        text = " ".join(str(q.get("text", "")).split())
         kinds = q.get("kinds") or []
         if not 0 < len(text) <= MAX_QUERY_CHARS:
             raise ValueError(f"a query must be 1 to {MAX_QUERY_CHARS} characters")
