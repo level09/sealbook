@@ -217,6 +217,10 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 /* Weight and spacing of card titles are set in app.css. */
 .v-main .v-card-title { font-size: 15px; line-height: 1.4; }
 .v-main .v-selection-control .v-label { font-size: 13px; }
+/* A button given no colour and no variant would be bare words on the panel. */
+.v-main .v-btn--variant-flat:not([class*="bg-"], .v-btn--icon) { border: thin solid var(--line-strong); }
+/* A quiet button still reads as one: a faint fill where the framework gives bare words. */
+.v-main .v-btn--variant-text:not(.v-btn--icon) { background: var(--wash); }
 
 /* Case page: the case's header and a tab per case page, above that page. */
 .case-head { padding: 16px 24px 0; }

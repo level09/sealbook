@@ -479,6 +479,14 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
                 )
                 self.assertEqual([c.prop for c in cites], [Prop.ACCESS])
 
+            # A server with no signing certificate refuses in words, not a 500.
+            with mock.patch.dict(self.app.config, {"C2PA_SIGN_CERT": None}):
+                r = await amal.post(
+                    f"/api/packages/briefs/{bid}/build", json={}, headers=ha
+                )
+            self.assertEqual(r.status_code, 400)
+            self.assertIn("no signing certificate", await r.get_data(as_text=True))
+
             r = await amal.post(
                 f"/api/packages/briefs/{bid}/build", json={}, headers=ha
             )

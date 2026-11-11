@@ -51,8 +51,8 @@ export const StandingQuestions = {
       <h3 class="text-body-1" dir="auto">{{ item.question }}</h3>
       <p class="text-caption text-medium-emphasis">{{ item.state === 'checking' ? 'Checking' : item.state === 'paused' ? 'Paused' : 'Watching' }}, {{ item.last_checked ? 'checked ' + ago(item.last_checked) : 'not checked yet' }}<template v-if="item.matches !== null">. {{ count(item.matches) }} in the last check</template></p>
       <p v-if="item.reason" class="text-caption">{{ item.reason }}</p>
-      <v-btn size="small" variant="text" :disabled="busy || off || item.state !== 'watching'" @click="act('/api/agents/tasks/' + item.id + '/run', 'post', {})">Check now</v-btn>
-      <v-btn size="small" variant="text" :disabled="busy" @click="act('/api/agents/tasks/' + item.id, 'patch', {enabled: item.state === 'paused'})">{{ item.state === 'paused' ? 'Resume' : 'Stop' }}</v-btn>
+      <v-btn size="small" variant="outlined" prepend-icon="ti ti-refresh" :disabled="busy || off || item.state !== 'watching'" @click="act('/api/agents/tasks/' + item.id + '/run', 'post', {})">Check now</v-btn>
+      <v-btn size="small" variant="outlined" :disabled="busy" @click="act('/api/agents/tasks/' + item.id, 'patch', {enabled: item.state === 'paused'})">{{ item.state === 'paused' ? 'Resume' : 'Stop' }}</v-btn>
       <template v-if="results[item.id]">
         <p v-if="results[item.id].fixed" class="text-caption text-medium-emphasis">Fixed demo output, no model ran.</p>
         <div v-if="results[item.id].matches.length">

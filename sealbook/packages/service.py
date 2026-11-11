@@ -464,6 +464,12 @@ async def build(db: AsyncSession, brief: Brief, user, config) -> Package:
     """Build the package directory, sign it and keep manifest and zip as blobs."""
     if brief.audience not in PROFILES:
         raise Refused(f"unknown audience {brief.audience}")
+    # Said before any work, as the user's refusal: signing needs the server's key.
+    if not config.get("C2PA_SIGN_CERT") or not config.get("C2PA_SIGN_KEY"):
+        raise Refused(
+            "packages are off on this server: no signing certificate is set "
+            "(C2PA_SIGN_CERT and C2PA_SIGN_KEY)"
+        )
     rows = await collect(db, brief)
     blob_dir = config["BLOB_DIR"]
     directory = Path(tempfile.mkdtemp(prefix="package-"))
