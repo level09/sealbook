@@ -61,6 +61,56 @@ FIRST = [
     },
 ]
 
+# For analysts who know Bayanat: the same step there and here. The order is the
+# difference: there a person reads and writes the record, here the record is drafted
+# and a person checks it.
+BAYANAT_STEPS = [
+    (
+        "A file arrives",
+        "A bulletin is created or imported and waits for an analyst.",
+        "You drop the file on Add evidence. It is fingerprinted and read at once: "
+        "speech to text, text from pictures and pages.",
+    ),
+    (
+        "Who reads it first",
+        "You do. You read or watch it and type the title, description, labels, "
+        "locations and events into the bulletin.",
+        "Sealbook does. The first pass drafts the title, description, priority and "
+        "claims, each pointing at the words, the box or the second it rests on.",
+    ),
+    (
+        "Your job",
+        "Describe what the source says.",
+        "Check what was drafted against the source, correct it, and sign what is "
+        "true with your passkey.",
+    ),
+    (
+        "The unit of work",
+        "The bulletin: one record you fill and finalize.",
+        "The claim: one fact from one place in a source. Accepting a first pass "
+        "signs its title, description and priority together; single claims are "
+        "decided one at a time in Review.",
+    ),
+    (
+        "People",
+        "You create an actor and relate bulletins to it.",
+        "A person appears from the claims that name them. Two records with one "
+        "name stay two people until you link them.",
+    ),
+    (
+        "Review",
+        "A peer reviews the bulletin.",
+        "The same, with Send for peer review. Every decision names who signed it "
+        "and can be undone.",
+    ),
+    (
+        "What does not change",
+        "Nothing is a fact until a person says so.",
+        "Nothing is a fact until a person says so. What AI drafted stays hatched "
+        "and violet until you sign it.",
+    ),
+]
+
 # For analysts who know Bayanat: its word, then where the same work lives here.
 BAYANAT = [
     ("Bulletin", "A source: one item of evidence with its file, custody and claims."),

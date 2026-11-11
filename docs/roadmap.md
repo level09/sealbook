@@ -166,3 +166,33 @@ Descriptions, titles and labels were done as the first pass (2026-10-31).
   people's work already does.
 - A stronger agent model for the intake brief: the default skipped every model section
   in a live run (2026-11-01).
+
+## Wished for after a walk through as a Bayanat analyst (2026-11-11)
+
+Not built. From reading every screen as someone used to filling bulletins by hand, on
+the evening before the first two analysts were invited. To be reordered by what they
+say.
+
+- Review by exception: "12 claims read; 10 match the source word for word, 2 need your
+  eye", then one signature for the source. Each single claim is its own passkey
+  gesture today, so this changes the signing path (a staged set of statements under
+  one assertion, as the first pass and groups already do).
+- The AI's record per field, where the decision is made: how often analysts accepted
+  names, dates and places it read. The Agents page already says this for links.
+- A way back into Bayanat: an accepted item sent out as a Bayanat bulletin, so the two
+  systems stay in step. Import exists; export does not.
+- Ask the case a question now, with a cited answer. Standing questions answer on a
+  schedule; there is no immediate box.
+- An Arabic interface. The evidence is Arabic; every label is English.
+- The family brief made usable: its builder lists claims as hashes and ids, not by
+  person and source (seen 2026-11-11), and a package needs a signing certificate the
+  demo server does not have.
+- Fewer rooms: To do, Desk, Review, Inbox, Discover, Agents, Watching and Packages
+  overlap; an analyst needs about three.
+- Sensitive items add a click almost everywhere, since almost everything is sensitive:
+  one reveal per session or per case, still logged, may serve better.
+- A mark that explains itself: hovering a tier mark says who signed and when, and a
+  case header says how many claims are signed.
+- Smaller, seen the same day: Incidents as the same table People and Places use; the
+  person page's Gaps block without a panel; the Desk as a wall of text; field density
+  set once in the Vuetify defaults (about 155 attributes); sessions last one hour.

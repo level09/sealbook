@@ -78,6 +78,7 @@ async def page():
             "scenarios": content.SCENARIOS,
             "trust": content.TRUST,
             "bayanat": content.BAYANAT,
+            "bayanat_steps": content.BAYANAT_STEPS,
         },
     )
 

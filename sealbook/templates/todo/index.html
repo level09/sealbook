@@ -78,7 +78,7 @@
     </section>
 
     <template v-if="first.length && !hideFirst">
-      <div class="td-h"><h2>New here? Try these first</h2><span>a few minutes each, on the demo case</span><v-btn size="small" variant="text" @click="dismissFirst">Hide</v-btn></div>
+      <div class="td-h"><h2>New here? Try these first</h2><span>a few minutes each, on the demo case. <a href="/guide#from-bayanat">Coming from Bayanat? See what is different</a></span><v-btn size="small" variant="text" @click="dismissFirst">Hide</v-btn></div>
       <ol class="td-first">
         <li v-for="(f, i) in first" :key="f.title" :class="{done: tried.includes(f.title)}">
           <span class="num">0${ i + 1 } · ${ f.minutes } min${ tried.includes(f.title) ? ' · opened' : '' }</span>
