@@ -31,7 +31,7 @@
       </span>
     </div>
 
-    <div v-if="other" class="ev-cmp" role="group" aria-label="Side by side">
+    <div v-if="other" class="ev-work ev-cmp" role="group" aria-label="Side by side">
       <strong>Side by side</strong><span class="why">${ besideWhy }</span>
       <span class="ms-auto d-flex ga-2">
         <v-btn size="small" variant="outlined" prepend-icon="ti ti-switch-horizontal" :href="'/evidence/' + other.sha256 + '?with=' + it.sha256">Swap sides</v-btn>
@@ -40,7 +40,7 @@
     </div>
     <div class="ev" :class="{side: other, mapping: mapping}">
       <section class="ev-panel ev-stick" :aria-label="other ? 'Side A' : 'Preview'">
-        <header v-if="other" class="ev-side"><b aria-hidden="true">A</b><span class="t" dir="auto">${ it.title }</span><span class="d">${ DOC[it.doc_type] || it.kind }</span><span class="mono h">${ short(it.sha256) }</span></header>
+        <header v-if="other" class="ev-side"><b aria-hidden="true">A</b><span class="t text-truncate" dir="auto">${ it.title }</span><span class="d">${ DOC[it.doc_type] || it.kind }</span><span class="mono h">${ short(it.sha256) }</span></header>
         <evidence-viewer ref="viewer" :item="it" :claims="claims" :marks="marks" :sel="sel" :focus="focusMs" :page="pdfPage" :read="read" :read-error="readError" :hl="hl" :highlight="excerpt?.match || ''" @select="pick" @revealed="revealed" @retry-read="loadRead"></evidence-viewer>
         <div v-if="connections.length" class="ev-conn">
           <h3 class="mb-2 muted">Connections, open side by side</h3>
@@ -56,7 +56,7 @@
       </section>
 
       <section v-if="other" class="ev-panel" aria-label="Side B">
-        <header class="ev-side"><b aria-hidden="true">B</b><span class="t" dir="auto">${ other.title }</span><span class="d">${ DOC[other.doc_type] || other.kind }</span><span class="mono h">${ short(other.sha256) }</span>
+        <header class="ev-side"><b aria-hidden="true">B</b><span class="t text-truncate" dir="auto">${ other.title }</span><span class="d">${ DOC[other.doc_type] || other.kind }</span><span class="mono h">${ short(other.sha256) }</span>
           <v-btn size="small" variant="text" :href="'/evidence/' + other.sha256" append-icon="ti ti-arrow-up-right">Open</v-btn></header>
         <evidence-viewer :item="other" :claims="otherClaims" :marks="otherMarks" :focus="otherAt" :read="otherRead" :read-error="otherReadError" @revealed="revealed" @retry-read="loadOtherRead"></evidence-viewer>
       </section>

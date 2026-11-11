@@ -204,7 +204,7 @@
             <div v-for="(t, i) in g.trust" :key="t.title"><h3><span class="gd-n">${ i + 1 }</span>${ t.title }</h3><p>${ t.body }</p></div>
           </div>
 
-          <h3 class="text-body-1 font-weight-bold mb-1" id="check-one-claim">Check one claim yourself</h3>
+          <h3 class="mb-1" id="check-one-claim">Check one claim yourself</h3>
           <p v-if="proofError" class="gd-empty">${ proofError }</p>
           <p v-else-if="!proof" class="gd-empty">Loading a claim from ${ g.case }.</p>
           <p v-else-if="!proof.claim" class="gd-empty">${ g.case } has no accepted, signed claim yet. Accept one in Review and come back.</p>

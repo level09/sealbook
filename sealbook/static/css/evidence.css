@@ -34,11 +34,10 @@ body.dark-mode .evp {
 .ev.side { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .ev.side > .ev-intel { grid-column: 1 / -1; }
 .ev.side > .ev-stick { position: static; }
-.ev-cmp { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; margin-bottom: 8px; background: var(--e-panel); border: 1px solid var(--e-line); border-radius: 8px; }
 .ev-cmp .why { color: var(--e-ink-2); flex: 1 1 320px; }
 .ev-panel > header.ev-side { min-height: 44px; background: var(--ink); color: var(--panel); border-bottom: 0; gap: 10px; flex-wrap: nowrap; }
 .ev-side b { flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 5px; background: var(--panel); color: var(--ink); font: 700 13px/1 var(--mono); }
-.ev-side .t { font-weight: 650; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-side .t { font-weight: 650; min-width: 0; }
 .ev-side .d, .ev-side .h { opacity: .72; font-size: 12px; white-space: nowrap; }
 .ev-side .v-btn { margin-inline-start: auto; color: inherit; }
 .ev.mapping { grid-auto-flow: row dense; }

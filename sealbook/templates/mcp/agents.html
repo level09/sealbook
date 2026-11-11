@@ -9,7 +9,7 @@
         <p v-if="!caseReady" class="mb-4">Choose a case in the top bar to see the agents working for you there.</p>
         <p v-else-if="error" role="alert" class="mb-4">${ error }</p>
         <div v-else-if="overview" class="ag-grid mb-6">
-            <v-card v-for="a in overview.agents" :key="a.key" variant="outlined" class="pa-4" :class="{'ag-wide': a.key === 'noticer'}">
+            <v-card v-for="a in overview.agents" :key="a.key" border class="pa-4" :class="{'ag-wide': a.key === 'noticer'}">
                 <div class="d-flex align-center flex-wrap ga-2">
                     <i class="ti ti-robot r-tile is-agent" aria-hidden="true"></i>
                     <h3>${ a.name }</h3>
@@ -46,7 +46,7 @@
         </template>
 
         <h2 class="mb-2">Outside assistants</h2>
-        <v-card variant="outlined" class="pa-4">
+        <v-card border class="pa-4">
             <p>An outside assistant, such as a chat app on your computer, can connect to Sealbook over MCP and work for you. It searches and reads evidence and proposes facts and same-person links for review, with the access you approve and never beyond your role. Every read is logged, nothing it proposes is accepted without a person, and disconnecting it stops it on its next call.</p>
             <h3 class="mt-4 mb-1">Connect one</h3>
             <ol class="ms-5">

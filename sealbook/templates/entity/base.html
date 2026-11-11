@@ -74,7 +74,7 @@
     <v-navigation-drawer v-model="drawer" location="right" temporary width="420" aria-label="Thread and history">
       <v-toolbar density="compact" color="surface" border="b"><v-toolbar-title class="text-body-1 font-weight-bold">Thread and history</v-toolbar-title><v-btn icon="ti ti-x" variant="text" aria-label="Close" @click="drawer = false"></v-btn></v-toolbar>
       <div class="pa-3">
-        <h3 class="text-body-2 font-weight-bold mb-2">Threads</h3>
+        <h3 class="mb-2">Threads</h3>
         <v-select v-if="e.threads.length" :model-value="threadId" :items="e.threads.map(t => ({title: threadLabel(t), value: t.id}))" density="compact" hide-details label="Thread" @update:model-value="id => openThread(e.threads.find(t => t.id === id))"></v-select>
         <p v-else class="en-muted">No colleague has been asked about these statements. Ask from Review or the evidence page.</p>
         <v-skeleton-loader v-if="threadBusy && !thread" type="list-item-three-line@2"></v-skeleton-loader>
@@ -87,7 +87,7 @@
           <div class="d-flex ga-2 mt-2"><v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-send" :disabled="!comment.trim()" :loading="threadBusy" @click="sendComment">Comment</v-btn>
             {% block thread_actions %}<v-btn size="small" variant="text" :href="'/review?request=' + thread.id">Decide in Review</v-btn>{% endblock %}</div>
         </template>
-        <h3 class="text-body-2 font-weight-bold mt-6 mb-1">Signed history</h3>
+        <h3 class="mt-6 mb-1">Signed history</h3>
         <ul v-if="gestures.length" class="en-hist">
           <li v-for="g in gestures" :key="g.key">
             <div class="g"><actor-chip :actor="{kind: g.actor.kind, name: g.actor.label, key: g.actor.principal}" size="sm"></actor-chip><span class="en-muted">${ fmtDay(g.at.slice(0, 10)) } ${ g.at.slice(11, 16) } UTC</span>

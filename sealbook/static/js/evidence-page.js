@@ -65,8 +65,7 @@ export function mount(boot) {
         if (c) return `${c.kind}: ${c.why}.` + (this.it.kind !== 'image' ? ` A at ${ms(c.here[0])}, B at ${ms(c.there[0])}.` : '');
         const r = this.relations.find(x => x.other === this.other.sha256);
         if (!r) return 'Opened together. Each side marks its own claims.';
-        // relWhy speaks of here and there; beside each other they are A and B.
-        return `${r.kind}${/[?.]$/.test(r.kind) ? '' : '.'} ${this.relWhy(r).replace(' here', ' in A').replace(' there', ' in B')}`;
+        return `${r.kind}${/[?.]$/.test(r.kind) ? '' : '.'} ${this.relWhy(r, 'in A', 'in B')}`;
       },
       otherAt() {return this.boot.at ?? this.otherCopy?.there?.[0] ?? null;},
       otherMarks() {const c = this.otherCopy; return c ? [[c.there[0], Math.max(c.there[1], c.there[0] + 1000)]] : this.otherAt != null ? [[this.otherAt, this.otherAt + 2000]] : [];},
@@ -133,12 +132,14 @@ export function mount(boot) {
         return `Unnamed person ${unnamed.indexOf(subject) + 1}`;
       },
       // One sentence per relation, with the same prop words as the claims list.
-      relWhy(r) {
+      // `here` and `there` name the two sources: side by side they are A and B.
+      relWhy(r, here = 'here', there = 'there') {
         const words = ps => ps.map(p => prop(p).toLowerCase()).join(', ');
-        if (r.kind === 'Same place') return `Both name ${iso(r.at_place)}. There: ${words(r.props_there)} (${plural(r.count, 'claim')}). Here: ${words(r.props_here)}.`;
+        const cap = s => s[0].toUpperCase() + s.slice(1);
+        if (r.kind === 'Same place') return `Both name ${iso(r.at_place)}. ${cap(there)}: ${words(r.props_there)} (${plural(r.count, 'claim')}). ${cap(here)}: ${words(r.props_here)}.`;
         if (r.kind === 'Same person?') {
-          const here = this.claims.find(c => c.subject === r.here && c.prop === 'name' && c.value)?.value || r.here_name;
-          return `${here ? iso(here) : 'An unnamed person'} here and ${r.their_name ? iso(r.their_name) : 'an unnamed person'} there, ${r.why}`;
+          const name = this.claims.find(c => c.subject === r.here && c.prop === 'name' && c.value)?.value || r.here_name;
+          return `${name ? iso(name) : 'An unnamed person'} ${here} and ${r.their_name ? iso(r.their_name) : 'an unnamed person'} ${there}, ${r.why}`;
         }
         if (r.here_text || r.there_text) return r.why.replace(r.here_text || '\0', iso(r.here_text)).replace(r.there_text || '\0', iso(r.there_text));
         return r.why;
