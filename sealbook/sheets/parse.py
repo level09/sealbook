@@ -18,6 +18,15 @@ XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 MIMES = frozenset({CSV, XLSX})
 MAX_ROWS, MAX_COLUMNS = 20000, 200
 _BY_EXTENSION = {".csv": CSV, ".xlsx": XLSX}
+# Voice note formats the server's Python (3.12, no system type table) does not name.
+_VOICE = {
+    ".ogg": "audio/ogg",
+    ".oga": "audio/ogg",
+    ".opus": "audio/ogg",
+    ".m4a": "audio/mp4",
+    ".amr": "audio/amr",
+    ".flac": "audio/flac",
+}
 
 
 TITLE_ROWS = 10  # the header is looked for in this many rows from the top
@@ -78,7 +87,8 @@ def mime_for(filename: str | None, mime: str) -> str:
     # A file sent with no type (a forwarded .opus voice note, a scripted upload) is
     # named by its extension, or it would be stored as a file nothing reads.
     if mime in ("", "application/octet-stream"):
-        return mimetypes.guess_type(name)[0] or mime
+        known = next((m for ext, m in _VOICE.items() if name.endswith(ext)), None)
+        return known or mimetypes.guess_type(name)[0] or mime
     return mime
 
 

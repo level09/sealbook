@@ -83,6 +83,7 @@ class ParseTest(unittest.TestCase):
         self.assertTrue(
             parse.mime_for("note.OPUS", "application/octet-stream").startswith("audio/")
         )
+        self.assertEqual(parse.mime_for("note.m4a", ""), "audio/mp4")
         self.assertEqual(parse.mime_for("blob", ""), "")
         self.assertEqual([parse.letter(n) for n in (1, 26, 27)], ["A", "Z", "AA"])
 
