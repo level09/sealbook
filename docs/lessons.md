@@ -845,3 +845,9 @@ covers in the text it was read from (`span_blob`).
   emulated phones played it: a `<track>` on the `<video>` made iOS refuse the whole
   film. Bisect with one attribute per test video on the real device; the captions are
   now drawn over the film from the WebVTT file.
+
+- A voice note uploaded to production was stored as a file nothing reads, while the
+  same upload was read as audio on a Mac: Python's `mimetypes` takes extra types from
+  the system (`/etc/apache2/mime.types` on macOS), and the slim container has none, so
+  `.ogg`, `.m4a`, `.amr` and `.flac` are unknown there. Check type guessing inside the
+  production image, and list the formats the product depends on.
