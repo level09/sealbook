@@ -18993,7 +18993,7 @@
    {
     "area": "Packages",
     "does": "Factual cited briefs, audience redaction, two attesters, C2PA cover and offline verification; a claim on OCR, PDF or transcript text ships its DERIVED_FROM chain, runs and the acquired file's acquisition",
-    "limits": "Media relationships cannot yet be exported as cited facts"
+    "limits": "Marked Preview in the app (sidebar tag and a note on both Packages pages): a server without `C2PA_SIGN_CERT` and `C2PA_SIGN_KEY` refuses Build, and app.sealbook.org has none. Media relationships cannot yet be exported as cited facts"
    },
    {
     "area": "Proactive agents",
@@ -19055,5 +19055,21 @@
    "Typed relations with stated certainty: Family, command, membership and document relations between subjects, pinned to evidence, with human certainty kept separate from machine scores."
   ],
   "updated": "2026-11-11"
+ },
+ "assistants": {
+  "scopes": [
+   {
+    "name": "read",
+    "text": "Search and read evidence and its history. Every read is logged."
+   },
+   {
+    "name": "propose_statements",
+    "text": "Propose facts read from documents, for human review."
+   },
+   {
+    "name": "propose_identity",
+    "text": "Propose that two person mentions are or are not the same person, for human review."
+   }
+  ]
  }
 }

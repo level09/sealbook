@@ -35,6 +35,8 @@
 <link rel="stylesheet" href="css/demo-research.css">
 <link rel="stylesheet" href="css/demo-watch.css">
 <link rel="stylesheet" href="css/demo-casemap.css">
+<link rel="stylesheet" href="css/demo-compare.css">
+<link rel="stylesheet" href="css/demo-assistants.css">
 <link rel="stylesheet" href="css/hero.css">
 <link rel="stylesheet" href="css/diagrams.css">
 <link rel="stylesheet" href="css/iso.css">
@@ -256,12 +258,12 @@
 
 <div class="part" id="tour">
   <h2>The tour</h2>
-  <p>Every other part of the app, working on the same fictional case. Open any of them, or read on.</p>
+  <p>Every other part of the app, working on the same fictional case. Open any of them, or read on. Inside the app, a guide walks through each part, and opens with what changes for someone coming from Bayanat: Sealbook reads first, and you check.</p>
   <ol class="tour-index">
       <li><span class="t-group">Intake</span><ol><li><a href="#sheet"><span class="t-name">A messy sheet</span><span class="t-job">Messy intake lists, read without guessing.</span></a></li><li><a href="#brief"><span class="t-name">A batch, read as a whole</span><span class="t-job">A summary of what just arrived, and what to do next.</span></a></li><li><a href="#watch"><span class="t-name">Agents that keep watching</span><span class="t-job">Ask once, and hear back when the evidence answers.</span></a></li></ol></li>
       <li><span class="t-group">Search</span><ol><li><a href="#search"><span class="t-name">One search, grouped</span><span class="t-job">Ask once, find it in any language or format.</span></a></li><li><a href="#video"><span class="t-name">One street, two years apart</span><span class="t-job">Find the same moment across re-uploads.</span></a></li></ol></li>
       <li><span class="t-group">Connect</span><ol><li><a href="#places"><span class="t-name">A page for every place and incident</span><span class="t-job">Everything known about a place, on one page.</span></a></li><li><a href="#casemap"><span class="t-name">Who was where, and when</span><span class="t-job">The whole case on one timeline and one map.</span></a></li><li><a href="#story"><span class="t-name">A person over time</span><span class="t-job">A person's path, with the gaps and contradictions left in.</span></a></li></ol></li>
-      <li><span class="t-group">Review</span><ol><li><a href="#research"><span class="t-name">Web research that keeps custody</span><span class="t-job">Search the web without breaking the chain of custody.</span></a></li></ol></li>
+      <li><span class="t-group">Review</span><ol><li><a href="#compare"><span class="t-name">Two sources, side by side</span><span class="t-job">Read both at once, with the reason they belong together.</span></a></li><li><a href="#research"><span class="t-name">Web research that keeps custody</span><span class="t-job">Search the web without breaking the chain of custody.</span></a></li><li><a href="#assistants"><span class="t-name">Your own assistant, on your terms</span><span class="t-job">Let a chat app read and propose, never decide.</span></a></li></ol></li>
   </ol>
 </div>
 
@@ -394,6 +396,20 @@
   <div class="demo" data-demo="story"></div>
 </section>
 
+<section class="link folded" id="compare" data-signer="review">
+  <div class="copy">
+    <h2>Two sources, side by side</h2>
+    <p class="job">Read both at once, with the reason they belong together.</p>
+    <p>When Sealbook says two sources are about the same person, place or moment, open them side by side. One is A and one is B, each with its own header, and a bar across the top says why they were opened together. Each side keeps its own marks, so you can check the passage in one against the passage in the other without losing your place.</p>
+    <p>A copy of a recording opens at the matching second on both sides. A sensitive source stays covered on its side until someone chooses to read it, and that choice is logged.</p>
+    <details class="how"><summary>How it works</summary>
+      <p>Any proposed link between two sources opens the pair: a re-upload of the same footage, two documents naming the same people, the same person in two sources, or one place in both. The bar states the link in a sentence, the way Review states it, naming A and B. Each pane is the source's own viewer, so pictures, scanned pages, recordings and text all compare the same way, and each pane marks only its own claims. Swap sides puts the other source on the left. The link is still a proposal: comparing never accepts it, a person's signed decision does.</p>
+    </details>
+  </div>
+  <button class="unfold" type="button" aria-expanded="false">Open the live demo</button>
+  <div class="demo" data-demo="compare"></div>
+</section>
+
 <section class="link folded" id="research" data-signer="research">
   <div class="copy">
     <h2>Web research that keeps custody</h2>
@@ -408,6 +424,21 @@
   <button class="unfold" type="button" aria-expanded="false">Open the live demo</button>
   <figure class="diagram" data-diagram="research"></figure>
   <div class="demo" data-demo="research"></div>
+</section>
+
+<section class="link folded" id="assistants" data-signer="assistant">
+  <div class="copy">
+    <h2>Your own assistant, on your terms</h2>
+    <p class="job">Let a chat app read and propose, never decide.</p>
+    <p>An analyst can connect an assistant they already use, such as a chat app on their computer, and ask it to do the reading: search the case, read a long document, and propose the facts in it. It works with the analyst's own access and never more, and the analyst sees what it asks to do and approves it before it starts.</p>
+    <p>Everything it reads is logged. Every fact it proposes waits in Review, pinned to the passage it came from, until a person accepts it. Disconnecting it stops it on its next call.</p>
+    <details class="how"><summary>How it works</summary>
+      <p>Sealbook speaks MCP, the open protocol chat assistants use to call tools. The assistant is pointed at the server's address, opens Sealbook in the browser, and the analyst signs in and approves. It gets three tools, one per ability: read, propose facts, and propose that two mentions are or are not the same person. There is no tool to accept, delete or export.</p>
+      <p>Each call runs as a sealed run for that analyst, checked against their role every time. A proposed fact must point to the exact passage it was read from. A same-person proposal must rest on facts about both mentions: a name alone is refused, and so is a fact a person already rejected.</p>
+    </details>
+  </div>
+  <button class="unfold" type="button" aria-expanded="false">Open the live demo</button>
+  <div class="demo" data-demo="assistants"></div>
 </section>
 
 <div class="part finale" id="finale">
@@ -508,6 +539,8 @@
 <script src="js/demo-research.js"></script>
 <script src="js/demo-watch.js"></script>
 <script src="js/demo-casemap.js"></script>
+<script src="js/demo-compare.js"></script>
+<script src="js/demo-assistants.js"></script>
 <script src="js/demo-proof.js"></script>
 <script src="js/hero.js"></script>
 <script src="js/diagrams.js"></script>

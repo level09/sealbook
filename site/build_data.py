@@ -1708,6 +1708,13 @@ def cells_of(line: str) -> list[str]:
     return [c.strip().replace("\\|", "|") for c in (*cells, cur)]
 
 
+def build_assistants() -> dict:
+    """The consent screen's wording, from the app's own scope list."""
+    from sealbook.mcp import oauth
+
+    return {"scopes": [{"name": k, "text": v} for k, v in oauth.SCOPES.items()]}
+
+
 def build_status() -> dict:
     status = (ROOT / "docs/status.md").read_text()
     rows = [
@@ -1841,6 +1848,7 @@ LIVE = {
     "entities": build_places_pages,
     "research": build_research,
     "status": lambda live: build_status(),  # docs/status.md only
+    "assistants": lambda live: build_assistants(),  # the app's scope list only
 }
 
 
