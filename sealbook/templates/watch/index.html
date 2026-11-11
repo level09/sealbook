@@ -1,12 +1,12 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <v-container class="py-6">
+    <v-container class="py-4">
         <v-card class="mb-6">
-            <v-card-title class="pa-6 pb-2">Watchlist</v-card-title>
-            <v-card-text class="pa-6">
+            <v-card-title class="pa-4 pb-1">Watchlist</v-card-title>
+            <v-card-text class="pa-4">
                 <div class="d-flex" style="gap: 12px;">
                     <v-autocomplete v-model="person" v-model:search="q" :items="found" item-title="label" item-value="person" no-filter clearable
-                                    label="Find a person by name, in any spelling or script" density="comfortable" hide-details
+                                    label="Find a person by name, in any spelling or script" density="compact" hide-details
                                     :no-data-text="q && q.length > 1 ? 'No person matches' : 'Type a name'" @update:search="find"></v-autocomplete>
                     <v-btn color="primary" :disabled="!person" :loading="busy" @click="watch">Watch</v-btn>
                 </div>

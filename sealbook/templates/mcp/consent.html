@@ -1,13 +1,13 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <v-container class="py-6" style="max-width: 680px;">
+    <v-container class="py-4" style="max-width: 680px;">
         <v-card>
             <template v-if="page.error">
-                <v-card-title class="pa-6 pb-2">Agent access refused</v-card-title>
+                <v-card-title class="pa-4 pb-1">Agent access refused</v-card-title>
                 <v-card-text class="px-6">${ page.error }</v-card-text>
             </template>
             <template v-else>
-                <v-card-title class="pa-6 pb-2">Connect an agent</v-card-title>
+                <v-card-title class="pa-4 pb-1">Connect an agent</v-card-title>
                 <v-card-text class="px-6">
                     <p class="mb-4"><strong>${ page.client_name }</strong> asks to act on your behalf.</p>
                     <v-list density="compact" class="mb-4">
@@ -28,7 +28,7 @@
                         Connected Agents.
                     </p>
                 </v-card-text>
-                <v-card-actions class="pa-6 pt-0">
+                <v-card-actions class="pa-4 pt-0">
                     <form method="post" action="{{ url_for('mcp.consent') }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="nonce" value="{{ nonce }}">

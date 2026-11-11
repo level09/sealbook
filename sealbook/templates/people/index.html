@@ -1,11 +1,11 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <v-container class="py-6" style="max-width: 860px;">
+    <v-container class="py-4" style="max-width: 860px;">
         <v-card>
-            <v-card-title class="pa-6 pb-2">People</v-card-title>
-            <v-card-text class="pa-6">
+            <v-card-title class="pa-4 pb-1">People</v-card-title>
+            <v-card-text class="pa-4">
                 <form class="d-flex" style="gap: 12px;" @submit.prevent="search">
-                    <v-text-field v-model="q" label="Name, in any spelling or script" density="comfortable"
+                    <v-text-field v-model="q" label="Name, in any spelling or script" density="compact"
                                   hide-details autofocus dir="auto"></v-text-field>
                     <v-btn type="submit" color="primary" :loading="busy" :disabled="!q.trim()">Search</v-btn>
                 </form>

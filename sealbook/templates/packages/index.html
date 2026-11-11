@@ -1,23 +1,23 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <v-container class="py-6">
+    <v-container class="py-4">
         <v-card class="mb-6">
-            <v-card-title class="pa-6 pb-2">New brief</v-card-title>
-            <v-card-text class="pa-6 d-flex flex-wrap" style="gap: 12px;">
-                <v-text-field v-model="title" label="Title" density="comfortable" hide-details style="min-width: 240px;"></v-text-field>
-                <v-select v-model="audience" :items="boot.audiences" label="Audience" density="comfortable" hide-details style="max-width: 200px;"></v-select>
+            <v-card-title class="pa-4 pb-1">New brief</v-card-title>
+            <v-card-text class="pa-4 d-flex flex-wrap" style="gap: 12px;">
+                <v-text-field v-model="title" label="Title" density="compact" hide-details style="min-width: 240px;"></v-text-field>
+                <v-select v-model="audience" :items="boot.audiences" label="Audience" density="compact" hide-details style="max-width: 200px;"></v-select>
                 <v-btn color="primary" prepend-icon="ti ti-plus" :disabled="!title || !audience" :loading="busy" @click="create">Create</v-btn>
             </v-card-text>
         </v-card>
         <v-card>
-            <v-card-title class="pa-6 pb-2">Briefs in ${ caseSel ? caseName(caseSel) : 'all investigations' }</v-card-title>
+            <v-card-title class="pa-4 pb-1">Briefs in ${ caseSel ? caseName(caseSel) : 'all investigations' }</v-card-title>
             <v-list v-if="briefs.length">
                 <v-list-item v-for="b in briefs" :key="b.id" :href="'/packages/brief/' + b.id">
                     <v-list-item-title>${ b.title }</v-list-item-title>
                     <v-list-item-subtitle>For ${ b.audience }, ${ b.sentences } ${ b.sentences === 1 ? 'sentence' : 'sentences' }, created ${ b.created_at.slice(0, 10) }</v-list-item-subtitle>
                 </v-list-item>
             </v-list>
-            <v-card-text v-else class="pa-6 text-medium-emphasis">${ loaded ? 'No briefs in ' + (caseSel ? caseName(caseSel) : 'any case') + ' yet.' : 'Loading' }</v-card-text>
+            <v-card-text v-else class="pa-4 text-medium-emphasis">${ loaded ? 'No briefs in ' + (caseSel ? caseName(caseSel) : 'any case') + ' yet.' : 'Loading' }</v-card-text>
         </v-card>
         <v-snackbar v-model="error.show" color="error">${ error.text }</v-snackbar>
     </v-container>

@@ -2,7 +2,6 @@
    Staged items become progress rows in place; the stage track is ink when done,
    violet hatch while a model works and dashed due colour while it waits. */
 .ae { max-width: 1080px; display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 32px; }
-.ae h1 { font-size: 18px; letter-spacing: -.02em; margin: 0; font-weight: 650; }
 .ae h2 { font-size: 14px; margin: 0; font-weight: 650; letter-spacing: -.01em; }
 .ae .muted { color: var(--ink-3); }
 .ae .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }

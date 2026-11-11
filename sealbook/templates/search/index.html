@@ -22,12 +22,12 @@
 </style>
 {% endblock %}
 {% block content %}
-<v-container class="py-6 sr">
-  <h1 class="text-headline-small mb-1">Search</h1>
+<v-container class="py-4 sr">
+  <h1 class="mb-1">Search</h1>
   <p class="text-body-medium sr-muted mb-4">Exact identifiers, names in every recorded spelling and words first. Leads by meaning follow; they are places to look, not matches.</p>
   <form class="d-flex flex-wrap mb-3" style="gap:12px" @submit.prevent="go">
-    <v-text-field ref="box" v-model="q" label="Name, place, hash, phrase or question" prepend-inner-icon="ti ti-search" dir="auto" hide-details density="comfortable" style="min-width:280px;flex:3"></v-text-field>
-    <v-select :model-value="investigation" :items="cases" item-title="title" item-value="value" label="Case" hide-details density="comfortable" style="min-width:180px;flex:1" @update:model-value="v => switchCase(v ?? 'all')"></v-select>
+    <v-text-field ref="box" v-model="q" label="Name, place, hash, phrase or question" prepend-inner-icon="ti ti-search" dir="auto" hide-details density="compact" style="min-width:280px;flex:3"></v-text-field>
+    <v-select :model-value="investigation" :items="cases" item-title="title" item-value="value" label="Case" hide-details density="compact" style="min-width:180px;flex:1" @update:model-value="v => switchCase(v ?? 'all')"></v-select>
     <v-btn type="submit" color="primary" prepend-icon="ti ti-search" :loading="busy" :disabled="!q.trim()" height="48">Search</v-btn>
   </form>
   <v-chip-group v-if="result" v-model="shownTypes" multiple column class="mb-3" aria-label="Filter by type">

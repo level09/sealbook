@@ -209,6 +209,15 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
   .sb-top .v-toolbar__content { gap: 6px; padding: 0 8px; }
 }
 
+/* One type and surface scale for every page. :where keeps it weaker than any page
+   rule, so a page states only what differs. */
+:where(.v-main) h1 { font-size: 18px; font-weight: 650; letter-spacing: -.02em; line-height: 1.3; margin: 0; }
+:where(.v-main) h2 { font-size: 15px; font-weight: 650; letter-spacing: -.01em; line-height: 1.35; margin: 0; }
+:where(.v-main) h3 { font-size: 13.5px; font-weight: 650; line-height: 1.4; margin: 0; }
+.v-main .v-card-title { font-size: 15px; font-weight: 650; letter-spacing: -.01em; line-height: 1.4; }
+.v-main .v-selection-control .v-label { font-size: 13px; }
+.v-main .v-card--variant-outlined { background: var(--panel); border-color: var(--line); }
+
 /* Case page: the case's header and a tab per case page, above that page. */
 .case-head { padding: 16px 24px 0; }
 .case-title { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }

@@ -32,7 +32,7 @@
 {% block content %}
 <v-container fluid class="src-page py-4">
   <div class="src-head">
-    <h1 class="text-headline-small">Sources</h1>
+    <h1>Sources</h1>
     <p>${ total === null ? 'Loading' : total.toLocaleString() }${ filtered ? ' matching' : '' } in ${ caseSel ? caseName(caseSel) : 'all investigations' }</p>
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>

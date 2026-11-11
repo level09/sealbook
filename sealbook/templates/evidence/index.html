@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 <v-container class="py-6" style="max-width:1200px">
-  <h1 class="text-headline-small mb-2">Find connections</h1>
+  <h1 class="mb-2">Find connections</h1>
   <p class="text-body-medium text-medium-emphasis mb-5">Search people and source text. Compare picture and sound matches, then ask a colleague to review.</p>
   <v-alert v-if="error" type="error" class="mb-4" closable @click:close="error=''">${error}</v-alert>
   <v-card border class="pa-4 mb-5">

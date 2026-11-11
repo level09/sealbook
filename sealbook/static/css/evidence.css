@@ -16,7 +16,6 @@ body.dark-mode .evp {
   --e-wash: var(--wash, rgba(231,231,228,.06)); --e-solid: var(--solid, rgba(231,231,228,.16));
   --e-agent: var(--agent, #ab9ef7); --e-agent-wash: var(--agent-wash, rgba(171,158,247,.1)); --e-agent-solid: var(--agent-solid, rgba(171,158,247,.22));
 }
-.evp h1 { font-size: 18px; letter-spacing: -.02em; margin: 0; font-weight: 650; }
 .evp h2 { font-size: 14px; margin: 0; font-weight: 650; }
 .evp h3 { font-size: 13px; margin: 0; font-weight: 600; }
 .evp .muted { color: var(--e-ink-3); }

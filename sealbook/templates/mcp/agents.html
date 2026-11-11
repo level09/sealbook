@@ -1,18 +1,18 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <v-container class="py-6" style="max-width: 960px;">
-        <h1 class="mb-1" style="font-size: 22px">Agents</h1>
+    <v-container class="py-4" style="max-width: 960px;">
+        <h1 class="mb-1">Agents</h1>
         <p class="text-medium-emphasis mb-4">Agents read and propose for you, under your access. They never decide: every proposal waits for a person.</p>
         <p v-if="overview?.off" role="alert" class="mb-4"><i class="ti ti-plug-off" aria-hidden="true"></i> ${ overview.off }</p>
 
-        <h2 class="mb-2" style="font-size: 17px">Working for you in ${ caseReady ? caseSel : 'a case' }</h2>
+        <h2 class="mb-2">Working for you in ${ caseReady ? caseName(caseSel) : 'a case' }</h2>
         <p v-if="!caseReady" class="mb-4">Choose a case in the top bar to see the agents working for you there.</p>
         <p v-else-if="error" role="alert" class="mb-4">${ error }</p>
         <div v-else-if="overview" class="ag-grid mb-6">
             <v-card v-for="a in overview.agents" :key="a.key" variant="outlined" class="pa-4" :class="{'ag-wide': a.key === 'noticer'}">
                 <div class="d-flex align-center flex-wrap ga-2">
                     <i class="ti ti-robot r-tile is-agent" aria-hidden="true"></i>
-                    <h3 style="font-size: 15px">${ a.name }</h3>
+                    <h3>${ a.name }</h3>
                     <v-spacer></v-spacer>
                     <v-chip size="small" variant="tonal" :color="{off: 'grey', checking: 'primary', paused: 'warning', watching: 'success', ready: 'grey'}[a.state]">${ stateWords[a.state] }</v-chip>
                 </div>
@@ -38,17 +38,17 @@
         <v-skeleton-loader v-else-if="caseReady" type="card@2" class="mb-6"></v-skeleton-loader>
 
         <template v-if="overview">
-            <h2 class="mb-2" style="font-size: 17px">Recent agent work</h2>
+            <h2 class="mb-2">Recent agent work</h2>
             <p v-if="!overview.recent.length" class="mb-6">No agent has run for you yet.</p>
             <ul v-else class="ag-recent mb-6">
-                <li v-for="(r, i) in overview.recent" :key="i"><strong>${ r.agent }</strong> in ${ r.case }, ${ ago(r.at) }: <span :class="{'text-error': r.failed}">${ r.text }</span><span v-if="r.times > 1" class="text-medium-emphasis"> (${ r.times } times in a row)</span></li>
+                <li v-for="(r, i) in overview.recent" :key="i"><strong>${ r.agent }</strong> in ${ caseName(r.case) }, ${ ago(r.at) }: <span :class="{'text-error': r.failed}">${ r.text }</span><span v-if="r.times > 1" class="text-medium-emphasis"> (${ r.times } times in a row)</span></li>
             </ul>
         </template>
 
-        <h2 class="mb-2" style="font-size: 17px">Outside assistants</h2>
+        <h2 class="mb-2">Outside assistants</h2>
         <v-card variant="outlined" class="pa-4">
             <p>An outside assistant, such as a chat app on your computer, can connect to Sealbook over MCP and work for you. It searches and reads evidence and proposes facts and same-person links for review, with the access you approve and never beyond your role. Every read is logged, nothing it proposes is accepted without a person, and disconnecting it stops it on its next call.</p>
-            <h3 class="mt-4 mb-1" style="font-size: 15px">Connect one</h3>
+            <h3 class="mt-4 mb-1">Connect one</h3>
             <ol class="ms-5">
                 <li>In the assistant, add a remote MCP server with this address: <code>${ mcp.url }</code></li>
                 <li>The assistant opens Sealbook in your browser. Sign in if asked.</li>
@@ -57,7 +57,7 @@
             </ol>
             <p class="text-medium-emphasis mt-2">It may ask to do these things.</p>
             <ul class="ms-5 text-medium-emphasis"><li v-for="s in mcp.scopes" :key="s.name">${ s.description }</li></ul>
-            <h3 class="mt-4 mb-1" style="font-size: 15px">Connected</h3>
+            <h3 class="mt-4 mb-1">Connected</h3>
             <p v-if="!rows.length" class="text-medium-emphasis">No outside assistants are connected.</p>
             <v-list v-else>
                 <v-list-item v-for="row in rows" :key="row.id" :title="row.name"
