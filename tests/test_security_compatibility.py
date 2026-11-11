@@ -79,7 +79,7 @@ class SecurityCompatibilityTests(unittest.IsolatedAsyncioTestCase):
         signed_in = await client.post("/login", form=form)
         self.assertEqual(signed_in.status_code, 302)
         # An analyst starts on their work, never on stk's stats page.
-        self.assertEqual(signed_in.headers["Location"], "/todo")
+        self.assertEqual(signed_in.headers["Location"], "/todo?investigation=")
 
     async def test_expired_form_never_redirects_off_site(self):
         client = self.app.test_client()

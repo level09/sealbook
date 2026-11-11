@@ -16,7 +16,7 @@
 
 {% block app_bar %}
     <v-app-bar density="compact" flat class="sb-top">
-        <a class="brand" href="/todo"><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></a>
+        <a class="brand" href="/todo?investigation="><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></a>
         {% if current_user.is_authenticated %}
         <v-autocomplete v-if="isMobile" class="case-sw" :model-value="caseSel ?? 'all'" :items="caseOptions" density="compact" variant="outlined" hide-details auto-select-first prepend-inner-icon="ti ti-folder" :menu-props="{contentClass: 'case-sw-menu'}" aria-label="Switch investigation" @update:model-value="switchCase"></v-autocomplete>
         <form class="qbox" action="/search" role="search">
@@ -74,12 +74,12 @@
         <div class="px-2 pt-2"><v-btn block color="primary" variant="flat" prepend-icon="ti ti-upload" href="/ingest/">Add evidence</v-btn></div>
         <!-- Work first, then the cases (each opens as one page with tabs); agents, following, export and help sit at the foot. -->
         <v-list nav density="compact" aria-label="Sections">
-            <v-list-item v-for="n in mainRail" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current && !caseTab" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null">
+            <v-list-item v-for="n in mainRail" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current && (!caseTab || (n.badge === 'todo' && !caseSel))" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null">
                 <template #append v-if="n.count"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
             </v-list-item>
             <v-list-subheader v-if="caseList.length" class="sb-sub">Cases</v-list-subheader>
             <v-list-item v-for="c in caseList" :key="c" class="sb-case" :title="caseName(c)" :active="!!caseTab && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
-            <v-list-item v-if="caseList.length" class="sb-case sb-all" title="All cases" :active="!!caseTab && !caseSel" color="primary" @click="openCase('all')"></v-list-item>
+            <v-list-item v-if="caseList.length" class="sb-case sb-all" title="All cases" :active="!!caseTab && !caseSel && caseTab.badge !== 'todo'" color="primary" @click="openCase('all')"></v-list-item>
         </v-list>
         <template #append>
             <v-list nav density="compact" class="sb-foot" aria-label="More">
@@ -189,6 +189,7 @@
                 moreOpen: false,
                 noteIcons: {assigned: 'ti ti-user-plus', mention: 'ti ti-at', reply: 'ti ti-message', decision: 'ti ti-signature', intake_done: 'ti ti-upload'},
                 navCounts: {},
+                navAll: {},
                 caseSel: storedCase(),
                 caseList: [],
                 caseDetails: [],
@@ -213,7 +214,9 @@
                 return filterNavByRole(this.navItems, userRoles).map(item => ({
                     ...item,
                     current: !!item.match && (path === item.match || path.startsWith(item.match + '/')),
-                    count: this.navCounts[item.badge] || null,
+                    // To do in the rail is the person's own list over every case; a case's
+                    // To do is its first tab.
+                    ...(item.badge === 'todo' ? {to: '/todo?investigation=', count: (this.caseSel ? this.navAll : this.navCounts).todo || null} : {count: this.navCounts[item.badge] || null}),
                 }));
             },
             mainRail() { return this.railItems.filter(x => !x.group); },
@@ -221,7 +224,7 @@
                 const info = this.caseInfo, todo = this.railItems.find(x => x.badge === 'todo');
                 const counts = {'/sources': info?.sources, '/people': info?.people};
                 return [
-                    ...(todo ? [{...todo, count: todo.count}] : []),
+                    ...(todo ? [{...todo, to: '/todo', count: this.navCounts.todo || null}] : []),
                     ...this.railItems.filter(x => x.group === 'case').map(x => ({...x, count: counts[x.to] ?? null})),
                 ];
             },
@@ -297,6 +300,7 @@
             },
             loadNavCounts() {
                 axios.get('/api/nav/counts', {params: {investigation: this.caseSel || undefined}}).then(r => { this.navCounts = r.data; }).catch(() => {});
+                if (this.caseSel) axios.get('/api/nav/counts').then(r => { this.navAll = r.data; }).catch(() => {});
             },
             setTheme(dark) {
                 this.isDark = dark;
@@ -400,6 +404,8 @@
             if (asked.has('investigation')) {
                 this.caseSel = asked.get('investigation') || null;
                 try { localStorage.setItem('sb.case', this.caseSel ?? 'all'); } catch {}
+                // "Every case" is a one-time switch, not an address: a reload keeps the case picked since.
+                if (!this.caseSel) { asked.delete('investigation'); history.replaceState(null, '', location.pathname + (asked.size ? '?' + asked : '') + location.hash); }
             }
         },
         mounted() {

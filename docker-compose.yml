@@ -83,6 +83,25 @@ services:
     healthcheck:
       disable: true
 
+  # Closes a Merkle batch over new chain entries every ANCHOR_INTERVAL_SECONDS and
+  # sends its root, a hash and nothing else, to the timestamp services.
+  anchor:
+    container_name: anchor
+    restart: unless-stopped
+    build: .
+    dns_opt: *no-ipv6
+    command: ["python", "-m", "stk", "anchor", "--loop"]
+    volumes:
+      - 'instance-data:/app/instance'
+    depends_on:
+      website:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment: *app-env
+    healthcheck:
+      disable: true
+
   caddy:
     container_name: caddy
     restart: always

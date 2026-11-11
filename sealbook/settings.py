@@ -19,7 +19,7 @@ class Config(stk.Config):
     )
     SECURITY_TOTP_ISSUER = APP_NAME
     # stk sends a sign-in to its own stats page; analysts start on their work.
-    SECURITY_POST_LOGIN_VIEW = SECURITY_POST_CONFIRM_VIEW = "/todo"
+    SECURITY_POST_LOGIN_VIEW = SECURITY_POST_CONFIRM_VIEW = "/todo?investigation="
     # GET starts an MCP client's OAuth authorization flow; it is not a page.
     STK_SMOKE_SKIP = ["/oauth/authorize"]
     STK_CLI_SECTIONS = [

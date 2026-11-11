@@ -338,15 +338,18 @@ docker compose exec runner python -m stk speech-model     # speech to text weigh
 
 Synthetic or public material only: evidence bytes are not encrypted at rest yet.
 
-Update a running host with `git pull && docker compose up -d --build`. Three things
+Update a running host with `git pull && docker compose up -d --build`. Two things
 are not in the image or the first `.env` and each leaves a feature off until done:
 
 - `BRAVE_API_KEY` in `.env`: without it Add evidence says web search is not set up.
 - The offline map: copy `instance/basemap/syria.pmtiles` and `syria.json` from a
   machine where `stk basemap` ran into `/app/instance/basemap/` in the `website`
   container (the shared volume). Without it the case map has no background.
-- Anchoring: nothing schedules `stk anchor`, so the chain is unanchored until a cron
-  job or timer on the host runs it.
+Anchoring runs as its own service (`anchor`, `stk anchor --loop`): every
+`ANCHOR_INTERVAL_SECONDS` (an hour) it closes a Merkle batch over the new chain
+entries and sends the root, a hash and nothing else, to the OpenTimestamps calendars.
+The second witness, an RFC 3161 timestamp authority, is refused until its signer is
+pinned in settings, and each run says so.
 
 `website` and `runner` resolve names over IPv4 only (`dns_opt: ["no-aaaa"]`): the
 default Docker network has no IPv6 route and stk's fetch guard pins the first sorted

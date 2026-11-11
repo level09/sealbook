@@ -304,7 +304,9 @@ class DeskTest(unittest.IsolatedAsyncioTestCase):
         for path in ("/desk", "/api/desk/changes", "/api/desk/recent"):
             self.assertEqual((await nobody.get(path)).status_code, 403, path)
         me = await self.client()
-        self.assertTrue((await me.get("/")).headers["Location"].endswith("/todo"))
+        self.assertTrue(
+            (await me.get("/")).headers["Location"].endswith("/todo?investigation=")
+        )
         self.assertEqual((await me.get("/desk")).status_code, 200)
         bad = await me.get("/api/desk/needs", query_string={"per_page": 500})
         self.assertEqual(bad.status_code, 400)

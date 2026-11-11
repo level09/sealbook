@@ -168,6 +168,8 @@ const app = Vue.createApp({
   async mounted() {
     const q = new URLSearchParams(location.search), params = {};
     for (const k of ['batch', 'source']) if (q.get(k)) params[k] = q.get(k);
+    // Opened with no batch named: say so, and ask the server nothing.
+    if (!Object.keys(params).length) { this.error = 'No batch was named. Open this page from an intake brief.'; return; }
     try { this.a = (await axios.get('/api/agents/answer', {params})).data; }
     catch (err) { this.error = err.response?.status === 404 ? 'That batch is not on this server.' : 'The answer could not load. Reload the page to try again.'; }
   },
