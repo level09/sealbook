@@ -1,41 +1,25 @@
 {% extends 'layout.html' %}
+{% block css %}<link rel="stylesheet" href="{{ asset('css/entity.css') }}">{% endblock %}
 {% block content %}
-    <v-container class="py-4" style="max-width: 860px;">
-        <v-card>
-            <v-card-title class="pa-4 pb-1">People</v-card-title>
-            <v-card-text class="pa-4">
-                <form class="d-flex" style="gap: 12px;" @submit.prevent="search">
-                    <v-text-field v-model="q" label="Name, in any spelling or script" density="compact"
-                                  hide-details autofocus dir="auto"></v-text-field>
-                    <v-btn type="submit" color="primary" :loading="busy" :disabled="!q.trim()">Search</v-btn>
-                </form>
-                <div class="text-caption text-medium-emphasis mt-2">
-                    Matches are proposals: two people with the same name stay two people until someone links them.
-                </div>
-            </v-card-text>
-            <v-divider></v-divider>
-            <div class="px-6 pt-4 text-caption text-medium-emphasis">
-                ${ caption } in ${ caseSel ? caseName(caseSel) : 'all investigations' }
-            </div>
-            <v-list>
-                <v-list-item v-if="!shown.length">${ empty }</v-list-item>
-                <v-list-item v-for="h in shown" :key="h.person" :href="'/people/' + h.person">
-                    <template #prepend><i class="ti ti-user r-tile is-person me-3" aria-hidden="true"></i></template>
-                    <v-list-item-title>
-                        <bdi v-if="h.name" dir="auto">${ h.name }</bdi>
-                        <span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> Unnamed person</span>
-                        <span v-if="h.hint" class="text-medium-emphasis ms-2">${ h.hint }</span>
-                        <span v-if="h.statements" class="text-medium-emphasis">, ${ h.statements.length } matching name${ h.statements.length === 1 ? '' : 's' }</span>
-                    </v-list-item-title>
-                    <v-list-item-subtitle>
-                        ${ count(h.facts, 'fact') } from ${ count(h.documents, 'document') }<span v-if="h.members > 1">, joined from ${ h.members } records</span><span v-if="h.from">, ${ h.from }${ h.to && h.to !== h.from ? ' to ' + h.to : '' }</span>
-                    </v-list-item-subtitle>
-                </v-list-item>
-            </v-list>
-        </v-card>
-        <gap-finder :investigation="caseSel"></gap-finder>
-        <v-snackbar v-model="error.show" color="error">${ error.text }</v-snackbar>
-    </v-container>
+<v-container fluid class="en-page py-4">
+  <div class="d-flex align-baseline ga-3 flex-wrap mb-3">
+    <h1>People</h1>
+    <p class="en-muted ma-0">${ caption } in ${ caseSel ? caseName(caseSel) : 'all investigations' }. Two people with the same name stay two people until someone links them.</p>
+  </div>
+  <section class="en-panel">
+    <form class="d-flex align-center ga-2 flex-wrap pa-2 px-3" style="border-bottom: 1px solid var(--line)" @submit.prevent="search">
+      <v-text-field v-model="q" density="compact" hide-details clearable prepend-inner-icon="ti ti-search" placeholder="Name, in any spelling or script" aria-label="Search people by name" style="max-width: 360px; min-width: 220px" autofocus dir="auto" @click:clear="items = null"></v-text-field>
+      <v-btn type="submit" size="small" color="primary" :loading="busy" :disabled="!(q || '').trim()">Search</v-btn>
+    </form>
+    <v-data-table class="en-table" :headers="headers" :items="shown" item-value="person" density="compact" :items-per-page="50" :items-per-page-options="[25, 50, 100]" :hide-default-footer="shown.length <= 50" @click:row="(_, {item}) => location.href = '/people/' + item.person">
+      <template #item.name="{ item }"><a :href="'/people/' + item.person" @click.stop><i class="ti ti-user r-tile is-person me-2" aria-hidden="true"></i><bdi v-if="item.name" dir="auto">${ item.name }</bdi><span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> Unnamed person</span></a><span v-if="item.hint" class="en-muted ms-2">${ item.hint }</span><span v-if="item.statements" class="en-muted">, ${ count(item.statements.length, 'matching name') }</span><span v-if="item.members > 1" class="en-muted">, joined from ${ item.members } records</span></template>
+      <template #item.from="{ item }"><span v-if="item.from">${ item.from }${ item.to && item.to !== item.from ? ' to ' + item.to : '' }</span><span v-else class="en-muted">no dated claim</span></template>
+      <template #no-data><v-empty-state icon="ti ti-user-off" :title="empty"></v-empty-state></template>
+    </v-data-table>
+  </section>
+  <gap-finder :investigation="caseSel"></gap-finder>
+  <v-snackbar v-model="error.show" color="error">${ error.text }</v-snackbar>
+</v-container>
 {% endblock %}
 
 {% block js %}
@@ -49,7 +33,9 @@
             mixins: [layoutMixin],
             data() {
                 return {q: new URLSearchParams(location.search).get('q') || '', asked: '', items: null, busy: false,
-                        everyone: [], error: {show: false, text: ''}};
+                        everyone: [], error: {show: false, text: ''},
+                        headers: [{title: 'Name', key: 'name'}, {title: 'Facts', key: 'facts', align: 'end'},
+                                  {title: 'Documents', key: 'documents', align: 'end'}, {title: 'Evidence dated', key: 'from'}]};
             },
             computed: {
                 shown() { return this.items === null ? this.everyone : this.items; },
@@ -69,14 +55,14 @@
             methods: {
                 count: (n, one) => `${n || 0} ${n === 1 ? one : one + 's'}`,
                 // Shell contract: follow the top bar's investigation switcher.
-                useCase() { this.items = null; this.loadAll().then(() => this.q.trim() && this.search()); },
+                useCase() { this.items = null; this.loadAll().then(() => (this.q || '').trim() && this.search()); },
                 async loadAll() {
                     try {
                         this.everyone = (await axios.get('/api/people', {params: {investigation: this.caseSel || undefined}})).data.items;
                     } catch (e) { this.error = {show: true, text: e.response?.data?.message || e.message}; }
                 },
                 async search() {
-                    const q = this.q.trim();
+                    const q = (this.q || '').trim();
                     if (!q) return;
                     this.busy = true;
                     try {
