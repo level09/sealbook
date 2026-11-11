@@ -345,6 +345,7 @@ are not in the image or the first `.env` and each leaves a feature off until don
 - The offline map: copy `instance/basemap/syria.pmtiles` and `syria.json` from a
   machine where `stk basemap` ran into `/app/instance/basemap/` in the `website`
   container (the shared volume). Without it the case map has no background.
+
 Anchoring runs as its own service (`anchor`, `stk anchor --loop`): every
 `ANCHOR_INTERVAL_SECONDS` (an hour) it closes a Merkle batch over the new chain
 entries and sends the root, a hash and nothing else, to the OpenTimestamps calendars.
