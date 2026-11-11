@@ -59,6 +59,15 @@ export function mount(boot) {
       pins() {return this.claims.filter(c => c.tier !== 'rejected' && c.value);},
       marks() {return ['audio', 'video'].includes(this.it?.kind) ? this.it.copies.map(c => [c.here[0], Math.max(c.here[1], c.here[0] + 1000)]) : [];},
       otherCopy() {return this.other && this.it.copies.find(c => c.other === this.other.sha256);},
+      // Why these two are beside each other, said once above both.
+      besideWhy() {
+        const c = this.otherCopy;
+        if (c) return `${c.kind}: ${c.why}.` + (this.it.kind !== 'image' ? ` A at ${ms(c.here[0])}, B at ${ms(c.there[0])}.` : '');
+        const r = this.relations.find(x => x.other === this.other.sha256);
+        if (!r) return 'Opened together. Each side marks its own claims.';
+        // relWhy speaks of here and there; beside each other they are A and B.
+        return `${r.kind}${/[?.]$/.test(r.kind) ? '' : '.'} ${this.relWhy(r).replace(' here', ' in A').replace(' there', ' in B')}`;
+      },
       otherAt() {return this.boot.at ?? this.otherCopy?.there?.[0] ?? null;},
       otherMarks() {const c = this.otherCopy; return c ? [[c.there[0], Math.max(c.there[1], c.there[0] + 1000)]] : this.otherAt != null ? [[this.otherAt, this.otherAt + 2000]] : [];},
       relations() {
