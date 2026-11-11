@@ -51,6 +51,20 @@ def _json(payload, status=200):
     )
 
 
+async def first_cards(db) -> list[dict]:
+    """The starter cards this server can honour: one that opens a demo source is
+    left out where that source was never added."""
+    cards = []
+    for card in content.FIRST:
+        sha = card["href"].partition("source=")[2]
+        if sha and not await db.scalar(
+            select(Acquisition.id).where(Acquisition.blob_sha256 == sha).limit(1)
+        ):
+            continue
+        cards.append(card)
+    return cards
+
+
 @bp_guide.get("/guide")
 async def page():
     demo = await g.db_session.scalar(select(Case.id).where(Case.slug == content.CASE))
@@ -60,7 +74,7 @@ async def page():
             "case": content.CASE,
             "demo": demo is not None,
             "areas": content.AREAS,
-            "first": content.FIRST,
+            "first": await first_cards(g.db_session),
             "scenarios": content.SCENARIOS,
             "trust": content.TRUST,
             "bayanat": content.BAYANAT,

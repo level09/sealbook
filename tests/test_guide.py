@@ -201,6 +201,14 @@ class GuideTest(unittest.IsolatedAsyncioTestCase):
             403,
         )
 
+    async def test_a_starter_card_for_a_source_not_here_is_left_out(self):
+        from sealbook.guide.views import first_cards
+
+        async with ext.async_session_factory() as s:
+            cards = await first_cards(s)
+        self.assertTrue(cards)
+        self.assertFalse([c for c in cards if "source=" in c["href"]])
+
     async def test_proof_recomputes_and_logs_one_view(self):
         me = await self.client()
         r = await me.get(f"/api/guide/proof?investigation={CASE}")

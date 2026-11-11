@@ -16,7 +16,7 @@ from sealbook.collaboration import live
 from sealbook.collaboration import service as collaboration
 from sealbook.discovery import service as discovery
 from sealbook.discovery.models import FindingKey
-from sealbook.guide.content import FIRST
+from sealbook.guide.views import first_cards
 from sealbook.ledger import attest, offline_sigs, write
 from sealbook.ledger.contracts import Event, Prop, Refused, StatementIn
 from sealbook.ledger.models import RunEvent, Statement, StatementTier
@@ -463,7 +463,7 @@ async def _item() -> dict:
 @review.get("/todo")
 async def todo_page():
     # The starter card that points back at this page would open itself.
-    first = [f for f in FIRST if f["href"] != "/todo"]
+    first = [f for f in await first_cards(g.db_session) if f["href"] != "/todo"]
     return await render_template("todo/index.html", first=first)
 
 
