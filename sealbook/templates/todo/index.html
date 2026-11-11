@@ -2,9 +2,38 @@
 {% block css %}
 <style>
 .td-page { max-width: 1100px; }
-.td-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-.td-head h1 { font-size: 18px; font-weight: 650; margin: 0; }
+.td-head { margin-bottom: 14px; }
+.td-head h1 { font-size: 22px; font-weight: 650; letter-spacing: -.015em; margin: 0 0 2px; }
 .td-head p { margin: 0; color: var(--ink-3); }
+.td-go { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-inline-start: 3px solid var(--ink); border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; }
+.td-go > i { font-size: 24px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 10px; background: var(--wash); }
+.td-go .k { font-size: 11.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); }
+.td-go h2 { font-size: 16px; font-weight: 650; margin: 1px 0 2px; overflow-wrap: anywhere; }
+.td-go p { margin: 0; color: var(--ink-2); }
+.td-brief { background: var(--panel); border: 1px solid var(--line); border-inline-start: 3px solid var(--agent); border-radius: 10px; margin-bottom: 12px; }
+.td-brief > header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px 0; }
+.td-brief > header h2 { font-size: 13.5px; font-weight: 650; margin: 0; }
+.td-brief > header span { color: var(--ink-3); font-size: 12.5px; }
+.td-brief > header .v-btn { margin-inline-start: auto; }
+.td-brief > div { padding: 10px 14px 14px; }
+.td-brief > div.cut { max-height: 300px; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+.td-h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 20px 0 8px; }
+.td-h h2 { font-size: 15px; font-weight: 650; margin: 0; }
+.td-h span { color: var(--ink-3); font-size: 12.5px; }
+.td-h .v-btn { margin-inline-start: auto; }
+.td-did { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; }
+.td-did .ti-robot { color: var(--agent); }
+.td-first { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 0 0 12px; }
+.td-first li { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 5px; }
+.td-first li.done { opacity: .6; }
+.td-first .num { font-family: var(--mono); font-size: 11px; color: var(--agent); }
+.td-first h3 { font-size: 14px; font-weight: 650; margin: 0; }
+.td-first p { margin: 0 0 6px; color: var(--ink-2); line-height: 1.45; flex: 1; }
+.td-first .v-btn { align-self: flex-start; }
+@media (max-width: 959px) {
+  .td-go { grid-template-columns: minmax(0, 1fr); }
+  .td-go > i { display: none; }
+}
 .td-sec { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
 .td-sec > header { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-bottom: 1px solid var(--line); }
 .td-sec > header h2 { font-size: 13.5px; font-weight: 650; margin: 0; }
@@ -23,12 +52,37 @@
 {% block content %}
 <v-container fluid class="td-page py-4">
   <div class="td-head">
-    <h1>To do</h1>
-    <p v-if="d">${ total ? plural(total, 'decision') + ' waiting on you in ' + (caseSel ? caseName(caseSel) : 'all investigations') + ', biggest first' : 'Nothing is waiting on you in ' + (caseSel ? caseName(caseSel) : 'all investigations') }${ d.claims ? ', and ' + (d.claims_more ? d.claims + ' or more' : d.claims.toLocaleString()) + ' single claims in Review' : '' }</p>
-    <p v-else>Loading</p>
+    <h1 v-if="d">${ total ? plural(total, 'decision') + (total === 1 ? ' is' : ' are') + ' waiting on you' : 'Nothing is waiting on you' }</h1>
+    <h1 v-else>Loading</h1>
+    <p v-if="d">In ${ caseSel ? caseName(caseSel) : 'all investigations' }, biggest first${ d.claims ? ', and ' + (d.claims_more ? d.claims + ' or more' : d.claims.toLocaleString()) + ' single claims in Review' : '' }.</p>
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3">${ error }</v-alert>
   <template v-if="d">
+    <section v-if="go" class="td-go" aria-labelledby="td-go">
+      <i :class="go.icon" aria-hidden="true"></i>
+      <div><span class="k">Start here</span><h2 id="td-go"><bdi dir="auto">${ go.title }</bdi></h2><p>${ go.why }</p></div>
+      <v-btn color="primary" :href="go.href" append-icon="ti ti-arrow-right">${ go.action }</v-btn>
+    </section>
+    <section v-if="brief" class="td-brief" aria-labelledby="td-brief">
+      <header><h2 id="td-brief"><i class="ti ti-sparkles" aria-hidden="true"></i> Read for you</h2><span>a batch you added finished, ${ ago(brief.at) }</span>
+        <v-btn size="small" variant="text" prepend-icon="ti ti-check" @click="briefRead">Mark read</v-btn></header>
+      <div :class="{cut: !whole}"><intake-brief :batch="brief.batch" :compact="true"></intake-brief></div>
+      <a v-if="!whole" href="#" class="td-more" @click.prevent="whole = true">Show the whole brief</a>
+    </section>
+
+    <template v-if="first.length && !hideFirst">
+      <div class="td-h"><h2>New here? Try these first</h2><span>a few minutes each, on the demo case</span><v-btn size="small" variant="text" @click="dismissFirst">Hide</v-btn></div>
+      <ol class="td-first">
+        <li v-for="(f, i) in first" :key="f.title" :class="{done: tried.includes(f.title)}">
+          <span class="num">0${ i + 1 } · ${ f.minutes } min${ tried.includes(f.title) ? ' · opened' : '' }</span>
+          <h3>${ f.title }</h3>
+          <p>${ f.text }</p>
+          <v-btn :href="f.href" size="small" variant="outlined" append-icon="ti ti-arrow-up-right" @click="tryFirst(f)">${ f.open }</v-btn>
+        </li>
+      </ol>
+    </template>
+
+    <div v-if="total || d.claims" class="td-h"><h2>My review list</h2><span>everything that needs your decision</span></div>
     <section v-if="d.assigned.length" class="td-sec" aria-labelledby="td-assigned">
       <header><h2 id="td-assigned">Assigned to you</h2><span class="n">${ d.assigned.length }</span><span class="why">read each, decide its claims, then mark it updated</span></header>
       <a v-for="r in d.assigned" :key="r.sha" class="td-row" :href="'/evidence/' + r.sha"><i class="ti r-tile is-source" :class="kindIcon(r.kind)" aria-hidden="true"></i>
@@ -68,30 +122,56 @@
         <span><span class="t d-block">${ d.claims_more ? d.claims + ' or more claims' : plural(d.claims, 'claim') } waiting in Review</span><span class="s">accept or reject each with the source beside it</span></span><span class="td-pill">open</span></a>
     </section>
 
-    <v-empty-state v-if="!total && !d.claims" icon="ti ti-circle-check" title="Nothing waiting on you">
-      <template #text>Add evidence and Sealbook reads it, then lists here what needs your decision.</template>
-      <template #actions><v-btn href="/ingest" prepend-icon="ti ti-upload" variant="outlined">Add evidence</v-btn></template>
-    </v-empty-state>
+    <template v-if="did.length">
+      <div class="td-h"><h2>Since you left</h2><span>${ sinceText }</span><v-btn size="small" variant="text" href="/desk" append-icon="ti ti-arrow-right">All on the Desk</v-btn></div>
+      <section class="td-sec">
+        <a v-for="r in did" :key="r.who.id + r.what" class="td-row td-did" :href="changeHref(r)"><i class="ti" :class="r.who.agent ? 'ti-robot' : 'ti-user'" aria-hidden="true"></i>
+          <span><span class="t">${ r.who.name } ${ verb(r) }</span><span v-if="r.sources.length" class="s d-block"><bdi dir="auto">${ prep(r) === ': ' ? '' : prep(r) }${ where(r) }</bdi></span></span><span class="s">${ ago(r.at) }</span></a>
+      </section>
+    </template>
   </template>
 </v-container>
 {% endblock %}
 {% block js %}
+<script type="application/json" id="td-first-data">{{ first|tojson }}</script>
 <script type="module">
+import {IntakeBrief} from '/static/js/components/IntakeBrief.js';
+import {verb, prep, where, changeHref, plural} from '/static/js/changes.js';
+
 const EVENT = {airstrike: 'Airstrike', shelling: 'Shelling', ground_attack: 'Ground attack', explosion: 'Explosion', arrest: 'Arrest', killing: 'Killing', raid: 'Raid'};
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const day = s => { const [y, m, d] = s.split('-'); return `${+d} ${MON[m - 1]} ${y}`; };
 // The item's kind, with the icons Sources and the thumbnails use.
 const KIND_ICON = {image: 'ti-photo', video: 'ti-video', audio: 'ti-volume', text: 'ti-file-text', application: 'ti-file'};
-function plural(n, one, many) { return `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`; }
+const FIRST = JSON.parse(document.getElementById('td-first-data').textContent);
+// Per-viewer conveniences only: which starter cards were opened, and whether they are hidden.
+const kept = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } };
 
 window.app = Vue.createApp({
   mixins: [layoutMixin], delimiters: config.delimiters,
-  data: () => ({d: null, error: '', more: {triage: false, groups: false, findings: false}}),
+  data: () => ({d: null, error: '', more: {triage: false, groups: false, findings: false}, brief: null, whole: false, did: [], since: null, basis: null,
+    first: FIRST, tried: kept('sb-first-tried') || [], hideFirst: !!kept('sb-first-hide')}),
   computed: {
     total() { return this.d?.total || 0; },
+    sinceText() {
+      if (!this.since) return '';
+      const when = new Date(this.since).toLocaleString(undefined, {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+      return {access: `since your last visit, ${when}`, login: `since your previous sign-in, ${when}`, week: 'in the last 7 days'}[this.basis];
+    },
+    // The one thing to open first: the top row of the list below, said as a sentence.
+    go() {
+      const d = this.d, a = d.assigned[0], q = d.asked[0], t = d.triage[0], g = d.groups[0], f = d.findings[0];
+      if (a) return {icon: 'ti ti-user-check', title: a.title, why: a.status === 'returned' ? 'Returned to you for changes. Read the comment, fix its claims, then mark it updated.' : 'Assigned to you. Read it, decide its claims, then mark it updated.', href: '/evidence/' + a.sha, action: 'Open it'};
+      if (q) return {icon: 'ti ti-message-question', title: q.reason, why: `${q.from} is waiting for your decision.`, href: q.incident ? '/incidents/' + q.incident : '/review?request=' + q.request, action: 'Review it'};
+      if (t) return {icon: 'ti ti-sparkles', title: t.title || 'An item read for you', why: 'Sealbook read it and drafted a first pass. Check each line against the source, then sign it.', href: '/evidence/' + t.sha, action: 'Check the first pass'};
+      if (g) return {icon: 'ti ti-stack-2', title: this.groupTitle(g).join(', '), why: `${plural(g.posts, 'post')} seem to report one event. One decision creates the incident.`, href: '/discover?f=' + g.id, action: 'Decide'};
+      if (f) return {icon: 'ti ti-bulb', title: f.reason, why: `${f.label}. Sealbook noticed it across the case and waits for your decision.`, href: '/discover?f=' + f.id, action: 'Look at it'};
+      if (d.claims) return {icon: 'ti ti-list-check', title: `${d.claims_more ? d.claims + ' or more claims' : plural(d.claims, 'claim')} waiting in Review`, why: 'Accept or reject each with the source beside it.', href: '/review?box=open', action: 'Open Review'};
+      return {icon: 'ti ti-upload', title: 'Add evidence', why: 'Sealbook reads what you add, then lists here what needs your decision.', href: '/ingest', action: 'Add evidence'};
+    },
   },
   methods: {
-    plural, day, hue: findingHue,
+    plural, day, hue: findingHue, verb, prep, where, changeHref,
     late(due) { return !!due && due < new Date().toLocaleDateString('sv'); },
     kindIcon(kind) { return KIND_ICON[kind] || 'ti-file-text'; },
     ago(at) { const h = Math.round((Date.now() - new Date(at)) / 36e5); return h < 1 ? 'just now' : h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`; },
@@ -102,12 +182,23 @@ window.app = Vue.createApp({
     },
     useCase() { this.load(); },
     async load() {
-      try { this.d = (await axios.get('/api/todo', {params: {investigation: this.caseSel || undefined}})).data; }
+      const params = {investigation: this.caseSel || undefined};
+      try { this.d = (await axios.get('/api/todo', {params})).data; }
       catch (err) { this.error = err.response?.data?.description || err.message; }
+      // The two blocks around the list are extras: the list stands without them.
+      axios.get('/api/agents/briefs', {params}).then(r => { this.brief = r.data.items[0] || null; }).catch(() => { this.brief = null; });
+      axios.get('/api/desk/changes', {params: {...params, per_page: 5}}).then(r => { this.did = r.data.items; this.since = r.data.since; this.basis = r.data.basis; }).catch(() => { this.did = []; });
     },
+    async briefRead() {
+      try { await axios.post('/api/notifications/read', {item: {ids: [this.brief.notification]}}); this.load(); }
+      catch (err) { this.error = err.response?.data?.error || err.message; }
+    },
+    tryFirst(f) { if (!this.tried.includes(f.title)) { this.tried.push(f.title); kept('sb-first-tried', this.tried); } },
+    dismissFirst() { this.hideFirst = true; kept('sb-first-hide', true); },
   },
   mounted() { this.load(); this.followWork(() => this.load()); },
 });
+app.component('intake-brief', IntakeBrief);
 registerStkComponents(app);
 app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
 </script>

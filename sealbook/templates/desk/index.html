@@ -91,29 +91,9 @@
 import {registerMediaViewers} from '/static/js/components/media.js';
 import {IntakeBrief} from '/static/js/components/IntakeBrief.js';
 import {StandingQuestions} from '/static/js/components/StandingQuestions.js';
+import {verb, prep, where, changeHref, plural, human} from '/static/js/changes.js';
 
-const VERBS = {
-  acquisition: n => `added ${n.items === 1 ? 'a source' : n.items + ' sources'}`,
-  review: n => `decided ${plural(n.n, 'claim')}`, review_accept: n => `accepted ${plural(n.n, 'claim')}`, review_reject: n => `rejected ${plural(n.n, 'claim')}`,
-  access: n => `viewed ${plural(n.items, 'source')}`, located_at: n => `confirmed ${plural(n.n, 'place')}`, retraction: n => `retracted ${plural(n.n, 'decision')}`,
-  review_request: n => `asked for ${plural(n.n, 'review')}`, review_comment: n => `commented ${n.n === 1 ? 'once' : n.n + ' times'}`,
-  media_match: n => `proposed ${plural(n.n, 'picture or sound match', 'picture or sound matches')}`,
-  same_as: n => `proposed ${plural(n.n, 'same-person link')}`, not_same: n => `separated ${plural(n.n, 'person record')}`,
-  c2pa_verify: n => `checked content credentials on ${plural(n.items, 'source')}`, url_liveness: n => `rechecked ${plural(n.items, 'link')}`,
-  finding: n => `proposed ${plural(n.n, 'finding')}`, package: n => `built ${plural(n.n, 'package')}`, attest: n => `signed ${plural(n.n, 'package')}`,
-};
-const REVIEWS = ['review', 'review_accept', 'review_reject', 'retraction', 'review_request', 'review_comment'];
 const TYPE = {text: 'text file', image: 'photo', pdf: 'PDF', audio: 'recording', video: 'video', web: 'web page', other: 'file'};
-// A claim kind as a countable noun, for "AI proposed 17 ages".
-const NOUN = {name: ['name'], father_name: ["father's name", "fathers' names"], mother_name: ["mother's name", "mothers' names"], birth_date: ['birth date'], place_of_birth: ['birthplace'],
-  arrested_at: ['arrest place'], detained_at: ['detention place'], detention_branch: ['detention branch', 'detention branches'], transferred_to: ['transfer'], seen_at: ['sighting'],
-  last_seen: ['last-seen place'], sex: ['sex entry', 'sex entries'], age: ['age'], occupation: ['occupation'], event: ['event'], document_date: ['document date'], reports: ['reported event'],
-  document_type: ['document type'], photographed_at: ['photo place'], filmed_at: ['filming place'], located_at: ['place'],
-  triage: ['triage', 'triages'], title: ['title'], description: ['description line'], label: ['label']};
-function plural(n, one, many) { return `${(n ?? 0).toLocaleString()} ${n === 1 ? one : many || one + 's'}`; }
-// Field names as the bell and Inbox write them.
-const FIELD = {father_name: "Father's name", mother_name: "Mother's name", birth_date: 'Birth date', place_of_birth: 'Birthplace', detention_branch: 'Held by branch'};
-const human = s => FIELD[s] || (s || '').replaceAll('_', ' ').replace(/^./, c => c.toUpperCase());
 const table = () => ({items: [], total: 0, loading: true, page: 1, perPage: 10, loaded: false});
 
 window.app = Vue.createApp({
@@ -165,17 +145,7 @@ window.app = Vue.createApp({
     },
     typeIcon: t => ({image: 'ti ti-photo', pdf: 'ti ti-file-type-pdf', audio: 'ti ti-volume', video: 'ti ti-video', web: 'ti ti-world', text: 'ti ti-file-text'}[t] || 'ti ti-file'),
     docLabel(r) { const k = r.doc_type && r.doc_type !== 'unknown' ? human(r.doc_type) : null; const t = TYPE[r.type] || r.type; return [k !== r.title ? k : null, k?.toLowerCase() === t ? null : t].filter(Boolean).join(', '); },
-    // Agents propose claims and people add them; neither "reads" a value.
-    verb(r) {
-      if (VERBS[r.what] && !(r.who.agent && r.what === 'located_at')) return VERBS[r.what](r);
-      const [one, many] = NOUN[r.what] || [human(r.what).toLowerCase() + ' claim'];
-      return `${r.who.agent ? 'AI proposed' : 'added'} ${plural(r.n, one, many)}`;
-    },
-    // Work on sources lists them; work on claims says where the claims are.
-    prep(r) { return ['acquisition', 'c2pa_verify', 'url_liveness'].includes(r.what) ? ': ' : r.who.agent && (!VERBS[r.what] || r.what === 'located_at') ? 'from ' : 'in '; },
-    // Titles carry commas of their own, so a list of them is split by semicolons.
-    where(r) { const t = [...new Set(r.sources.map(s => s.title))]; return t.join('; ') + (r.items > r.sources.length ? ` and ${(r.items - r.sources.length).toLocaleString()} more` : ''); },
-    changeHref(r) { return REVIEWS.includes(r.what) ? '/review' : r.sources[0] ? '/evidence/' + r.sources[0].sha256 : '/sources'; },
+    verb, prep, where, changeHref,
     ago(iso) {
       const s = (Date.now() - new Date(iso)) / 1000;
       return s < 60 ? 'now' : s < 3600 ? `${Math.floor(s / 60)} min ago` : s < 86400 ? `${Math.floor(s / 3600)} h ago` : s < 30 * 86400 ? `${Math.floor(s / 86400)} d ago` : iso.slice(0, 10);
