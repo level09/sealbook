@@ -36,7 +36,10 @@ workflow with the typing gone.
    older source, what they agree on, the path, who else was there, what is missing
    and the one decision it waits on. The Guide opens on it, and names the Bayanat
    words that have no equivalent here yet.
-9. **First hour, tested.** Pending. An analyst from the team works a batch on
+9. **A start page.** Done 2026-11-11, see [status](status.md). Sign-in lands on To do,
+   which opens with the one item to start on, the newest brief, starter steps for a
+   new analyst and what changed since they left.
+10. **First hour, tested.** Pending. An analyst from the team works a batch on
    app.sealbook.org from upload to a finalized item, and what slows them becomes the
    next list.
 

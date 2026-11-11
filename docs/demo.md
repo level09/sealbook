@@ -69,6 +69,9 @@ control that changes one character and shows where the check breaks.
 
 ## Five recordings, one answer
 
+A demo case seeded before 2026-11-10 lacks this batch: `uv run stk demo-seed
+--recordings` adds it without touching anything else.
+
 Open Guide and press Open the answer, or open the newest intake brief and choose Read
 this batch as one answer. The batch is five recordings a family brought: a mother, a
 sister, a released detainee, a neighbour, and one voice note with no speech. The page

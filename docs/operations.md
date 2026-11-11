@@ -338,6 +338,25 @@ docker compose exec runner python -m stk speech-model     # speech to text weigh
 
 Synthetic or public material only: evidence bytes are not encrypted at rest yet.
 
+Update a running host with `git pull && docker compose up -d --build`. Three things
+are not in the image or the first `.env` and each leaves a feature off until done:
+
+- `BRAVE_API_KEY` in `.env`: without it Add evidence says web search is not set up.
+- The offline map: copy `instance/basemap/syria.pmtiles` and `syria.json` from a
+  machine where `stk basemap` ran into `/app/instance/basemap/` in the `website`
+  container (the shared volume). Without it the case map has no background.
+- Anchoring: nothing schedules `stk anchor`, so the chain is unanchored until a cron
+  job or timer on the host runs it.
+
+`website` and `runner` resolve names over IPv4 only (`dns_opt: ["no-aaaa"]`): the
+default Docker network has no IPv6 route and stk's fetch guard pins the first sorted
+address, which is the IPv6 one (see `.stk/lessons.md`, 2026-11-11). Remove the
+option on a host with working IPv6.
+
+`stk demo-seed` refuses outside development. To seed a hosted demo, or to add the
+five recordings to one seeded before them, set the environment for that one command:
+`docker compose exec -e STK_ENV=development website stk demo-seed --recordings`.
+
 ## Verification
 
 ```sh

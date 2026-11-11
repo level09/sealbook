@@ -15,7 +15,7 @@ def init_app(app):
     register_passkey_return(app)
 
     async def index():
-        # No marketing page: analysts land on the Desk, everyone else signs in.
+        # No marketing page: analysts land on To do, everyone else signs in.
         return redirect("/todo" if current_user.is_authenticated else "/login")
 
     # ponytail: swaps stk's "/" view in place, as stk has no landing-page hook;
