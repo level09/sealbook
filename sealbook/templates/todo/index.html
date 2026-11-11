@@ -5,6 +5,14 @@
 .td-head { margin-bottom: 14px; }
 .td-head h1 { font-size: 22px; font-weight: 650; letter-spacing: -.015em; margin: 0 0 2px; }
 .td-head p { margin: 0; color: var(--ink-3); }
+/* The page's own outline while the list is fetched, shown only if that takes a moment. */
+.td-wait { opacity: 0; animation: td-wait .25s .3s forwards; }
+.td-wait i { display: block; border-radius: 5px; background: var(--wash); }
+.td-wait .h { width: min(340px, 70%); height: 24px; margin: 3px 0 8px; }
+.td-wait .p { width: min(460px, 90%); height: 13px; margin-bottom: 18px; }
+.td-wait .box { height: 240px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); margin-bottom: 12px; }
+.td-wait .box.go { height: 80px; border-radius: 10px; }
+@keyframes td-wait { to { opacity: 1; } }
 .td-go { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-inline-start: 3px solid var(--ink); border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; }
 .td-go > i { font-size: 24px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 10px; background: var(--wash); }
 .td-go .k { font-size: 11.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); }
@@ -53,7 +61,7 @@
 <v-container fluid class="td-page py-4">
   <div class="td-head">
     <h1 v-if="d">${ total ? plural(total, 'decision') + (total === 1 ? ' is' : ' are') + ' waiting on you' : 'Nothing is waiting on you' }</h1>
-    <h1 v-else>Loading</h1>
+    <div v-else-if="!error" class="td-wait" role="status"><span class="d-sr-only">Loading your list</span><i class="h"></i><i class="p"></i><i class="box go"></i><i class="box"></i></div>
     <p v-if="d">In ${ caseSel ? caseName(caseSel) : 'all investigations' }, biggest first${ d.claims ? ', and ' + (d.claims_more ? d.claims + ' or more' : d.claims.toLocaleString()) + ' single claims in Review' : '' }.</p>
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3">${ error }</v-alert>
