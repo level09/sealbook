@@ -76,7 +76,10 @@ class SecurityCompatibilityTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("That page had expired", page)
         async with client.session_transaction() as cookie:
             form["csrf_token"] = cookie["_csrf_token"]
-        self.assertEqual((await client.post("/login", form=form)).status_code, 302)
+        signed_in = await client.post("/login", form=form)
+        self.assertEqual(signed_in.status_code, 302)
+        # An analyst starts on their work, never on stk's stats page.
+        self.assertEqual(signed_in.headers["Location"], "/todo")
 
     async def test_expired_form_never_redirects_off_site(self):
         client = self.app.test_client()
