@@ -166,6 +166,15 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .sb-rail .sb-sub { min-height: 26px; padding-inline-start: 38px !important; font-size: 11.5px; color: var(--ink-3); }
 .sb-rail .sb-foot { border-top: 1px solid var(--line); padding-top: 4px; }
 .sb-rail .sb-foot .v-list-item { min-height: 32px; }
+.sb-rail .sb-fold { color: var(--ink-3); }
+/* icons only: the same items, centred, with names in tooltips and cases behind one folder */
+.sb-rail.mini .sb-add { width: 40px; height: 36px; border-radius: 6px; }
+.sb-rail.mini .v-list-item { position: relative; justify-content: center; padding-inline: 0; }
+.sb-rail.mini .v-list-item__prepend > .v-list-item__spacer, .sb-rail.mini .v-list-item__content, .sb-rail.mini .v-list-item__append { display: none; }
+.sb-rail.mini .sb-has::after { content: ''; opacity: 1; border: 0; position: absolute; left: auto; bottom: auto; top: 6px; right: 10px; width: 7px; height: 7px; border-radius: 50%; background: var(--new); box-shadow: 0 0 0 2px var(--panel); }
+.sb-cases .v-list-item-title { font-size: 13px; white-space: normal; }
+.sb-mini .sb-boot-rail { width: 56px; }
+.sb-mini .sb-boot-hints { left: 56px; }
 
 /* bell */
 .sb-bell .v-list-item.unread .v-list-item-title { font-weight: 650; }

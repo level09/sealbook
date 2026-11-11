@@ -7,6 +7,8 @@
 {% endblock %}
 
 {% block body_start %}
+<!-- The rail's width before Vue mounts: the analyst's choice, or icons only on a narrow window. -->
+<script>document.documentElement.classList.toggle('sb-mini', (localStorage.getItem('sb.rail') || (innerWidth < 1280 ? 'mini' : 'full')) === 'mini');</script>
 <!-- The shell frame at its mounted size, painted until Vue replaces it (see docs/lessons.md). -->
 <div id="sb-boot" class="sb-boot" aria-hidden="true">
     <div class="sb-boot-top"><span class="brand"><img src="{{ asset('img/sealbook-mark.svg') }}" alt="" width="20" height="20"><span>{{ config.APP_NAME }}</span></span></div>
@@ -70,22 +72,39 @@
 
 {% block sidebar %}
     {% if current_user.is_authenticated %}
-    <v-navigation-drawer v-if="!isMobile" permanent width="188" class="sb-rail">
-        <div class="px-2 pt-2"><v-btn block color="primary" variant="flat" prepend-icon="ti ti-upload" href="/ingest/">Add evidence</v-btn></div>
+    <v-navigation-drawer v-if="!isMobile" permanent width="188" :rail="railMini" rail-width="56" class="sb-rail" :class="{mini: railMini}">
+        <div class="px-2 pt-2">
+            <v-tooltip v-if="railMini" text="Add evidence" location="end"><template #activator="{ props }"><v-btn v-bind="props" class="sb-add" color="primary" variant="flat" icon="ti ti-upload" href="/ingest/" aria-label="Add evidence"></v-btn></template></v-tooltip>
+            <v-btn v-else block color="primary" variant="flat" prepend-icon="ti ti-upload" href="/ingest/">Add evidence</v-btn>
+        </div>
         <!-- Work first, then the cases (each opens as one page with tabs); agents, following, export and help sit at the foot. -->
         <v-list nav density="compact" aria-label="Sections">
-            <v-list-item v-for="n in mainRail" :key="n.title" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current && (!caseTab || (n.badge === 'todo' && !caseSel))" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null">
-                <template #append v-if="n.count"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
+            <v-list-item v-for="n in mainRail" :key="n.title" v-tooltip:end="railMini ? n.title + (n.count ? ', ' + n.count : '') : null" :href="n.to" :prepend-icon="n.icon" :title="n.title" :aria-label="n.title" :active="n.current && (!caseTab || (n.badge === 'todo' && !caseSel))" color="primary" :class="[n.hue && ['sb-nav-icon', n.hue], {'sb-has': n.count}]" :aria-current="n.current ? 'page' : null">
+                <template #append v-if="n.count && !railMini"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
             </v-list-item>
+            <!-- Case names do not shrink to icons: with the rail narrow they open from one folder. -->
+            <v-menu v-if="railMini && caseList.length" location="end" offset="6">
+                <template #activator="{ props }"><v-list-item v-bind="props" v-tooltip:end="'Cases'" prepend-icon="ti ti-folders" title="Cases" aria-label="Cases" :active="!!caseTab && caseTab.badge !== 'todo'" color="primary"></v-list-item></template>
+                <v-list density="compact" class="sb-cases" min-width="220" max-width="300" aria-label="Cases">
+                    <v-list-item v-for="c in caseList" :key="c" :title="caseName(c)" :active="!!caseTab && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item title="All cases" :active="!!caseTab && !caseSel && caseTab.badge !== 'todo'" color="primary" @click="openCase('all')"></v-list-item>
+                </v-list>
+            </v-menu>
+            <template v-else>
             <v-list-subheader v-if="caseList.length" class="sb-sub">Cases</v-list-subheader>
             <v-list-item v-for="c in caseList" :key="c" class="sb-case" :title="caseName(c)" :active="!!caseTab && caseSel === c" color="primary" @click="openCase(c)"></v-list-item>
             <v-list-item v-if="caseList.length" class="sb-case sb-all" title="All cases" :active="!!caseTab && !caseSel && caseTab.badge !== 'todo'" color="primary" @click="openCase('all')"></v-list-item>
+            </template>
         </v-list>
         <template #append>
             <v-list nav density="compact" class="sb-foot" aria-label="More">
-                <v-list-item v-for="n in railItems.filter(x => x.group === 'more')" :key="n.title" density="compact" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null"></v-list-item>
+                <v-list-item v-for="n in railItems.filter(x => x.group === 'more')" :key="n.title" v-tooltip:end="railMini ? n.title : null" :aria-label="n.title" density="compact" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null"></v-list-item>
+                <v-list-item v-tooltip:end="railMini ? 'Widen the sidebar (Cmd B)' : null" density="compact" class="sb-fold" :prepend-icon="railMini ? 'ti ti-layout-sidebar-left-expand' : 'ti ti-layout-sidebar-left-collapse'" title="Collapse" :aria-label="railMini ? 'Widen the sidebar' : 'Narrow the sidebar'" :aria-expanded="!railMini" @click="foldRail">
+                    <template #append><v-hotkey keys="meta+b" variant="tonal" density="compact"></v-hotkey></template>
+                </v-list-item>
             </v-list>
-            <div class="px-3 pb-3 text-caption text-medium-emphasis">${ caseLabel }</div>
+            <div v-if="!railMini" class="px-3 pb-3 text-caption text-medium-emphasis">${ caseLabel }</div>
         </template>
     </v-navigation-drawer>
     <v-bottom-navigation v-else grow density="compact" aria-label="Sections">
@@ -187,6 +206,7 @@
                 notesBusy: false,
                 bellOpen: false,
                 moreOpen: false,
+                railMini: document.documentElement.classList.contains('sb-mini'),
                 noteIcons: {assigned: 'ti ti-user-plus', mention: 'ti ti-at', reply: 'ti ti-message', decision: 'ti ti-signature', intake_done: 'ti ti-upload'},
                 navCounts: {},
                 navAll: {},
@@ -202,7 +222,7 @@
                 shellHelp: false,
                 isDark: false,
                 shellHints: [['/', 'search'], ['meta+k', 'go to']],
-                shellKeys: [['/', 'Focus search'], ['meta+k', 'Go to a page, person or document'], ['shift+/', 'Keyboard shortcuts'], ['escape', 'Leave a field or close']],
+                shellKeys: [['/', 'Focus search'], ['meta+k', 'Go to a page, person or document'], ['meta+b', 'Narrow or widen the sidebar'], ['shift+/', 'Keyboard shortcuts'], ['escape', 'Leave a field or close']],
                 _ws: null,
                 _wsRetry: 1000,
             };
@@ -314,6 +334,12 @@
                 this.setTheme(!this.isDark);
                 try { localStorage.setItem('stk-theme', this.isDark ? 'dark' : 'light'); } catch {}
             },
+            // The analyst's choice outlasts the window width that set the first one.
+            foldRail() {
+                this.railMini = !this.railMini;
+                document.documentElement.classList.toggle('sb-mini', this.railMini);
+                try { localStorage.setItem('sb.rail', this.railMini ? 'mini' : 'full'); } catch {}
+            },
             openHelp() {
                 if (this.toggleHelp) this.toggleHelp();
                 else this.shellHelp = true;
@@ -344,6 +370,7 @@
                     return;
                 }
                 if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.openPalette(); return; }
+                if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b' && !this.isMobile) { e.preventDefault(); this.foldRail(); return; }
                 if (e.metaKey || e.ctrlKey || e.altKey) return;
                 if (e.key === '/') { e.preventDefault(); document.getElementById('q')?.focus(); return; }
                 // A page with its own help registers `?` itself.
