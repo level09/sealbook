@@ -6,6 +6,7 @@
             <h1>${ brief.title }</h1>
             <v-chip size="small">${ brief.audience }</v-chip>
         </div>
+        <p class="pk-preview mb-4" role="note"><b>Preview</b> Briefs and packages are still being built. You can write a brief and choose its sentences${ signing ? ', and a package can be built, but expect rough edges.' : '. Building the signed package is off on this server until a signing certificate is set, so Build will say no.' }</p>
         <v-row>
             <v-col cols="12" md="7">
                 <v-card class="mb-6">
@@ -73,6 +74,13 @@
     </v-container>
 {% endblock %}
 
+{% block css %}
+    <style>
+        .pk-preview { display: flex; gap: 10px; align-items: baseline; padding: 10px 14px; border: thin solid var(--line-strong); border-radius: 6px; background: var(--wash); font-size: 13px; }
+        .pk-preview b { flex: none; font: 600 11px/1.6 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 0 6px; border-radius: 4px; background: var(--ink); color: var(--panel); }
+    </style>
+{% endblock %}
+
 {% block js %}
     <script type="application/json" id="boot">{{ boot|tojson|safe }}</script>
     <script>
@@ -88,7 +96,7 @@
             mixins: [layoutMixin],
             data() {
                 return {
-                    brief: JSON.parse(document.getElementById('boot').textContent).brief,
+                    ...JSON.parse(document.getElementById('boot').textContent),
                     statements: [], search: '', draft: {id: null, text: '', statement_ids: []},
                     refusal: '', busy: false, building: false, error: {show: false, text: ''},
                 };

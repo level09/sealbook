@@ -9,5 +9,6 @@ def init_app(app):
             "icon": "ti ti-package",
             "to": "/packages",
             "match": "/packages",
+            "note": "Preview",
         }
     )

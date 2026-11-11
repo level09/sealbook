@@ -97,10 +97,19 @@ async def _refusing(coro):
         abort(400, description=exc.reason)
 
 
+def _signing():
+    """Whether this server can sign a package; without it Build is refused."""
+    return bool(
+        current_app.config.get("C2PA_SIGN_CERT")
+        and current_app.config.get("C2PA_SIGN_KEY")
+    )
+
+
 @packages.get("/packages")
 async def index():
     return await render_template(
-        "packages/index.html", boot={"audiences": list(service.PROFILES)}
+        "packages/index.html",
+        boot={"audiences": list(service.PROFILES), "signing": _signing()},
     )
 
 
@@ -148,7 +157,7 @@ async def briefs():
 
 @packages.get("/packages/brief/<uuid:bid>")
 async def brief_page(bid):
-    boot = {"brief": await _brief(await _get(Brief, bid))}
+    boot = {"brief": await _brief(await _get(Brief, bid)), "signing": _signing()}
     return await render_template("packages/brief.html", boot=boot)
 
 

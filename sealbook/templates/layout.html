@@ -100,7 +100,9 @@
         </v-list>
         <template #append>
             <v-list nav density="compact" class="sb-foot" aria-label="More">
-                <v-list-item v-for="n in railItems.filter(x => x.group === 'more')" :key="n.title" v-tooltip:end="railMini ? n.title : null" :aria-label="n.title" density="compact" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null"></v-list-item>
+                <v-list-item v-for="n in railItems.filter(x => x.group === 'more')" :key="n.title" v-tooltip:end="railMini ? n.title : null" :aria-label="n.title" density="compact" :href="n.to" :prepend-icon="n.icon" :title="n.title" :active="n.current" color="primary" :class="n.hue && ['sb-nav-icon', n.hue]" :aria-current="n.current ? 'page' : null">
+                    <template #append v-if="n.note && !railMini"><span class="sb-note">${ n.note }</span></template>
+                </v-list-item>
             </v-list>
             <div v-if="!railMini" class="px-3 pb-3 text-caption text-medium-emphasis">${ caseLabel }</div>
         </template>
