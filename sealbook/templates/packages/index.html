@@ -17,7 +17,7 @@
                     <v-list-item-subtitle>For ${ b.audience }, ${ b.sentences } ${ b.sentences === 1 ? 'sentence' : 'sentences' }, created ${ b.created_at.slice(0, 10) }</v-list-item-subtitle>
                 </v-list-item>
             </v-list>
-            <v-card-text v-else class="pa-6 text-medium-emphasis">${ loaded ? 'No briefs in ' + (caseSel || 'any investigation') + ' yet.' : 'Loading' }</v-card-text>
+            <v-card-text v-else class="pa-6 text-medium-emphasis">${ loaded ? 'No briefs in ' + (caseSel ? caseName(caseSel) : 'any case') + ' yet.' : 'Loading' }</v-card-text>
         </v-card>
         <v-snackbar v-model="error.show" color="error">${ error.text }</v-snackbar>
     </v-container>
