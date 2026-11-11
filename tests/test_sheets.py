@@ -79,6 +79,11 @@ class ParseTest(unittest.TestCase):
         )
         self.assertEqual(parse.mime_for("a.xlsx", ""), parse.XLSX)
         self.assertEqual(parse.mime_for("a.txt", "text/plain"), "text/plain")
+        self.assertEqual(parse.mime_for("note.ogg", ""), "audio/ogg")
+        self.assertTrue(
+            parse.mime_for("note.OPUS", "application/octet-stream").startswith("audio/")
+        )
+        self.assertEqual(parse.mime_for("blob", ""), "")
         self.assertEqual([parse.letter(n) for n in (1, 26, 27)], ["A", "Z", "AA"])
 
 
