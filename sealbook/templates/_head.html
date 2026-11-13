@@ -1,6 +1,17 @@
 {# Every layout, the sign-in pages' included, puts this in <head>; it replaces stk's. #}
 <link rel="stylesheet" href="{{ asset('css/shell.css') }}">
 <link rel="icon" href="{{ asset('img/sealbook-mark.svg') }}" type="image/svg+xml">
+<link rel="icon" href="{{ asset('img/sealbook-mark-32.png') }}" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="{{ asset('img/apple-touch-icon.png') }}">
+<!-- Link previews in chat apps read these from the sign-in page. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ config.APP_NAME }}">
+<meta property="og:title" content="{{ config.APP_NAME }}">
+<meta property="og:description" content="{{ config.APP_DESCRIPTION }}">
+<meta property="og:image" content="{{ request.host_url.rstrip('/') }}{{ asset('img/og.png') }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <!-- Theme before first paint, so a dark page never flashes white. -->
 <script>try { const t = localStorage.getItem('stk-theme'); if (t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('dark-mode'); } catch {}</script>
 <script src="{{ asset('js/sealbook.js') }}"></script>
