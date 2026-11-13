@@ -82,7 +82,7 @@
   </div>
 
   <v-empty-state v-if="s && !points.length" icon="ti ti-timeline" title="No dated evidence in this lens" text="Claims without any date never appear on a story. Try another person, a place, or the filter lens."></v-empty-state>
-  <v-empty-state v-else-if="!s && !busy && !error" icon="ti ti-timeline" title="Pick what to tell" text="Choose a person, a place or an incident above."></v-empty-state>
+  <v-empty-state v-else-if="!s && !busy && !error" icon="ti ti-timeline" :title="lens === 'incident' && !incidentItems.length ? 'No incident in this case yet' : 'Pick what to tell'" :text="lens === 'incident' && !incidentItems.length ? 'An incident appears here once a person accepts a candidate in Discover.' : 'Choose a person, a place or an incident above.'"></v-empty-state>
   <template v-if="s && points.length">
   <div class="st-grid">
     <section class="st-panel" aria-labelledby="h-tl"><header><h2 id="h-tl">Timeline</h2><span class="st-muted text-caption">rows are people; ${ pending.length } pending finding${ pending.length === 1 ? '' : 's' } hatched</span></header>

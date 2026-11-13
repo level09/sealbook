@@ -213,7 +213,14 @@ export const storyPage = boot => ({
     fmtDay, fmtSpan,
     say(text) { this.snackText = text; this.snack = true; },
     fail(err) { return err.response?.data?.description || err.response?.data?.message || err.message; },
-    useCase() { if (this.lens === 'filter' || this.lens === 'place' || this.lens === 'incident') this.load(); this.loadPickers(); },
+    // A place or incident belongs to one case: after a switch, or with none named, show the case's first.
+    async settle() {
+      await this.loadPickers();
+      const items = {place: this.placeItems, incident: this.incidentItems}[this.lens];
+      if (items && !items.some(i => i.value === this.ref)) this.ref = items[0]?.value || null;
+    },
+    async useCase() { await this.settle(); if (['filter', 'place', 'incident'].includes(this.lens)) this.show(); },
+    show() { if (this.ref || this.lens === 'filter') this.load(); else { this.s = null; this.error = ''; history.replaceState(null, '', '/stories?' + new URLSearchParams(this.query)); this.drawMap(true); } },
     async load() {
       this.busy = true; this.error = ''; this.stop();
       history.replaceState(null, '', '/stories?' + new URLSearchParams(this.query));
@@ -246,7 +253,7 @@ export const storyPage = boot => ({
       else if (lens === 'place') this.ref = this.sel?.place_id || this.placeItems[0]?.value || null;
       else if (lens === 'incident') this.ref = this.s?.incidents[0]?.id || this.incidentItems[0]?.value || null;
       else this.ref = null;
-      if (this.ref || lens === 'filter') this.load(); else { this.s = null; this.drawMap(true); }
+      this.show();
     },
     pick(ref) { this.ref = ref; if (ref) this.load(); },
     select(p) {
@@ -381,9 +388,8 @@ export const storyPage = boot => ({
   mounted() {
     window.addEventListener('keydown', this.key);
     this.searchPeople('');
-    this.loadPickers();
     this.loadSaved();
-    this.load();
+    this.settle().then(() => this.show());
   },
   beforeUnmount() { window.removeEventListener('keydown', this.key); this.stop(); },
 });
