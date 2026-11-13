@@ -53,7 +53,12 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Add pgvector to the database service
-        run: docker exec ${{ job.services.postgres.id }} sh -c 'apt-get update -qq && apt-get install -y -qq --no-install-recommends postgresql-17-pgvector'
+        # The install can pull a newer PostgreSQL minor under the running server, which then
+        # cannot load its own libraries: restart it on the installed binaries.
+        run: |
+          docker exec ${{ job.services.postgres.id }} sh -c 'apt-get update -qq && apt-get install -y -qq --no-install-recommends postgresql-17-pgvector'
+          docker restart ${{ job.services.postgres.id }}
+          until docker exec ${{ job.services.postgres.id }} pg_isready -q; do sleep 1; done
 
       - name: Install uv
         uses: astral-sh/setup-uv@v9.0.0
@@ -127,7 +132,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Add pgvector to the database service
-        run: docker exec ${{ job.services.postgres.id }} sh -c 'apt-get update -qq && apt-get install -y -qq --no-install-recommends postgresql-17-pgvector'
+        # The install can pull a newer PostgreSQL minor under the running server, which then
+        # cannot load its own libraries: restart it on the installed binaries.
+        run: |
+          docker exec ${{ job.services.postgres.id }} sh -c 'apt-get update -qq && apt-get install -y -qq --no-install-recommends postgresql-17-pgvector'
+          docker restart ${{ job.services.postgres.id }}
+          until docker exec ${{ job.services.postgres.id }} pg_isready -q; do sleep 1; done
       - uses: astral-sh/setup-uv@v9.0.0
       - run: uv python install 3.11
       - run: uv sync --extra full
