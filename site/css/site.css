@@ -474,10 +474,12 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 28px; }
 .act-primary { display: inline-flex; align-items: center; padding: 13px 22px; border-radius: 999px; background: var(--ink); color: var(--paper); font-weight: 500; text-decoration: none; transition: transform .3s var(--ease); }
 .act-primary:hover { transform: translateY(-1px); }
+.act-source { display: inline-flex; align-items: center; padding: 12px 21px; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink); font-weight: 500; text-decoration: none; }
+.act-source:hover { border-color: var(--ink-3); }
 .act-watch { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px 8px 8px; border: 1px solid var(--rule); border-radius: 999px; background: transparent; color: var(--ink); font: 500 15px var(--sans); cursor: pointer; }
 .act-watch svg { width: 30px; height: 30px; padding: 7px; border-radius: 50%; background: var(--violet); fill: #fff; box-sizing: border-box; }
 .act-watch .mono { color: var(--ink-3); font-size: 13px; }
-.act-primary:focus-visible, .act-watch:focus-visible, .board button:focus-visible, .tour-index a:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+.act-primary:focus-visible, .act-source:focus-visible, .act-watch:focus-visible, .board button:focus-visible, .tour-index a:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
 .board { list-style: none; padding: 0; margin: 18px 0 72px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
 .board button { display: block; width: 100%; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; color: var(--ink); }
 .board img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; outline: 1px solid var(--rule); transition: outline-color .3s, transform .3s var(--ease); }
