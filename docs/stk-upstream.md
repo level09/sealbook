@@ -64,7 +64,7 @@ keeps its own MCP, notifications and evidence storage.
 | `notify()` stores title text; Sealbook stores a kind and short ids and builds the label when it is read, so erasure leaves nothing in notifications | Keeps its own notifications | Render titles at read time from a kind and refs |
 | `stk.files` has no sensitivity, custody or erasure model | Keeps `sealbook/blobs.py` | None yet; type sniffing and thumbnails may be reusable later |
 | `netguard.stream` raises `TimeoutError` past its deadline, not an `httpx2` error, and the deadline covers the whole body | Callers catch both; downloads pass `timeout=900` | One line in the netguard docs |
-| Tests fake DNS by patching the private `netguard._resolve` | Patches `_resolve` | A public `resolve`, or a resolver hook |
+| Tests fake DNS by patching the private `netguard._resolve` | Patches `resolve` | Done in 17.12.1: `netguard.resolve` is public |
 | stk's `worker` command took the name of Sealbook's | Renamed to `stk runner` | Done; the changelog said so |
 
 ## Found moving to stk 17.9 and 17.10 (2026-11-04 to 2026-11-05)

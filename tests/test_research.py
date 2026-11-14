@@ -406,7 +406,7 @@ class BrowserTest(unittest.IsolatedAsyncioTestCase):
         async def resolve(host, port):
             return ["10.0.0.5"] if host == "internal.test" else PUBLIC_IP
 
-        self.enterContext(mock.patch.object(netguard, "_resolve", resolve))
+        self.enterContext(mock.patch.object(netguard, "resolve", resolve))
         self.enterContext(
             mock.patch.object(
                 browser,
@@ -492,7 +492,7 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         }.items():
             self.enterContext(mock.patch.object(Config, key, value))
         self.enterContext(
-            mock.patch.object(netguard, "_resolve", return_value=PUBLIC_IP)
+            mock.patch.object(netguard, "resolve", return_value=PUBLIC_IP)
         )
         self.enterContext(mock.patch.object(browser, "installed", return_value=True))
         self.login_pages: set[str] = set()

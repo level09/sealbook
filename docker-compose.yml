@@ -45,9 +45,6 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    # The containers have no IPv6 route. Without this a host with AAAA records can
-    # resolve to an address nothing here reaches (web thumbnails and captures failed).
-    dns_opt: &no-ipv6 ["no-aaaa"]
     command: ["sh", "-c", "python -m stk db upgrade && exec uvicorn sealbook.app:app --host 0.0.0.0 --port 5000 --ws-max-size 65536 --ws-max-queue 16 --proxy-headers --forwarded-allow-ips='*' --timeout-graceful-shutdown 3"]
     env_file:
       - .env
@@ -70,7 +67,6 @@ services:
     container_name: runner
     restart: unless-stopped
     build: .
-    dns_opt: *no-ipv6
     command: ["python", "-m", "stk", "runner"]
     volumes:
       - 'instance-data:/app/instance'
@@ -89,7 +85,6 @@ services:
     container_name: anchor
     restart: unless-stopped
     build: .
-    dns_opt: *no-ipv6
     command: ["python", "-m", "stk", "anchor", "--loop"]
     volumes:
       - 'instance-data:/app/instance'

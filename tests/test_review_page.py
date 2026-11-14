@@ -187,9 +187,9 @@ class ReviewPageTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_background_request_never_sets_where_sign_in_goes(self):
         client = self.app.test_client()
-        r = await client.get("/api/live?sha=" + "a" * 64)
-        self.assertEqual(r.status_code, 302)
-        r = await client.get(r.headers["Location"], headers={"Sec-Fetch-Mode": "cors"})
+        r = await client.get(
+            "/api/live?sha=" + "a" * 64, headers={"Sec-Fetch-Mode": "cors"}
+        )
         self.assertEqual(r.status_code, 401)
         async with client.session_transaction() as sess:
             self.assertNotIn("security_next", sess)

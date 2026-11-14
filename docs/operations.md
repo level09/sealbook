@@ -352,11 +352,6 @@ entries and sends the root, a hash and nothing else, to the OpenTimestamps calen
 The second witness, an RFC 3161 timestamp authority, is refused until its signer is
 pinned in settings, and each run says so.
 
-`website` and `runner` resolve names over IPv4 only (`dns_opt: ["no-aaaa"]`): the
-default Docker network has no IPv6 route and stk's fetch guard pins the first sorted
-address, which is the IPv6 one (see `.stk/lessons.md`, 2026-11-11). Remove the
-option on a host with working IPv6.
-
 `stk demo-seed` refuses outside development. To seed a hosted demo, or to add the
 five recordings to one seeded before them, set the environment for that one command:
 `docker compose exec -e STK_ENV=development website stk demo-seed --recordings`.

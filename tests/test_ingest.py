@@ -280,7 +280,7 @@ class IngestTest(unittest.IsolatedAsyncioTestCase):
             )
 
         transport = httpx2.MockTransport(handler)
-        with mock.patch.object(netguard, "_resolve", return_value=["93.184.215.14"]):
+        with mock.patch.object(netguard, "resolve", return_value=["93.184.215.14"]):
             async with self.Session() as s, s.begin():
                 cap = await service.capture_url(
                     s,
