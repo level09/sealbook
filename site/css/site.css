@@ -232,6 +232,8 @@ bdi { unicode-bidi: isolate; }
 .quiet[disabled] { opacity: .5; cursor: default; }
 .quiet svg { width: 16px; height: 16px; fill: currentColor; stroke: currentColor; stroke-width: 1.4; }
 .quiet svg circle { fill: none; }
+.gh-link { color: var(--ink); text-decoration: none; }
+.gh-link svg { stroke: none; }
 .solid { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .solid:hover { background: var(--ink-2); border-color: var(--ink-2); }
 
@@ -554,8 +556,8 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 }
 @media (max-width: 600px) {
   :root { --gutter: 16px; --spine: 6px; --head: 56px; }
-  .toc-button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .toc-button { padding: 6px 11px; }
+  .toc-button span, .gh-link span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .toc-button, .gh-link { padding: 6px 11px; }
   body { font-size: 16px; }
   .link { padding-left: 34px; margin-bottom: 88px; }
   .link::before { width: 13px; height: 13px; top: 6px; }
