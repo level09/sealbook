@@ -20,9 +20,7 @@ def init_app(app):
             "/todo?investigation=" if current_user.is_authenticated else "/login"
         )
 
-    # ponytail: swaps stk's "/" view in place, as stk has no landing-page hook;
-    # use that hook once stk ships one.
-    app.view_functions["public.index"] = index
+    app.add_url_rule("/", "index", index)
 
     def _is_api_request():
         return (

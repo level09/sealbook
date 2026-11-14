@@ -42,7 +42,7 @@ the move needed from the app side, and what stk 17.0.x could offer instead.
 | Gap | What Sealbook does | For stk |
 | --- | --- | --- |
 | `stk verify` ran a check that `GET /` returns 200, which failed an app whose `/` redirects | Fixed in stk 17.0.2: the check follows redirects | Done |
-| No documented way to replace stk's own `/` view | `sealbook/shell` swaps `app.view_functions["public.index"]` | Documented as the supported way in stk 17.0.2 |
+| No documented way to replace stk's own `/` view | `sealbook/shell` registers its own `/` route | Done in 17.13.0: an app's `/` route wins |
 | The layout's `stk_navigation()` always wraps app entries in stk's Dashboard, Account and Administration sections | The layout uses stk's `app_navigation()` | Done: stk exposes `app_navigation()` |
 | App commands landed under "Other" in `stk --help` | `STK_CLI_SECTIONS` in `sealbook/settings.py` | Added in stk 17.0.2 |
 | `stk db revision` writes `pgvector.sqlalchemy.bit.BIT`, `pgvector.sqlalchemy.halfvec.HALFVEC` and app `UserDefinedType` columns by module path with no import, and drops column-level `CheckConstraint`s (an Alembic limitation) | `sealbook_0001` imports pgvector's types, spells PostGIS types out locally and adds the three checks by hand | Import the modules of rendered types; warn about column-level checks |

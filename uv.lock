@@ -2208,7 +2208,7 @@ requires-dist = [
     { name = "playwright", specifier = ">=1.64.1" },
     { name = "pypdf", specifier = ">=6.21,<7" },
     { name = "pypdfium2", specifier = ">=5,<6" },
-    { name = "stkit", specifier = ">=17.12.1,<18" },
+    { name = "stkit", specifier = ">=17.13.0,<18" },
     { name = "stkit", extras = ["full"], marker = "extra == 'full'" },
     { name = "yt-dlp", specifier = "==2026.10.21" },
 ]
@@ -2278,7 +2278,7 @@ asyncio = [
 
 [[package]]
 name = "stkit"
-version = "17.12.1"
+version = "17.13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosmtplib" },
@@ -2309,9 +2309,9 @@ dependencies = [
     { name = "webauthn" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/aa/33/d6a072b3020f7aa8d396220ed84c57ea9b8868462b3b0b6a4a16d3cee89e/stkit-17.12.1.tar.gz", hash = "sha256:cc5e20fca42fa5e5dcffea60e704ff164f40102bc3539ea011ab513034a6a3c2", size = 1982672, upload-time = "2026-11-14T09:09:31.329Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/77/60e47380909a13ae64bb9ba37adc890576ccccca36592614aacba5e5b1e2/stkit-17.13.0.tar.gz", hash = "sha256:2c6ba0c8b103d4250eaed25856e67dd9553c0dc058db489070f762930a200cbf", size = 1983575, upload-time = "2026-11-14T11:07:18.196Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/76/9f/d4cd4fcb1a1609137c78fa4d5e6cc8aa927e5e63d9622d82724a17db5e0e/stkit-17.12.1-py3-none-any.whl", hash = "sha256:b3841be9d8bd0bf2026e3046fc3f65736f1917d67210ac43d98a23433bd3a339", size = 1876833, upload-time = "2026-11-14T09:09:29.171Z" },
+    { url = "https://files.pythonhosted.org/packages/63/73/3a6c9f9f8e7f4afe0a3714b30ff217a83f841f2afb63a6c13f96473d9a56/stkit-17.13.0-py3-none-any.whl", hash = "sha256:6e227de33451831c021ba0e25a90acc29c0d084ab2437aed1359a161da8dcbf7", size = 1876960, upload-time = "2026-11-14T11:07:16.583Z" },
 ]
 
 [package.optional-dependencies]
