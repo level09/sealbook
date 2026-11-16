@@ -73,6 +73,11 @@ class LocateTest(unittest.TestCase):
         self.assertIsNone(locate(text, "", 1))
         self.assertIsNone(locate(text, "Yusuf", 1))
 
+    def test_quote_across_a_line_break(self):
+        text = "وفاة بتوقف قلب\nونحول"
+        self.assertEqual(locate(text, "بتوقف قلب ونحول", 1), {"start": 5, "end": 20})
+        self.assertIsNone(locate(text, "قلبونحول", 1))
+
     def test_valid_range(self):
         d = date.fromisoformat
         self.assertEqual(valid_range(None), (None, None))

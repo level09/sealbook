@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import io
+import itertools
 import logging
 import re
 import subprocess
@@ -253,14 +254,15 @@ def valid_range(valid: str | None) -> tuple[date | None, date | None]:
 
 
 def locate(text: str, quote: str, occurrence: int) -> dict | None:
-    """Character span of the nth exact occurrence of quote. Models cannot count
-    characters, so they quote and we compute offsets."""
-    start = -1
-    for _ in range(max(occurrence, 1)):
-        start = text.find(quote, start + 1) if quote else -1
-        if start < 0:
-            return None
-    return {"start": start, "end": start + len(quote)}
+    """Character span of the nth occurrence of quote. Models cannot count
+    characters, so they quote and we compute offsets. Any whitespace run matches
+    any other: OCR wraps a sentence where the model's quote has a space."""
+    words = quote.split()
+    if not words:
+        return None
+    found = re.finditer(r"\s+".join(map(re.escape, words)), text)
+    match = next(itertools.islice(found, max(occurrence, 1) - 1, None), None)
+    return match and {"start": match.start(), "end": match.end()}
 
 
 def facts(answer: dict, text: str) -> tuple[list[dict], int]:
