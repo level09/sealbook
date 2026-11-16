@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import itertools
+import re
+
 
 def _range(start, end, limit, kind):
     if type(start) is not int or type(end) is not int:
@@ -74,3 +77,15 @@ def _cell(span: dict, sheets) -> tuple[bool, str]:
     if "start" not in span:
         return True, ""
     return _range(span["start"], span["end"], rows[row - 1][column - 1], "char")
+
+
+def locate(text: str, quote: str, occurrence: int) -> dict | None:
+    """Character span of the nth occurrence of quote. Models cannot count
+    characters, so they quote and we compute offsets. Any whitespace run matches
+    any other: OCR wraps a sentence where the model's quote has a space."""
+    words = quote.split()
+    if not words:
+        return None
+    found = re.finditer(r"\s+".join(map(re.escape, words)), text)
+    match = next(itertools.islice(found, max(occurrence, 1) - 1, None), None)
+    return match and {"start": match.start(), "end": match.end()}

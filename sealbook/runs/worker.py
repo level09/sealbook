@@ -6,7 +6,6 @@ from __future__ import annotations
 import asyncio
 import base64
 import io
-import itertools
 import logging
 import re
 import subprocess
@@ -50,6 +49,7 @@ from sealbook.ledger.contracts import (
 )
 from sealbook.ledger.gate import resolve
 from sealbook.ledger.models import Acquisition, Blob, Run, RunEvent
+from sealbook.ledger.span import locate
 from sealbook.maps.geotag import geotag
 from sealbook.method import assess as method
 from sealbook.research.capture import capture
@@ -251,18 +251,6 @@ def valid_range(valid: str | None) -> tuple[date | None, date | None]:
     if len(parts) == 1:
         return date(parts[0], 1, 1), date(parts[0], 12, 31)
     raise ValueError(f"not a date: {valid!r}")
-
-
-def locate(text: str, quote: str, occurrence: int) -> dict | None:
-    """Character span of the nth occurrence of quote. Models cannot count
-    characters, so they quote and we compute offsets. Any whitespace run matches
-    any other: OCR wraps a sentence where the model's quote has a space."""
-    words = quote.split()
-    if not words:
-        return None
-    found = re.finditer(r"\s+".join(map(re.escape, words)), text)
-    match = next(itertools.islice(found, max(occurrence, 1) - 1, None), None)
-    return match and {"start": match.start(), "end": match.end()}
 
 
 def facts(answer: dict, text: str) -> tuple[list[dict], int]:

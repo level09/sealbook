@@ -8,6 +8,7 @@ frame's second or on words said (`watched`)."""
 
 from sealbook.agents.read import DATA_ONLY
 from sealbook.ledger.contracts import Prop
+from sealbook.ledger.span import locate
 from sealbook.method import CONTENT, RELIABILITY, alleged_labels, observed_labels
 
 MAX_LINES = 6
@@ -125,11 +126,10 @@ def items(answer: dict, text: str) -> tuple[list[tuple[Prop, dict, dict]], int]:
             parts.append((Prop.LABEL, {"label": lb["label"]}, lb["quote"]))
     out, dropped = [], 0
     for prop, value, quote in parts:
-        start = text.find(quote) if quote.strip() else -1
-        if start < 0:
+        span = locate(text, quote, 1)
+        if span is None:
             dropped += 1
             continue
-        span = {"start": start, "end": start + len(quote)}
         out.append((prop, value | {"text": quote, "lang": lang}, span))
     return out, dropped
 
@@ -349,14 +349,8 @@ def watched(
         if 1 <= frame <= len(frames_ms):
             ms = frames_ms[frame - 1]
             return "video", {"ms": [ms, min(ms + 1000, duration_ms)]}, {}
-        start = transcript.find(quote) if transcript and quote.strip() else -1
-        if start < 0:
-            return None
-        return (
-            "transcript",
-            {"start": start, "end": start + len(quote)},
-            {"text": quote},
-        )
+        span = locate(transcript, quote, 1) if transcript else None
+        return span and ("transcript", span, {"text": quote})
 
     triage = {k: answer[k] for k in ("content", "reliability", "why")}
     parts = [

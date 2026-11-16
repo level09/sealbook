@@ -851,3 +851,9 @@ covers in the text it was read from (`span_blob`).
   the system (`/etc/apache2/mime.types` on macOS), and the slim container has none, so
   `.ogg`, `.m4a`, `.amr` and `.flac` are unknown there. Check type guessing inside the
   production image, and list the formats the product depends on.
+
+- A correct cause-of-death quote from a scanned report was rejected as `no_span`: the
+  OCR text wrapped the sentence onto a new line where the model's quote had a space,
+  and the extractor and the first pass matched quotes with an exact `str.find`. Every
+  quote now goes through `ledger.span.locate`, where any whitespace run matches any
+  other. Match model quotes against OCR and transcript text through that one helper.
