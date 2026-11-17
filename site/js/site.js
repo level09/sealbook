@@ -213,10 +213,8 @@
     .then((r) => { if (!r.ok) throw new Error(`data/case.json: HTTP ${r.status}`); return r.json(); })
     .then((data) => {
       sealbook.data = data;
-      // The opening lives on the home page and the status on its own page.
-      if (document.getElementById("archive")) fillOpening(data);
       if (document.getElementById("status")) fillStatus(data);
-      document.querySelectorAll("#archive [data-clamp], #status [data-clamp]").forEach(clamp);
+      document.querySelectorAll("#status [data-clamp]").forEach(clamp);
       queue.splice(0).forEach((fn) => {
         try { fn(data); } catch (err) { console.error(err); }
       });
@@ -254,45 +252,6 @@
     list.after(btn);
   }
   chain.ready.then(() => { const l = document.querySelector(".lessons"); if (l) clamp(l); });
-
-  function fillOpening(data) {
-    const panel = document.getElementById("archive");
-    const person = data.people?.find((p) => (p.spellings || []).length > 1) || data.people?.[0];
-    const spell = panel.querySelector(".spell");
-    if (person) {
-      for (const s of person.spellings) spell.append(h("li", { dir: "auto" }, h("bdi", { text: s })));
-      panel.querySelector(".spell-note").textContent =
-        `${person.spellings.length} spellings of ${person.label} across the case files. Matched as candidates, never merged on their own.`;
-    }
-    // Picture copies of one image, with the app's match threshold.
-    const PDQ_DISTANCE = 31;
-    const dupes = (data.duplicates || []).filter((d) => d.method === "pdq");
-    const ups = panel.querySelector(".uploads");
-    const name = (id) => data.photos?.[id]?.name || data.files.find((f) => f.id === id)?.name || id;
-    const how = (id) => data.derived?.find((x) => x.id === id)?.how || id;
-    if (dupes.length) {
-      const base = dupes[0].a;
-      const group = dupes.filter((d) => d.a === base).sort((x, y) => x.distance - y.distance);
-      ups.append(h("li", {}, h("span", { class: "u-name" }, "original ", h("span", { class: "mono", text: name(base) })), h("span", { class: "u-d mono", text: "reference" })));
-      for (const d of group) {
-        const hit = d.distance <= PDQ_DISTANCE;
-        ups.append(h("li", {}, h("span", { class: "u-name", text: how(d.b) }),
-          h("span", { class: `u-d mono${hit ? "" : " u-off"}`, text: `${d.distance} of ${d.of}, ${hit ? "matched" : "not matched"}` })));
-      }
-      const hits = group.filter((d) => d.distance <= PDQ_DISTANCE).length;
-      panel.querySelector(".uploads-note").textContent =
-        `${hits} of ${group.length} copies fall within the picture fingerprint threshold of ${PDQ_DISTANCE}. Cropped copies do not. Matches stay separate sources until a person links them.`;
-    } else {
-      panel.querySelector(".uploads-block").hidden = true;
-    }
-    const file = data.files.find((f) => f.claims?.length);
-    if (file) {
-      const c = file.claims.find((x) => x.prop !== "name") || file.claims[0];
-      const claim = panel.querySelector(".pending-claim");
-      claim.querySelector(".tier-unconfirmed").replaceChildren(h("bdi", { text: `${c.prop.replace(/_/g, " ")}: ` }), h("bdi", { dir: "auto", text: c.value }));
-      claim.querySelector(".pc-src").textContent = file.name;
-    }
-  }
 
   // Doc text with `code` spans, as docs/status.md writes it.
   const prose = (text) => text.split("`").map((t, i) => (i % 2 ? h("code", { text: t }) : t));

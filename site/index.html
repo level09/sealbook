@@ -19,7 +19,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <script>try{const t=localStorage.getItem("sealbook-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{}</script>
-<link rel="stylesheet" href="css/site.css?v=c42f65cb">
+<link rel="stylesheet" href="css/site.css?v=6ae7cc6d">
 <link rel="stylesheet" href="css/demo-search.css?v=6111f9b9">
 <link rel="stylesheet" href="css/demo-dupes.css?v=f86459d8">
 <link rel="stylesheet" href="css/demo-video.css?v=2558efed">
@@ -37,11 +37,10 @@
 <link rel="stylesheet" href="css/demo-casemap.css?v=00ab4293">
 <link rel="stylesheet" href="css/demo-compare.css?v=220a64a0">
 <link rel="stylesheet" href="css/demo-assistants.css?v=96c90905">
-<link rel="stylesheet" href="css/hero.css?v=4ed02315">
 <link rel="stylesheet" href="css/diagrams.css?v=e17a362e">
 <link rel="stylesheet" href="css/iso.css?v=1c343005">
 <link rel="stylesheet" href="css/invite.css?v=8cd32b9f">
-<link rel="stylesheet" href="css/closing.css?v=e7f4b107">
+<link rel="stylesheet" href="css/closing.css?v=95053921">
 </head>
 <body>
 <a class="skip" href="#chain">Skip to content</a>
@@ -82,6 +81,7 @@
     </li>
     <li><span class="toc-group">Closing</span>
       <ol>
+        <li><a href="#data">Where the evidence goes</a></li>
         <li><a href="#verdict">The verdict</a></li>
       </ol>
     </li>
@@ -134,36 +134,13 @@
     <li><button type="button" data-seek="62.1"><img src="media/board/incident.jpg" alt="" loading="lazy" width="640" height="360"><span class="b-t mono">1:02</span><span class="b-l">An incident with its day</span></button></li>
   </ol>
   <div class="opening">
-    <div>
       <dl class="promises">
         <div><dt>Investigate with AI</dt><dd>Extraction, search, transcription and agents that read whole cases and keep watching them, all proposing, never deciding.</dd></div>
         <div><dt>Verify with people</dt><dd>Every fact is accepted, rejected or corrected by a named reviewer with a passkey, and every decision can be undone.</dd></div>
         <div><dt>Keep every source</dt><dd>Files are fingerprinted on arrival, never overwritten, and disagreements between them stay open.</dd></div>
         <div><dt>Prove it offline</dt><dd>Findings leave as a signed package that anyone can check offline with the bundled verifier, without having to trust you or us.</dd></div>
       </dl>
-      <p>It starts from the everyday mess of an archive: the same picture from several sources, one name spelled four ways, a file nobody can place. The panel shows one of each from the fictional case.</p>
       <figure class="iso" data-iso><figcaption>A claim stays a hatched proposal until a person signs it. Only signed claims reach a package.</figcaption></figure>
-    </div>
-    <aside class="archive" id="archive" aria-label="One image and one person across the case files">
-      <figure class="hero" id="hero"></figure>
-      <h2>One person, as the sources wrote him</h2>
-      <ul class="spell" lang="ar"></ul>
-      <p class="spell-note"></p>
-      <div class="uploads-block">
-        <h2>One image, several uploads</h2>
-        <ul class="uploads" data-clamp="3"></ul>
-        <p class="uploads-note"></p>
-      </div>
-      <div class="pending-claim">
-        <span class="tier-unconfirmed chip"></span>
-        <span class="pc-by">proposed by AI from <span class="pc-src mono"></span>, awaiting review</span>
-      </div>
-      <ul class="legend" aria-label="Evidence tiers">
-        <li><i class="tier-accepted"></i>accepted</li>
-        <li><i class="tier-corroborated"></i>corroborated</li>
-        <li><i class="tier-unconfirmed"></i>unconfirmed</li>
-      </ul>
-    </aside>
   </div>
 </section>
 
@@ -185,10 +162,11 @@
     <span class="ex-num">Exhibit 1</span>
     <h2>The file reads itself.</h2>
     <div class="then"><b>Traditionally</b><p><span class="strike">OCR hands you a wall of text. Someone types the names into a form, and months later nobody can tell which line a fact came from.</span></p></div>
-    <div class="now"><b>Sealbook</b><p>Names, dates, places and events come out on their own, each pinned to its word, its box on the page or its second in a video, with the first pass already drafted: priority, title, description and labels.</p></div>
+    <div class="now"><b>Sealbook</b><p>Names, dates, places and events come out on their own, each pinned to its word, its box on the page or its second in a video, with the first pass already drafted: priority, title, description and labels. Content credentials are checked on arrival, and a photo's own GPS becomes a proposed location with its precision stated.</p></div>
     <details class="how"><summary>How it works</summary>
       <p>Then it does the first pass of the analyst's own method: what the item is and how far it supports a violation, and so its priority, a short title of what happened next to the original, a description that keeps to facts, and the labels its source alleges, each resting on quoted words or a moment in the recording. One signature accepts the pass, or send it to a colleague for peer review: they sign it as no review needed, or answer with labels to add or remove and notes, as the method does.</p><p>Accept a claim below. It turns solid, a seal is stamped, and this page gains a link right after this one.</p>
       <p>Pick one of the synthetic case files. Sealbook records its fingerprints and how it was acquired, checks its content credentials and reads its text. Then the AI proposes claims, each one pinned to a span, a region of a page or a stretch of audio. Nothing it proposes counts as fact until a person accepts it. After extraction a first-pass run triages the item by content (incident, post-incident, non-incident, interview, report, media, document, promotional) and reliability (no, some or strong evidence), which sets its priority by the method's table, drafts an analyst title, at most six description lines and alleged labels from Bayanat's open label list, and keeps only parts whose quote is in the text. The title comes in English and Arabic. A photo gets the same pass from the picture itself, with observed labels from the method's verified list, each pinned to a box on the photo. A video gets one pass on frames spread over it and its transcript together: each line rests on the second of video it shows or the words said. Text in pictures is read line by line by the model that read Arabic scans best in a comparison of 18, and it first says whether there is any text at all, so a photo without text gets no invented text. Each source lists its steps and what it is waiting for, a person or a model, and once a batch is read Sealbook says when it looks like another case the uploader can open, recording it there only on a click.</p>
+      <p>Evidence arrives as dropped or pasted files, links, a phone camera shot, a spreadsheet or a voice note recorded in the browser. C2PA content credentials are verified at intake. A local tool reads a photo's EXIF GPS with its stated error, a video's location tag and the C2PA location assertion, and writes the place as an unconfirmed proposal, never finer than 50 m.</p>
     </details>
   </div>
   <figure class="ex-pic"><img src="media/board/photo.jpg" alt="A photo with the regions Sealbook read boxed and labelled" width="640" height="360" loading="lazy"><span class="tag" aria-hidden="true"><small>Exhibit</small>01</span></figure>
@@ -351,18 +329,36 @@
     <h2>Every word provable, years from now.</h2>
     <p class="job">Show, years from now, that not one word was changed.</p>
     <p>Every decision your team makes is sealed, like an evidence bag with a tamper strip. Sealbook then folds thousands of those seals into one short code. Change a single word in a single decision and that code no longer matches.</p>
-    <p>Give the code to a timestamp service or a partner archive, and anyone can later check your findings against it. They do not need to trust you, and they do not need to trust us.</p>
+    <p>Every hour that code goes to three independent witnesses: OpenTimestamps calendars, an RFC 3161 timestamp authority and a copy held by a partner. Anyone can later check your findings against any of them. They do not need to trust you, and they do not need to trust us.</p>
     <p class="why"><b>Prove one finding without handing over the rest.</b> A prosecutor given one statement can check it against the code with a short list of fingerprints, offline, without seeing anything else in the archive.</p>
     <details class="how"><summary>How it works</summary>
       <p>The seals are SHA-256 hashes. Pairs of them are hashed together, level by level, into a Merkle tree, and the last hash left is the root. An exported package carries, for each cited statement, only the sibling hashes on its path to the root, and the bundled verifier rebuilds the root from those.</p>
-      <p>Statements are grouped into Merkle batches. One root stands for the whole batch, and any change to any statement changes the root. The app can request timestamp receipts for a root and copy it to partner archives, and an exported package of cited findings can be verified offline with the bundled verifier.</p>
-      <p>Those receipt and partner paths are implemented, but this is not a configured or certified deployment. Erasure removes a person's values from views and search while the chain still verifies. It excludes access; it does not physically delete stored bytes.</p>
+      <p>Statements are grouped into Merkle batches. One root stands for the whole batch, and any change to any statement changes the root. An hourly job closes a batch and sends its root to OpenTimestamps calendars, to an RFC 3161 timestamp authority and to partner-held copies, and a check command holds the database to those receipts. An exported package of cited findings carries the receipts and can be verified offline with the bundled verifier.</p>
+      <p>Those receipt and partner paths are implemented, but this is not a configured or certified deployment. An OpenTimestamps receipt here is a calendar commitment: upgrading it to a Bitcoin block attestation is not built yet. Every model run is sealed the same way, with the tool, the model that served it and its parameters. Erasure removes a person's values from views and search while the chain still verifies. It excludes access; it does not physically delete stored bytes.</p>
     </details>
   </div>
+  <ol class="witnesses" aria-label="Where each batch root is sent, every hour">
+    <li><span class="w-n">Witness 1</span><b>OpenTimestamps</b><p>Public calendars return a receipt for the root.</p><code>.ots receipt</code></li>
+    <li><span class="w-n">Witness 2</span><b>RFC 3161 timestamp authority</b><p>A signed timestamp over the root, checked against a pinned signer certificate.</p><code>.tsr receipt</code></li>
+    <li><span class="w-n">Witness 3</span><b>Partner archive</b><p>A copy of the root, kept somewhere you do not control.</p><code>.root file</code></li>
+  </ol>
   <figure class="diagram" data-diagram="proof"></figure>
   <div class="demo proof" data-demo="proof"></div>
   <p class="proof-next"><a class="act-primary" href="#invite">Request a pilot</a></p>
 </section>
+</div>
+
+<div class="part crossx" id="data">
+  <span class="kicker">Cross-examination</span>
+  <h2>Where does the evidence go?</h2>
+  <p>Nowhere you did not choose. Sealbook is open source and runs on your own server.</p>
+  <dl class="promises">
+    <div><dt>Sensitive files</dt><dd>A policy table decides which model may read each file. A sensitive source goes only to a private model or a zero-retention route. If that model is down the run fails; it is never rerouted.</dd></div>
+    <div><dt>Speech</dt><dd>Recordings are transcribed on the server that holds them.</dd></div>
+    <div><dt>Maps</dt><dd>The app serves its own basemap, so no map request leaves your server.</dd></div>
+    <div><dt>Every model run</dt><dd>Sealed with the tool, the model that served it and its parameters, so a reading can be traced years later.</dd></div>
+    <div><dt>This site</dt><dd>No third-party requests and no analytics.</dd></div>
+  </dl>
 </div>
 
 <div class="part verdict" id="verdict">
@@ -392,7 +388,7 @@
   <p>All people and organisations shown are fictional. The files are synthetic. This site makes no third-party requests and has no analytics.</p>
 </footer>
 
-<script src="js/site.js?v=1fb7d22d"></script>
+<script src="js/site.js?v=6495a7bd"></script>
 <script src="js/demo-arrive.js?v=be70ef90"></script>
 <script src="js/demo-search.js?v=08254875"></script>
 <script src="js/demo-dupes.js?v=a47d0e75"></script>
@@ -403,7 +399,6 @@
 <script src="js/demo-review.js?v=44c2c39d"></script>
 <script src="js/demo-watch.js?v=d6bc8a04"></script>
 <script src="js/demo-proof.js?v=b1ad2745"></script>
-<script src="js/hero.js?v=86bcd352"></script>
 <script src="js/diagrams.js?v=04b7ec9c"></script>
 <script src="js/iso.js?v=0808f827"></script>
 <script src="js/invite.js?v=a97c6dcf"></script>

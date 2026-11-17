@@ -19,7 +19,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <script>try{const t=localStorage.getItem("sealbook-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{}</script>
-<link rel="stylesheet" href="css/site.css?v=c42f65cb">
+<link rel="stylesheet" href="css/site.css?v=6ae7cc6d">
 <link rel="stylesheet" href="css/demo-search.css?v=6111f9b9">
 <link rel="stylesheet" href="css/demo-dupes.css?v=f86459d8">
 <link rel="stylesheet" href="css/demo-video.css?v=2558efed">
@@ -37,11 +37,10 @@
 <link rel="stylesheet" href="css/demo-casemap.css?v=00ab4293">
 <link rel="stylesheet" href="css/demo-compare.css?v=220a64a0">
 <link rel="stylesheet" href="css/demo-assistants.css?v=96c90905">
-<link rel="stylesheet" href="css/hero.css?v=4ed02315">
 <link rel="stylesheet" href="css/diagrams.css?v=e17a362e">
 <link rel="stylesheet" href="css/iso.css?v=1c343005">
 <link rel="stylesheet" href="css/invite.css?v=8cd32b9f">
-<link rel="stylesheet" href="css/closing.css?v=e7f4b107">
+<link rel="stylesheet" href="css/closing.css?v=95053921">
 </head>
 <body>
 <a class="skip" href="#chain">Skip to content</a>
@@ -71,6 +70,7 @@
         <li><a href="#compare">Two sources, side by side</a></li>
         <li><a href="#research">Web research that keeps custody</a></li>
         <li><a href="#assistants">Your own assistant, on your terms</a></li>
+        <li><a href="#packages">A package anyone can check</a></li>
       </ol>
     </li>
     <li><span class="toc-group">More</span>
@@ -152,7 +152,7 @@
     <h2>A page for every place and incident</h2>
     <p class="job">Everything known about a place, on one page.</p>
     <p>A case is one page too: what waits on you, its sources with each one's first pass, its people, places, stories, map and incidents, a tab each.</p>
-    <p>Each place gets a page built from the evidence: its names in each script, every spelling the sources used, who was there and when, and every source behind it. Names Sealbook cannot place yet each get a suggested place and the reason for it, and wait for an analyst to confirm. Each accepted incident gets a page too, with its people, places and a signed history that can be undone. Below are Branch 999 and the incident accepted there.</p>
+    <p>Each place gets a page built from the evidence: its names in each script, every spelling the sources used, who was there and when, and every source behind it. Names Sealbook cannot place yet each get a suggested place and the reason for it, and wait for an analyst to confirm. Each accepted incident gets a page too, with its people, places and a signed history that can be undone. An incident can be categorised with one signature, as a possible war crime or crime against humanity for example, or as one of the method's claimed violations. Below are Branch 999 and the incident accepted there.</p>
     <details class="how"><summary>How it works</summary>
       <p>Each place has a page built from the evidence: its names in each script, its kind, how precisely it is known and where its position came from, every spelling the sources used, the people placed there and when, the incidents and open findings that touch it, and every source behind it. Names the gazetteer cannot match wait in a list, each with a suggested place: one gazetteer candidate, the same spelling confirmed in another case the analyst can open, or an approximate area proposed by an agent from the quoted words. An analyst confirms each, or several at once with one signature.</p>
       <p>An accepted incident has a page too: its window and places, the people in it by role in the method's terms (injured party, witness, alleged perpetrator, appeared, participant), its possible violation category and the violations claimed, each signed by an analyst, the findings whose acceptance built it, and its signed history with undo. Its owner can send it to a colleague for peer review, who signs it as no review needed or answers with labels to add or remove and notes. Below are Branch 999 and the incident accepted there.</p>
@@ -240,6 +240,20 @@
   <div class="demo" data-demo="assistants"></div>
 </section>
 
+<section class="link" id="packages" data-signer="packages">
+  <div class="copy">
+    <h2>A package anyone can check</h2>
+    <p class="job">Hand over findings that prove themselves.</p>
+    <p>A brief is written from accepted facts only, and each sentence cites the claims it rests on. Choose who it is for, a family, a partner or a court, and Sealbook withholds what that reader should not see while the seals still verify. Two people attest to it with their passkeys before it leaves.</p>
+    <p>The package carries the brief, a methodology note, the cited statements with their signatures, the path from each one to its batch root, and the timestamp receipts for that root. The reader checks all of it offline with the bundled verifier.</p>
+    <p class="why"><b>Preview.</b> Building a package needs a signing certificate on the server. The public demo has none, so Packages is marked Preview there.</p>
+    <details class="how"><summary>How it works</summary>
+      <p>Three audiences are built in. A family package withholds review records and identity links and ships no source files. A partner package withholds review records and ships the sources. A court package withholds nothing. A withheld value leaves its commitment in the manifest, so the chain still verifies without it.</p>
+      <p>The brief and the methodology note are signed with C2PA content credentials. The note lists the tools, the models that served each run, the prompts, the measured error rates and the reviewers, generated from the exported rows. A build is refused until every cited row is anchored. A claim on OCR, PDF or transcript text ships its chain back to the acquired file. Media relationships cannot yet be exported as cited facts.</p>
+    </details>
+  </div>
+</section>
+
 </main>
 
 <section class="invite" id="invite" aria-labelledby="invite-title">
@@ -261,7 +275,7 @@
   <p>All people and organisations shown are fictional. The files are synthetic. This site makes no third-party requests and has no analytics.</p>
 </footer>
 
-<script src="js/site.js?v=1fb7d22d"></script>
+<script src="js/site.js?v=6495a7bd"></script>
 <script src="js/demo-video.js?v=f372bfbc"></script>
 <script src="js/demo-story.js?v=ee9f2634"></script>
 <script src="js/demo-sheet.js?v=15037b0b"></script>
