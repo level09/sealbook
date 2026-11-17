@@ -1,5 +1,8 @@
 /* The home page as a closing argument: the charge, numbered exhibits, the mic drop
    and the verdict. Exhibits are ordinary sealed sections, folded until "See it run". */
+/* The headline's two sentences each start a line. */
+.h1-line { display: block; }
+
 .kicker, .ex-num, .rail { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 
 .charge { margin: 40px 0 0; }
