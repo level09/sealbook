@@ -1,6 +1,10 @@
 // Motion for the closing-argument home page. Every effect is an entrance or a
 // scroll-scrubbed reveal; with reduced motion, or without GSAP, the page is static.
 (() => {
+  // The agent's film loop plays only while on screen, and not at all under reduced motion.
+  const film = document.querySelector(".agent-film video");
+  if (film && sealbook.reduced) film.autoplay = false;
+  else if (film) new IntersectionObserver(([e]) => { e.isIntersecting ? film.play().catch(() => {}) : film.pause(); }).observe(film);
   if (!window.gsap || sealbook.reduced) return;
   gsap.registerPlugin(ScrollTrigger, SplitText);
   document.documentElement.classList.add("motion");

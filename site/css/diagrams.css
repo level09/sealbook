@@ -50,6 +50,12 @@
 .diagram .bit { fill: var(--ink-3); opacity: .12; transition: fill .3s, opacity .3s; }
 .diagram .bit.one { opacity: .75; }
 .diagram .bit.bad { fill: var(--broken); opacity: 1; }
+.diagram .pbit { fill: #fff; opacity: 0; transition: fill .3s, opacity .3s; }
+.diagram .pbit.one { opacity: .3; }
+.diagram .pbit.bad { fill: var(--broken); opacity: .9; }
+.diagram .hlr { fill: var(--violet); fill-opacity: .14; stroke: var(--violet); stroke-width: 4; }
+.diagram .hlr.r { fill: var(--broken); stroke: var(--broken); }
+.diagram image { clip-path: inset(0 round 3px); }
 .diagram .frame { fill: var(--paper); stroke: var(--rule); transition: stroke .3s; }
 .diagram .frame.on { stroke: var(--violet); stroke-width: 2; }
 .diagram .frame.bad { stroke: var(--broken); stroke-width: 2; }
@@ -58,7 +64,7 @@
 .diagram .bar.v { fill: var(--violet); }
 .diagram .bar.r { fill: var(--broken); }
 .diagram .wv { fill: var(--ink-3); opacity: .35; }
-.diagram .wv.seg { opacity: .6; }
+.diagram .wv.seg { opacity: .7; }
 .diagram .wv.now { fill: var(--violet); opacity: 1; }
 .diagram .playhead { stroke: var(--violet); stroke-width: 2; }
 .diagram .hatch-line { stroke: var(--violet); stroke-width: 1.5; opacity: .5; }

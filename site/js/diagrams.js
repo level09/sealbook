@@ -27,6 +27,8 @@
     const mx = (x1 + x2) / 2;
     return s("path", { class: `ln ${cls}`, pathLength: 1, d: `M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}` }, p);
   };
+  const pic = (p, href, x, y, w, h, fit = "xMidYMid slice") =>
+    s("image", { href, x, y, width: w, height: h, preserveAspectRatio: fit }, p);
   const on = (...els) => els.forEach((e) => e.classList.add("in"));
 
   function scene(name, label, w, h, build) {
@@ -134,11 +136,17 @@
   // Agents that keep watching
   scene("watch", "Arriving claims, a fingerprint and the daily check each wake an agent; one run takes in all three after access is checked. A cited line is kept, an uncited one dropped, a sensitive one locked. A person's click sends a resemblance to Review. Empty checks wait longer; three failures pause the agent and tell its owner.", 720, 250, (svg, say) => {
     const wakes = ["claims written", "source fingerprinted", "daily check due"]
-      .map((t, i) => [box(svg, 10, 14 + i * 42, 170, 28, t, "f"), curve(svg, 180, 28 + i * 42, 220, 70)]);
-    const run = box(svg, 220, 50, 140, 40, "3 wakes, one run", "f", true);
-    const access = txt(svg, 290, 106, "access checked first", "lbl f", "middle");
+      .map((t, i) => {
+        const b = box(svg, 10, 14 + i * 42, 190, 28, t, "f"), thumb = ["register_page.png", "photo_damaged_building.jpg"][i];
+        if (thumb) pic(b, `media/${thumb}`, 156, 3, 31, 22);
+        return [b, curve(svg, 200, 28 + i * 42, 230, 70)];
+      });
+    const run = box(svg, 230, 50, 130, 40, "3 wakes, one run", "f", true);
+    const access = txt(svg, 295, 106, "access checked first", "lbl f", "middle");
     const toAgent = curve(svg, 360, 70, 400, 70);
     const agent = box(svg, 400, 50, 110, 40, "agent", "f v", true);
+    pic(agent, "media/agent_head.jpg", 5, 5, 30, 30).setAttribute("clip-path", "inset(0 round 15px)");
+    agent.t.setAttribute("x", 70);
     const local = txt(svg, 455, 106, "agent model", "lbl f", "middle");
     const lines = ["cited line, kept", "uncited line", "sensitive line"]
       .map((t, i) => [txt(svg, 550, 30 + i * 30, t, "f"), curve(svg, 510, 70, 545, 26 + i * 30)]);
@@ -195,6 +203,8 @@
     const items = rows.map(([k, kind, t, meta, v, c], i) => {
       const g = s("g", { class: "f" }, svg);
       txt(g, 240, Yr(i), k, `lbl ${i > 3 ? "v" : ""}`); txt(g, 300, Yr(i), kind, "lbl");
+      const thumb = { passage: "ret_scan_page.png", audio: "ret_speech_wave.png" }[kind];
+      if (thumb) { s("rect", { class: "frame", x: 211, y: Yr(i) - 13, width: 24, height: 18, rx: 2 }, g); pic(g, `media/${thumb}`, 212, Yr(i) - 12, 22, 16); }
       const label = txt(g, 360, Yr(i), t); txt(g, 600, Yr(i), meta, "lbl", "end");
       const bar = s("rect", { class: `bar ${c}`, x: 620, y: Yr(i) - 8, width: 0, height: 6, rx: 1 }, g);
       return { g, label, bar, w: 90 * v };
@@ -220,8 +230,8 @@
   });
 
   // Speech, located to the second: the real transcript of the synthetic witness clip
-  scene("speech", "The witness clip's waveform with a playhead. The transcript line under the playhead is highlighted with its start time.", 720, 90, (svg, say, fig) => {
-    const DUR = 33.7, BARS = 144, bw = 720 / BARS;
+  scene("speech", "The witness clip's waveform with a playhead. The transcript line under the playhead is highlighted with its start time.", 720, 96, (svg, say, fig) => {
+    const DUR = 33.7;
     const lines = [[0, 8.54, "اسمي سامر انا من دومة اعتقلوني بربيع الالفين وتلتعش وضليت محجوز كم شهر"],
       [9.94, 18.12, "بشهر تموز من سنة الالفين وتلتعش شفت يوسف خالد العلي بالفرع تسعمية وتسع وتسعين"],
       [19.37, 26.59, "كلي انه اعتقلوه على حاجز بحرسته وانه اهله ما بيعرفوا وينه"],
@@ -235,17 +245,19 @@
       return list.appendChild(li);
     });
     fig.append(list);
-    const bars = Array.from({ length: BARS }, (_, i) => {
-      const t = (i + 0.5) / BARS * DUR, talk = lines.some(([a, b]) => t >= a && t <= b);
-      const h = talk ? 14 + Math.random() * 50 * Math.abs(Math.sin(i * 0.7)) + Math.random() * 12 : 3 + Math.random() * 6;
-      return { r: s("rect", { class: `wv${talk ? " seg" : ""}`, x: i * bw + 0.6, y: 45 - h / 2, width: bw - 1.2, height: h, rx: 1 }, svg), t };
-    });
-    const head = s("line", { class: "playhead", y1: 0, y2: 90 }, svg);
+    // The clip's own waveform, used as a mask so it takes the page's colours.
+    const mask = s("mask", { id: "dg-wave", maskUnits: "userSpaceOnUse", x: 0, y: 0, width: 720, height: 96, style: "mask-type:alpha" }, svg);
+    pic(mask, "media/witness_clip_wave.png", 0, 0, 720, 96, "none");
+    const wave = s("g", { mask: "url(#dg-wave)" }, svg);
+    s("rect", { class: "wv seg", width: 720, height: 96 }, wave);
+    const lit = s("rect", { class: "wv now", width: 0, height: 96 }, wave);
+    const head = s("line", { class: "playhead", y1: 0, y2: 96 }, svg);
     const render = (t) => {
       head.setAttribute("x1", t / DUR * 720); head.setAttribute("x2", t / DUR * 720);
       const cur = lines.findIndex(([a, b]) => t >= a && t < b);
       items.forEach((li, k) => li.classList.toggle("now", k === cur));
-      bars.forEach(({ r, t: bt }) => r.classList.toggle("now", cur >= 0 && bt >= lines[cur][0] && bt <= t));
+      lit.setAttribute("x", cur < 0 ? 0 : lines[cur][0] / DUR * 720);
+      lit.setAttribute("width", cur < 0 ? 0 : (t - lines[cur][0]) / DUR * 720);
     };
     say("Each transcript line keeps its start and end time, so a claim drawn from it opens the recording at that second.");
     return () => {
@@ -263,16 +275,17 @@
   });
 
   // Same footage, different sources: the case's PDQ distances against the app's threshold
-  scene("dupes", "PDQ picture fingerprints of four copies are compared with the original. The re-encoded and half-size copies fall under the threshold of 31; both crops do not.", 720, 250, (svg, say) => {
+  scene("dupes", "PDQ picture fingerprints of four copies are compared with the original. The re-encoded and half-size copies fall under the threshold of 31; both crops do not.", 720, 262, (svg, say) => {
     const N = 256, THR = 31, base = Array.from({ length: N }, () => Math.random() < 0.45);
     const pick = (k) => [...Array(N).keys()].sort(() => Math.random() - 0.5).slice(0, k);
-    const copies = [["original", []], ["re-encoded", pick(4)], ["half size", pick(12)], ["cropped 3%", pick(60)], ["cropped 8%", pick(118)]];
-    const grids = copies.map(([name, flips], c) => {
-      const x0 = 20 + c * 142;
+    const copies = [["original", [], "street_photo"], ["re-encoded", pick(4), "street_q90"], ["half size", pick(12), "street_half"], ["cropped 3%", pick(60), "street_crop3"], ["cropped 8%", pick(118), "street_crop"]];
+    const grids = copies.map(([name, flips, file], c) => {
+      const x0 = 12 + c * 142;
       txt(svg, x0, 14, name, c ? "" : "hd");
-      return [...Array(N).keys()].map((k) => s("rect", { class: `bit${base[k] !== flips.includes(k) ? " one" : ""}`, x: x0 + (k % 16) * 5.5, y: 24 + Math.floor(k / 16) * 5.5, width: 4.6, height: 4.6 }, svg));
+      pic(svg, `media/${file}.jpg`, x0, 24, 128, 96);
+      return [...Array(N).keys()].map((k) => s("rect", { class: `pbit${base[k] !== flips.includes(k) ? " one" : ""}`, x: x0 + (k % 16) * 8 + 0.5, y: 24 + Math.floor(k / 16) * 6 + 0.5, width: 7, height: 5 }, svg));
     });
-    const sx = (d) => 30 + d * 5.2, Y = 172;
+    const sx = (d) => 30 + d * 5.2, Y = 184;
     s("line", { class: "ed", x1: sx(0), x2: sx(128), y1: Y, y2: Y }, svg);
     [0, 32, 64, 96, 128].forEach((d) => txt(svg, sx(d), Y + 32, String(d), "lbl", "middle"));
     txt(svg, sx(128), Y + 48, "bits that differ, of 256", "lbl", "end");
@@ -347,26 +360,26 @@
   });
 
   // One name, two people: P1 and P2 of the case
-  scene("people", "Two records carry exactly the same name and father's name, but their mothers, birth years and birthplaces differ, so they stay two people unless a reviewer decides otherwise.", 720, 250, (svg, say) => {
-    const fields = [["name", "يوسف خالد العلي", "يوسف خالد العلي", "identical", 1], ["father", "خالد", "خالد", "identical", 1],
-      ["mother", "فاطمة", "سعاد", "differ", 0], ["born", "1991", "1985", "6 years apart", 0], ["birthplace", "دوما", "حمص", "differ", 0]];
-    const card = (x, title) => { const g = s("g", { class: "f" }, svg); s("rect", { class: "frame", x, y: 6, width: 230, height: 184, rx: 6 }, g); txt(g, x + 12, 28, title, "hd"); return g; };
-    const L = card(10, "person 1, the missing man"), R = card(480, "person 2");
-    fields.forEach(([f, a, b], i) => {
-      const y = 58 + i * 28;
-      txt(L, 22, y, f, "lbl"); txt(L, 100, y, a); txt(R, 492, y, f, "lbl"); txt(R, 570, y, b);
-    });
-    const cmp = fields.map(([, , , why, same], i) => {
-      const y = 54 + i * 28;
-      return [s("path", { class: `ln ${same ? "v" : "r"}`, pathLength: 1, d: `M240 ${y} H480` }, svg), txt(svg, 360, y - 6, why, `f ${same ? "v" : "r"}`, "middle")];
-    });
+  scene("people", "Rows 217 and 218 of the detention register carry exactly the same name and father's name, but the mothers, birth years and birthplaces differ, so they stay two people unless a reviewer decides otherwise.", 720, 250, (svg, say) => {
+    // Page coordinates of the scan (1600 by 1085), the same space the claims are pinned in.
+    const K = 0.5, X0 = 300, Y0 = 150, px = (x) => 80 + (x - X0) * K;
+    s("rect", { x: X0, y: Y0, width: 1260, height: 280, rx: 12 }, s("clipPath", { id: "dg-rows" }, svg));
+    const page = s("g", { transform: `translate(80 8) scale(${K}) translate(${-X0} ${-Y0})`, "clip-path": "url(#dg-rows)" }, svg);
+    pic(page, "media/register_page.png", 0, 0, 1600, 1085, "none");
+    txt(svg, 70, 74, "person 1", "lbl", "end"); txt(svg, 70, 122, "person 2", "lbl", "end");
+    const cols = [["same name", [1109, 233, 1371, 316], [1112, 326, 1374, 410], 1], ["same father", [972, 239, 1074, 315], [972, 335, 1074, 411], 1],
+      ["mother differs", [841, 239, 950, 317], [843, 341, 949, 417], 0], ["6 years apart", [684, 245, 811, 320], [691, 341, 819, 418], 0],
+      ["birthplace differs", [500, 245, 650, 320], [500, 341, 650, 418], 0]];
+    const cmp = cols.map(([why, a, b, same], i) => [
+      txt(svg, px((a[0] + a[2]) / 2), i % 2 ? 182 : 166, why, `f ${same ? "v" : "r"}`, "middle"),
+      ...[a, b].map(([x0, y0, x1, y1]) => s("rect", { class: `hlr f${same ? "" : " r"}`, x: x0, y: y0, width: x1 - x0, height: y1 - y0, rx: 8 }, page))]);
     const verdict = box(svg, 160, 206, 400, 36, "two people · similar names are never merged on their own", "f dash", true);
     return async () => {
-      on(L, R); say("Two records with exactly the same name.");
-      await wait(1200);
-      for (const [l, t] of cmp) { on(l, t); await wait(600); }
+      say("Two rows of one scanned register, with exactly the same name.");
+      await wait(1400);
+      for (const els of cmp) { on(...els); await wait(700); }
       say("Name and father's name are identical. Mother, birth year and birthplace are not.");
-      await wait(1600);
+      await wait(1800);
       on(verdict);
       say("Identity candidates are proposed with what supports them. Every side stays listed until a reviewer decides.");
       await wait(4200);
