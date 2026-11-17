@@ -1,0 +1,167 @@
+{% extends 'layout.html' %}
+{% block content %}
+    <v-container class="ob-page py-6">
+        <h1 class="text-headline-small mb-1">What left this server</h1>
+        <p class="ob-lede mb-5">Every request Sealbook sent outside, newest first, joined from the rows each part already keeps. If it is not on this list, no stored record says it left.</p>
+
+        <div class="ob-tiles mb-5" aria-label="Today">
+            <div class="ob-tile">
+                <div class="ob-num">${ modelsToday }</div>
+                <div class="ob-sub">model calls today<span v-if="routeWords">: ${ routeWords }</span></div>
+            </div>
+            <div class="ob-tile">
+                <div class="ob-num">${ today.web || 0 }</div>
+                <div class="ob-sub">web searches and pages today, each sent by a named person</div>
+            </div>
+            <div class="ob-tile">
+                <div class="ob-num">${ today.timestamp || 0 }</div>
+                <div class="ob-sub">timestamp requests today, carrying a hash and nothing else</div>
+            </div>
+            <div class="ob-tile" :class="today.refused ? 'is-warn' : 'is-ok'">
+                <div class="ob-num">${ today.refused || 0 }</div>
+                <div class="ob-sub">${ today.refused === 1 ? 'call refused today by the policy. Nothing was sent.' : 'calls refused today by the policy. Nothing was sent.' }</div>
+            </div>
+        </div>
+
+        <div class="ob-chips mb-4" role="group" aria-label="Filter">
+            <button v-for="c in chips" :key="c.id" type="button" class="ob-chip" :aria-pressed="String(chip === c.id)" @click="pick(c.id)">${ c.label }</button>
+        </div>
+
+        <div class="ob-body">
+            <div class="ob-table-wrap">
+                <div class="ob-scroll">
+                    <table class="ob-table">
+                        <thead>
+                            <tr><th scope="col">When</th><th scope="col">What was sent</th><th scope="col">About</th><th scope="col">To</th><th scope="col">Why it was allowed</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="r in items" :key="r.id" :class="{ 'is-warn': r.tone === 'warn' }">
+                                <td class="ob-when" :title="r.at">${ when(r.at) }</td>
+                                <td>
+                                    <div class="ob-what">${ r.what }</div>
+                                    <div v-if="r.detail" class="ob-muted">${ r.detail }</div>
+                                </td>
+                                <td>
+                                    <div v-if="r.source"><a :href="r.source.href"><bdi dir="auto">${ r.source.title }</bdi></a></div>
+                                    <div v-if="r.source && r.source.sensitive" class="ob-sens"><i class="ti ti-eye-off" aria-hidden="true"></i> sensitive</div>
+                                    <div v-if="r.case" class="ob-muted">${ r.case.name || r.case.slug }</div>
+                                    <div v-if="!r.source && !r.case" class="ob-muted">The whole chain</div>
+                                </td>
+                                <td>
+                                    <div>${ r.to }</div>
+                                    <div v-if="r.host" class="ob-host">${ r.host }</div>
+                                    <div v-if="r.model" class="ob-host" title="Model the provider reported serving">${ r.model }</div>
+                                </td>
+                                <td class="ob-why">${ r.why }</td>
+                            </tr>
+                            <tr v-if="!items.length"><td colspan="5" class="ob-empty">${ loaded ? 'Nothing on this list for this filter.' : 'Loading' }</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="ob-foot">
+                    <span class="ob-muted">${ total } ${ total === 1 ? 'request' : 'requests' }</span>
+                    <v-pagination v-if="pages > 1" v-model="page" :length="pages" density="compact" total-visible="5" @update:model-value="load()"></v-pagination>
+                </div>
+            </div>
+
+            <aside class="ob-never">
+                <h2 class="text-title-large mb-3">What never leaves</h2>
+                <div class="mb-3"><div class="ob-what">Speech</div><div class="ob-muted">Recordings are turned into text on this server.</div></div>
+                <div class="mb-3"><div class="ob-what">Maps</div><div class="ob-muted">The basemap is served from here. No tile request goes out.</div></div>
+                <div><div class="ob-what">Your reading</div><div class="ob-muted">No analytics, no third-party scripts.</div></div>
+            </aside>
+        </div>
+        <v-snackbar v-model="error.show" color="error">${ error.text }</v-snackbar>
+    </v-container>
+{% endblock %}
+
+{% block css %}
+    <style>
+        .ob-page { max-width: 1280px; }
+        .ob-lede { max-width: 66ch; color: var(--ink-2); }
+        .ob-muted { color: var(--ink-3); font-size: 13px; }
+        .ob-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+        .ob-tile { padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+        .ob-tile.is-ok { border-color: var(--accepted-line); background: var(--accepted-wash); color: var(--accepted); }
+        .ob-tile.is-warn { border-color: var(--negative-line); background: var(--negative-wash); color: var(--negative); }
+        .ob-num { font-size: 28px; line-height: 1.15; font-weight: 600; }
+        .ob-sub { font-size: 13px; color: inherit; }
+        .ob-tile:not(.is-ok):not(.is-warn) .ob-sub { color: var(--ink-2); }
+        .ob-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ob-chip { min-height: 40px; padding: 0 16px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--panel); color: var(--ink); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+        .ob-chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--panel); }
+        .ob-chip:focus-visible { outline: 2px solid var(--new-line); outline-offset: 2px; }
+        .ob-body { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+        .ob-table-wrap { flex: 4 1 600px; min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+        .ob-scroll { overflow-x: auto; }
+        .ob-table { width: 100%; min-width: 860px; border-collapse: collapse; text-align: left; font-size: 14px; }
+        .ob-table th { padding: 12px 14px; font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+        .ob-table td { padding: 12px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+        .ob-table tr.is-warn td { background: var(--negative-wash); }
+        .ob-table tr.is-warn .ob-what, .ob-table tr.is-warn .ob-why { color: var(--negative); }
+        .ob-when { font: 13px var(--mono); white-space: nowrap; color: var(--ink-2); }
+        .ob-what { font-weight: 500; }
+        .ob-host { font: 12px var(--mono); color: var(--ink-3); overflow-wrap: break-word; }
+        .ob-why { color: var(--ink-2); min-width: 22ch; }
+        .ob-sens { color: var(--sensitive); font-size: 12px; }
+        .ob-empty { color: var(--ink-3); text-align: center; padding: 28px !important; }
+        .ob-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 14px; border-top: 1px solid var(--line); }
+        .ob-never { flex: 1 1 220px; max-width: 280px; min-width: 0; padding: 18px 20px; border-radius: 12px; background: var(--raise); border: 1px solid var(--line); }
+    </style>
+{% endblock %}
+
+{% block js %}
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+        const vuetify = createVuetify(config.vuetifyConfig);
+        const ROUTES = {'cloud-zdr': 'kept no data', cloud: 'open cloud', anthropic: 'Anthropic', vision: 'Google Vision', local: 'read here'};
+
+        const app = createApp({
+            delimiters: config.delimiters,
+            mixins: [layoutMixin],
+            data() {
+                return {
+                    items: [], total: 0, page: 1, perPage: 25, today: {models: {}}, chip: 'all', loaded: false,
+                    chips: [
+                        {id: 'all', label: 'Everything'}, {id: 'model', label: 'Models'}, {id: 'web', label: 'Web searches'},
+                        {id: 'timestamp', label: 'Timestamps'}, {id: 'sensitive', label: 'Sensitive sources only'},
+                    ],
+                    error: {show: false, text: ''},
+                };
+            },
+            computed: {
+                pages() { return Math.max(1, Math.ceil(this.total / this.perPage)); },
+                modelsToday() { return Object.values(this.today.models || {}).reduce((a, b) => a + b, 0); },
+                routeWords() {
+                    return Object.entries(this.today.models || {}).map(([r, n]) => n + ' ' + (ROUTES[r] || r)).join(', ');
+                },
+            },
+            mounted() { this.load(); },
+            methods: {
+                // Shell contract: follow the top bar's investigation switcher.
+                useCase() { this.page = 1; this.load(); },
+                pick(id) { this.chip = id; this.page = 1; this.load(); },
+                when(at) {
+                    const d = new Date(at);
+                    const same = d.toDateString() === new Date().toDateString();
+                    const t = d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hourCycle: 'h23'});
+                    return same ? t : d.toLocaleDateString([], {day: 'numeric', month: 'short'}) + ' ' + t;
+                },
+                async load() {
+                    const kind = ['model', 'web', 'timestamp'].includes(this.chip) ? this.chip : undefined;
+                    try {
+                        const {data} = await axios.get('/api/outbound', {params: {
+                            investigation: this.caseSel || undefined, kind, sensitive: this.chip === 'sensitive' ? 1 : undefined, page: this.page,
+                        }});
+                        Object.assign(this, {items: data.items, total: data.total, perPage: data.per_page, today: data.today});
+                    } catch (e) {
+                        this.error = {show: true, text: e.response?.data?.message || e.message};
+                    } finally { this.loaded = true; }
+                },
+            },
+        });
+        registerStkComponents(app);
+        app.use(vuetify).mount('#app');
+    </script>
+{% endblock %}
