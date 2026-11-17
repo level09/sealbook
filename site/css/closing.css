@@ -39,13 +39,11 @@
 .tag small { display: block; margin-bottom: 3px; font: 500 8px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; }
 @media (min-width: 900px) {
   .exhibit { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: 56px; align-items: center; }
+  /* Everything else spans both columns and flows onto its own row, in page order. */
   .exhibit > * { grid-column: 1 / -1; }
-  .exhibit > .seal { grid-row: 1; }
   .exhibit > .copy { grid-column: 1; grid-row: 2; }
   .exhibit > .unfold { grid-column: 1; grid-row: 3; justify-self: start; }
   .exhibit > .ex-pic { grid-column: 2; grid-row: 2 / span 2; margin: 0; }
-  .exhibit > .diagram { grid-row: 4; }
-  .exhibit > .demo { grid-row: 5; }
   .exhibit.flip { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
   .exhibit.flip > .copy, .exhibit.flip > .unfold { grid-column: 2; }
   .exhibit.flip > .ex-pic { grid-column: 1; }
