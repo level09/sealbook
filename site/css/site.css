@@ -399,7 +399,7 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 @keyframes rd-sweep { 0% { transform: translateY(-100%); opacity: 0; } 15% { opacity: .9; } 85% { opacity: .9; } 100% { transform: translateY(460%); opacity: 0; } }
 .rd-eye {
   position: absolute; left: 50%; top: 40%; width: 0; height: 0; z-index: 2; pointer-events: none; border-radius: 6px;
-  border: 2px solid var(--violet); box-shadow: 0 0 0 4px color-mix(in srgb, var(--violet) 20%, transparent), 0 0 24px color-mix(in srgb, var(--violet) 45%, transparent);
+  border: 2px solid var(--violet); box-shadow: 0 0 0 4px color-mix(in srgb, var(--violet) 20%, transparent);
   transition: left .34s var(--ease), top .34s var(--ease), width .34s var(--ease), height .34s var(--ease), opacity .3s;
 }
 .rd-eye.gone { opacity: 0; }
