@@ -27,6 +27,11 @@ const iso = t => `\u2068${t}\u2069`;
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 // A place more sources than this name folds behind one summary line.
 const FOLD_PLACE = 3;
+// The words the Guide uses for each witness and receipt state.
+const WITNESS = {ots: 'OpenTimestamps', tsa: 'Time-stamp authority', partner: 'Partner copy'};
+const RECEIPT = {held: 'Receipt held', pending: 'Receipt held, waiting for Bitcoin', failed: 'Not sent yet, retried next run', unsent: 'Not sent yet'};
+const CREDENTIALS = {valid: {text: 'verified', color: 'success', icon: 'ti ti-shield-check'}, absent: {text: 'none in this file', color: undefined, icon: 'ti ti-shield-off'}, invalid: {text: 'invalid', color: 'warning', icon: 'ti ti-shield-x'}};
+const when = at => `${at.slice(0, 16).replace('T', ' ')} UTC`;
 const spanLabel = s => !s ? '' : s.bbox ? `region, p. ${s.page || 1}` : s.ms ? `${ms(s.ms[0])} to ${ms(s.ms[1])}` : s.row ? `row ${s.row}, column ${s.column}` : s.start != null ? 'quoted text' : '';
 
 export function mount(boot) {
@@ -38,7 +43,7 @@ export function mount(boot) {
       return {boot, masked: MASKED, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
         cursor: {list: 'claims', i: -1}, excerpt: null, threadId: null, thread: null, threadBusy: false, comment: '',
         ask: {open: false, statement: null, reviewer: null, reason: '', busy: false}, analysts: [], relate: {open: false, row: null, value: 'same_recording'},
-        snack: {show: false, text: ''}, people: [], viewers: {}, working: false, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
+        snack: {show: false, text: ''}, hov: null, proof: {open: false, claim: null, data: null, error: '', busy: false}, locations: [], people: [], viewers: {}, working: false, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
     },
     computed: {
       claims() {return this.it ? this.it.claims.map(c => ({...c, label: prop(c.prop), value: this.read?.values?.[c.id] ?? c.display})) : [];},
@@ -49,6 +54,40 @@ export function mount(boot) {
         const by = p => all.filter(c => c.prop === p);
         const labels = by('label');
         return {all, open: all.filter(c => c.tier === 'unconfirmed'), triage: by('triage')[0], title: by('title')[0], lines: by('description'), seen: labels.filter(c => c.value.startsWith('Seen: ')), alleged: labels.filter(c => !c.value.startsWith('Seen: '))};
+      },
+      // The triage reads "type, reliability, priority": the priority is its own chip.
+      triage() {
+        const parts = (this.pass.triage?.value || '').split(', ');
+        return {priority: (parts.pop() || '').replace(/ priority$/, ''), kind: parts};
+      },
+      // Who signed the first pass, from the review history of its lines.
+      passBy() {
+        const ids = new Set(this.pass.all.map(c => `statement:${c.id}`));
+        const h = (this.it?.history || []).filter(h => h.prop === 'review' && h.display === 'accept' && ids.has(h.subject)).sort((a, b) => b.recorded_at.localeCompare(a.recorded_at))[0];
+        return h && {by: h.actor.label, at: when(h.recorded_at)};
+      },
+      credentials() {return CREDENTIALS[this.c2pa];},
+      located() {
+        const l = this.locations[0];
+        if (!l) return '';
+        return `Location ${['exif', 'c2pa'].includes(l.method) ? 'read from the file' : 'set by an analyst'}, within ${l.precision_m} m`;
+      },
+      // The steps of one decision, from the run that read it to the witnesses that hold its batch.
+      proofSteps() {
+        const p = this.proof.data, c = this.proof.claim;
+        if (!p) return [];
+        const b = p.batch, r = p.review, steps = [];
+        steps.push(p.read ? {title: `Read by ${p.read.tool}`, detail: `Run on ${p.read.where}.${p.run_signature ? ` The run signed the claim with its own key${p.run_signature.verifies ? ', and the signature checks' : ', but the signature does not check'}.` : ''}`, state: 'ai'}
+          : {title: 'Entered by a person', detail: 'No tool read this value.', state: 'hand'});
+        steps.push({title: c.actor.agent ? 'Proposed by AI' : 'Proposed', detail: `${when(p.proposed_at)}${c.span?.bbox ? `, pinned to a region on page ${c.span.page || 1}` : c.span ? `, pinned to ${spanLabel(c.span)}` : ''}.`, state: 'ai waiting'});
+        steps.push(r ? {title: `Accepted by ${r.by}`, detail: `Signed ${r.passkey ? (r.demo ? 'with a demo passkey' : 'with a passkey') : 'without a passkey'} at ${when(r.at)}${r.verifies ? '' : ', and the signature does not check'}.`, state: 'held'}
+          : {title: 'Accepted', detail: 'No review record names who accepted it.', state: 'waiting'});
+        steps.push({title: `Sealed as entry ${p.entry.seq.toLocaleString('en')}`, detail: 'Each entry carries the hash of the one before it.', state: 'held'});
+        steps.push(b.closed ? {title: `Anchored at ${when(p.anchored_at)}`, detail: `Batch root ${short(b.root)}, entries ${b.first_seq.toLocaleString('en')} to ${b.last_seq.toLocaleString('en')}.`, state: 'held'}
+          : {title: 'Waiting for the next anchor', detail: `Its batch is open, entries ${b.first_seq.toLocaleString('en')} to ${b.last_seq.toLocaleString('en')} so far. The next anchor run closes it.`, state: 'waiting'});
+        steps.push(p.witnesses.length ? {title: 'Witnesses', detail: p.witnesses.map(w => `${WITNESS[w.kind] || w.kind}: ${RECEIPT[w.state] || w.state}`).join('. ') + '.', state: p.witnesses.every(w => w.state === 'held') ? 'held' : 'waiting'}
+          : {title: 'Witnesses', detail: 'Not sent yet. They receive the batch root once the batch closes.', state: 'waiting'});
+        return steps;
       },
       groups() {
         const g = {};
@@ -156,6 +195,7 @@ export function mount(boot) {
           if (this.it.investigation && this.caseSel !== this.it.investigation) this.switchCase(this.it.investigation);
           document.title = `${this.it.title}, ${DOC[this.it.doc_type] || 'Evidence'}`;
           if (boot.with) this.other = (await api.get(`/api/evidence/${boot.with}/item`)).data;
+          api.get(`/api/map/evidence/${boot.sha}/locations`).then(r => {this.locations = r.data.items;}, () => {});
           if (!boot.segment && !this.it.claims.length) this.tab = this.it.copies.length ? 'dups' : this.relations.length ? 'rel' : 'read';
         } catch (err) {this.error = message(err); return;}
         if (this.it.revealed) await this.loadRead();
@@ -241,6 +281,11 @@ export function mount(boot) {
           this.say('First pass accepted and signed with your passkey');
           await this.refresh();
         } catch (err) {this.say(err.message);} finally {this.busy = false;}
+      },
+      async openProof(c) {
+        this.proof = {open: true, claim: c, data: null, error: '', busy: true};
+        try {this.proof.data = (await api.get(`/api/evidence/statement/${c.id}/proof`)).data;}
+        catch (err) {this.proof.error = message(err);} finally {this.proof.busy = false;}
       },
       canDecide(r) {return r && r.can_review && PENDING.includes(r.tier);},
       async decide(r, verdict, relationship) {

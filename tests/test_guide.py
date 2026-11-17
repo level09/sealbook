@@ -1,6 +1,7 @@
 """The Guide: its scenarios are well formed, every Open it link is a real page for
 an analyst, and the proof a reader recomputes in the browser holds."""
 
+import re
 import tempfile
 import unittest
 import uuid
@@ -173,6 +174,7 @@ class GuideTest(unittest.IsolatedAsyncioTestCase):
                 sign=passkey.sig,
             )
             self.claim = claim.id
+            self.sha = sha
 
     async def asyncTearDown(self):
         await ext.engine.dispose()
@@ -252,6 +254,45 @@ class GuideTest(unittest.IsolatedAsyncioTestCase):
                 )
             )
         self.assertEqual(views, 1, "one access record per reader and session")
+
+    async def test_evidence_proof_waits_for_the_reveal_and_matches_the_guide(self):
+        from sealbook.anchor.service import close_batch
+
+        me = await self.client()
+        url = f"/api/evidence/statement/{self.claim}/proof"
+        self.assertEqual(
+            (await me.get(url)).status_code, 403, "sensitive stays covered"
+        )
+        page = await (await me.get(f"/evidence/{self.sha}")).get_data(as_text=True)
+        csrf = {
+            "X-CSRFToken": re.search(r'name="csrf-token" content="([^"]+)"', page)[1]
+        }
+        r = await me.post(
+            f"/api/evidence/{self.sha}/reveal", headers=csrf, json={"item": {}}
+        )
+        self.assertEqual(r.status_code, 200)
+        # The guide logs its own view first; the evidence proof then reads the
+        # same chain, so the shared part is identical.
+        guide = await (
+            await me.get(f"/api/guide/proof?investigation={CASE}")
+        ).get_json()
+        r = await me.get(url)
+        p = await r.get_json()
+        self.assertEqual(r.status_code, 200, p)
+        self.assertNotIn("محمد", await r.get_data(as_text=True))
+        self.assertEqual({k: p[k] for k in guide}, guide)
+        self.assertEqual(p["read"], {"tool": "AI extraction", "where": "this server"})
+        self.assertIsNone(p["anchored_at"])
+        self.assertEqual(p["witnesses"], [])
+
+        async with ext.async_session_factory() as s, s.begin():
+            await close_batch(s)
+        p = await (await me.get(url)).get_json()
+        self.assertTrue(p["batch"]["closed"] and p["anchored_at"])
+        self.assertEqual({w["state"] for w in p["witnesses"]}, {"unsent"})
+        self.assertIn("ots", [w["kind"] for w in p["witnesses"]])
+        missing = await me.get(f"/api/evidence/statement/{uuid.uuid4()}/proof")
+        self.assertEqual(missing.status_code, 404)
 
     async def test_case_without_a_signed_claim(self):
         me = await self.client()

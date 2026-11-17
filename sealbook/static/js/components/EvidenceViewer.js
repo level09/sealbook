@@ -55,8 +55,9 @@ export const EvidenceViewer = {
     readError: {type: String, default: ''},
     hl: {type: Object, default: null},          // {start, end} in the source text
     highlight: {type: String, default: ''},     // passage to find in a PDF
+    hover: {type: String, default: null},       // a claim pointed at in the list
   },
-  emits: ['select', 'revealed', 'retry-read'],
+  emits: ['select', 'revealed', 'retry-read', 'hover'],
   data() {return {raw: false, url: this.item.revealed ? `/api/evidence/${this.item.sha256}/content` : null, busy: false, error: '', mediaError: null, nonce: 0, strip: null, table: null, tableError: '', where: ''};},
   computed: {
     kind() {return this.item.kind;},
@@ -156,7 +157,7 @@ export const EvidenceViewer = {
     </div>
     <div v-else-if="mediaError" class="ev-gate"><v-empty-state :icon="mediaError === 'missing' ? 'ti ti-file-off' : 'ti ti-alert-triangle'" :title="trouble.title" :text="trouble.text">
       <template v-if="trouble.retry" #actions><v-btn variant="outlined" prepend-icon="ti ti-refresh" @click="retryMedia">Retry</v-btn></template></v-empty-state></div>
-    <image-viewer v-else-if="kind === 'image'" ref="media" :key="nonce" :src="src()" :alt="item.file" :boxes="boxes" :sel="sel" @select="id => $emit('select', id)" @error="onMediaError"></image-viewer>
+    <image-viewer v-else-if="kind === 'image'" ref="media" :key="nonce" :src="src()" :alt="item.file" :boxes="boxes" :sel="sel" :hover="hover" @select="id => $emit('select', id)" @hover="id => $emit('hover', id)" @error="onMediaError"></image-viewer>
     <pdf-viewer v-else-if="kind === 'pdf'" ref="media" :key="nonce" :src="src('raw=1')" :label="item.file" :page="page || 1" :highlight="highlight" @error="onMediaError"></pdf-viewer>
     <video-player v-else-if="kind === 'video'" ref="media" :key="nonce" :src="src()" :label="item.file" :marks="marks" :spans="spans" :frames="frames" :focus="focus" @error="onMediaError"></video-player>
     <audio-player v-else-if="kind === 'audio'" ref="media" :key="nonce" :src="src()" :label="item.file" :marks="marks" :spans="spans" :transcript="transcript" :focus="focus" :peaks-url="base + '/peaks'" @error="onMediaError"></audio-player>

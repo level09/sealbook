@@ -12,6 +12,8 @@
     <div class="ev-head">
       <h1><i :class="ICON[it.kind]" class="r-tile is-source me-1" aria-hidden="true"></i>${ it.title } <span class="muted font-weight-medium">${ [DOC[it.doc_type] !== it.title ? DOC[it.doc_type] : null, it.filename !== it.title ? it.filename : null].filter(Boolean).join(', ') }</span></h1>
       <p class="mono muted" :title="it.sha256">${ short(it.sha256) }</p>
+      <v-chip v-if="credentials" size="small" variant="outlined" :color="credentials.color" :prepend-icon="credentials.icon" @click="tab = 'meta'">Content credentials: ${ credentials.text }</v-chip>
+      <v-chip v-if="located" size="small" variant="outlined" prepend-icon="ti ti-map-pin" @click="tab = 'meta'">${ located }</v-chip>
       <v-chip v-if="it.sensitive" color="sensitive" variant="outlined" size="small" prepend-icon="ti ti-eye-off">sensitive</v-chip>
       <div class="ms-auto d-flex ga-2 flex-wrap">
         <v-btn variant="outlined" size="small" prepend-icon="ti ti-message" @click="drawer = !drawer; if (drawer && !threadId && it.threads[0]) openThread(it.threads[0])">Thread and history <v-kbd class="ms-2">t</v-kbd></v-btn>
@@ -41,7 +43,7 @@
     <div class="ev" :class="{side: other, mapping: mapping}">
       <section class="ev-panel ev-stick" :aria-label="other ? 'Side A' : 'Preview'">
         <header v-if="other" class="ev-side"><b aria-hidden="true">A</b><span class="t text-truncate" dir="auto">${ it.title }</span><span class="d">${ DOC[it.doc_type] || it.kind }</span><span class="mono h">${ short(it.sha256) }</span></header>
-        <evidence-viewer ref="viewer" :item="it" :claims="claims" :marks="marks" :sel="sel" :focus="focusMs" :page="pdfPage" :read="read" :read-error="readError" :hl="hl" :highlight="excerpt?.match || ''" @select="pick" @revealed="revealed" @retry-read="loadRead"></evidence-viewer>
+        <evidence-viewer ref="viewer" :item="it" :claims="claims" :marks="marks" :sel="sel" :hover="hov" @hover="id => hov = id" :focus="focusMs" :page="pdfPage" :read="read" :read-error="readError" :hl="hl" :highlight="excerpt?.match || ''" @select="pick" @revealed="revealed" @retry-read="loadRead"></evidence-viewer>
         <div v-if="connections.length" class="ev-conn">
           <h3 class="mb-2 muted">Connections, open side by side</h3>
           <v-slide-group show-arrows>
@@ -63,26 +65,30 @@
       <section v-else class="ev-panel ev-claims" aria-labelledby="ev-h-claims">
         <header><h2 id="ev-h-claims">Claims</h2><span class="muted">${ claims.length } from this source</span>
           <span class="ev-legend"><span class="tier-accepted by-person"><span class="ev-sw"></span> accepted</span><span class="tier-corroborated by-person"><span class="ev-sw"></span> corroborated</span><span class="tier-unconfirmed by-agent"><span class="ev-sw"></span> unconfirmed</span></span></header>
-        <div v-if="pass.all.length" class="ev-pass" aria-labelledby="ev-h-pass">
+        <div v-if="pass.all.length" class="ev-pass" :class="{decided: !pass.open.length}" aria-labelledby="ev-h-pass">
           <div class="d-flex align-center ga-2 flex-wrap"><h3 id="ev-h-pass">First pass</h3><span v-if="it.context?.bayanat?.worked" class="ev-agent"><i class="ti ti-database-import" aria-hidden="true"></i> as decided in Bayanat: ${ it.context.bayanat.status }<template v-if="it.context.bayanat.analyst">, analyst <bdi>${ it.context.bayanat.analyst }</bdi></template><template v-if="it.context.bayanat.reviewer">, peer reviewer <bdi>${ it.context.bayanat.reviewer }</bdi></template></span><span v-else class="ev-agent"><i class="ti ti-robot" aria-hidden="true"></i> proposed by an agent from this item only</span>
-            <v-btn v-if="pass.open.length && pass.triage" class="ms-auto" size="small" variant="outlined" prepend-icon="ti ti-users" @click="peerReview">${ threadFor(pass.triage) ? 'Review thread' : 'Send for peer review' }</v-btn>
-            <v-btn v-if="pass.open.length" :class="pass.triage ? '' : 'ms-auto'" size="small" color="primary" prepend-icon="ti ti-signature" :loading="busy" @click="acceptPass">Accept the first pass</v-btn>
-            <span v-else class="ms-auto ev-done"><i class="ti ti-circle-check" aria-hidden="true"></i> decided</span></div>
-          <button v-if="pass.triage" type="button" class="ev-pline" @click="openSpan(pass.triage)"><span class="ev-plab">Triage</span><span class="ev-pv"><span class="ev-prio" :class="pass.triage.value.endsWith('high priority') ? 'hi' : ''">${ pass.triage.value.split(', ').pop() }</span> ${ pass.triage.value.split(', ').slice(0, -1).join(', ') }</span><span class="ev-at">${ at(pass.triage) }</span></button>
-          <button v-if="pass.title" type="button" class="ev-pline" @click="openSpan(pass.title)"><span class="ev-plab">Title</span><span class="ev-pv two">${ pass.title.value ?? masked }</span><span class="ev-at">${ at(pass.title) }</span></button>
-          <div v-if="pass.lines.length" class="ev-plab mt-2">Description</div>
-          <button v-for="c in pass.lines" :key="c.id" type="button" class="ev-pline ev-line" @click="openSpan(c)"><span class="ev-pv">${ c.value ?? masked }</span><span class="ev-at">${ at(c) }</span></button>
-          <div v-if="pass.seen.length" class="d-flex flex-wrap ga-1 mt-2 align-center"><span class="ev-plab">Seen</span><button v-for="c in pass.seen" :key="c.id" type="button" class="ev-label seen" title="Visible in the item; click to see where" @click="openSpan(c)">${ c.value.replace(/^Seen: /, '') }</button></div>
-          <div v-if="pass.alleged.length" class="d-flex flex-wrap ga-1 mt-2 align-center"><span class="ev-plab">Alleged</span><button v-for="c in pass.alleged" :key="c.id" type="button" class="ev-label" :title="'The source says so and the item partly supports it. ' + at(c)" @click="openSpan(c)">${ c.value.replace(/^Alleged: (Type, )?/, '') }</button></div>
-          <p class="muted text-body-small mt-2 mb-0">Click any line to see the words it rests on. Accepting signs every line still open; decide one line at a time in the list below instead if some are wrong.</p>
+            <span v-if="!pass.open.length" class="ms-auto ev-done"><i class="ti ti-circle-check" aria-hidden="true"></i> ${ passBy ? 'Accepted by ' + passBy.by + ', ' + passBy.at : 'decided' }</span></div>
+          <button v-if="pass.title" type="button" class="ev-pline ev-ptitle" :class="{hov: hov === pass.title.id}" @click="openSpan(pass.title)" @mouseenter="hov = pass.title.id" @mouseleave="hov = null"><span class="ev-pv two">${ pass.title.value ?? masked }</span><span class="ev-at">${ at(pass.title) }</span></button>
+          <div v-if="pass.triage || pass.alleged.length" class="d-flex flex-wrap ga-1 mt-1 align-center">
+            <template v-if="pass.triage"><button type="button" class="ev-label ev-prio" :class="{hi: triage.priority === 'high', hov: hov === pass.triage.id}" title="Triage; click to see what it rests on" @click="openSpan(pass.triage)" @mouseenter="hov = pass.triage.id" @mouseleave="hov = null">Priority: ${ triage.priority }</button>
+              <button v-for="t in triage.kind" :key="t" type="button" class="ev-label seen" @click="openSpan(pass.triage)" @mouseenter="hov = pass.triage.id" @mouseleave="hov = null">${ t }</button></template>
+            <button v-for="c in pass.alleged" :key="c.id" type="button" class="ev-label" :class="{hov: hov === c.id}" :title="'Alleged: the source says so and the item partly supports it. ' + at(c)" @click="openSpan(c)" @mouseenter="hov = c.id" @mouseleave="hov = null">${ c.value.replace(/^Alleged: (Type, )?/, '') }</button>
+          </div>
+          <button v-for="c in pass.lines" :key="c.id" type="button" class="ev-pline ev-line" :class="{hov: hov === c.id}" @click="openSpan(c)" @mouseenter="hov = c.id" @mouseleave="hov = null"><span class="ev-pv">${ c.value ?? masked }</span><span class="ev-at">${ at(c) }</span></button>
+          <div v-if="pass.seen.length" class="d-flex flex-wrap ga-1 mt-2 align-center"><span class="ev-plab">Seen</span><button v-for="c in pass.seen" :key="c.id" type="button" class="ev-label seen" :class="{hov: hov === c.id}" title="Visible in the item; click to see where" @click="openSpan(c)" @mouseenter="hov = c.id" @mouseleave="hov = null">${ c.value.replace(/^Seen: /, '') }</button></div>
+          <div v-if="pass.open.length" class="d-flex ga-2 flex-wrap mt-3">
+            <v-btn size="small" color="primary" prepend-icon="ti ti-signature" :loading="busy" @click="acceptPass">Accept the first pass</v-btn>
+            <v-btn v-if="pass.triage" size="small" variant="outlined" prepend-icon="ti ti-users" @click="peerReview">${ threadFor(pass.triage) ? 'Review thread' : 'Send for peer review' }</v-btn>
+          </div>
+          <p v-if="pass.open.length" class="muted text-body-small mt-2 mb-0">Click any line to see what it rests on. Accepting signs every line still open; decide one line at a time in the list below instead if some are wrong.</p>
         </div>
         <div v-if="claims.length" role="listbox" aria-label="Claims, j and k to move">
           <template v-for="g in groups" :key="g.subject">
             <div class="ev-grp"><i v-if="g.subject.startsWith('person:')" class="ti ti-user r-tile is-person" aria-hidden="true"></i><a v-if="g.subject.startsWith('person:')" :href="'/people/' + g.subject.slice(7)" @click.stop><bdi dir="auto">${ g.name }</bdi></a><bdi v-else dir="auto">${ g.name }</bdi></div>
-            <div v-for="c in g.claims" :key="c.id" class="ev-row ev-claim" role="option" :aria-selected="sel === c.id" :class="['tier-' + c.tier, c.actor.agent ? 'by-agent' : 'by-person', {sel: sel === c.id}]" tabindex="-1" :data-row="'claims:' + ordered.indexOf(c)" @click="pick(c.id)" @dblclick="openSpan(c)">
+            <div v-for="c in g.claims" :key="c.id" class="ev-row ev-claim" role="option" :aria-selected="sel === c.id" :class="['tier-' + c.tier, c.actor.agent ? 'by-agent' : 'by-person', {sel: sel === c.id, hov: hov === c.id}]" tabindex="-1" :data-row="'claims:' + ordered.indexOf(c)" @click="pick(c.id)" @dblclick="openSpan(c)" @mouseenter="hov = c.id" @mouseleave="hov = null">
               <span class="ev-sw" aria-hidden="true"></span><span class="lbl">${ prop(c.prop) }</span>
               <span class="val"><bdi v-if="c.value" dir="auto">${ c.value }</bdi><span v-else-if="c.erased" class="muted">erased</span><span v-else class="muted"><i class="ti ti-eye-off r-ink state-sensitive" aria-hidden="true"></i> masked, show the sensitive item to read</span></span>
-              <span><v-chip v-if="threadFor(c)" size="x-small" prepend-icon="ti ti-message" @click.stop="openThread(threadFor(c))">${ threadFor(c).comments + 1 }</v-chip></span>
+              <span class="d-flex ga-1 align-center"><v-chip v-if="threadFor(c)" size="x-small" prepend-icon="ti ti-message" @click.stop="openThread(threadFor(c))">${ threadFor(c).comments + 1 }</v-chip><v-btn v-if="c.tier === 'accepted'" size="x-small" variant="text" prepend-icon="ti ti-certificate" :aria-label="'Proof of the decision on ' + prop(c.prop)" @click.stop="openProof(c)">Proof</v-btn></span>
               <span class="meta">${ c.tier }, <span :class="{agent: c.actor.agent}"><i v-if="c.actor.agent && c.actor.kind !== 'import'" class="ti ti-robot" aria-hidden="true"></i> ${ byLabel(c) }</span><template v-if="c.span">, ${ spanLabel(c.span) }</template><template v-if="c.evidence?.length">, ${ c.evidence.join(', ').replace(/_/g, ' ') }</template></span>
               <span v-if="sel === c.id" class="acts d-flex ga-1 flex-wrap mt-1">
                 <v-btn v-if="c.span" size="x-small" variant="outlined" prepend-icon="ti ti-focus-2" @click.stop="openSpan(c)">Show in source <v-kbd class="ms-1">Enter</v-kbd></v-btn>
@@ -108,7 +114,7 @@
           <v-tabs-window-item value="read"><div class="pa-3">
             <div v-if="excerpt" class="mb-3"><p class="ev-note mb-1">Opened at the passage you searched for${ boot.segment.location.page ? ', page ' + boot.segment.location.page : '' }. Extracted text: check it against the original</p><div class="ev-tx" dir="auto">${ excerpt.before }<mark class="hit">${ excerpt.match }</mark>${ excerpt.after }</div></div>
             <p v-if="!it.revealed" class="ev-note">Show the sensitive item to read the text taken from it. Its values stay masked until then.</p>
-            <template v-else-if="it.kind === 'image'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text a model read from the image; check it against the scan</p><div class="ev-tx" dir="auto">${ p.text }</div></div></template><p v-else class="ev-note mb-2">Values were read per region of the image; no text was read from it. Select a value to see its box.</p></template>
+            <template v-else-if="it.kind === 'image'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text a model read from the image; check it against the scan</p><div class="ev-tx" dir="auto">${ p.text }</div></div></template><p v-else class="ev-note mb-2">Values were read per region of the image and each is boxed on it; no text was read from it. Point at a box or a value to see its pair.</p></template>
             <template v-else-if="it.kind === 'pdf'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text layer, page ${ p.location.page }</p><div class="ev-tx" dir="auto">${ p.text }</div></div></template><p v-else class="ev-note">No text layer was read from this PDF.</p></template>
             <template v-else-if="it.kind === 'audio'"><p v-if="!read?.passages.some(p => p.location.ms)" class="ev-note">No transcript yet. Speech to text runs locally once the recording is read; until then it is indexed by sound landmarks and meaning only.</p><div v-else class="ev-tx" dir="auto"><div v-for="p in read.passages.filter(p => p.location.ms)" :key="p.text_blob"><a href="#" class="mono" @click.prevent="focusMs = p.location.ms[0]">${ ms(p.location.ms[0]) }</a> ${ p.text }</div></div></template>
             <template v-else-if="it.kind === 'video'"><p class="ev-note mb-2">${ plural(it.segments.filter(s => s.kind === 'frame').length, 'frame') } and ${ plural(it.segments.filter(s => s.kind === 'audio').length, 'audio window') } were embedded for search. No speech or on-screen text was read.</p>
@@ -203,6 +209,18 @@
           </v-timeline-item>
         </v-timeline>
         <p v-else class="ev-note">No decisions on this source yet.</p>
+      </div>
+    </v-navigation-drawer>
+
+    <v-navigation-drawer v-model="proof.open" location="right" temporary width="420" class="ev-drawer" aria-label="Proof of this decision">
+      <v-toolbar density="compact" color="surface" border="b"><v-toolbar-title class="text-body-large font-weight-bold">Proof of this decision</v-toolbar-title><v-btn icon="ti ti-x" variant="text" aria-label="Close" @click="proof.open = false"></v-btn></v-toolbar>
+      <div v-if="proof.claim" class="pa-3">
+        <p class="mb-3"><strong>${ prop(proof.claim.prop) }</strong><template v-if="proof.claim.value">: <bdi dir="auto">${ proof.claim.value }</bdi></template></p>
+        <v-skeleton-loader v-if="proof.busy" type="list-item-two-line@4"></v-skeleton-loader>
+        <v-alert v-else-if="proof.error" type="warning" variant="tonal" density="compact">${ proof.error }</v-alert>
+        <ol v-else-if="proof.data" class="ev-proof">
+          <li v-for="s in proofSteps" :key="s.title" :class="s.state"><strong>${ s.title }</strong><div class="ev-note">${ s.detail }</div></li>
+        </ol>
       </div>
     </v-navigation-drawer>
 

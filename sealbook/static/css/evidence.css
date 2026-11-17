@@ -56,6 +56,8 @@ body.dark-mode .evp {
 /* rows */
 .ev-row { outline: none; cursor: pointer; }
 .ev-row.sel, .ev-row:focus-visible { background: var(--e-wash); box-shadow: inset 2px 0 0 var(--e-ink); }
+/* A box pointed at on the image lights its row, and the other way round. */
+.ev-claim.hov:not(.sel) { background: var(--e-wash); }
 .ev-claim { display: grid; grid-template-columns: 14px 104px 1fr auto; gap: 2px 10px; align-items: baseline; padding: 6px 12px; border-top: 1px solid var(--e-line); }
 .ev-claim .val { font-size: 14px; }
 .ev-claim .meta, .ev-claim .acts { grid-column: 3 / -1; font-size: 11.5px; color: var(--e-ink-3); }
@@ -102,6 +104,9 @@ body.dark-mode .evp {
 /* First pass of the analyst's method: agent work, so violet marks; lines open their span. */
 .ev-pass { margin: 10px 12px 4px; padding: 10px 12px; border: 1px dashed var(--agent-line); border-radius: 8px; background: var(--panel); }
 .ev-pass h3 { font-size: 13.5px; font-weight: 650; margin: 0; }
+/* Signed: the card turns solid in the accepted hue. */
+.ev-pass.decided { border-style: solid; border-color: var(--accepted); }
+.ev-pline.ev-ptitle { font-size: 15px; font-weight: 600; margin-top: 4px; }
 .ev-agent { font-size: 12px; color: var(--agent); }
 .ev-done { font-size: 12.5px; color: var(--accepted); }
 .ev-pline { all: unset; box-sizing: border-box; display: flex; gap: 8px; align-items: baseline; width: 100%; padding: 4px 6px; border-radius: 5px; cursor: pointer; font-size: 13.5px; }
@@ -110,15 +115,25 @@ body.dark-mode .evp {
 /* A title is two lines, English then Arabic: each line takes its own direction. */
 .ev-pline .ev-pv.two { white-space: pre-line; unicode-bidi: plaintext; text-align: start; }
 .ev-pline .ev-at { flex: none; }
-.ev-pline.ev-line { color: var(--ink-2); padding-inline-start: 62px; }
-.ev-pline:hover, .ev-pline:focus-visible { background: var(--wash); }
+.ev-pline.ev-line { color: var(--ink-2); }
+.ev-pline:hover, .ev-pline:focus-visible, .ev-pline.hov { background: var(--wash); }
 .ev-pline:focus-visible, .ev-label:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 .ev-plab { font-size: 12px; color: var(--ink-3); }
 .ev-at { font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--agent); }
 .ev-prio { font-size: 11.5px; font-weight: 700; padding: 0 6px; border-radius: 4px; background: var(--wash); color: var(--ink-2); margin-inline-end: 4px; }
 .ev-prio.hi { background: var(--incident-wash); color: var(--incident); }
 .ev-label { all: unset; font-size: 12px; padding: 1px 8px; border: 1px dashed var(--line-strong); border-radius: 5px; cursor: pointer; color: var(--ink-2); }
-.ev-label:hover { border-color: var(--agent-line); color: var(--ink); }
+.ev-label:hover, .ev-label.hov { border-color: var(--agent-line); color: var(--ink); }
+.ev-label.ev-prio { border-style: solid; border-color: transparent; background: var(--wash); font-weight: 700; }
+.ev-label.ev-prio.hi { background: var(--incident-wash); color: var(--incident); }
+/* Proof of a decision: one step per line, a filled dot once a person or the chain holds it. */
+.ev-proof { list-style: none; margin: 0; padding: 0; }
+.ev-proof li { position: relative; padding: 0 0 14px 22px; }
+.ev-proof li::before { content: ''; position: absolute; inset-inline-start: 0; top: 3px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--accepted); background: var(--accepted); }
+.ev-proof li:not(:last-child)::after { content: ''; position: absolute; inset-inline-start: 6px; top: 17px; bottom: 0; width: 2px; background: var(--line); }
+.ev-proof li.ai::before { border-color: var(--agent); background: var(--agent); }
+.ev-proof li.waiting::before { background: var(--panel); }
+.ev-proof li.hand::before { border-color: var(--ink); background: var(--ink); }
 .ev-n-add { color: var(--accepted); }
 .ev-n-del { color: var(--negative); text-decoration: line-through; text-decoration-thickness: 1px; }
 .ev-n-note { color: var(--ink-2); font-style: italic; }

@@ -34,6 +34,7 @@ from sealbook.ledger.contracts import Prop, Refused, StatementIn
 from sealbook.ledger.models import (
     Acquisition,
     Blob,
+    Chain,
     Payload,
     Run,
     Statement,
@@ -253,6 +254,61 @@ async def source_read(sha):
     if not await evidence.viewable(g.db_session, sha, current_user):
         abort(403, description="Reveal this source before reading it")
     return output(await evidence.content_read(g.db_session, sha, blob))
+
+
+@bp.get("/api/evidence/statement/<uuid:sid>/proof")
+async def statement_proof(sid):
+    """The Guide's proof for one claim on this page, under the source's own rule:
+    a sensitive source needs the logged reveal, any other logs the view. Adds the
+    run in plain words and each witness, a target with no row yet as unsent."""
+    from sealbook.agents.answer import where_ran
+    from sealbook.anchor import proof
+    from sealbook.anchor.models import Batch
+    from sealbook.anchor.service import _targets
+
+    db = g.db_session
+    st = await db.get(Statement, sid)
+    if st is None or st.span_blob is None:
+        abort(404)
+    sha = st.span_blob
+    if await evidence.source_blob(db, sha) is None:
+        sha = await evidence.parent(db, sha)
+        if sha is None or await evidence.source_blob(db, sha) is None:
+            abort(404)
+    if not await evidence.viewable(db, sha, current_user):
+        abort(403, description="Reveal this source before reading its proof")
+    entry = await db.scalar(
+        select(Chain).where(Chain.kind == "statement", Chain.ref == str(st.id))
+    )
+    if entry is None:
+        abort(404)
+    out = await proof.statement_proof(db, st, entry)
+    run = await db.get(Run, st.run_id) if st.run_id else None
+    b = out["batch"]
+    batch = b["closed"] and await db.scalar(
+        select(Batch).where(Batch.first_seq == b["first_seq"])
+    )
+    held = {a["kind"]: a["state"] for a in b["anchors"]}
+    return output(
+        out
+        | {
+            "read": run
+            and {
+                "tool": data.TOOL_WORDS.get(run.tool, run.tool.replace("_", " ")),
+                "where": where_ran(
+                    run.route, run.endpoint, run.model_served or run.model_requested
+                ),
+            },
+            "proposed_at": st.recorded_at.isoformat(),
+            "anchored_at": batch.at.isoformat() if batch else None,
+            "witnesses": [
+                {"kind": k, "state": held.get(k, "unsent")}
+                for k in dict.fromkeys([*(k for k, _ in _targets()), *held])
+            ]
+            if batch
+            else [],
+        }
+    )
 
 
 @bp.get("/api/evidence/<sha>/segments/<uuid:sid>/image")
