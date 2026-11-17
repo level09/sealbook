@@ -35,10 +35,10 @@
                             <tr><th scope="col">When</th><th scope="col">What was sent</th><th scope="col">About</th><th scope="col">To</th><th scope="col">Why it was allowed</th></tr>
                         </thead>
                         <tbody>
-                            <tr v-for="r in items" :key="r.id" :class="{ 'is-warn': r.tone === 'warn' }">
+                            <tr v-for="r in rows" :key="r.id" :class="{ 'is-warn': r.tone === 'warn' }">
                                 <td class="ob-when" :title="r.at">${ when(r.at) }</td>
                                 <td>
-                                    <div class="ob-what">${ r.what }</div>
+                                    <div class="ob-what">${ r.what }<span v-if="r.times > 1" class="ob-muted"> · ${ r.times } times</span></div>
                                     <div v-if="r.detail" class="ob-muted">${ r.detail }</div>
                                 </td>
                                 <td>
@@ -132,6 +132,16 @@
             },
             computed: {
                 pages() { return Math.max(1, Math.ceil(this.total / this.perPage)); },
+                // Requests that read the same in the same minute fold into one row with a count.
+                rows() {
+                    const out = new Map();
+                    for (const r of this.items) {
+                        const key = [this.when(r.at), r.what, r.detail, r.source && r.source.href, r.case && r.case.slug, r.to, r.host, r.why].join('|');
+                        if (out.has(key)) out.get(key).times += 1;
+                        else out.set(key, {...r, times: 1});
+                    }
+                    return [...out.values()];
+                },
                 modelsToday() { return Object.values(this.today.models || {}).reduce((a, b) => a + b, 0); },
                 routeWords() {
                     return Object.entries(this.today.models || {}).map(([r, n]) => n + ' ' + (ROUTES[r] || r)).join(', ');
