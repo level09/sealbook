@@ -487,7 +487,7 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
         """Outbound fetches reach the fake web whatever host they name."""
         real = httpx2.AsyncClient
         with (
-            mock.patch.object(netguard, "_resolve", return_value=[PUBLIC_IP]),
+            mock.patch.object(netguard, "resolve", return_value=[PUBLIC_IP]),
             mock.patch.object(
                 netguard.httpx2,
                 "AsyncClient",
