@@ -131,6 +131,8 @@ class OutboundTest(unittest.IsolatedAsyncioTestCase):
                         "extract/register/sensitive (allowed: local, cloud-zdr)",
                     ),
                     run(roster, "hash", "local", status="done", finished_at=now),
+                    # A finished run with no route recorded: it counts as read here.
+                    run(roster, "assess", None, status="done", finished_at=now),
                     run(roster, "ocr", "cloud-zdr", status="queued"),
                     run(
                         unlisted, "assess", "cloud-zdr", status="done", finished_at=now
@@ -188,7 +190,7 @@ class OutboundTest(unittest.IsolatedAsyncioTestCase):
         body, raw = await self.get(analyst)
         what = [i["what"] for i in body["items"]]
         # Sent, read here, refused, a search and a timestamp; no hash or queued run.
-        self.assertEqual(body["total"], 5, what)
+        self.assertEqual(body["total"], 6, what)
         self.assertIn("A scanned page, to read its text", what)
         self.assertIn("Nothing. Read on this server.", what)
         self.assertIn("A web search", what)
@@ -206,16 +208,17 @@ class OutboundTest(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn("synthetic query words", raw)
         self.assertNotIn("Unlisted register", raw)
         self.assertEqual(body["today"]["refused"], 1)
+        self.assertNotIn(None, body["today"]["models"])
         self.assertEqual(body["today"]["timestamp"], 1)
 
         only, _ = await self.get(analyst, "?kind=timestamp")
         self.assertEqual([i["what"] for i in only["items"]], ["A timestamp request"])
         sens, _ = await self.get(analyst, "?sensitive=1")
-        self.assertEqual(sens["total"], 3)
+        self.assertEqual(sens["total"], 4)
 
         admin = await self.client("admin@example.com")
         everything, raw = await self.get(admin)
-        self.assertEqual(everything["total"], 6)
+        self.assertEqual(everything["total"], 7)
         self.assertIn("Unlisted register", raw)
 
         nobody = await self.client("no@example.com")

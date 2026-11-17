@@ -247,7 +247,8 @@ async def summary(db, readable: set[str] | None, f: dict) -> dict:
         if refused:
             counts["refused"] += n
         elif kind == "model":
-            models[route] = models.get(route, 0) + n
+            # A run with no route recorded ran here, as its row says.
+            models[route or "local"] = models.get(route or "local", 0) + n
         else:
             counts[kind] += n
     return {"models": models, **counts}
