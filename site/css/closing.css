@@ -37,6 +37,42 @@
 }
 .tag::before { content: ""; position: absolute; top: 4px; left: 50%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--paper); box-shadow: inset 0 0 0 1px #b8a678; }
 .tag small { display: block; margin-bottom: 3px; font: 500 8px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+/* Exhibit 5: an agent that keeps reading. Pure CSS loops, still under reduced motion. */
+.agent-scene { display: block; width: 100%; height: 100%; color: var(--violet); clip-path: inset(0 round 10px); }
+.as-ink-fill { fill: var(--ink); }
+.as-bg { fill: var(--paper-2); }
+.as-visor { fill: var(--paper); }
+.as-card { fill: var(--paper); stroke: var(--rule); stroke-width: 1.5; }
+.as-line { fill: none; stroke: var(--ink-3); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.as-thin { stroke-width: 1.5; }
+.as-dot, .as-led, .as-glow { fill: currentColor; }
+.as-rule { stroke: var(--rule); stroke-width: 2; }
+.as-antenna { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+.as-beam { fill: url(#as-beam); animation: as-beam 2.6s ease-in-out infinite; }
+.as-hit { fill: currentColor; opacity: .13; }
+.as-arc { fill: none; stroke: currentColor; stroke-width: 2; stroke-dasharray: 5 6; animation: as-arc 7s linear infinite; }
+.as-mono { font: 500 15px var(--mono); fill: var(--ink-3); }
+.as-name { fill: var(--violet); }
+.as-glow { filter: drop-shadow(0 0 6px currentColor); transform-box: fill-box; transform-origin: center; animation: as-blink 4.6s infinite; }
+.as-bot { animation: as-bob 3.2s ease-in-out infinite; }
+.as-eye { animation: as-look 2.8s ease-in-out infinite; }
+.as-led { animation: as-pulse 1.4s ease-in-out infinite; }
+.as-colon { animation: as-pulse 1s steps(1) infinite; }
+.as-move { animation: as-belt 14s linear infinite; }
+.as-tick { opacity: 0; animation: as-tick 12s infinite both; }
+@keyframes as-bob { 50% { transform: translateY(-6px); } }
+@keyframes as-look { 0%, 100% { transform: translateX(-18px); } 50% { transform: translateX(18px); } }
+@keyframes as-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.15); } }
+@keyframes as-pulse { 50% { opacity: .25; } }
+@keyframes as-beam { 50% { opacity: .6; } }
+@keyframes as-belt { to { transform: translateX(-700px); } }
+@keyframes as-arc { 0%, 30% { opacity: 0; stroke-dashoffset: 0; } 40%, 75% { opacity: 1; } 90%, 100% { opacity: 0; stroke-dashoffset: -110; } }
+@keyframes as-tick { 0% { opacity: 0; transform: translateY(8px); } 3%, 22% { opacity: 1; transform: none; } 25%, 100% { opacity: 0; transform: translateY(-8px); } }
+@media (prefers-reduced-motion: reduce) {
+  .agent-scene * { animation: none !important; }
+  .as-first { opacity: 1; }
+}
+
 @media (min-width: 900px) {
   .exhibit { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: 56px; align-items: center; }
   /* Everything else spans both columns and flows onto its own row, in page order. */

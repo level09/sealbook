@@ -302,11 +302,27 @@
     const box = document.getElementById("status");
     const st = data.status || {};
     const areas = box.querySelector('[data-status="areas"]');
-    for (const a of st.areas || []) {
-      areas.append(h("details", { class: "area" },
-        h("summary", { text: a.area }),
-        h("p", {}, h("b", { text: "Does: " }), ...prose(a.does)),
-        h("p", {}, h("b", { text: "Limits: " }), ...prose(a.limits))));
+    const all = st.areas || [];
+    box.querySelector('[data-status="sum"]').append(...[
+      [all.length, "areas implemented"], [(st.measured || []).length, "results measured"], [(st.planned || []).length, "planned, not built"],
+    ].map(([n, label]) => h("div", {}, h("b", { text: String(n) }), h("span", { text: label }))));
+    // Areas grouped by what an analyst would look for; an area not listed here lands in More.
+    const GROUPS = [
+      ["Evidence in", ["Intake", "Sources", "Source support", "Evidence page", "Evidence location", "Transcription", "First pass", "Thumbnails", "Deduplication", "Sheets", "Bayanat import", "Batch answer"]],
+      ["People and places", ["People", "Entity pages", "Places", "Maps", "Basemap", "Place suggestions", "Case map"]],
+      ["Search", ["Located search", "Semantic search", "Index health", "Discover", "Web research"]],
+      ["Agents", ["Standing questions", "Proactive agents", "Agents page and Noticer", "Model routes", "MCP"]],
+      ["Record and trust", ["Custody", "Trust", "Integrity", "Review", "Work stage", "Privacy"]],
+      ["Cases and findings", ["Cases", "Findings", "Stories", "Incident vocabulary", "Rail and incidents", "To do", "Inbox", "Packages", "Guide", "Demo case", "Framework"]],
+    ];
+    const placed = new Set(GROUPS.flatMap(([, names]) => names));
+    const area = (a) => h("details", { class: "area" },
+      h("summary", { text: a.area }),
+      h("p", {}, h("b", { text: "Does: " }), ...prose(a.does)),
+      h("p", {}, h("b", { text: "Limits: " }), ...prose(a.limits)));
+    for (const [name, names] of [...GROUPS, ["More", all.filter((a) => !placed.has(a.area)).map((a) => a.area)]]) {
+      const list = names.map((n) => all.find((a) => a.area === n)).filter(Boolean);
+      if (list.length) areas.append(h("div", { class: "area-group" }, h("h4", {}, name, h("span", { text: String(list.length) })), ...list.map(area)));
     }
     for (const key of ["measured", "planned"]) {
       const ul = box.querySelector(`[data-status="${key}"]`);

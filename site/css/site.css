@@ -454,12 +454,23 @@ h4 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 .status-col { border-top: 1px solid var(--ink); padding-top: 12px; }
 .status-col h3 { font: 500 14px/1.4 var(--sans); color: var(--ink-2); margin: 0 0 8px; }
 .status-col ul { padding-left: 1.1em; margin: 0; font-size: 14px; color: var(--ink-2); display: grid; gap: 6px; }
+.status-col [data-status="measured"] li::marker { content: "\2713  "; color: var(--ok); }
+.status-col [data-status="planned"] li::marker { content: "\25CB  "; color: var(--ink-3); }
 .status-areas { grid-column: 1 / -1; }
-.status-areas > div { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0 24px; align-items: start; }
+.status-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 32px; }
+.status-sum div { padding: 18px 20px; border-radius: 10px; background: var(--paper-2); }
+.status-sum b { display: block; margin-bottom: 8px; font: 400 clamp(2.4rem, 5vw, 3.6rem)/1 var(--serif); letter-spacing: -.03em; color: var(--ink); }
+.status-sum div:first-child b { color: var(--violet); }
+.status-sum span { font: 500 12px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.status-areas > div { columns: 3 280px; column-gap: 12px; }
+.area-group { break-inside: avoid; margin-bottom: 12px; padding: 14px 18px 4px; border-radius: 10px; background: var(--paper-2); }
+.area-group:has(.area[open]) { column-span: all; }
+.area-group h4 { display: flex; justify-content: space-between; margin: 0 0 2px; font: 500 12px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.area-group h4 span { color: var(--violet); }
 .area { border-bottom: 1px solid var(--rule); font-size: 14px; color: var(--ink-2); }
+.area:last-child { border-bottom: 0; }
 .area summary { cursor: pointer; padding: 10px 2px; min-height: 44px; display: flex; align-items: center; font-weight: 500; color: var(--ink); }
 .area summary::marker { color: var(--ink-3); }
-.area[open] { grid-column: 1 / -1; }
 .area p { margin: 0 0 12px; max-width: 90ch; overflow-wrap: anywhere; }
 .area b { font-weight: 500; color: var(--ink); }
 .fine { font-size: 13px; color: var(--ink-3); margin-top: 18px; }
