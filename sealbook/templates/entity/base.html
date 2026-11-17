@@ -31,17 +31,17 @@
     <div class="en-grid">
       <div class="en-main">
         <section class="en-panel" aria-labelledby="en-h-story">
-          <header><h2 id="en-h-story">Story</h2><span class="en-muted text-caption">${ storyLine }</span>
+          <header><h2 id="en-h-story">Story</h2><span class="en-muted text-body-small">${ storyLine }</span>
             <v-btn class="act" size="small" variant="text" prepend-icon="ti ti-timeline" :href="storyHref">Open full story</v-btn></header>
           <div class="en-body">
             <story-timeline v-if="range && rows.length" compact :rows="rows" :from="range[0]" :to="range[1]" :incidents="bands" :pending="pending" @pick="pickPoint" @review="openFinding"></story-timeline>
             <p v-else class="en-muted ma-0">No dated, placed claims yet. Claims without a date or a confirmed place never appear on a story.</p>
-            <p v-if="story && story.truncated" class="en-muted text-caption mt-2 mb-0">The story reads the first 5,000 claims; open the full story with a time window for the rest.</p>
+            <p v-if="story && story.truncated" class="en-muted text-body-small mt-2 mb-0">The story reads the first 5,000 claims; open the full story with a time window for the rest.</p>
           </div>
         </section>
 
         <section class="en-panel" aria-labelledby="en-h-rel">
-          <header><h2 id="en-h-rel">Relations</h2><span class="en-muted text-caption">each with why it is related; tiers are textures elsewhere, words here</span></header>
+          <header><h2 id="en-h-rel">Relations</h2><span class="en-muted text-body-small">each with why it is related; tiers are textures elsewhere, words here</span></header>
           <div v-for="g in relations" :key="g.key" class="en-group">
             <h3><i :class="[g.icon, 'r-ink', g.role]" aria-hidden="true"></i>${ g.title } <span class="en-muted">${ g.items.length }</span></h3>
             <component :is="r.href ? 'a' : 'div'" v-for="r in g.items" :key="r.id" class="en-rel" :class="g.role" :href="r.href || undefined" :title="r.title || undefined">
@@ -57,11 +57,11 @@
         </section>
 
         <section class="en-panel" aria-labelledby="en-h-ev">
-          <header><h2 id="en-h-ev">Evidence</h2><span class="en-muted text-caption">${ plural(ev.total, 'source') } behind it; open one at the claim</span></header>
+          <header><h2 id="en-h-ev">Evidence</h2><span class="en-muted text-body-small">${ plural(ev.total, 'source') } behind it; open one at the claim</span></header>
           <v-data-table-server class="en-table" :headers="evShown" :items="ev.items" :items-length="ev.total" :loading="ev.loading" item-value="sha256" density="compact"
             :items-per-page="ev.opts.itemsPerPage" :sort-by="ev.opts.sortBy" :items-per-page-options="[10, 25, 50, 100]" :hide-default-footer="ev.total <= 10" must-sort @update:options="loadEvidence" @click:row="openRow">
             <template #item.thumb="{ item }"><media-thumb :locked="!item.revealed" :sha="item.sha256" :mime="item.mime" :file="item.file" :width="64" :height="40" :caption="false" :link="false"></media-thumb></template>
-            <template #item.title="{ item }"><a :href="item.href" @click.stop><bdi dir="auto">${ item.file }</bdi></a><div class="en-muted text-caption">${ human(item.doc_type) || 'source' }<span v-if="item.sensitive"> · <i class="ti ti-eye-off r-ink state-sensitive" aria-hidden="true"></i> sensitive</span></div></template>
+            <template #item.title="{ item }"><a :href="item.href" @click.stop><bdi dir="auto">${ item.file }</bdi></a><div class="en-muted text-body-small">${ human(item.doc_type) || 'source' }<span v-if="item.sensitive"> · <i class="ti ti-eye-off r-ink state-sensitive" aria-hidden="true"></i> sensitive</span></div></template>
             <template #item.where="{ item }"><span>${ PROP[item.prop] || human(item.prop) }</span><span class="en-muted">, ${ spanLabel(item.span) }</span></template>
             <template #item.tier="{ item }"><span class="r-chip" :class="'tier-' + item.tier">${ item.tier }</span></template>
             <template #no-data><v-empty-state icon="ti ti-files-off" title="No source names it yet" text="Sources appear here once a claim in them resolves to it."></v-empty-state></template>
@@ -72,7 +72,7 @@
     </div>
 
     <v-navigation-drawer v-model="drawer" location="right" temporary width="420" aria-label="Thread and history">
-      <v-toolbar density="compact" color="surface" border="b"><v-toolbar-title class="text-body-1 font-weight-bold">Thread and history</v-toolbar-title><v-btn icon="ti ti-x" variant="text" aria-label="Close" @click="drawer = false"></v-btn></v-toolbar>
+      <v-toolbar density="compact" color="surface" border="b"><v-toolbar-title class="text-body-large font-weight-bold">Thread and history</v-toolbar-title><v-btn icon="ti ti-x" variant="text" aria-label="Close" @click="drawer = false"></v-btn></v-toolbar>
       <div class="pa-3">
         <h3 class="mb-2">Threads</h3>
         <v-select v-if="e.threads.length" :model-value="threadId" :items="e.threads.map(t => ({title: threadLabel(t), value: t.id}))" density="compact" hide-details label="Thread" @update:model-value="id => openThread(e.threads.find(t => t.id === id))"></v-select>

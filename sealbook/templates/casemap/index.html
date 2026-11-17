@@ -95,7 +95,7 @@
 
   <div class="cm-grid">
     <div class="cm-main">
-      <section class="cm-panel" aria-labelledby="h-tl"><header><h2 id="h-tl">Who was where</h2><span class="cm-muted text-caption">one row per person; bands mark people at one place at once</span>
+      <section class="cm-panel" aria-labelledby="h-tl"><header><h2 id="h-tl">Who was where</h2><span class="cm-muted text-body-small">one row per person; bands mark people at one place at once</span>
         <div class="cm-tools">
           <v-select v-model="sort" :items="[{title: 'First seen', value: 'first'}, {title: 'First place', value: 'place'}]" density="compact" hide-details aria-label="Order of rows"></v-select>
           <v-select v-model="placeFilter" :items="placeItems" density="compact" hide-details clearable placeholder="Every place" aria-label="Only people at a place"></v-select>
@@ -106,11 +106,11 @@
         <div v-if="v.truncated" class="cm-unres cm-muted">Showing the first 5,000 claims.</div>
       </section>
 
-      <section class="cm-panel" aria-labelledby="h-map"><header><h2 id="h-map">Movements</h2><span class="cm-muted text-caption">circles sized by people there in the window; arrows are moves between known places, not routes</span></header>
+      <section class="cm-panel" aria-labelledby="h-map"><header><h2 id="h-map">Movements</h2><span class="cm-muted text-body-small">circles sized by people there in the window; arrows are moves between known places, not routes</span></header>
         <div ref="map" class="cm-map" role="region" aria-label="Map of places and moves"></div>
         <div class="cm-unres"><strong>Not on the map</strong> <span class="cm-muted">until a person confirms the place:</span>
           <span v-for="u in v.unresolved" :key="u.place" class="ms-2"><bdi dir="auto">${ u.place }</bdi> <span class="cm-muted">(${ u.count })</span></span><span v-if="!v.unresolved.length" class="cm-muted ms-2">nothing</span>
-          <div class="text-caption cm-muted mt-1">Approximate places are drawn as faint areas at least as wide as their uncertainty. Places from ${ v.attribution }; outlines from Natural Earth.</div></div>
+          <div class="text-body-small cm-muted mt-1">Approximate places are drawn as faint areas at least as wide as their uncertainty. Places from ${ v.attribution }; outlines from Natural Earth.</div></div>
       </section>
     </div>
 
@@ -121,12 +121,12 @@
           <div class="cm-sec">
             <div v-if="ask.answer.error" class="cm-muted">${ ask.answer.error }</div>
             <template v-else-if="ask.answer.found">
-              <p class="cm-muted text-caption mb-2">Shortest path, ${ ask.answer.steps.length } step${ ask.answer.steps.length === 1 ? '' : 's' }, each with its sources. A path is a lead to check, not a finding.</p>
+              <p class="cm-muted text-body-small mb-2">Shortest path, ${ ask.answer.steps.length } step${ ask.answer.steps.length === 1 ? '' : 's' }, each with its sources. A path is a lead to check, not a finding.</p>
               <div v-for="(s, i) in ask.answer.steps" :key="i" class="cm-step" :class="{weak: s.weak}">
                 <div>${ s.text }</div>
                 <a v-for="src in s.sources" :key="src.href" class="cm-src" :href="src.href">${ src.title }</a>
                 <div v-if="s.weak" class="cm-note"><strong>Weak step.</strong> ${ s.weak }.</div>
-                <div v-if="s.unconfirmed" class="cm-muted text-caption mt-1">Rests on claims nobody has confirmed yet.</div>
+                <div v-if="s.unconfirmed" class="cm-muted text-body-small mt-1">Rests on claims nobody has confirmed yet.</div>
               </div>
             </template>
             <div v-else class="cm-muted">No connection within ${ ask.answer.depth } steps through held at, held together, transfers, shared sources, family and same-person proposals.</div>
@@ -134,10 +134,10 @@
         </template>
         <template v-else-if="panel">
           <header><h2 id="h-sel">${ panel.title }</h2><v-icon-btn icon="ti ti-x" size="small" variant="text" class="ms-auto" aria-label="Clear the selection" @click="clear"></v-icon-btn></header>
-          <div class="cm-sec"><div class="cm-muted text-caption">${ panel.sub }</div>
-            <div v-if="panel.approximate !== false && panel.approximate !== undefined" class="cm-muted text-caption">Known only to within ${ panel.approximate ? (panel.approximate >= 1000 ? panel.approximate / 1000 + ' km' : panel.approximate + ' m') : 'an area' }; drawn as an area, not a point.</div>
-            <a v-for="id in panel.places" :key="id" :href="'/places/' + id" class="text-caption me-3">Place page: ${ placeName(placeById[id]) }</a>
-            <a v-if="panel.finding" :href="'/discover?f=' + encodeURIComponent(panel.finding)" class="text-caption d-block">Discovery proposed this as a finding: review it in Discover</a></div>
+          <div class="cm-sec"><div class="cm-muted text-body-small">${ panel.sub }</div>
+            <div v-if="panel.approximate !== false && panel.approximate !== undefined" class="cm-muted text-body-small">Known only to within ${ panel.approximate ? (panel.approximate >= 1000 ? panel.approximate / 1000 + ' km' : panel.approximate + ' m') : 'an area' }; drawn as an area, not a point.</div>
+            <a v-for="id in panel.places" :key="id" :href="'/places/' + id" class="text-body-small me-3">Place page: ${ placeName(placeById[id]) }</a>
+            <a v-if="panel.finding" :href="'/discover?f=' + encodeURIComponent(panel.finding)" class="text-body-small d-block">Discovery proposed this as a finding: review it in Discover</a></div>
           <div v-if="panel.there.length" class="cm-sec"><h3>Who was there</h3>
             <div v-for="l in panel.there" :key="l.key" class="cm-line"><strong><bdi>${ l.name }</bdi></strong>: ${ l.text }<a v-for="s in l.src" :key="s.href" class="cm-src" :href="s.href">${ s.title }</a></div></div>
           <div v-if="panel.from.length" class="cm-sec"><h3>Arrived from</h3>
@@ -160,7 +160,7 @@
           <li v-for="(n, i) in news" :key="i"><a :href="n.href" dir="auto">${ n.text }</a>
             <div class="who" :class="{agent: n.agent}">${ n.who }, ${ ago(n.at) }</div></li>
         </ul>
-        <div v-if="boot.admin" class="cm-sec text-caption"><a href="/monitor/runs">Worker runs</a> <span class="cm-muted">for admins: every run and event as the queue sees it</span></div>
+        <div v-if="boot.admin" class="cm-sec text-body-small"><a href="/monitor/runs">Worker runs</a> <span class="cm-muted">for admins: every run and event as the queue sees it</span></div>
       </section>
     </aside>
   </div>

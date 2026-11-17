@@ -74,7 +74,7 @@
           <button v-for="c in pass.lines" :key="c.id" type="button" class="ev-pline ev-line" @click="openSpan(c)"><span class="ev-pv">${ c.value ?? masked }</span><span class="ev-at">${ at(c) }</span></button>
           <div v-if="pass.seen.length" class="d-flex flex-wrap ga-1 mt-2 align-center"><span class="ev-plab">Seen</span><button v-for="c in pass.seen" :key="c.id" type="button" class="ev-label seen" title="Visible in the item; click to see where" @click="openSpan(c)">${ c.value.replace(/^Seen: /, '') }</button></div>
           <div v-if="pass.alleged.length" class="d-flex flex-wrap ga-1 mt-2 align-center"><span class="ev-plab">Alleged</span><button v-for="c in pass.alleged" :key="c.id" type="button" class="ev-label" :title="'The source says so and the item partly supports it. ' + at(c)" @click="openSpan(c)">${ c.value.replace(/^Alleged: (Type, )?/, '') }</button></div>
-          <p class="muted text-caption mt-2 mb-0">Click any line to see the words it rests on. Accepting signs every line still open; decide one line at a time in the list below instead if some are wrong.</p>
+          <p class="muted text-body-small mt-2 mb-0">Click any line to see the words it rests on. Accepting signs every line still open; decide one line at a time in the list below instead if some are wrong.</p>
         </div>
         <div v-if="claims.length" role="listbox" aria-label="Claims, j and k to move">
           <template v-for="g in groups" :key="g.subject">
@@ -166,7 +166,7 @@
             <v-timeline side="end" density="compact" align="start" truncate-line="both" class="px-3 pb-3">
               <v-timeline-item v-for="s in custody" :key="s.id" :dot-color="s.agent ? 'agent' : 'primary'" size="x-small">
                 <div><strong>${ s.title }</strong> <span v-if="s.detail" class="mono">${ s.detail }</span> by <span :class="{agent: s.agent}">${ s.who }</span></div>
-                <div class="text-caption muted">${ s.at.slice(0, 16).replace('T', ' ') } UTC</div>
+                <div class="text-body-small muted">${ s.at.slice(0, 16).replace('T', ' ') } UTC</div>
               </v-timeline-item>
             </v-timeline>
           </v-tabs-window-item>
@@ -177,7 +177,7 @@
     </div>
 
     <v-navigation-drawer v-model="drawer" location="right" temporary width="400" class="ev-drawer" aria-label="Thread and history">
-      <v-toolbar density="compact" color="surface" border="b"><v-toolbar-title class="text-body-1 font-weight-bold">Thread and history</v-toolbar-title><v-btn icon="ti ti-x" variant="text" aria-label="Close" @click="drawer = false"></v-btn></v-toolbar>
+      <v-toolbar density="compact" color="surface" border="b"><v-toolbar-title class="text-body-large font-weight-bold">Thread and history</v-toolbar-title><v-btn icon="ti ti-x" variant="text" aria-label="Close" @click="drawer = false"></v-btn></v-toolbar>
       <div class="pa-3">
         <v-select v-if="it.threads.length" :model-value="threadId" :items="it.threads.map(t => ({title: aboutLabel(t.about) + (t.visible ? '' : ' (private)'), value: t.id}))" density="compact" hide-details label="Thread" @update:model-value="id => openThread(it.threads.find(t => t.id === id))"></v-select>
         <v-empty-state v-else icon="ti ti-messages" title="No threads on this source" text="Select a pending claim and press c to ask a colleague."></v-empty-state>
@@ -199,7 +199,7 @@
         <v-timeline v-if="it.history.length" side="end" density="compact" align="start" truncate-line="both">
           <v-timeline-item v-for="h in it.history" :key="h.id" :dot-color="h.actor.agent ? 'agent' : 'primary'" size="x-small">
             <div><strong>${ h.prop === 'review' ? h.display + 'ed' : prop(h.prop) }</strong> ${ aboutLabel(h.subject.slice(10)) } by ${ h.actor.label }</div>
-            <div class="text-caption muted">${ h.recorded_at.slice(0, 16).replace('T', ' ') } UTC</div>
+            <div class="text-body-small muted">${ h.recorded_at.slice(0, 16).replace('T', ' ') } UTC</div>
           </v-timeline-item>
         </v-timeline>
         <p v-else class="ev-note">No decisions on this source yet.</p>

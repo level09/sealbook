@@ -19,7 +19,7 @@
 {% endblock %}
 {% block side %}
 <section class="en-panel" aria-labelledby="en-h-where">
-  <header><h2 id="en-h-where">Where</h2><span class="en-muted text-caption">shape and uncertainty</span></header>
+  <header><h2 id="en-h-where">Where</h2><span class="en-muted text-body-small">shape and uncertainty</span></header>
   <entity-map :shapes="shapes" :query="evQuery" :dark="isDark" :label="'Map of ' + placeName(e)"></entity-map>
   <div class="en-body"><dl class="en-dl">
     <dt>Point</dt><dd class="mono">${ e.lonlat[1].toFixed(5) }, ${ e.lonlat[0].toFixed(5) }</dd>
@@ -40,12 +40,12 @@
   <div class="en-body">
     <div v-for="u in e.unresolved" :key="u.norm" class="en-sp align-center">
       <span><bdi dir="auto">${ u.name }</bdi> <span class="en-muted">${ plural(u.count, 'claim') }<template v-if="u.candidates.length > 1">, ${ u.candidates.length } candidate places</template></span>
-        <a v-if="u.claims[0].href" :href="u.claims[0].href" class="d-block text-caption">${ u.claims[0].file }, at the claim</a></span>
+        <a v-if="u.claims[0].href" :href="u.claims[0].href" class="d-block text-body-small">${ u.claims[0].file }, at the claim</a></span>
       <v-btn v-if="u.claims[0].proposal" size="small" variant="outlined" prepend-icon="ti ti-checklist" :href="'/review?statement=' + u.claims[0].proposal.id">Decide in Review</v-btn>
       <v-btn v-else size="small" variant="outlined" prepend-icon="ti ti-signature" :loading="signBusy" @click="confirmHere(u)">Confirm here</v-btn>
     </div>
     <p v-if="!e.unresolved.length" class="en-muted ma-0">None. Every claim with one of its names resolves.</p>
-    <p class="en-muted text-caption mt-2 mb-0">Confirming signs a link for one claim. The same spelling then resolves by itself in that case and governorate when it has one candidate.</p>
+    <p class="en-muted text-body-small mt-2 mb-0">Confirming signs a link for one claim. The same spelling then resolves by itself in that case and governorate when it has one candidate.</p>
   </div>
 </section>
 {% endblock %}

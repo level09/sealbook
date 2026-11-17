@@ -48,13 +48,13 @@ export const StandingQuestions = {
     <p v-else class="text-medium-emphasis">Choose a case to ask a standing question.</p>
     <p v-if="!items.length" class="text-medium-emphasis">Ask once. The agent checks new evidence and checks the case on a schedule. It proposes cited matches for you to review.</p>
     <section v-for="item in items" :key="item.id" class="mb-3">
-      <h3 class="text-body-1" dir="auto">{{ item.question }}</h3>
-      <p class="text-caption text-medium-emphasis">{{ item.state === 'checking' ? 'Checking' : item.state === 'paused' ? 'Paused' : 'Watching' }}, {{ item.last_checked ? 'checked ' + ago(item.last_checked) : 'not checked yet' }}<template v-if="item.matches !== null">. {{ count(item.matches) }} in the last check</template></p>
-      <p v-if="item.reason" class="text-caption">{{ item.reason }}</p>
+      <h3 class="text-body-large" dir="auto">{{ item.question }}</h3>
+      <p class="text-body-small text-medium-emphasis">{{ item.state === 'checking' ? 'Checking' : item.state === 'paused' ? 'Paused' : 'Watching' }}, {{ item.last_checked ? 'checked ' + ago(item.last_checked) : 'not checked yet' }}<template v-if="item.matches !== null">. {{ count(item.matches) }} in the last check</template></p>
+      <p v-if="item.reason" class="text-body-small">{{ item.reason }}</p>
       <v-btn size="small" variant="outlined" prepend-icon="ti ti-refresh" :disabled="busy || off || item.state !== 'watching'" @click="act('/api/agents/tasks/' + item.id + '/run', 'post', {})">Check now</v-btn>
       <v-btn size="small" variant="outlined" :disabled="busy" @click="act('/api/agents/tasks/' + item.id, 'patch', {enabled: item.state === 'paused'})">{{ item.state === 'paused' ? 'Resume' : 'Stop' }}</v-btn>
       <template v-if="results[item.id]">
-        <p v-if="results[item.id].fixed" class="text-caption text-medium-emphasis">Fixed demo output, no model ran.</p>
+        <p v-if="results[item.id].fixed" class="text-body-small text-medium-emphasis">Fixed demo output, no model ran.</p>
         <div v-if="results[item.id].matches.length">
           <template v-for="(group, i) in results[item.id].matches" :key="i">
             <p v-if="group.locked" class="mt-2"><i class="ti ti-lock r-ink state-sensitive" aria-hidden="true"></i> {{ group.count === 1 ? 'One match rests' : group.count + ' matches rest' }} on <a :href="group.href" dir="auto">{{ group.title }}</a>. Open it to read {{ group.count === 1 ? 'it' : 'them' }}.</p>
@@ -67,9 +67,9 @@ export const StandingQuestions = {
             </div>
           </template>
         </div>
-        <p v-else-if="results[item.id].outcome" class="text-caption text-medium-emphasis">{{ results[item.id].outcome.reason }}</p>
-        <p v-if="results[item.id].deferred" class="text-caption">Some claims still need checking. The agent will continue with them.</p>
-        <details v-if="results[item.id].history.length" class="text-caption"><summary>Past checks</summary><p v-for="(run, i) in results[item.id].history" :key="i">{{ ago(run.at) }}: {{ run.state }}<template v-if="run.reason">. {{ run.reason }}</template></p></details>
+        <p v-else-if="results[item.id].outcome" class="text-body-small text-medium-emphasis">{{ results[item.id].outcome.reason }}</p>
+        <p v-if="results[item.id].deferred" class="text-body-small">Some claims still need checking. The agent will continue with them.</p>
+        <details v-if="results[item.id].history.length" class="text-body-small"><summary>Past checks</summary><p v-for="(run, i) in results[item.id].history" :key="i">{{ ago(run.at) }}: {{ run.state }}<template v-if="run.reason">. {{ run.reason }}</template></p></details>
       </template>
     </section>
   </div>`,

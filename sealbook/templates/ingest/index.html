@@ -165,7 +165,7 @@
         <template v-if="phase === 'compose'">
             <div class="from">
                 <v-combobox v-model="origin" :items="recentOrigins" density="compact" variant="outlined" hide-details label="Where these came from" prepend-inner-icon="ti ti-route" aria-describedby="from-help" dir="auto"></v-combobox>
-                <span id="from-help" class="text-caption muted" style="flex: 1 1 220px">Applies to every file without its own. Web items keep their address.</span>
+                <span id="from-help" class="text-body-small muted" style="flex: 1 1 220px">Applies to every file without its own. Web items keep their address.</span>
                 <v-btn v-if="!noteOpen && !note" size="small" variant="text" prepend-icon="ti ti-notes" @click="noteOpen = true">Add a note</v-btn>
             </div>
             <div v-if="noteOpen || note" class="notebox">
@@ -237,7 +237,7 @@
                             <span class="bar"></span><span class="lbl"><i v-if="ICON[s.st]" :class="ICON[s.st]" aria-hidden="true"></i>${ s.label }</span>
                         </li>
                     </ol>
-                    <a v-if="it.sha && it.acquisition" class="x text-caption" :href="'/evidence/' + it.sha" :aria-label="'Open ' + it.name">Open</a><span v-else class="x"></span>
+                    <a v-if="it.sha && it.acquisition" class="x text-body-small" :href="'/evidence/' + it.sha" :aria-label="'Open ' + it.name">Open</a><span v-else class="x"></span>
                     <sheet-columns v-if="it.kind === 'sheet' && it.acquisition && !it.sheetConfirmed && !it.dup" :it="it" :fields="FIELDS" :stored="true" @confirmed="poll"></sheet-columns>
                     <bayanat-import v-if="it.kind === 'bayanat' && it.acquisition && it.sha" :it="it"></bayanat-import>
                 </div>
@@ -246,10 +246,10 @@
 
         <div v-if="phase === 'compose'" class="addbar">
             <v-btn class="go" color="primary" size="large" prepend-icon="ti ti-plus" :disabled="!cur || !ready" @click="start">${ cur ? 'Add ' + plural(items.length, 'item') + ' to ' + cur.name : 'Choose a case first' }</v-btn>
-            <span class="text-caption muted" style="flex: 1 1 260px">${ sensN } of ${ items.length } marked sensitive. ${ ready ? (items.length > 1 ? 'You can keep adding while they process.' : '') : 'Taking fingerprints.' }</span>
+            <span class="text-body-small muted" style="flex: 1 1 260px">${ sensN } of ${ items.length } marked sensitive. ${ ready ? (items.length > 1 ? 'You can keep adding while they process.' : '') : 'Taking fingerprints.' }</span>
         </div>
         <div v-else-if="phase === 'running'" class="addbar">
-            <span class="text-caption muted">You can leave this page. Items keep going, and the brief lands in your inbox when the batch finishes.</span>
+            <span class="text-body-small muted">You can leave this page. Items keep going, and the brief lands in your inbox when the batch finishes.</span>
             <v-spacer></v-spacer>
             <v-btn size="small" variant="outlined" prepend-icon="ti ti-plus" @click="$refs.more.click()">Add more</v-btn>
             <input ref="more" type="file" multiple hidden @change="addMore">

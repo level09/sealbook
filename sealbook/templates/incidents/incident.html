@@ -21,7 +21,7 @@
   <v-card-text>
     <v-select v-model="ask.reviewer" :items="analysts" item-title="name" item-value="id" label="Reviewer" class="mb-2"></v-select>
     <v-textarea v-model="ask.reason" label="What should they check?" rows="3" auto-grow></v-textarea>
-    <p class="text-caption en-muted mb-0">From then only they sign the peer review. Their notes show in the thread.</p>
+    <p class="text-body-small en-muted mb-0">From then only they sign the peer review. Their notes show in the thread.</p>
   </v-card-text>
   <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="ask.open = false">Cancel</v-btn><v-btn color="primary" variant="flat" :disabled="!ask.reviewer || !ask.reason.trim()" :loading="ask.busy" @click="sendAsk">Send request</v-btn></v-card-actions>
 </v-card></v-dialog>
@@ -30,13 +30,13 @@
   <v-card-text>
     <v-btn-toggle v-model="vio.kind" mandatory density="compact" variant="outlined" divided class="mb-3"><v-btn value="potential">Possible category</v-btn><v-btn value="claimed">Violation claimed</v-btn></v-btn-toggle>
     <v-autocomplete v-model="vio.category" :items="e.violation_lists[vio.kind]" :label="vio.kind === 'potential' ? 'Possible category' : 'Violation claimed'" density="compact" hide-details auto-select-first></v-autocomplete>
-    <p class="text-caption en-muted mt-3 mb-0">From the methodology's lists. Your passkey signs it; undo it from the history.</p>
+    <p class="text-body-small en-muted mt-3 mb-0">From the methodology's lists. Your passkey signs it; undo it from the history.</p>
   </v-card-text>
   <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="vio.open = false">Cancel</v-btn><v-btn color="primary" prepend-icon="ti ti-signature" :disabled="!vio.category" :loading="signBusy" @click="categorise">Sign</v-btn></v-card-actions>
 </v-card></v-dialog>
 {% endblock %}
 {% block thread_hint %}
-<p v-if="thread.proposal.prop === 'incident'" class="text-caption en-muted mt-2 mb-0">Peer review of the incident. Nothing wrong: No review needed signs it. Needs review: write one line each, +label to add, -label to remove, *note for anything else.</p>
+<p v-if="thread.proposal.prop === 'incident'" class="text-body-small en-muted mt-2 mb-0">Peer review of the incident. Nothing wrong: No review needed signs it. Needs review: write one line each, +label to add, -label to remove, *note for anything else.</p>
 {% endblock %}
 {% block thread_actions %}
 <v-btn v-if="thread.proposal.prop === 'incident' && thread.can_review && !e.peer_signed" size="small" variant="outlined" prepend-icon="ti ti-signature" :loading="signBusy" @click="noReviewNeeded">No review needed</v-btn>
@@ -44,14 +44,14 @@
 {% endblock %}
 {% block side %}
 <section class="en-panel" aria-labelledby="en-h-where">
-  <header><h2 id="en-h-where">Where and when</h2><span class="en-muted text-caption">from accepted statements only</span></header>
+  <header><h2 id="en-h-where">Where and when</h2><span class="en-muted text-body-small">from accepted statements only</span></header>
   <entity-map v-if="shapes.length" :shapes="shapes" :dark="isDark" :label="'Map of ' + e.title"></entity-map>
   <div class="en-body"><dl class="en-dl">
     <dt>When</dt><dd>${ e.window ? fmtSpan(e.window[0], e.window[1]) : 'no date accepted' }</dd>
     <template v-for="p in e.places" :key="p.id"><dt>Place</dt><dd><a :href="'/places/' + p.id"><bdi dir="auto">${ p.ar }</bdi></a><span v-if="p.en" class="en-muted"> · <bdi dir="auto">${ p.en }</bdi></span></dd></template>
     <dt>People</dt><dd>${ plural(e.relations.people.length, 'person', 'people') }, roles as accepted</dd>
   </dl>
-  <p class="en-muted text-caption mt-2 mb-0">Dates and places come from the claims that were kept when the finding was accepted. Nothing here was typed twice.</p></div>
+  <p class="en-muted text-body-small mt-2 mb-0">Dates and places come from the claims that were kept when the finding was accepted. Nothing here was typed twice.</p></div>
 </section>
 {% endblock %}
 {% block js %}

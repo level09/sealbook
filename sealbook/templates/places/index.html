@@ -44,16 +44,16 @@
     </template>
     <template v-else>
       <div class="pl-head">
-        <p class="en-muted text-caption ma-0" style="flex: 1 1 360px">Each name shows the place it most likely means and why. Nothing resolves until you confirm; the same spelling then resolves by itself within that case and governorate when the gazetteer has one candidate for it.</p>
+        <p class="en-muted text-body-small ma-0" style="flex: 1 1 360px">Each name shows the place it most likely means and why. Nothing resolves until you confirm; the same spelling then resolves by itself within that case and governorate when the gazetteer has one candidate for it.</p>
         <template v-if="unplaced">
           <v-btn v-if="caseSel" size="small" variant="tonal" color="agent" prepend-icon="ti ti-robot-face" :loading="finder.busy" @click="askFinder">Suggest approximate places</v-btn>
-          <span v-else class="en-muted text-caption">Choose a case to ask the place finder about names the gazetteer lacks.</span>
+          <span v-else class="en-muted text-body-small">Choose a case to ask the place finder about names the gazetteer lacks.</span>
         </template>
       </div>
       <v-skeleton-loader v-if="!un.loaded" type="list-item-two-line@4"></v-skeleton-loader>
       <div v-for="u in un.items" :key="u.norm" class="pl-un">
         <div><v-checkbox-btn v-if="canPick(u)" v-model="picked" :value="u.norm" density="compact" :aria-label="'Select ' + u.name"></v-checkbox-btn></div>
-        <div><strong><bdi dir="auto">${ u.name }</bdi></strong> <span class="en-muted text-caption">${ plural(u.count, 'claim') }</span>
+        <div><strong><bdi dir="auto">${ u.name }</bdi></strong> <span class="en-muted text-body-small">${ plural(u.count, 'claim') }</span>
           <div class="claims"><div v-for="c in u.claims.slice(0, 2)" :key="c.id">${ PROP[c.prop] || human(c.prop) }${ c.when ? ', ' + c.when : '' }: <a v-if="c.href" :href="c.href"><bdi>${ c.file }</bdi></a><span v-else>${ c.file }</span></div>
             <div v-if="u.count > 2" class="en-muted">and ${ plural(u.count - 2, 'more claim') }</div></div></div>
         <div v-if="u.claims[0].proposal" class="pl-sugg"><span>Proposed: <a :href="'/places/' + u.claims[0].proposal.place.id"><bdi dir="auto">${ placeName(u.claims[0].proposal.place) }</bdi></a></span><span class="why">Waiting for a decision in Review.</span></div>
@@ -91,7 +91,7 @@
       <div v-if="un.items.some(canPick)" class="pl-foot">
         <v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-signature" :disabled="!picked.length" :loading="signBusy" @click="confirmPicked">Confirm ${ picked.length || '' } selected</v-btn>
         <v-btn size="small" variant="text" @click="picked = un.items.filter(canPick).map(u => u.norm)">Select every clear suggestion</v-btn>
-        <span class="en-muted text-caption">One passkey prompt signs each confirmation, the same statement as one at a time. Names with several places stay one claim at a time.</span>
+        <span class="en-muted text-body-small">One passkey prompt signs each confirmation, the same statement as one at a time. Names with several places stay one claim at a time.</span>
       </div>
     </template>
   </section>

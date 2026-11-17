@@ -46,7 +46,7 @@
   </div>
   <div class="ibx">
     <section class="ibx-panel" v-show="!(isMobile && pane)" aria-labelledby="ibx-h-list">
-      <header><h2 id="ibx-h-list">Newest first</h2><span class="ibx-muted text-caption">${ loading && !rows.length ? 'Loading' : unread + ' unread' }</span>
+      <header><h2 id="ibx-h-list">Newest first</h2><span class="ibx-muted text-body-small">${ loading && !rows.length ? 'Loading' : unread + ' unread' }</span>
         <v-btn class="act" size="small" variant="text" prepend-icon="ti ti-checks" :disabled="!unread" @click="readAll">Mark all read</v-btn></header>
       <v-skeleton-loader v-if="loading && !rows.length" type="list-item-two-line@6"></v-skeleton-loader>
       <div v-else-if="shown.length" role="listbox" aria-label="Inbox items">
@@ -70,10 +70,10 @@
           <div class="ibx-about">
             <media-thumb v-if="doc(cur.req)" :sha="doc(cur.req).sha256" :file="doc(cur.req).title" :href="srcHref(cur.req)" :caption="false" :width="isMobile ? 64 : 96" :height="isMobile ? 44 : 64"></media-thumb>
             <div class="t">
-              <div class="text-caption ibx-muted">Review request on a ${ cur.req.proposal.prop === 'finding' ? 'finding' : 'claim' }</div>
+              <div class="text-body-small ibx-muted">Review request on a ${ cur.req.proposal.prop === 'finding' ? 'finding' : 'claim' }</div>
               <div><strong dir="auto">${ sentence(cur.req) }</strong>
                 <span class="r-chip ms-1" :class="'tier-' + cur.req.proposal.tier">${ cur.req.proposal.tier }</span></div>
-              <div class="text-caption ibx-muted"><template v-if="doc(cur.req)">In <a :href="srcHref(cur.req)">${ doc(cur.req).title }</a><template v-if="spanLabel(cur.req.proposal.span)">, ${ spanLabel(cur.req.proposal.span) }</template>,</template>
+              <div class="text-body-small ibx-muted"><template v-if="doc(cur.req)">In <a :href="srcHref(cur.req)">${ doc(cur.req).title }</a><template v-if="spanLabel(cur.req.proposal.span)">, ${ spanLabel(cur.req.proposal.span) }</template>,</template>
                 proposed by <actor-chip v-if="cur.req.proposal.actor" :actor="{kind: cur.req.proposal.actor.kind, name: cur.req.proposal.actor.label, detail: cur.req.proposal.actor.detail}"></actor-chip></div>
               <div class="d-flex ga-2 mt-2 flex-wrap">
                 <v-btn v-if="doc(cur.req)" size="small" variant="outlined" prepend-icon="ti ti-file-search" :href="srcHref(cur.req)">Open source</v-btn>
@@ -82,12 +82,12 @@
             </div>
           </div>
           <div class="ibx-msg">
-            <div class="who"><actor-chip :actor="{kind: 'human', name: cur.req.sender.name, role: 'asked for review'}" :you="cur.req.sender.id === me"></actor-chip><span class="ibx-muted text-caption">${ ago(cur.req.at) }</span>
+            <div class="who"><actor-chip :actor="{kind: 'human', name: cur.req.sender.name, role: 'asked for review'}" :you="cur.req.sender.id === me"></actor-chip><span class="ibx-muted text-body-small">${ ago(cur.req.at) }</span>
               <v-chip size="x-small" color="warning" variant="outlined" prepend-icon="ti ti-user-plus">asks ${ cur.req.reviewer === me ? 'you' : nameOf(cur.req.reviewer) }</v-chip></div>
             <div class="body" dir="auto" v-html="mark(cur.req.reason)"></div>
           </div>
           <div v-for="m in cur.req.comments" :key="m.id" class="ibx-msg">
-            <div class="who"><actor-chip :actor="{kind: 'human', name: m.author, role: roleOf(m.author)}"></actor-chip><span class="ibx-muted text-caption">${ ago(m.at) }</span></div>
+            <div class="who"><actor-chip :actor="{kind: 'human', name: m.author, role: roleOf(m.author)}"></actor-chip><span class="ibx-muted text-body-small">${ ago(m.at) }</span></div>
             <div class="body" dir="auto" v-html="mark(m.text)"></div>
           </div>
           <div class="ibx-reply">
@@ -100,7 +100,7 @@
               </v-list>
             </v-menu>
             <div class="d-flex ga-2 mt-2 align-center flex-wrap">
-              <span class="text-caption ibx-muted">Mentions reach this thread's people and admins.</span><v-spacer></v-spacer>
+              <span class="text-body-small ibx-muted">Mentions reach this thread's people and admins.</span><v-spacer></v-spacer>
               <v-btn size="small" color="primary" variant="flat" prepend-icon="ti ti-send" :disabled="!reply.trim()" :loading="posting" @click="post">Post</v-btn>
             </div>
           </div>
@@ -110,17 +110,17 @@
         <div class="ibx-about">
           <media-thumb v-if="cur.a.source && cur.a.source.sha256" :sha="cur.a.source.sha256" :file="cur.a.source.title || ''" :href="cur.href" :caption="false" :width="isMobile ? 64 : 96" :height="isMobile ? 44 : 64"></media-thumb>
           <div class="t">
-            <div class="text-caption ibx-muted d-flex flex-wrap ga-1 align-center"><actor-chip :actor="{kind: 'human', name: myName, role: 'assignee'}" :you="true"></actor-chip><template v-if="cur.a.investigation"> in ${ cur.a.investigation }</template></div>
+            <div class="text-body-small ibx-muted d-flex flex-wrap ga-1 align-center"><actor-chip :actor="{kind: 'human', name: myName, role: 'assignee'}" :you="true"></actor-chip><template v-if="cur.a.investigation"> in ${ cur.a.investigation }</template></div>
             <div><strong dir="auto">${ cur.title }</strong></div>
             <div class="d-flex ga-2 mt-1 flex-wrap"><v-chip v-if="cur.due" size="x-small" variant="outlined" :color="cur.due.late ? 'overdue' : 'due'" :prepend-icon="cur.due.late ? 'ti ti-alert-triangle' : 'ti ti-clock'">${ cur.due.text }</v-chip><v-chip size="x-small" variant="outlined">${ cur.a.priority } priority</v-chip></div>
             <v-btn class="mt-2" size="small" color="primary" variant="flat" prepend-icon="ti ti-arrow-right" :href="cur.href">Open it</v-btn>
           </div>
         </div>
-        <p class="pa-3 ibx-muted text-body-2">Assigned work has no thread of its own. Ask a colleague about a claim from the source page and the thread appears here.</p>
+        <p class="pa-3 ibx-muted text-body-medium">Assigned work has no thread of its own. Ask a colleague about a claim from the source page and the thread appears here.</p>
       </template>
       <template v-else-if="cur">
         <div class="ibx-about"><v-icon :icon="cur.icon" size="22" class="ibx-muted"></v-icon>
-          <div class="t"><div class="text-caption ibx-muted">${ cur.label }, ${ ago(cur.at) }</div><div><strong dir="auto">${ cur.n.title }</strong></div><div class="ibx-muted" dir="auto">${ cur.n.subtitle }</div>
+          <div class="t"><div class="text-body-small ibx-muted">${ cur.label }, ${ ago(cur.at) }</div><div><strong dir="auto">${ cur.n.title }</strong></div><div class="ibx-muted" dir="auto">${ cur.n.subtitle }</div>
             <v-btn class="mt-2" size="small" color="primary" variant="flat" prepend-icon="ti ti-arrow-right" :href="cur.n.to">${ cur.n.kind === 'intake_done' ? 'Open the batch' : 'Open it' }</v-btn></div>
         </div>
         <div v-if="cur.n.kind === 'intake_done' && batchOf(cur.n)" class="pa-3"><intake-brief :batch="batchOf(cur.n)"></intake-brief></div>
@@ -142,8 +142,8 @@ const ActorChip = {
   delimiters: ['[[', ']]'],
   computed: {initials() { return (this.name || '?').split(/[-\s@.]/).filter(Boolean).map(x => x[0]).join('').slice(0, 2).toUpperCase(); }},
   template: `<span class="ibx-actor"><v-avatar size="22" :class="{bot: kind !== 'human'}" :color="kind === 'human' ? (me ? 'primary' : 'surface-variant') : undefined">
-    <v-icon v-if="kind === 'import'" icon="ti ti-file-import" size="14"></v-icon><v-icon v-else-if="kind !== 'human'" icon="ti ti-robot" size="14"></v-icon><span v-else class="text-caption">[[ initials ]]</span></v-avatar>
-    <strong :class="{'text-agent': kind !== 'human'}">[[ name ]]</strong><span v-if="role" class="text-caption" style="color: var(--ink-3)">[[ role ]]</span></span>`,
+    <v-icon v-if="kind === 'import'" icon="ti ti-file-import" size="14"></v-icon><v-icon v-else-if="kind !== 'human'" icon="ti ti-robot" size="14"></v-icon><span v-else class="text-body-small">[[ initials ]]</span></v-avatar>
+    <strong :class="{'text-agent': kind !== 'human'}">[[ name ]]</strong><span v-if="role" class="text-body-small" style="color: var(--ink-3)">[[ role ]]</span></span>`,
 };
 const ICON = {request: 'ti ti-message-question', mention: 'ti ti-at', reply: 'ti ti-message', decision: 'ti ti-signature', assignment: 'ti ti-user-plus', assigned: 'ti ti-user-plus', intake_done: 'ti ti-upload'};
 const LABEL = {assigned: 'Assigned to you', mention: 'Mentioned you', reply: 'New reply', decision: 'Decision', intake_done: 'Intake finished', standing_match: 'New match', agent_found: 'Agent found something', agent_paused: 'Check paused'};

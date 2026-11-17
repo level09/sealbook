@@ -70,7 +70,7 @@
       <v-btn v-if="selected.length < total" size="small" variant="text" :loading="selectingAll" @click="selectAll">Select all ${ total.toLocaleString() } matching filter</v-btn>
       <v-btn size="small" variant="text" @click="selected = []">Clear</v-btn>
       <v-spacer></v-spacer>
-      <span v-if="assignBlocked" class="text-caption">${ assignBlocked }</span>
+      <span v-if="assignBlocked" class="text-body-small">${ assignBlocked }</span>
       <v-autocomplete v-model="assignee" :items="analysts" item-title="label" item-value="id" :disabled="!!assignBlocked" density="compact" hide-details variant="solo" flat prepend-inner-icon="ti ti-user-plus" placeholder="Assign to" style="min-width: 180px; max-width: 240px" aria-label="Assign to analyst"></v-autocomplete>
       <v-date-input v-model="due" :min="today" :disabled="!!assignBlocked" density="compact" hide-details variant="solo" flat prepend-icon="" prepend-inner-icon="ti ti-calendar-due" placeholder="Due date" style="min-width: 150px; max-width: 180px" aria-label="Due date"></v-date-input>
       <v-btn size="small" color="surface" prepend-icon="ti ti-user-plus" :disabled="!assignee || !!assignBlocked" :loading="assigning" @click="assign">Assign</v-btn>
@@ -88,7 +88,7 @@
       <template #item.c2pa="{ item }"><v-tooltip :text="c2Text(item.c2pa)"><template #activator="{ props }"><i v-bind="props" :class="c2Icon(item.c2pa)" style="font-size: 16px" :aria-label="c2Text(item.c2pa)"></i></template></v-tooltip></template>
       <template #item.claims="{ item }"><span :title="item.pending ? item.pending + ' pending review' : null">${ item.claims }</span></template>
       <template #item.findings="{ item }"><span v-if="item.findings" class="text-agent"><i class="ti ti-robot" aria-hidden="true"></i> ${ item.findings }</span></template>
-      <template #item.assignee="{ item }"><span v-if="item.assignee" class="text-no-wrap">${ item.assignee.name }<span v-if="item.due" class="text-caption d-block" :class="late(item.due) ? 'text-overdue' : 'src-muted'" :title="'due ' + item.due">${ (late(item.due) ? 'overdue ' : 'due ') + item.due.slice(5) }</span></span><span v-else class="src-muted">unassigned</span></template>
+      <template #item.assignee="{ item }"><span v-if="item.assignee" class="text-no-wrap">${ item.assignee.name }<span v-if="item.due" class="text-body-small d-block" :class="late(item.due) ? 'text-overdue' : 'src-muted'" :title="'due ' + item.due">${ (late(item.due) ? 'overdue ' : 'due ') + item.due.slice(5) }</span></span><span v-else class="src-muted">unassigned</span></template>
       <template #item.stage="{ item }"><span class="text-no-wrap" :class="{'src-muted': ['New', 'Machine created'].includes(item.stage)}">${ item.stage }</span><v-chip v-if="['failed', 'processing'].includes(item.status)" size="x-small" variant="outlined" class="ms-1" :color="item.status === 'failed' ? 'negative' : undefined">${ item.status }</v-chip></template>
       <template #item.status="{ item }"><v-chip size="small" variant="outlined" :color="item.status === 'needs review' ? 'agent' : item.status === 'failed' ? 'negative' : undefined">${ item.status }</v-chip></template>
       <template #no-data><v-empty-state icon="ti ti-files-off" title="No sources match" text="Clear a filter or pick another case."></v-empty-state></template>
@@ -100,13 +100,13 @@
             <media-thumb :key="r.sha256 + (revealed[r.sha256] || 0)" :locked="hidden(r)" :sha="r.sha256" :mime="r.mime" :kind="r.type" :file="r.title" :caption="false" :link="false" :width="160" :height="104"></media-thumb>
             <v-btn v-if="hidden(r)" class="src-reveal" size="x-small" variant="flat" prepend-icon="ti ti-eye" :loading="revealing === r.sha256" @click="reveal(r)">Reveal, logged</v-btn>
           </div>
-          <div class="pa-2 text-caption d-flex align-start ga-1">
+          <div class="pa-2 text-body-small d-flex align-start ga-1">
             <v-checkbox-btn :model-value="selected.includes(r.sha256)" density="compact" :aria-label="'Select ' + r.title" @update:model-value="toggle(r.sha256)"></v-checkbox-btn>
             <div class="flex-grow-1 text-start" style="min-width: 0"><a class="d-block text-truncate font-weight-medium" :href="openUrl(r)">${ label(r.doc_type) }</a><div class="text-truncate src-muted">${ r.title }</div><span v-if="r.next" class="r-chip mt-1" :class="NEXT[r.next.state].cls" :title="r.next.label + ': ' + r.next.words"><i :class="NEXT[r.next.state].icon" aria-hidden="true"></i>${ r.next.chip }</span></div>
           </div>
         </v-card>
       </div>
-      <div class="d-flex align-center justify-end ga-2 px-3 pb-2"><span class="text-caption src-muted">Sensitive sources stay hatched until a logged reveal.</span><v-pagination v-model="page" :length="Math.max(1, Math.ceil((total || 0) / perPage))" density="compact" total-visible="5" @update:model-value="load()"></v-pagination></div>
+      <div class="d-flex align-center justify-end ga-2 px-3 pb-2"><span class="text-body-small src-muted">Sensitive sources stay hatched until a logged reveal.</span><v-pagination v-model="page" :length="Math.max(1, Math.ceil((total || 0) / perPage))" density="compact" total-visible="5" @update:model-value="load()"></v-pagination></div>
     </template>
     <div class="src-hints" aria-label="Keyboard shortcuts"><span><kbd>j</kbd><kbd>k</kbd>move</span><span><kbd>x</kbd>select</span><span><kbd>Enter</kbd>open</span></div>
   </section>

@@ -238,7 +238,7 @@
               <div class="d-grid ga-3">
                 <div class="gd-ctl">
                   <strong>Change one character</strong>
-                  <span class="text-caption">Flip character ${ POS + 1 } of the commitment, as if someone edited the value, then choose how much else they rewrite to hide it.</span>
+                  <span class="text-body-small">Flip character ${ POS + 1 } of the commitment, as if someone edited the value, then choose how much else they rewrite to hide it.</span>
                   <v-switch v-model="tamper" color="negative" density="compact" hide-details :label="tamper ? 'One character changed' : 'Record as stored'"></v-switch>
                   <v-radio-group v-model="level" density="compact" hide-details :disabled="!tamper" aria-label="How much is rewritten">
                     <v-radio v-for="(t, i) in LEVELS" :key="i" :value="i" :label="t"></v-radio>

@@ -115,7 +115,7 @@ export const SheetColumns = {
       <div class="ds">
         <v-select v-if="p.datasets.length" v-model="s.dataset" :items="datasetItems" density="compact" variant="outlined" hide-details label="Dataset" prepend-inner-icon="ti ti-stack-2"></v-select>
         <v-text-field v-if="!s.dataset" v-model="s.datasetName" density="compact" variant="outlined" hide-details label="New dataset name" dir="auto"></v-text-field>
-        <span class="text-caption muted">{{ s.dataset ? 'Rows are compared with the last version; only new and changed rows are read.' : 'A new dataset remembers these columns for the next version of this sheet.' }}</span>
+        <span class="text-body-small muted">{{ s.dataset ? 'Rows are compared with the last version; only new and changed rows are read.' : 'A new dataset remembers these columns for the next version of this sheet.' }}</span>
       </div>
       <div class="scroll" :dir="rtl ? 'rtl' : 'ltr'">
         <table>
@@ -135,13 +135,13 @@ export const SheetColumns = {
       <footer>
         <template v-if="!stored">
           <v-btn size="small" :variant="allOk ? 'outlined' : 'flat'" :color="allOk ? undefined : 'primary'" :prepend-icon="allOk ? 'ti ti-check' : 'ti ti-checks'" :disabled="!!unset" @click="confirmAll">{{ allOk ? 'Columns confirmed' : 'Confirm all ' + plural(cols.length, 'column') }}</v-btn>
-          <span class="text-caption muted">{{ unset ? plural(unset, 'column') + ' still need a field. If you add it now, the file is stored and rows wait for you.' : !key ? 'Mark one column as Row identifier, so a later version can be compared row by row.' : allOk ? plural(p.table.total, 'row') + ' will be read after the file is stored.' : plural(waiting, 'column') + ' suggested. Check them, then confirm all. If you add the file first, it is stored and rows wait for you.' }}</span>
+          <span class="text-body-small muted">{{ unset ? plural(unset, 'column') + ' still need a field. If you add it now, the file is stored and rows wait for you.' : !key ? 'Mark one column as Row identifier, so a later version can be compared row by row.' : allOk ? plural(p.table.total, 'row') + ' will be read after the file is stored.' : plural(waiting, 'column') + ' suggested. Check them, then confirm all. If you add the file first, it is stored and rows wait for you.' }}</span>
         </template>
         <template v-else>
           <v-btn size="small" color="primary" prepend-icon="ti ti-checks" :disabled="!ready" :loading="s.busy" @click="confirm">Confirm all {{ plural(cols.length, 'column') }} and read {{ plural(p.table.total, 'row') }}</v-btn>
-          <span class="text-caption muted">{{ unset ? plural(unset, 'column') + ' still need a field.' : !key ? 'Mark one column as Row identifier first.' : !(s.dataset || s.datasetName.trim()) ? 'Name the dataset first.' : 'The file is stored. Rows are read after you confirm.' }}</span>
+          <span class="text-body-small muted">{{ unset ? plural(unset, 'column') + ' still need a field.' : !key ? 'Mark one column as Row identifier first.' : !(s.dataset || s.datasetName.trim()) ? 'Name the dataset first.' : 'The file is stored. Rows are read after you confirm.' }}</span>
         </template>
-        <span v-if="s.error" class="text-caption err" role="alert">{{ s.error }}</span>
+        <span v-if="s.error" class="text-body-small err" role="alert">{{ s.error }}</span>
       </footer>
     </template>
   </div>`,

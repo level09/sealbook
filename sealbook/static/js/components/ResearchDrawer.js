@@ -128,7 +128,7 @@ export const ResearchDrawer = {
   },
   beforeUnmount() { clearTimeout(this._timer); },
   template: `<v-navigation-drawer v-model="open" location="right" temporary :width="width" class="rs" aria-label="Research the web">
-    <v-toolbar density="compact" color="surface" border="b"><v-toolbar-title class="text-body-1 font-weight-bold">Research the web</v-toolbar-title>
+    <v-toolbar density="compact" color="surface" border="b"><v-toolbar-title class="text-body-large font-weight-bold">Research the web</v-toolbar-title>
       <v-btn icon="ti ti-x" variant="text" aria-label="Close" @click="open = false"></v-btn></v-toolbar>
     <div class="pa-3">
       <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mb-3">{{ error }}</v-alert>
@@ -206,7 +206,7 @@ export const ResearchDrawer = {
           <p v-else class="rs-note">A browser on this server visits each picked page once; its HTML, a full-page screenshot and the media on it are stored and hashed, then read like any other intake. Pages behind a login are refused.</p>
         </template>
         <div v-if="progress" class="mt-3">
-          <h3 class="text-body-2 font-weight-bold mb-1">Capture <span class="muted">{{ done ? 'finished' : 'running' }}</span></h3>
+          <h3 class="text-body-medium font-weight-bold mb-1">Capture <span class="muted">{{ done ? 'finished' : 'running' }}</span></h3>
           <div v-for="c in progress.captures" :key="c.run" class="rs-prog">
             <div><strong dir="auto">{{ c.title || c.page }}</strong> <span class="muted">{{ c.status }}</span></div>
             <div v-if="c.error" class="rs-note">{{ c.error }} <v-btn size="x-small" variant="outlined" @click="retry(c.run)">Retry</v-btn></div>

@@ -36,12 +36,12 @@
                 </v-badge>
             </template>
             <v-card width="390" class="sb-bell">
-                <v-card-item><v-card-title class="text-body-1 font-weight-bold">Notifications</v-card-title>
+                <v-card-item><v-card-title class="text-body-large font-weight-bold">Notifications</v-card-title>
                     <template #append><v-btn size="small" variant="text" prepend-icon="ti ti-checks" :disabled="!unreadCount" @click="readAllNotes">Mark all read</v-btn></template></v-card-item>
                 <v-divider></v-divider>
                 <v-list density="compact" lines="two" max-height="420">
                     <v-list-item v-for="n in notes" :key="n.id" :href="n.to" :class="{ unread: !n.isSeen }" :prepend-icon="noteIcons[n.kind] || 'ti ti-bell'" @click="openNote(n, $event)">
-                        <v-list-item-title class="text-body-2" dir="auto">${ n.title }</v-list-item-title>
+                        <v-list-item-title class="text-body-medium" dir="auto">${ n.title }</v-list-item-title>
                         <v-list-item-subtitle dir="auto">${ n.subtitle }</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="notesNext" prepend-icon="ti ti-chevron-down" title="Older" @click="loadNotes(true)"></v-list-item>
@@ -50,7 +50,7 @@
             </v-card>
         </v-menu>
         <v-menu location="bottom end">
-            <template #activator="{ props }"><v-btn v-bind="props" icon variant="text" aria-label="Account menu for {{ current_user.name or current_user.email }}"><v-avatar color="primary" size="28"><span class="text-caption font-weight-bold">{{ (current_user.name or current_user.email)[:2]|upper }}</span></v-avatar></v-btn></template>
+            <template #activator="{ props }"><v-btn v-bind="props" icon variant="text" aria-label="Account menu for {{ current_user.name or current_user.email }}"><v-avatar color="primary" size="28"><span class="text-body-small font-weight-bold">{{ (current_user.name or current_user.email)[:2]|upper }}</span></v-avatar></v-btn></template>
             <v-list density="compact" min-width="240">
                 <v-list-item title="{{ current_user.name or current_user.email }}" subtitle="{{ current_user.email }}"></v-list-item>
                 <v-divider></v-divider>
@@ -81,7 +81,7 @@
         <!-- Work first, then the cases (each opens as one page with tabs); agents, following, export and help sit at the foot. -->
         <v-list nav density="compact" aria-label="Sections">
             <v-list-item v-for="n in mainRail" :key="n.title" v-tooltip:end="railMini ? n.title + (n.count ? ', ' + n.count : '') : null" :href="n.to" :prepend-icon="n.icon" :title="n.title" :aria-label="n.title" :active="n.current && (!caseTab || (n.badge === 'todo' && !caseSel))" color="primary" :class="[n.hue && ['sb-nav-icon', n.hue], {'sb-has': n.count}]" :aria-current="n.current ? 'page' : null">
-                <template #append v-if="n.count && !railMini"><span class="text-caption text-medium-emphasis">${ n.count }</span></template>
+                <template #append v-if="n.count && !railMini"><span class="text-body-small text-medium-emphasis">${ n.count }</span></template>
             </v-list-item>
             <!-- Case names do not shrink to icons: with the rail narrow they open from one folder. -->
             <v-menu v-if="railMini && caseList.length" location="end" offset="6">
@@ -104,7 +104,7 @@
                     <template #append v-if="n.note && !railMini"><span class="sb-note">${ n.note }</span></template>
                 </v-list-item>
             </v-list>
-            <div v-if="!railMini" class="px-3 pb-3 text-caption text-medium-emphasis">${ caseLabel }</div>
+            <div v-if="!railMini" class="px-3 pb-3 text-body-small text-medium-emphasis">${ caseLabel }</div>
         </template>
     </v-navigation-drawer>
     <v-bottom-navigation v-else grow density="compact" aria-label="Sections">
@@ -155,12 +155,12 @@
             <v-list density="compact" max-height="52vh">
                 <v-list-item v-for="(x, i) in palHits" :key="x.kind + x.t + x.h" :href="x.h" :class="{ sel: i === palI }" :prepend-icon="x.icon" tabindex="-1">
                     <v-list-item-title dir="auto">${ x.t }</v-list-item-title>
-                    <template #append><span class="text-caption text-medium-emphasis mono" dir="auto">${ x.kind } ${ x.s || '' }</span></template>
+                    <template #append><span class="text-body-small text-medium-emphasis mono" dir="auto">${ x.kind } ${ x.s || '' }</span></template>
                 </v-list-item>
                 <v-empty-state v-if="!palHits.length" icon="ti ti-search-off" title="Nothing matches" text="Try a page name, a person id or a file name."></v-empty-state>
             </v-list>
             <v-divider></v-divider>
-            <div class="d-flex ga-4 px-3 py-2 text-caption text-medium-emphasis"><span><v-hotkey keys="arrowup"></v-hotkey> <v-hotkey keys="arrowdown"></v-hotkey> move</span><span><v-hotkey keys="enter"></v-hotkey> open</span><span><v-hotkey keys="escape"></v-hotkey> close</span></div>
+            <div class="d-flex ga-4 px-3 py-2 text-body-small text-medium-emphasis"><span><v-hotkey keys="arrowup"></v-hotkey> <v-hotkey keys="arrowdown"></v-hotkey> move</span><span><v-hotkey keys="enter"></v-hotkey> open</span><span><v-hotkey keys="escape"></v-hotkey> close</span></div>
         </v-card>
     </v-dialog>
 

@@ -85,28 +85,28 @@
   <v-empty-state v-else-if="!s && !busy && !error" icon="ti ti-timeline" :title="lens === 'incident' && !incidentItems.length ? 'No incident in this case yet' : 'Pick what to tell'" :text="lens === 'incident' && !incidentItems.length ? 'An incident appears here once a person accepts a candidate in Discover.' : 'Choose a person, a place or an incident above.'"></v-empty-state>
   <template v-if="s && points.length">
   <div class="st-grid">
-    <section class="st-panel" aria-labelledby="h-tl"><header><h2 id="h-tl">Timeline</h2><span class="st-muted text-caption">rows are people; ${ pending.length } pending finding${ pending.length === 1 ? '' : 's' } hatched</span></header>
+    <section class="st-panel" aria-labelledby="h-tl"><header><h2 id="h-tl">Timeline</h2><span class="st-muted text-body-small">rows are people; ${ pending.length } pending finding${ pending.length === 1 ? '' : 's' } hatched</span></header>
       <div class="pa-2"><story-timeline :rows="rows" :from="range[0]" :to="range[1]" :cursor="cursor" :sel="selId" :pending="pending" :incidents="incidentBands" @pick="select" @review="openFinding"></story-timeline></div>
       <div v-if="s.truncated" class="st-unres st-muted">Showing the first 5,000 claims. Narrow the lens or the time window to see the rest.</div>
     </section>
-    <section class="st-panel" aria-labelledby="h-map"><header><h2 id="h-map">Map</h2><span class="st-muted text-caption">numbered in time order; sequence lines, not routes</span></header>
+    <section class="st-panel" aria-labelledby="h-map"><header><h2 id="h-map">Map</h2><span class="st-muted text-body-small">numbered in time order; sequence lines, not routes</span></header>
       <div ref="map" class="st-map" role="region" aria-label="Map of resolved places"></div>
       <div class="st-scrub"><v-icon-btn :icon="playing ? 'ti ti-player-pause' : 'ti ti-player-play'" variant="text" size="small" :aria-label="playing ? 'Pause' : 'Play'" @click="play"></v-icon-btn>
         <v-slider v-model="t" :min="0" :max="span" :step="1" hide-details density="compact" color="primary" aria-label="Time" class="flex-grow-1"></v-slider><span class="mono text-no-wrap">${ fmtDay(cursor) }</span></div>
       <div class="st-unres"><strong>Unresolved names</strong> <span class="st-muted">not on the map until a person confirms a place:</span>
         <span v-for="u in s.unresolved" :key="u.place" class="ms-2"><bdi dir="auto">${ u.place }</bdi> <span class="st-muted">(${ u.count })</span></span><span v-if="!s.unresolved.length" class="st-muted ms-2">none</span>
-        <div class="text-caption st-muted mt-1">Places from ${ s.attribution }; outlines from Natural Earth.</div></div>
+        <div class="text-body-small st-muted mt-1">Places from ${ s.attribution }; outlines from Natural Earth.</div></div>
     </section>
   </div>
 
-  <section class="st-panel mt-3" aria-labelledby="h-ev"><header><h2 id="h-ev">Evidence</h2><span class="st-muted text-caption">the exact span behind each point, in time order</span></header>
+  <section class="st-panel mt-3" aria-labelledby="h-ev"><header><h2 id="h-ev">Evidence</h2><span class="st-muted text-body-small">the exact span behind each point, in time order</span></header>
     <div class="st-strip"><v-slide-group :model-value="selId" show-arrows center-active>
       <v-slide-group-item v-for="p in ordered" :key="p.id" :value="p.id">
         <v-card border class="st-card" :class="{ on: selId === p.id }" :data-point="p.id" @click="select(p)">
           <div class="d-flex ga-2 align-baseline"><span :class="['tier-' + p.tier, p.agent ? 'by-agent' : 'by-person']"><span class="st-sw"></span></span><strong class="text-truncate" dir="auto">${ rowLabel[p.subject] }</strong><v-icon v-if="forkIds.has(p.id)" icon="ti ti-git-fork" size="14" style="color: var(--conflict)" aria-label="conflict"></v-icon></div>
-          <div class="text-caption">${ PROP[p.prop] || p.prop } <a v-if="p.place_id" :href="'/places/' + p.place_id" @click.stop><bdi dir="auto">${ p.place }</bdi></a><bdi v-else dir="auto">${ p.place }</bdi>, ${ fmtSpan(p.from, p.to) }</div>
+          <div class="text-body-small">${ PROP[p.prop] || p.prop } <a v-if="p.place_id" :href="'/places/' + p.place_id" @click.stop><bdi dir="auto">${ p.place }</bdi></a><bdi v-else dir="auto">${ p.place }</bdi>, ${ fmtSpan(p.from, p.to) }</div>
           <div class="d-flex ga-2 align-center mt-1"><media-thumb v-if="p.source" :locked="p.locked" :sha="p.source" :mime="p.mime" :file="p.file" :href="p.href" :width="64" :height="40" :caption="false"></media-thumb>
-            <div class="text-caption" style="min-width: 0"><div class="st-muted text-truncate">${ p.file }</div><a :href="p.href" @click.stop>Open at span</a></div></div>
+            <div class="text-body-small" style="min-width: 0"><div class="st-muted text-truncate">${ p.file }</div><a :href="p.href" @click.stop>Open at span</a></div></div>
         </v-card></v-slide-group-item></v-slide-group></div>
     <div v-if="sel" class="st-detail" aria-live="polite">
       <div>
@@ -130,7 +130,7 @@
       <v-card-item><v-card-title class="text-body-large font-weight-bold" dir="auto">${ finding.reason }</v-card-title>
         <v-card-subtitle>${ finding.label }, ${ finding.band } evidence: ${ finding.why }. Pending, proposed by discovery.</v-card-subtitle></v-card-item>
       <v-card-text>
-        <div class="st-muted text-caption mb-1">Members, each a claim a person decides on in Discover</div>
+        <div class="st-muted text-body-small mb-1">Members, each a claim a person decides on in Discover</div>
         <div v-for="m in finding.members" :key="m.statement" class="st-check d-flex ga-2 align-baseline">
           <v-icon icon="ti ti-square" size="16" aria-hidden="true"></v-icon>
           <span><strong dir="auto">${ memberLabel(m) }</strong>

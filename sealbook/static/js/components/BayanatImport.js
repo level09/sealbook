@@ -65,10 +65,10 @@ export const BayanatImport = {
         <v-btn v-if="!done" size="small" color="primary" prepend-icon="ti ti-database-import" :loading="busy" :disabled="p.too_many" @click="run">Import {{ plural(p.bulletins, 'bulletin') }}</v-btn>
         <template v-else>
           <v-btn v-if="done.counts.proposals && !accepted" size="small" color="primary" prepend-icon="ti ti-fingerprint" :loading="busy" @click="accept">Accept what Bayanat's analysts decided</v-btn>
-          <span v-if="accepted" class="text-caption"><i class="ti ti-check" aria-hidden="true"></i> Accepted and signed with your passkey.</span>
-          <a class="text-caption" :href="'/sources?investigation=' + encodeURIComponent(p.case)">Open the case's sources</a>
+          <span v-if="accepted" class="text-body-small"><i class="ti ti-check" aria-hidden="true"></i> Accepted and signed with your passkey.</span>
+          <a class="text-body-small" :href="'/sources?investigation=' + encodeURIComponent(p.case)">Open the case's sources</a>
         </template>
-        <span v-if="!done" class="text-caption muted">{{ p.too_many ? 'Too many bulletins for one import; export them in smaller parts.' : 'Nothing is accepted by the import itself.' }}</span>
+        <span v-if="!done" class="text-body-small muted">{{ p.too_many ? 'Too many bulletins for one import; export them in smaller parts.' : 'Nothing is accepted by the import itself.' }}</span>
       </footer>
     </template>
   </div>`,

@@ -303,7 +303,7 @@
                 <v-btn v-if="claim.my_review && !(done && done.review)" size="small" variant="outlined" prepend-icon="ti ti-arrow-back-up" :loading="busy" @click="undo">Undo my decision</v-btn>
                 <v-btn v-if="correctable && claim.can_review === false" variant="text" size="small" prepend-icon="ti ti-pencil" @click="start('correct')">Correct</v-btn>
               </div>
-              <p v-if="stale && decidable" class="mt-2 mb-0 text-caption">Something changed since this was proposed. Accepting records that you saw the current state.</p>
+              <p v-if="stale && decidable" class="mt-2 mb-0 text-body-small">Something changed since this was proposed. Accepting records that you saw the current state.</p>
               <div v-if="needPasskey" class="rv-need" role="alert"><v-icon icon="ti ti-fingerprint" size="18"></v-icon><span>Decisions are signed with your passkey. You have not set one up yet.</span><v-btn size="small" color="primary" variant="flat" :href="needPasskey">Set up a passkey</v-btn></div>
               <div v-if="mode === 'reject'" class="rv-form">
                 <v-textarea id="rv-reason" v-model="reason" label="Why reject it (kept with the decision)" rows="2" density="compact" hide-details maxlength="4000" dir="auto" @keydown.meta.enter="decide('reject')"></v-textarea>
@@ -317,7 +317,7 @@
                 <v-text-field id="rv-fix" v-model="fix.text" label="Corrected value" density="compact" hide-details dir="auto" maxlength="8000"></v-text-field>
                 <div class="d-flex ga-2"><v-text-field v-model="fix.lang" label="Language" density="compact" hide-details style="max-width: 96px"></v-text-field><v-select v-model="fix.reviewer" :items="analysts" item-title="name" item-value="id" label="Colleague who signs it" density="compact" hide-details></v-select></div>
                 <v-textarea v-model="fix.note" label="What you read in the source" rows="2" density="compact" hide-details maxlength="4000" dir="auto"></v-textarea>
-                <p class="text-caption rv-muted ma-0">Same place in the source. The original stays on record; the correction replaces it only once your colleague signs it.</p>
+                <p class="text-body-small rv-muted ma-0">Same place in the source. The original stays on record; the correction replaces it only once your colleague signs it.</p>
                 <div class="row"><v-btn size="small" variant="text" @click="mode = null">Cancel</v-btn><v-btn size="small" color="primary" :disabled="!fix.text.trim() || !fix.lang.trim() || !fix.reviewer" :loading="busy" @click="sendCorrection">Send correction</v-btn></div>
               </div>
               <div v-if="mode === 'ask'" class="rv-form">
@@ -345,7 +345,7 @@
                   <v-btn v-if="f.kind === 'person' && f.proposal" class="go" size="x-small" variant="outlined" prepend-icon="ti ti-users" :href="'/review?box=open&statement=' + f.proposal">Open the proposal</v-btn>
                 </li>
               </ul>
-              <p class="text-caption rv-muted mt-2 mb-0">Found by rules when the claim opened. None of this accepts, rejects or changes anything.</p>
+              <p class="text-body-small rv-muted mt-2 mb-0">Found by rules when the claim opened. None of this accepts, rejects or changes anything.</p>
             </div>
 
             <div class="rv-sec">
@@ -359,8 +359,8 @@
                 <template v-if="claim.corrects"><dt>Corrects</dt><dd dir="auto"><span v-if="claim.corrects.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ claim.corrects.value.text }</bdi>, by <actor-chip :actor="claim.corrects.proposer" size="sm"></actor-chip></dd></template>
               </dl>
               <p v-if="claim.reasoning" class="rv-quote" dir="auto">${ claim.reasoning }</p>
-              <p v-else-if="claim.reasoning_hidden" class="text-caption rv-muted mt-2 mb-0"><i class="ti ti-lock r-ink state-sensitive" aria-hidden="true"></i> The run's reason shows once the sensitive sources above are shown.</p>
-              <p v-else-if="claim.agent" class="text-caption rv-muted mt-2 mb-0">The run recorded no reasoning; it gives evidence kinds, never a confidence score.</p>
+              <p v-else-if="claim.reasoning_hidden" class="text-body-small rv-muted mt-2 mb-0"><i class="ti ti-lock r-ink state-sensitive" aria-hidden="true"></i> The run's reason shows once the sensitive sources above are shown.</p>
+              <p v-else-if="claim.agent" class="text-body-small rv-muted mt-2 mb-0">The run recorded no reasoning; it gives evidence kinds, never a confidence score.</p>
             </div>
 
             <div class="rv-sec" v-if="!claim.compare">
@@ -378,7 +378,7 @@
               <h3>Thread</h3>
               <template v-if="claim.request && claim.request.visible">
                 <p v-if="!claim.thread.length" class="rv-muted ma-0">No replies yet.</p>
-                <div v-for="m in claim.thread.slice(-4)" :key="m.id" class="rv-msg"><div class="text-caption"><b>${ m.by }</b> <span class="rv-muted">${ ago(m.at) }</span></div><p dir="auto">${ m.text }</p></div>
+                <div v-for="m in claim.thread.slice(-4)" :key="m.id" class="rv-msg"><div class="text-body-small"><b>${ m.by }</b> <span class="rv-muted">${ ago(m.at) }</span></div><p dir="auto">${ m.text }</p></div>
                 <v-textarea id="rv-reply" v-model="reply" label="Reply" rows="1" auto-grow density="compact" hide-details maxlength="4000" dir="auto" class="mt-2"></v-textarea>
                 <div class="d-flex ga-2 mt-2"><v-btn size="small" variant="outlined" :disabled="!reply.trim()" :loading="busy" @click="sendReply">Reply</v-btn><v-spacer></v-spacer><v-btn size="small" variant="text" append-icon="ti ti-arrow-right" :href="'/inbox?item=request:' + claim.request.id">Open in Inbox</v-btn></div>
               </template>
@@ -416,7 +416,7 @@
                 <v-btn color="primary" size="small" prepend-icon="ti ti-signature" :disabled="busy || !title.trim()" @click="start('accept')">Accept as incident<v-kbd class="rv-kbd">a</v-kbd></v-btn>
                 <v-btn variant="outlined" size="small" prepend-icon="ti ti-x" @click="start('reject')">Reject<v-kbd class="rv-kbd">r</v-kbd></v-btn>
               </div>
-              <p class="text-caption rv-muted mt-2 mb-0">Accepting keeps every member, with roles unspecified, under one signed gesture. Drop members or set roles in Discover.</p>
+              <p class="text-body-small rv-muted mt-2 mb-0">Accepting keeps every member, with roles unspecified, under one signed gesture. Drop members or set roles in Discover.</p>
               <div v-if="needPasskey" class="rv-need" role="alert"><v-icon icon="ti ti-fingerprint" size="18"></v-icon><span>Decisions are signed with your passkey. You have not set one up yet.</span><v-btn size="small" color="primary" variant="flat" :href="needPasskey">Set up a passkey</v-btn></div>
               <div v-if="mode === 'reject'" class="rv-form">
                 <v-textarea id="rv-reason" v-model="reason" label="Why reject it (kept with the decision)" rows="2" density="compact" hide-details maxlength="4000" dir="auto"></v-textarea>

@@ -37,16 +37,16 @@
   <v-alert v-if="result && result.semantic.status === 'failed'" type="warning" variant="tonal" class="mb-4" icon="ti ti-plug-off">Leads by meaning are unavailable: ${ result.semantic.message }. Exact results below are complete for the indexed evidence.</v-alert>
   <v-skeleton-loader v-if="busy && !result" type="list-item-two-line@4"></v-skeleton-loader>
   <template v-if="result">
-    <p class="text-caption sr-muted mb-3">for <bdi dir="auto"><strong>${ result.query }</strong></bdi> in ${ result.filter.investigation || 'all cases' } · ${ result.ms } ms<span v-if="result.capped"> · showing the first results per type</span></p>
+    <p class="text-body-small sr-muted mb-3">for <bdi dir="auto"><strong>${ result.query }</strong></bdi> in ${ result.filter.investigation || 'all cases' } · ${ result.ms } ms<span v-if="result.capped"> · showing the first results per type</span></p>
     <section class="sr-panel" aria-labelledby="h-exact">
-      <header><h2 id="h-exact">Exact identifiers, names and words</h2><span class="sr-muted text-caption">${ exact.length } shown</span></header>
+      <header><h2 id="h-exact">Exact identifiers, names and words</h2><span class="sr-muted text-body-small">${ exact.length } shown</span></header>
       <div>
         <a v-for="h in exact" :key="h.type + h.id" :href="h.link || undefined" class="sr-hit" :class="{active: rows[cursor] === h}" :data-row="rows.indexOf(h)" @mouseenter="cursor = rows.indexOf(h)">
           <i :class="[icon(h), ent(h)]" :aria-label="h.type"></i>
           <span>
             <strong><bdi dir="auto">${ h.title || (h.masked ? 'Value hidden until the source is revealed' : h.type) }</bdi></strong>
             <template v-if="h.alt && h.alt.length"> · <bdi v-for="(a, i) in h.alt" :key="i" class="sr-muted" dir="auto">${ i ? ' · ' : '' }${ a }</bdi></template>
-            <span v-if="h.subtitle" class="sr-muted text-caption" dir="auto"> · ${ h.subtitle }</span>
+            <span v-if="h.subtitle" class="sr-muted text-body-small" dir="auto"> · ${ h.subtitle }</span>
             <div v-if="h.snippet" class="sr-snip" dir="auto"><template v-for="(p, i) in parts(h.snippet)" :key="i"><mark v-if="p.mark">${ p.text }</mark><template v-else>${ p.text }</template></template></div>
             <media-thumb v-if="h.sha256 && h.type !== 'passage'" :locked="!!h.masked" :sha="h.sha256" :kind="{frame: 'video', page_image: 'pdf', page: 'pdf', image: 'image', audio: 'audio'}[h.kind]" :file="h.title" :link="false" :caption="false" :width="120" :height="68" class="mt-1" style="display: flex"></media-thumb>
             <div v-else-if="h.masked" class="sr-why"><i class="ti ti-eye-off r-ink state-sensitive" aria-hidden="true"></i> ${ h.type === 'person' ? 'Name hidden: it comes from a sensitive source. Open the person to reveal it (logged).' : 'Text hidden until you reveal this source (logged)' }</div>
@@ -58,13 +58,13 @@
       </div>
     </section>
     <section class="sr-panel" aria-labelledby="h-leads">
-      <header><h2 id="h-leads">Leads by meaning</h2><span class="sr-muted text-caption">passages, scans, frames, audio windows and profiles near the query or the exact hits. Leads, not matches.</span></header>
+      <header><h2 id="h-leads">Leads by meaning</h2><span class="sr-muted text-body-small">passages, scans, frames, audio windows and profiles near the query or the exact hits. Leads, not matches.</span></header>
       <div>
         <a v-for="h in leads" :key="h.type + h.id" :href="h.link || undefined" class="sr-hit lead" :class="{active: rows[cursor] === h}" @mouseenter="cursor = rows.indexOf(h)">
           <i :class="icon(h)" :aria-label="'Lead: ' + h.type"></i>
           <span>
             <strong><bdi dir="auto">${ h.title }</bdi></strong>
-            <span v-if="h.subtitle" class="sr-muted text-caption" dir="auto"> · ${ h.subtitle }</span>
+            <span v-if="h.subtitle" class="sr-muted text-body-small" dir="auto"> · ${ h.subtitle }</span>
             <img v-if="h.thumb" :src="h.thumb" class="sr-thumb" :alt="'Preview of ' + h.title">
             <media-thumb v-else-if="h.sha256 && h.type !== 'passage'" :locked="!!h.masked" :sha="h.sha256" :kind="{frame: 'video', page_image: 'pdf', page: 'pdf', image: 'image', audio: 'audio'}[h.kind]" :file="h.title" :link="false" :caption="false" :width="120" :height="68" class="mt-1" style="display: flex"></media-thumb>
             <div v-if="h.snippet" class="sr-snip" dir="auto">${ h.snippet.text }</div>
@@ -76,7 +76,7 @@
         <v-empty-state v-if="!leads.length" icon="ti ti-robot-off" title="No leads" :text="result.semantic.status !== 'ok' ? 'Semantic search is off.' : exact.length ? 'Nothing else comes close by meaning to what the exact hits above already show.' : 'Nothing near this query in the embedded evidence.'"></v-empty-state>
       </div>
     </section>
-    <p class="text-caption sr-muted"><kbd>j</kbd>/<kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>/</kbd> search</p>
+    <p class="text-body-small sr-muted"><kbd>j</kbd>/<kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>/</kbd> search</p>
   </template>
 </v-container>
 {% endblock %}

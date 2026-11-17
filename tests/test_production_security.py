@@ -136,7 +136,7 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
         await self.login(client)
         response = await client.post("/api/role/", json={"item": {"name": "unsafe"}})
         self.assertEqual(response.status_code, 400)
-        token = await self.csrf(client)
+        token = await self.csrf(client, "/dashboard/")
         response = await client.post(
             "/api/role/",
             json={"item": {"name": "safe"}},
@@ -147,7 +147,7 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
     async def test_empty_roles_revoke_admin_access(self):
         client = self.app.test_client()
         await self.login(client)
-        token = await self.csrf(client)
+        token = await self.csrf(client, "/dashboard/")
         response = await client.post(
             f"/api/user/{self.admin_id}",
             json={"item": {"roles": []}},
@@ -243,7 +243,7 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
             "/ws", headers={"Origin": "http://localhost"}
         ) as ws:
             await ws.receive()
-            token = await self.csrf(client)
+            token = await self.csrf(client, "/dashboard/")
             await client.post("/logout", form={"csrf_token": token})
             with self.assertRaises(WebsocketClosed) as closed:
                 await asyncio.wait_for(ws.receive(), 1)
@@ -252,7 +252,7 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
     async def test_admin_password_policy_cannot_be_bypassed(self):
         client = self.app.test_client()
         await self.login(client)
-        token = await self.csrf(client)
+        token = await self.csrf(client, "/dashboard/")
         response = await client.post(
             f"/api/user/{self.user_id}",
             json={"item": {"password": "short"}},
@@ -263,7 +263,7 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
     async def test_invalid_json_mutation_is_client_error(self):
         client = self.app.test_client()
         await self.login(client)
-        token = await self.csrf(client)
+        token = await self.csrf(client, "/dashboard/")
         response = await client.post(
             "/api/role/",
             data="garbage",
@@ -575,7 +575,7 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
     async def test_json_csrf_token_preserves_passkey_api_contract(self):
         client = self.app.test_client()
         await self.login(client)
-        csrf = await self.csrf(client)
+        csrf = await self.csrf(client, "/dashboard/")
         response = await client.post(
             "/wan-delete", json={"name": "missing", "csrf_token": csrf}
         )
@@ -588,7 +588,7 @@ class ProductionSecurityTests(unittest.IsolatedAsyncioTestCase):
     async def test_shared_auth_quota_covers_oauth_and_allows_logout(self):
         client = self.app.test_client()
         await self.login(client)
-        csrf = await self.csrf(client)
+        csrf = await self.csrf(client, "/dashboard/")
         self.app.config.update(
             QUART_RATE_LIMITER_ENABLED=True, STK_AUTH_ATTEMPT_LIMIT=1
         )
