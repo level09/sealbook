@@ -53,6 +53,12 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
 - `tour.html`: the nine other demos, folded until opened or linked to.
 - `status.html`: what we learned, and the implemented, measured and planned lists read
   from `data/case.json`.
+- `verify.html`, `js/verify-package.js`, `js/verify-page.js`, `css/verify.css`: check a
+  dropped package zip in the browser, nothing uploaded. `verify-package.js` ports
+  `sealbook/ledger/verify_package.py` (layout v1) to WebCrypto and runs under node too;
+  `tests/test_site_verify.py` runs every offline verifier case through both. It does not
+  check the TSA CMS signature, the OpenTimestamps proof to Bitcoin, the C2PA claim or
+  key pins, and lists those as not run.
 - `js/closing-motion.js`, `css/closing.css`: the home page's motion and exhibit styles.
   Each exhibit's tag is stamped, the traditional line struck through, and the Sealbook
   line rises; the charge and the verdict light up as they scroll; the mic drop's letters
@@ -85,7 +91,7 @@ script, notes or app code:
 
 ```sh
 rm -rf site/dist && mkdir -p site/dist/data
-cp -R site/index.html site/tour.html site/status.html site/favicon.svg site/og.png site/css site/js site/fonts site/media site/dist/
+cp -R site/index.html site/tour.html site/status.html site/verify.html site/favicon.svg site/og.png site/css site/js site/fonts site/media site/dist/
 cp site/data/case.json site/dist/data/
 cd site && npx wrangler@4 deploy
 ```

@@ -1,0 +1,64 @@
+/* site/verify.html: drop a package, read the checks. */
+:root { --amber: #7a4b00; --amber-wash: #f6ecd9; }
+:root[data-theme="dark"] { --amber: #f0c27a; --amber-wash: #33270f; }
+
+.verify { max-width: 1040px; margin: 0 auto; padding: 40px var(--gutter) 64px; display: grid; gap: 28px; }
+.verify h1 { margin: 0 0 12px; }
+.verify .lede { margin: 0; max-width: 60ch; font-size: 19px; color: var(--ink-2); text-wrap: pretty; }
+
+.v-drop {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 22px 24px;
+  border: 2px dashed var(--ink-3); border-radius: 12px; background: var(--paper-2); cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.v-drop:hover, .v-drop.is-over { border-color: var(--violet); background: var(--violet-wash); }
+.v-drop:focus-within { outline: 2px solid var(--ink); outline-offset: 3px; }
+.v-drop > svg { width: 32px; height: 32px; flex: none; fill: none; stroke: var(--ink); stroke-width: 1.6; }
+.v-drop .v-say { flex: 1 1 260px; }
+.v-drop b { display: block; font-weight: 600; }
+.v-drop small { display: block; color: var(--ink-3); font-size: 14px; }
+.v-drop input { font: inherit; font-size: 14px; max-width: 100%; }
+#status { margin: -16px 0 0; font-size: 14px; color: var(--ink-3); min-height: 1.6em; }
+
+.v-result { border: 1.5px solid var(--ok); border-radius: 14px; background: var(--paper); overflow: hidden; }
+.v-result.is-fail { border-color: var(--broken); }
+#verdict { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 18px; padding: 24px 26px; background: var(--ok); color: var(--paper); }
+.is-fail #verdict { background: var(--broken); }
+#verdict > svg { width: 44px; height: 44px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.4; }
+#verdict > div { flex: 1 1 320px; min-width: 0; }
+#verdict h2 { margin: 0 0 4px; font: 400 30px/1.15 var(--serif); letter-spacing: -.01em; outline: none; }
+#verdict p { margin: 0; overflow-wrap: anywhere; }
+#verdict .v-why { margin-top: 6px; font-weight: 500; }
+#verdict .v-count { margin-top: 6px; font-size: 14px; opacity: .9; }
+
+#checks { list-style: none; margin: 0; padding: 0; }
+.v-line { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 14px; padding: 15px 26px; border-top: 1px solid var(--rule); }
+.v-line:first-child { border-top: 0; }
+.v-line > svg { width: 22px; height: 22px; margin-top: 2px; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.v-line.is-pass > svg { stroke: var(--ok); }
+.v-line.is-fail > svg { stroke: var(--broken); }
+.v-line.is-fail { background: var(--broken-wash); }
+.v-line.is-partial > svg, .v-line.is-not-run > svg { stroke: var(--amber); }
+.v-line.is-not-run { background: var(--amber-wash); }
+.v-line.is-unreached > svg { stroke: var(--ink-3); }
+.v-title { font-weight: 600; }
+.v-tag { display: inline-block; margin: 2px 0 2px; font: 500 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--amber); }
+.v-detail { color: var(--ink-2); font-size: 15px; overflow-wrap: anywhere; }
+.v-problems { margin: 6px 0 0; padding-left: 18px; font-size: 14px; color: var(--broken); }
+.v-problems code { background: transparent; padding: 0; color: inherit; }
+
+.v-cards { display: flex; flex-wrap: wrap; gap: 20px; }
+.v-card { flex: 1 1 320px; min-width: 0; padding: 20px 22px; border: 1px solid var(--rule); border-radius: 12px; background: var(--paper-2); }
+.v-card h2 { margin: 0 0 8px; font: 400 22px/1.25 var(--serif); }
+.v-card p { margin: 0 0 10px; color: var(--ink-2); font-size: 15px; }
+.v-card p:last-child { margin-bottom: 0; }
+.v-card pre { margin: 0 0 10px; padding: 10px 12px; border-radius: 6px; background: var(--ink); color: var(--paper); font: 400 13px/1.6 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.v-card p code { white-space: nowrap; }
+.v-card pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+@media (max-width: 600px) {
+  .verify { padding-top: 24px; }
+  .v-line, #verdict { padding-left: 16px; padding-right: 16px; }
+  .chapters { display: none; }
+}
