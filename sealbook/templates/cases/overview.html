@@ -1,0 +1,181 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.ov-page { max-width: 1240px; display: flex; flex-direction: column; gap: 16px; }
+.ov-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.ov-muted { color: var(--ink-3); }
+.ov-stands { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+.ov-stands > header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ov-stands h2, .ov-side h2 { margin: 0; }
+/* Tier is texture, as everywhere: accepted solid, corroborated outlined, unconfirmed hatched. */
+.ov-bar { display: flex; height: 24px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line-strong); gap: 2px; background: var(--panel); }
+.ov-bar span { min-width: 4px; }
+.ov-tier.accepted { background: var(--accepted); }
+.ov-tier.corroborated { background: var(--accepted-wash); box-shadow: inset 0 0 0 1.5px var(--corroborated-line); }
+.ov-tier.unconfirmed { background: repeating-linear-gradient(135deg, var(--line-strong) 0 2px, transparent 2px 6px); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.ov-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 4px 12px; }
+.ov-stat { display: block; padding: 8px 10px; margin: 0 -10px; border-radius: 8px; color: inherit; text-decoration: none; }
+.ov-stat:hover, .ov-stat:focus-visible { background: var(--wash); }
+.ov-stat .n { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+.ov-stat .n i { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+/* Outranks the record-link underline: the whole row is the link. */
+.ov-page .ov-side a.ov-row { color: inherit; text-decoration: none; }
+.ov-stat .s { color: var(--ink-3); }
+.ov-wait { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 8px; background: var(--conflict-wash); color: var(--conflict); border: 1px solid var(--conflict-line); }
+.ov-wait > span { flex: 1 1 260px; }
+.ov-cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+.ov-side { overflow: hidden; }
+.ov-side > header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; }
+.ov-side > header p { margin: 2px 0 0; }
+.ov-away { background: var(--agent-wash); border-color: var(--agent-line); }
+.ov-away > header img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex: none; }
+.ov-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 20px; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+.ov-away .ov-row { border-top-color: var(--agent-solid); }
+.ov-row .k { color: var(--agent); text-transform: uppercase; letter-spacing: .06em; }
+.ov-row .t { font-weight: 550; }
+a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
+.ov-pill { font-size: 11.5px; font-weight: 700; padding: 0 7px; border-radius: 4px; background: var(--wash); color: var(--ink-2); white-space: nowrap; }
+.ov-pill.hi { background: var(--negative-wash); color: var(--negative); }
+.ov-more { display: block; padding: 10px 20px; border-top: 1px solid var(--line); font-weight: 550; }
+.ov-empty { padding: 12px 20px 16px; }
+@media (max-width: 959px) { .ov-cols { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="ov-page py-4">
+  <v-alert v-if="!caseSel" type="info" variant="tonal" density="compact">Pick a case in the sidebar to see where it stands.</v-alert>
+  <v-alert v-if="error" type="error" density="compact">${ error }</v-alert>
+
+  <section v-if="s" class="ov-panel ov-stands" aria-labelledby="ov-h-stands">
+    <header>
+      <h2 id="ov-h-stands" class="text-title-large">Where this case stands</h2>
+      <span class="ov-muted">${ plural(claimTotal, 'claim') } about people, from ${ plural(s.sources.total, 'source') }</span>
+    </header>
+    <div v-if="claimTotal" class="ov-bar" role="img" :aria-label="TIERS.map(t => plural(s.claims[t.k], 'claim') + ' ' + t.k).join(', ')">
+      <span v-for="t in TIERS" v-show="s.claims[t.k]" :key="t.k" class="ov-tier" :class="t.k" :style="{flex: s.claims[t.k]}" :title="plural(s.claims[t.k], 'claim') + ' ' + t.k"></span>
+    </div>
+    <div class="ov-stats">
+      <a v-for="x in stats" :key="x.s" class="ov-stat" :href="x.href">
+        <span class="n" :class="x.word ? 'text-title-medium' : 'text-headline-small'"><i v-if="x.tier" class="ov-tier" :class="x.tier" aria-hidden="true"></i>${ x.n }</span>
+        <span class="s text-body-medium">${ x.s }</span>
+      </a>
+    </div>
+    <div v-if="waiting.length" class="ov-wait" role="status">
+      <span>${ waitText }<template v-if="!actionable.length"> ${ waiting[0].words }</template></span>
+      <v-btn v-if="actionable.length" variant="outlined" color="conflict" prepend-icon="ti ti-player-play" :loading="reading" @click="readAll">Read them now</v-btn>
+      <span v-if="reading" class="text-body-small" aria-live="polite">${ done } of ${ actionable.length } sent</span>
+    </div>
+  </section>
+
+  <div v-if="s" class="ov-cols">
+    <section class="ov-panel ov-side ov-away" aria-labelledby="ov-h-away">
+      <header>
+        <img src="{{ asset('img/agent_head.jpg') }}" alt="">
+        <div>
+          <h2 id="ov-h-away" class="text-title-large">While you were away</h2>
+          <p class="ov-muted">${ sinceText }. ${ away.agents.length ? plural(away.agents.length, 'agent') + ' worked on this case.' : '' } They only propose; nothing is accepted until a person signs it.</p>
+        </div>
+      </header>
+      <div v-for="a in away.agents" :key="a.key" class="ov-row">
+        <div>
+          <div class="k text-label-small">${ a.name }</div>
+          <div class="t text-body-large">${ a.text }</div>
+          <div class="ov-muted text-body-small">${ a.does } ${ ago(a.at) }.</div>
+        </div>
+        <v-btn :href="a.href" variant="outlined" color="agent" size="small">${ a.where }</v-btn>
+      </div>
+      <div v-if="!away.agents.length" class="ov-row">No agent ran in this case since then.</div>
+    </section>
+
+    <section v-if="todo" class="ov-panel ov-side" aria-labelledby="ov-h-todo">
+      <header><div>
+        <h2 id="ov-h-todo" class="text-title-large">${ todo.total ? plural(todo.total, 'decision') + (todo.total === 1 ? ' waits' : ' wait') + ' on you' : 'Nothing waits on you' }</h2>
+        <p class="ov-muted">Biggest first.</p>
+      </div></header>
+      <a v-for="r in todoRows" :key="r.key" class="ov-row" :href="r.href">
+        <span><span class="t d-block" dir="auto">${ r.title }</span><span class="ov-muted text-body-small">${ r.why }</span></span>
+        <span class="ov-pill" :class="{hi: r.hi}">${ r.pill }</span>
+      </a>
+      <a href="/todo" class="ov-more">Open the whole list</a>
+    </section>
+  </div>
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="module">
+import {plural} from '/static/js/changes.js';
+
+const TIERS = [{k: 'accepted', s: 'accepted, signed by a person', href: '/people'}, {k: 'corroborated', s: 'corroborated by independent origins', href: '/people'}, {k: 'unconfirmed', s: 'unconfirmed, waiting for review', href: '/review?box=open'}];
+const err = e => e.response?.data?.message || e.response?.data?.description || e.message;
+const when = iso => new Date(iso).toLocaleString(undefined, {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+
+window.app = Vue.createApp({
+  mixins: [layoutMixin], delimiters: config.delimiters,
+  data: () => ({s: null, away: null, todo: null, error: '', reading: false, done: 0, TIERS}),
+  computed: {
+    claimTotal() { return this.s ? TIERS.reduce((n, t) => n + this.s.claims[t.k], 0) : 0; },
+    waiting() { return this.s?.sources.waiting || []; },
+    actionable() { return this.waiting.filter(w => w.read || w.retry?.length); },
+    waitText() {
+      const n = this.waiting.length;
+      return `${n === 1 ? 'One source is' : n + ' sources are'} waiting for a model to read ${n === 1 ? 'it' : 'them'}. Nothing is lost; ${n === 1 ? 'it is' : 'they are'} stored and fingerprinted.`;
+    },
+    stats() {
+      const s = this.s, src = s.sources;
+      return [
+        ...TIERS.map(t => ({n: s.claims[t.k].toLocaleString(), s: t.s, href: t.href, tier: t.k})),
+        {n: `${src.read} of ${src.total}`, s: `sources read${src.waiting.length ? ', ' + src.waiting.length + ' waiting' : ''}${src.working ? ', ' + src.working + ' in progress' : ''}`, href: '/sources'},
+        {n: s.disagreements, s: s.disagreements === 1 ? 'place where sources disagree' : 'places where sources disagree', href: '/people'},
+        {n: s.findings, s: s.findings === 1 ? 'open finding to decide' : 'open findings to decide', href: '/discover'},
+        {n: s.anchored ? when(s.anchored) : 'Not anchored yet', word: true, s: s.anchored ? 'last anchor batch, for the whole record' : 'no anchor batch for the whole record', href: '/guide#why-the-record-holds'},
+      ];
+    },
+    sinceText() {
+      const a = this.away;
+      return {access: `Since your last visit, ${when(a.since)}`, login: `Since your previous sign-in, ${when(a.since)}`, week: 'In the last 7 days'}[a.basis];
+    },
+    // The To do list's own order, its first four rows.
+    todoRows() {
+      const d = this.todo, late = due => !!due && due < new Date().toLocaleDateString('sv');
+      return [
+        ...d.assigned.map(a => ({key: a.sha, title: a.title, why: a.status === 'returned' ? 'Returned to you for changes.' : 'Assigned to you. Read it and decide its claims.', href: '/evidence/' + a.sha, pill: a.status === 'returned' ? 'returned' : late(a.due) ? 'overdue' : a.priority + ' priority', hi: a.status === 'returned' || late(a.due)})),
+        ...d.asked.map(q => ({key: q.request, title: q.reason, why: `${q.from} is waiting for your decision.`, href: q.incident ? '/incidents/' + q.incident : '/review?request=' + q.request, pill: 'asked'})),
+        ...d.triage.map(t => ({key: t.sha, title: t.title || (t.hidden ? 'Title hidden: sensitive item' : 'Untitled item'), why: 'Read for you. Check the first pass and sign it.', href: '/evidence/' + t.sha, pill: t.priority + ' priority', hi: t.priority === 'high'})),
+        ...d.groups.map(g => ({key: g.id, title: `${plural(g.posts, 'post')} that report one event`, why: 'One decision creates the incident.', href: '/discover?f=' + g.id, pill: 'group'})),
+        ...d.findings.map(f => ({key: f.id, title: f.reason, why: `${f.label}. One signature records it.`, href: '/discover?f=' + f.id, pill: f.band})),
+      ].slice(0, 4);
+    },
+  },
+  methods: {
+    plural,
+    ago(at) { const h = Math.round((Date.now() - new Date(at)) / 36e5); return h < 1 ? 'Just now' : h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`; },
+    useCase() { this.load(); },
+    async load() {
+      if (!this.caseSel) { this.s = null; return; }
+      const params = {investigation: this.caseSel};
+      try {
+        const {data} = await axios.get('/api/cases/overview', {params});
+        this.s = data.stands; this.away = data.away; this.error = '';
+      } catch (e) { this.error = err(e); }
+      axios.get('/api/todo', {params}).then(r => { this.todo = r.data; }).catch(() => { this.todo = null; });
+    },
+    // No bulk path: each source goes through the evidence page's own Read it now or Try again.
+    async readAll() {
+      this.reading = true; this.done = 0;
+      try {
+        for (const w of this.actionable) {
+          if (w.read) await axios.post(`/api/evidence/${w.sha256}/analyse`, {item: {}});
+          for (const r of w.retry || []) await axios.post(`/ingest/run/${r}/retry`, {item: {}});
+          this.done++;
+        }
+      } catch (e) { this.error = err(e); }
+      this.reading = false;
+      this.load();
+    },
+  },
+  mounted() { this.load(); this.followWork(() => this.load()); },
+});
+registerStkComponents(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

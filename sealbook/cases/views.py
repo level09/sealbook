@@ -1,16 +1,19 @@
-"""Case list and creation. Analysts and admins only."""
+"""Case list, creation and a case's Overview. Analysts and admins only."""
 
 import orjson
-from quart import Blueprint, Response, g, request
+from quart import Blueprint, Response, abort, g, render_template, request
 from quart_security import current_user
 
-from sealbook.cases import service
+from sealbook.cases import overview, service
 from sealbook.collaboration.views import guard, no_store
 from sealbook.ledger.write import principal_for_user
 
 bp_cases = Blueprint("cases", __name__, url_prefix="/api/cases")
 bp_cases.before_request(guard)
 bp_cases.after_request(no_store)
+bp_case_pages = Blueprint("case_pages", __name__)
+bp_case_pages.before_request(guard)
+bp_case_pages.after_request(no_store)
 
 
 def _json(payload, status=200):
@@ -49,3 +52,18 @@ async def create():
         return _json({"reason": "invalid", "message": str(exc)}, 400)
     await db.commit()
     return _json({"item": service.row(case)}, 201)
+
+
+@bp_case_pages.get("/cases/overview")
+async def overview_page():
+    return await render_template("cases/overview.html")
+
+
+@bp_cases.get("/overview")
+async def case_overview():
+    db = g.db_session
+    try:
+        case = await service.require(db, request.args.get("investigation"))
+    except service.Unknown:
+        abort(404)
+    return _json(await overview.overview(db, current_user, case.slug))

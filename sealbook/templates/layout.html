@@ -292,9 +292,12 @@
             caseTabs() {
                 const info = this.caseInfo, todo = this.railItems.find(x => x.badge === 'todo');
                 const counts = {'/sources': info?.sources, '/people': info?.people};
+                // Overview reads one case, so every case together has none.
+                const overview = this.caseSel && this.railItems.find(x => x.badge === 'overview');
                 return [
+                    ...(overview ? [{...overview, count: null}] : []),
                     ...(todo ? [{...todo, to: '/todo', count: this.navCounts.todo || null}] : []),
-                    ...this.railItems.filter(x => x.group === 'case').map(x => ({...x, count: counts[x.to] ?? null})),
+                    ...this.railItems.filter(x => x.group === 'case' && x.badge !== 'overview').map(x => ({...x, count: counts[x.to] ?? null})),
                 ];
             },
             // The tab of the page open now: its list page, not a record under it.
@@ -386,13 +389,14 @@
                 });
                 if (onPresence) es.addEventListener('presence', e => onPresence(JSON.parse(e.data)));
             },
-            // From the rail: on a case page, follow the case there; elsewhere open its To do.
+            // From the rail: on a case page, follow the case there; elsewhere open its Overview.
             openCase(c) {
                 this.switchCase(c);
                 if (this.staysOnCase) return;
-                // Every case together has no To do of its own (the rail's To do is that list), so it opens on the first case page.
-                if (c === 'all') { if (!this.caseTab || this.caseTab.badge === 'todo') location.href = this.caseTabs.find(t => t.badge !== 'todo')?.to || '/todo'; }
-                else if (!this.caseTab) location.href = '/todo';
+                // Every case together has no To do or Overview of its own (the rail's To do is that list), so it opens on the first case page.
+                const own = t => ['todo', 'overview'].includes(t?.badge);
+                if (c === 'all') { if (!this.caseTab || own(this.caseTab)) location.href = this.caseTabs.find(t => !own(t))?.to || '/todo'; }
+                else if (!this.caseTab) location.href = '/cases/overview';
             },
             loadNavCounts() {
                 axios.get('/api/nav/counts', {params: {investigation: this.caseSel || undefined}}).then(r => { this.navCounts = r.data; }).catch(() => {});

@@ -240,6 +240,31 @@ async def hints(
     return out
 
 
+def _listed(investigation: str | None) -> tuple:
+    """A fact as the person page lists it: about a person, current, not rejected,
+    no identity links; with an investigation, only from its sources."""
+    return (
+        Statement.subject.startswith("person:"),
+        Statement.prop.not_in(HIDDEN),
+        StatementTier.tier != Tier.REJECTED,
+        current_clause(),
+        statement_clause({"investigation": investigation, "time": None}),
+    )
+
+
+async def tiers(session: AsyncSession, investigation: str | None) -> dict[str, int]:
+    """The roster's facts counted by tier instead of by person: the same rows."""
+    rows = await session.execute(
+        select(StatementTier.tier, func.count())
+        .select_from(Statement)
+        .join(StatementTier, StatementTier.statement_id == Statement.id)
+        .where(*_listed(investigation))
+        .group_by(StatementTier.tier)
+    )
+    found = dict(rows.tuples().all())
+    return {str(t): found.get(t, 0) for t in PROJECTIONS["draft"]}
+
+
 async def roster(
     session: AsyncSession, investigation: str | None = None, groups=None
 ) -> dict[str, dict]:
@@ -258,13 +283,7 @@ async def roster(
             func.max(func.coalesce(Statement.valid_to, Statement.valid_from)),
         )
         .join(StatementTier, StatementTier.statement_id == Statement.id)
-        .where(
-            Statement.subject.startswith("person:"),
-            Statement.prop.not_in(HIDDEN),
-            StatementTier.tier != Tier.REJECTED,
-            current_clause(),
-            statement_clause({"investigation": investigation, "time": None}),
-        )
+        .where(*_listed(investigation))
         .group_by(Statement.subject)
     )
     out: dict[str, dict] = {}
