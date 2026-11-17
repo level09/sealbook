@@ -50,8 +50,10 @@
   // Navigation: the chapter and contents entry of the section under the reading line.
   const head = document.querySelector(".top");
   const toc = document.getElementById("toc");
-  const chapters = [...document.querySelectorAll(".chapters a")];
-  const entries = [...toc.querySelectorAll("ol ol a")].map((a) => ({
+  // Only links to a section of this page; the header also links to the other pages.
+  const here = (a) => a.hash && a.pathname === location.pathname && document.querySelector(a.hash);
+  const chapters = [...document.querySelectorAll(".chapters a")].filter(here);
+  const entries = [...toc.querySelectorAll("ol ol a")].filter(here).map((a) => ({
     a,
     section: document.querySelector(a.hash),
     // The chapter whose target is this section or the last one before it.
@@ -211,8 +213,9 @@
     .then((r) => { if (!r.ok) throw new Error(`data/case.json: HTTP ${r.status}`); return r.json(); })
     .then((data) => {
       sealbook.data = data;
-      fillOpening(data);
-      fillStatus(data);
+      // The opening lives on the home page and the status on its own page.
+      if (document.getElementById("archive")) fillOpening(data);
+      if (document.getElementById("status")) fillStatus(data);
       document.querySelectorAll("#archive [data-clamp], #status [data-clamp]").forEach(clamp);
       queue.splice(0).forEach((fn) => {
         try { fn(data); } catch (err) { console.error(err); }
@@ -250,7 +253,7 @@
     });
     list.after(btn);
   }
-  chain.ready.then(() => clamp(document.querySelector(".lessons")));
+  chain.ready.then(() => { const l = document.querySelector(".lessons"); if (l) clamp(l); });
 
   function fillOpening(data) {
     const panel = document.getElementById("archive");

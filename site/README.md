@@ -37,17 +37,27 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
 
 ## Structure
 
-- `index.html`: nineteen sections, each a `section.link` in the demonstration chain,
-  in four parts. The opening sets the headline and the pilot request beside the
-  walkthrough film (`media/walkthrough.mp4`), with a storyboard of six stills from it
-  (`media/board/`, each seeking the film to its moment). "By hand, and with Sealbook"
-  (`#work`) holds six chapters, each setting a task as done by hand (`.byhand`) beside
-  what Sealbook proposes (`.with`), with its live demo. "The tour" (`#tour`) indexes the
-  nine other sections, which stay folded (`.link.folded`) until opened or linked to.
-  "Now break the seal" (`#finale`) leads into Proof. Seals stay to one quiet line
-  along the way and show in full in Proof or once a seal breaks. Each section leads
-  with a plain `.job` line; the precise technical text sits in a `details.how` fold
-  inside `.copy`, so it is still part of the hashed chain.
+- `index.html`: the home page as a closing argument, each section a `section.link` in
+  the demonstration chain. The opening sets the headline and the pilot request beside
+  the walkthrough film (`media/walkthrough.mp4`), with a storyboard of six stills from it
+  (`media/board/`, each seeking the film to its moment). "The charge" (`#charge`) states
+  the case against traditional systems, and a sticky rail (`.rail`) numbers the
+  exhibits. Exhibits 1 to 8 (`.link.exhibit`) each set the traditional way, struck
+  through (`.then`), against what Sealbook does (`.now`), and stay folded until "See it
+  run" opens their live demo. "Don't take our word for it" (`#finale`, `.mic`) leads
+  into Proof, which is Exhibit 9, then the verdict (`#verdict`) and the pilot request.
+  Comparisons say "traditional systems", never a named product. Seals stay to one quiet
+  line along the way and show in full in Proof or once a seal breaks. The precise
+  technical text sits in a `details.how` fold inside `.copy`, so it is still part of
+  the hashed chain.
+- `tour.html`: the nine other demos, folded until opened or linked to.
+- `status.html`: what we learned, and the implemented, measured and planned lists read
+  from `data/case.json`.
+- `js/closing-motion.js`, `css/closing.css`: the home page's motion and exhibit styles.
+  Each exhibit's tag is stamped, the traditional line struck through, and the Sealbook
+  line rises; the charge and the verdict light up as they scroll; the mic drop's letters
+  fall. GSAP 3.15 with ScrollTrigger and SplitText is self-hosted in `js/vendor/`
+  (GreenSock standard license, free for this use). Reduced motion leaves the page still.
 - `js/site.js`: theme, data loading, the chain, and the `window.sealbook` API
   documented at the top of the file. Demo scripts call `sealbook.onReady(data => ...)`
   and mount into their `[data-demo]` element.
@@ -75,7 +85,7 @@ script, notes or app code:
 
 ```sh
 rm -rf site/dist && mkdir -p site/dist/data
-cp -R site/index.html site/favicon.svg site/og.png site/css site/js site/fonts site/media site/dist/
+cp -R site/index.html site/tour.html site/status.html site/favicon.svg site/og.png site/css site/js site/fonts site/media site/dist/
 cp site/data/case.json site/dist/data/
 cd site && npx wrangler@4 deploy
 ```

@@ -1,0 +1,50 @@
+/* The home page as a closing argument: the charge, numbered exhibits, the mic drop
+   and the verdict. Exhibits are ordinary sealed sections, folded until "See it run". */
+.kicker, .ex-num, .rail { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+
+.charge { margin: 40px 0 0; }
+.charge h2 { max-width: 20ch; margin-top: 14px; }
+
+.rail {
+  position: sticky; top: var(--head); z-index: 3; display: flex; gap: 6px; align-items: center;
+  margin: 28px 0 88px 64px; padding: 10px 0; overflow-x: auto; scrollbar-width: none;
+  background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(6px);
+  border-block: 1px solid var(--rule);
+}
+.rail span { margin-right: 8px; white-space: nowrap; }
+.rail a { flex: none; min-width: 34px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 4px; color: var(--ink); text-align: center; text-decoration: none; transition: background .2s, color .2s; }
+.rail a:hover, .rail a.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+.exhibit.folded { margin-bottom: 104px; }
+.ex-num { display: inline-block; margin-bottom: 18px; padding: 6px 9px 5px; border: 1.5px solid currentColor; border-radius: 3px; }
+.exhibit h2, #proof h2 { max-width: 22ch; }
+.then, .now { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; max-width: 72ch; padding: 14px 0; border-top: 1px solid var(--rule); }
+.then b, .now b { font: 500 12px/1.9 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.now b { color: var(--violet); }
+.copy .then p, .copy .now p { margin: 0; }
+.copy .now p { color: var(--ink); font-size: 1.08rem; }
+.strike {
+  --strike: 100%;
+  background: linear-gradient(var(--broken), var(--broken)) 0 58% / var(--strike) 1.5px no-repeat;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+html.motion .strike { --strike: 0%; }
+.exhibit .unfold { margin-top: 18px; }
+
+/* The mic drop: the seal demo framed as the last word before the proof. */
+.part.mic { max-width: none; margin: 40px 0 72px 64px; padding: 72px 48px; border-radius: 12px; background: var(--ink); color: var(--paper); text-align: center; }
+.part.mic h2 { color: var(--paper); max-width: none; }
+.part.mic > p { margin: 0 auto 18px; color: color-mix(in srgb, var(--paper) 78%, transparent); }
+.part.mic details { max-width: 60ch; margin: 0 auto; text-align: left; color: color-mix(in srgb, var(--paper) 78%, transparent); }
+
+.part.verdict { max-width: none; margin: 96px 0 40px; text-align: center; }
+.verdict h2 { max-width: 18ch; margin: 16px auto 28px; }
+.verdict h2 span { display: block; }
+.more-pages { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: center; max-width: none !important; }
+.more-pages a { color: var(--ink); }
+
+@media (max-width: 600px) {
+  .rail { margin-left: 34px; }
+  .then, .now { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .part.mic { margin-left: 34px; padding: 48px 22px; }
+}
