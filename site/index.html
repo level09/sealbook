@@ -138,7 +138,7 @@
         <div><dt>Investigate with AI</dt><dd>Extraction, search, transcription and agents that read whole cases and keep watching them, all proposing, never deciding.</dd></div>
         <div><dt>Verify with people</dt><dd>Every fact is accepted, rejected or corrected by a named reviewer with a passkey, and every decision can be undone.</dd></div>
         <div><dt>Keep every source</dt><dd>Files are fingerprinted on arrival, never overwritten, and disagreements between them stay open.</dd></div>
-        <div><dt>Prove it offline</dt><dd>Findings leave as a signed package that anyone can check offline with the bundled verifier, without having to trust you or us.</dd></div>
+        <div><dt>Prove it offline</dt><dd>Findings leave as a signed package that anyone can check offline with the open source verifier, without having to trust you or us.</dd></div>
       </dl>
       <figure class="iso" data-iso><figcaption>A claim stays a hatched proposal until a person signs it. Only signed claims reach a package.</figcaption></figure>
   </div>
@@ -332,8 +332,8 @@
     <p>Every hour that code goes to three independent witnesses: OpenTimestamps calendars, an RFC 3161 timestamp authority and a copy held by a partner. Anyone can later check your findings against any of them. They do not need to trust you, and they do not need to trust us.</p>
     <p class="why"><b>Prove one finding without handing over the rest.</b> A prosecutor given one statement can check it against the code with a short list of fingerprints, offline, without seeing anything else in the archive.</p>
     <details class="how"><summary>How it works</summary>
-      <p>The seals are SHA-256 hashes. Pairs of them are hashed together, level by level, into a Merkle tree, and the last hash left is the root. An exported package carries, for each cited statement, only the sibling hashes on its path to the root, and the bundled verifier rebuilds the root from those.</p>
-      <p>Statements are grouped into Merkle batches. One root stands for the whole batch, and any change to any statement changes the root. An hourly job closes a batch and sends its root to OpenTimestamps calendars, to an RFC 3161 timestamp authority and to partner-held copies, and a check command holds the database to those receipts. An exported package of cited findings carries the receipts and can be verified offline with the bundled verifier.</p>
+      <p>The seals are SHA-256 hashes. Pairs of them are hashed together, level by level, into a Merkle tree, and the last hash left is the root. An exported package carries, for each cited statement, only the sibling hashes on its path to the root, and the open source verifier rebuilds the root from those.</p>
+      <p>Statements are grouped into Merkle batches. One root stands for the whole batch, and any change to any statement changes the root. An hourly job closes a batch and sends its root to OpenTimestamps calendars, to an RFC 3161 timestamp authority and to partner-held copies, and a check command holds the database to those receipts. An exported package of cited findings carries the receipts and can be verified offline with the open source verifier.</p>
       <p>Those receipt and partner paths are implemented, but this is not a configured or certified deployment. An OpenTimestamps receipt here is a calendar commitment: upgrading it to a Bitcoin block attestation is not built yet. Every model run is sealed the same way, with the tool, the model that served it and its parameters. Erasure removes a person's values from views and search while the chain still verifies. It excludes access; it does not physically delete stored bytes.</p>
     </details>
   </div>
