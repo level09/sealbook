@@ -84,7 +84,15 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
         </div>
         <v-btn :href="a.href" variant="outlined" color="agent" size="small">${ a.where }</v-btn>
       </div>
-      <div v-if="!away.agents.length" class="ov-row">No agent ran in this case since then.</div>
+      <div v-if="!away.agents.length" class="ov-row">No agent ran in this case since then.${ away.earlier.length ? ' Their last results:' : '' }</div>
+      <div v-for="a in away.earlier" :key="a.key" class="ov-row">
+        <div>
+          <div class="k text-label-small">${ a.name }</div>
+          <div class="t text-body-large">${ a.text }</div>
+          <div class="ov-muted text-body-small">${ a.does } ${ ago(a.at) }.</div>
+        </div>
+        <v-btn :href="a.href" variant="outlined" color="agent" size="small">${ a.where }</v-btn>
+      </div>
     </section>
 
     <section v-if="todo" class="ov-panel ov-side" aria-labelledby="ov-h-todo">

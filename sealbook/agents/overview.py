@@ -19,6 +19,7 @@ from sealbook.agents import (
     tasks,
 )
 from sealbook.agents.models import AgentTask
+from sealbook.blobs import MissingBytes
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import Acquisition, Blob, Run, Statement, StatementTier
 
@@ -137,6 +138,8 @@ def summary(run: Run, out: dict | None) -> str:
     if run.status == "failed":
         return tasks.failure_reason(run.error)
     out = out or {}
+    if out.get("missing"):
+        return "Finished. Its result file is not stored on this server."
     if run.tool == brief.TOOL:
         n = sum(len(v) for v in out.get("sections", {}).values())
         text = f"Wrote a brief of {plural(n, 'line', 'lines').lower()}."
@@ -199,7 +202,10 @@ async def recent(db, user_id: int, limit: int = 60) -> list[tuple[Run, str]]:
 async def _outcome(db, run: Run) -> dict | None:
     # A link the Noticer proposes seals its result's hash; no blob holds it.
     if run.status == "done" and run.output_hash and run.tool != noticer.LINK_TOOL:
-        return read.read_output(await db.get(Blob, run.output_hash))
+        try:
+            return read.read_output(await db.get(Blob, run.output_hash))
+        except MissingBytes:
+            return {"missing": True}
     return None
 
 

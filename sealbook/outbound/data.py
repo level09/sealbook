@@ -485,6 +485,12 @@ async def _hydrate(db, found) -> list[dict]:
             acq = acqs.get((run.inputs or {}).get("acquisition"))
             row = _model(run, acq, policies)
             row["source"] = _source(acq, r.sensitive)
+            # The mark covers every upload of the file; the policy read this one.
+            if r.sensitive and acq and acq.sensitivity != "sensitive" and row["why"]:
+                row["why"] += (
+                    " This upload came in as ordinary;"
+                    " another upload of the same file is marked sensitive."
+                )
         elif r.kind == "timestamp":
             a, b = anchors[r.ref]
             hosts = (

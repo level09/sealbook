@@ -93,9 +93,15 @@ async def away(db, user, investigation: str) -> dict:
             "where": a["where"],
         }
         for a in found["agents"]
-        if a["last"] and datetime.fromisoformat(a["last"]["at"]) > at
+        if a["last"]
     ]
-    return {"since": at.isoformat(), "basis": basis, "agents": rows}
+    new = [r for r in rows if datetime.fromisoformat(r["at"]) > at]
+    return {
+        "since": at.isoformat(),
+        "basis": basis,
+        "agents": new,
+        "earlier": [] if new else rows,
+    }
 
 
 async def overview(db, user, investigation: str) -> dict:
