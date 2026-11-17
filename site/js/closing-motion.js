@@ -13,11 +13,11 @@
     scrollTrigger: { trigger: ".charge", start: "top 75%", end: "bottom 45%", scrub: true },
   });
 
-  // Each exhibit: the tag is stamped, the old way struck through, the new way rises.
+  // Each exhibit: its tag swings onto the picture, the old way struck through, the new way rises.
   gsap.utils.toArray(".exhibit, #proof").forEach((ex) => {
     const strike = $(ex, ".strike");
     const tl = gsap.timeline({ scrollTrigger: { trigger: ex, start: "top 70%", once: true } })
-      .from($(ex, ".ex-num"), { scale: 1.8, opacity: 0, duration: 0.45, ease: "back.out(2.2)" })
+      .from($(ex, ".tag") || $(ex, ".ex-num"), { rotation: -40, y: -24, opacity: 0, duration: 0.7, ease: "back.out(2.4)" })
       .from($(ex, "h2"), { y: 26, opacity: 0, duration: 0.9, ease: "expo.out" }, "<0.1");
     if (strike) {
       tl.from($(ex, ".then"), { opacity: 0, duration: 0.4 }, "-=0.5")

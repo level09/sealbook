@@ -41,7 +41,7 @@
 <link rel="stylesheet" href="css/diagrams.css">
 <link rel="stylesheet" href="css/iso.css">
 <link rel="stylesheet" href="css/invite.css">
-<link rel="stylesheet" href="css/closing.css?v=b145b481">
+<link rel="stylesheet" href="css/closing.css?v=99f66f05">
 </head>
 <body>
 <a class="skip" href="#chain">Skip to content</a>
@@ -185,12 +185,13 @@
       <p>Pick one of the synthetic case files. Sealbook records its fingerprints and how it was acquired, checks its content credentials and reads its text. Then the AI proposes claims, each one pinned to a span, a region of a page or a stretch of audio. Nothing it proposes counts as fact until a person accepts it. After extraction a first-pass run triages the item by content (incident, post-incident, non-incident, interview, report, media, document, promotional) and reliability (no, some or strong evidence), which sets its priority by the method's table, drafts an analyst title, at most six description lines and alleged labels from Bayanat's open label list, and keeps only parts whose quote is in the text. The title comes in English and Arabic. A photo gets the same pass from the picture itself, with observed labels from the method's verified list, each pinned to a box on the photo. A video gets one pass on frames spread over it and its transcript together: each line rests on the second of video it shows or the words said. Text in pictures is read line by line by the model that read Arabic scans best in a comparison of 18, and it first says whether there is any text at all, so a photo without text gets no invented text. Each source lists its steps and what it is waiting for, a person or a model, and once a batch is read Sealbook says when it looks like another case the uploader can open, recording it there only on a click.</p>
     </details>
   </div>
+  <figure class="ex-pic"><img src="media/board/photo.jpg" alt="A photo with the regions Sealbook read boxed and labelled" width="640" height="360" loading="lazy"><span class="tag" aria-hidden="true"><small>Exhibit</small>01</span></figure>
   <button class="unfold" type="button" aria-expanded="false">See it run</button>
   <figure class="diagram" data-diagram="arrive"></figure>
   <div class="demo bench" data-demo="arrive"></div>
 </section>
 
-<section class="link folded exhibit" id="speech" data-signer="speech to text">
+<section class="link folded exhibit flip" id="speech" data-signer="speech to text">
   <div class="copy">
     <span class="ex-num">Exhibit 2</span>
     <h2>It listens, and cites the second.</h2>
@@ -201,6 +202,7 @@
       <p>This is a real run of the app's transcription code over the synthetic witness clip, scored against the script the clip was spoken from. Most errors are dialect spelling pulled toward Modern Standard Arabic, not mishearing. One short clip in a synthetic voice says nothing about field recordings.</p>
     </details>
   </div>
+  <figure class="ex-pic"><img src="media/board/video.jpg" alt="A video beside its transcript, each line tied to its second" width="640" height="360" loading="lazy"><span class="tag" aria-hidden="true"><small>Exhibit</small>02</span></figure>
   <button class="unfold" type="button" aria-expanded="false">See it run</button>
   <figure class="diagram" data-diagram="speech"></figure>
   <div class="demo" data-demo="speech"></div>
@@ -216,12 +218,13 @@
       <p>Re-encoded and resized copies of a photo are found by picture fingerprint. A short audio excerpt is found by sound landmarks, with the time it was cut from recovered. Cropping is different: a cropped copy moves past the fingerprint threshold and is not caught, and the demo shows that too. A distance is not a probability, and nothing is linked until a person confirms it.</p>
     </details>
   </div>
+  <figure class="ex-pic"><img src="media/jdeideh_2017.jpg" alt="A street filmed in 2017, matched to footage from 2015" width="640" height="360" loading="lazy"><span class="tag" aria-hidden="true"><small>Exhibit</small>03</span></figure>
   <button class="unfold" type="button" aria-expanded="false">See it run</button>
   <figure class="diagram" data-diagram="dupes"></figure>
   <div class="demo" data-demo="dupes"></div>
 </section>
 
-<section class="link folded exhibit" id="people" data-signer="identity desk">
+<section class="link folded exhibit flip" id="people" data-signer="identity desk">
   <div class="copy">
     <span class="ex-num">Exhibit 4</span>
     <h2>Four spellings, one man. One name, two people.</h2>
@@ -232,6 +235,7 @@
       <p>Where sources disagree about a person, every side stays listed with its source until a reviewer decides. Two spellings of one place are not a disagreement, and neither is a last sighting and an arrest on the same day. A person's facts and documents are counted the same way on the People list, the person page and in search.</p>
     </details>
   </div>
+  <figure class="ex-pic type"><ul class="spellings"><li lang="ar" dir="rtl">يوسف خالد علي</li><li>Yousef Khaled Al-Ali</li><li>Yusuf Khalid al Ali</li></ul><span class="tag" aria-hidden="true"><small>Exhibit</small>04</span></figure>
   <button class="unfold" type="button" aria-expanded="false">See it run</button>
   <figure class="diagram" data-diagram="people"></figure>
   <div class="demo" data-demo="people"></div>
@@ -251,12 +255,13 @@
       <p>A line without a citation, or citing something it was not given, is dropped. A line resting on a sensitive source stays locked until someone makes a logged reveal. Nothing is accepted: matches and resemblances are reports, and only a person's click on Propose a link sends one to Review as a question.</p>
     </details>
   </div>
+  <figure class="ex-pic"><img src="media/board/group.jpg" alt="Two posts an agent proposed as one event" width="640" height="360" loading="lazy"><span class="tag" aria-hidden="true"><small>Exhibit</small>05</span></figure>
   <button class="unfold" type="button" aria-expanded="false">See it run</button>
   <figure class="diagram" data-diagram="watch"></figure>
   <div class="demo" data-demo="watch"></div>
 </section>
 
-<section class="link folded exhibit" id="connections" data-signer="discovery">
+<section class="link folded exhibit flip" id="connections" data-signer="discovery">
   <div class="copy">
     <span class="ex-num">Exhibit 6</span>
     <h2>It finds what nobody asked.</h2>
@@ -269,6 +274,7 @@
       <p>The list is bounded per kind and investigation. Once a set has been accepted or rejected it is never proposed again, because its key covers the kind, investigation, people, places and month. Accepting is a checklist signed with one passkey gesture over every statement it writes, and that signature can be checked offline.</p>
     </details>
   </div>
+  <figure class="ex-pic type"><p class="quote">"Both held at Branch 999 in July 2013."<small>Proposed from two accepted claims in different sources. Waiting for a signature.</small></p><span class="tag" aria-hidden="true"><small>Exhibit</small>06</span></figure>
   <button class="unfold" type="button" aria-expanded="false">See it run</button>
   <figure class="diagram" data-diagram="connections"></figure>
   <div class="demo" data-demo="connections"></div>
@@ -286,13 +292,14 @@
       <p>One embedding model places text, pictures, scanned pages and audio in the same space, hosted on a zero-retention route by default or on a private server, so a written question can find an image or a recording. It has been measured on synthetic data only, where scanned pages rank weakest.</p>
     </details>
   </div>
+  <figure class="ex-pic"><img src="media/board/arrive.jpg" alt="A photo, a video, a voice note and two posts arriving in one batch" width="640" height="360" loading="lazy"><span class="tag" aria-hidden="true"><small>Exhibit</small>07</span></figure>
   <button class="unfold" type="button" aria-expanded="false">See it run</button>
   <figure class="diagram" data-diagram="search"></figure>
   <div class="demo" data-demo="grouped"></div>
   <div class="demo" data-demo="search"></div>
 </section>
 
-<section class="link folded exhibit" id="review" data-signer="reviewer">
+<section class="link folded exhibit flip" id="review" data-signer="reviewer">
   <div class="copy">
     <span class="ex-num">Exhibit 8</span>
     <h2>Every decision signed. Every one undoable.</h2>
@@ -303,6 +310,7 @@
       <p>Sensitive sources stay covered until someone chooses to reveal them, and that reveal is logged. Opening any other source is logged as a view.</p>
     </details>
   </div>
+  <figure class="ex-pic"><img src="media/board/sign.jpg" alt="Every row shown before one passkey signature" width="640" height="360" loading="lazy"><span class="tag" aria-hidden="true"><small>Exhibit</small>08</span></figure>
   <button class="unfold" type="button" aria-expanded="false">See it run</button>
   <figure class="diagram" data-diagram="review"></figure>
   <div class="demo" data-demo="review"></div>
@@ -362,7 +370,7 @@
   <p>All people and organisations shown are fictional. The files are synthetic. This site makes no third-party requests and has no analytics.</p>
 </footer>
 
-<script src="js/site.js?v=d14fa0c4"></script>
+<script src="js/site.js?v=6d71f8e9"></script>
 <script src="js/demo-arrive.js"></script>
 <script src="js/demo-search.js"></script>
 <script src="js/demo-dupes.js"></script>
@@ -380,6 +388,6 @@
 <script src="js/vendor/gsap.min.js"></script>
 <script src="js/vendor/ScrollTrigger.min.js"></script>
 <script src="js/vendor/SplitText.min.js"></script>
-<script src="js/closing-motion.js"></script>
+<script src="js/closing-motion.js?v=bed07e50"></script>
 </body>
 </html>

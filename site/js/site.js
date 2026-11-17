@@ -396,7 +396,8 @@
     sec.classList.toggle("folded", !on);
     const b = sec.querySelector(".unfold");
     b.setAttribute("aria-expanded", String(on));
-    b.textContent = on ? "Close the demo" : "Open the live demo";
+    b.dataset.label ??= b.textContent;
+    b.textContent = on ? "Close the demo" : b.dataset.label;
   };
   document.querySelectorAll(".unfold").forEach((b) => b.addEventListener("click", () => {
     const sec = b.closest("section");
