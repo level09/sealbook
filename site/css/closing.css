@@ -17,6 +17,8 @@
 .rail span { margin-right: 8px; white-space: nowrap; }
 .rail a { flex: none; min-width: 34px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 4px; color: var(--ink); text-align: center; text-decoration: none; transition: background .2s, color .2s; }
 .rail a:hover, .rail a.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.rail a.r-act { margin-left: 10px; border-color: transparent; color: var(--ink-3); }
+.rail a.r-act:hover { background: none; border-color: transparent; color: var(--ink); }
 
 .exhibit.folded { margin-bottom: 104px; }
 .ex-num { display: inline-block; margin-bottom: 18px; }
@@ -73,6 +75,46 @@
   .as-first { opacity: 1; }
 }
 
+/* Three acts, three grounds. An act redefines the tokens, so everything inside follows:
+   Act I the cream reading room, Act II the night the agents work in, Act III the cool,
+   checked record where green means verified. The band bleeds to the window edges. */
+.act { margin: 0 0 0; padding: 120px 0 8px; color: var(--ink); background: var(--paper);
+  box-shadow: 0 0 0 100vmax var(--paper); clip-path: inset(0 -100vmax); }
+.act-1 { padding-top: 24px; }
+.act-2 {
+  --paper: #16141f; --paper-2: #211e2d; --paper-3: #2c2839;
+  --ink: #efebf8; --ink-2: #cbc5da; --ink-3: #9e98b1; --rule: #39344a;
+  --violet: #b9a3ff; --violet-wash: #2b2244; --broken: #ff8b80; --broken-wash: #3a1916; --ok: #7dd3a6;
+  color-scheme: dark;
+}
+.act-3 { --paper: #edf0ec; --paper-2: #e0e6e0; --paper-3: #d2dad3; --rule: #c3cdc5; --ink-3: #56605a; }
+:root[data-theme="dark"] .act-2 { --paper: #15112a; --paper-2: #1e1936; --paper-3: #282142; --rule: #352d52; }
+:root[data-theme="dark"] .act-3 { --paper: #101512; --paper-2: #18201b; --paper-3: #222b25; --rule: #2c3630; --ink-3: #93a097; }
+.act-head { position: relative; z-index: 1; max-width: none; margin: 0 0 104px 64px; }
+.act-num { display: inline-block; padding-bottom: 10px; border-bottom: 2px solid var(--violet); font: 500 13px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--violet); }
+.act-3 .act-num { border-color: var(--ok); color: var(--ok); }
+.act-head h2 { margin: 22px 0 14px; max-width: 16ch; font: 400 clamp(52px, 7.4vw, 104px)/.98 var(--serif); letter-spacing: -.03em; }
+.act-head p { max-width: 52ch; margin: 0; font-size: 1.15rem; color: var(--ink-2); }
+.act-3 .now b { color: var(--ok); }
+.act-2 .ex-pic img { box-shadow: 0 24px 60px -24px rgb(0 0 0 / .8); }
+.act-2 .part.mic, .act-3 .part.mic { background: var(--ink); color: var(--paper); }
+
+/* Layout breaks so the acts do not repeat one shape. */
+.ex-pic.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; aspect-ratio: auto; background: none; }
+.ex-pic.pair img { aspect-ratio: 16 / 9; height: auto; }
+.ex-pic.pair .yr { position: absolute; bottom: 12px; padding: 3px 8px; border-radius: 4px; background: rgb(0 0 0 / .62); color: #fff; font: 500 12px var(--mono); }
+.ex-pic.pair .yr:nth-of-type(1) { left: 12px; }
+.ex-pic.pair .yr:nth-of-type(2) { left: calc(50% + 17px); }
+.ex-pic.pair .match {
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%; padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+  border: 1.5px dashed #fff; background: var(--violet); color: #fff; font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase;
+  box-shadow: 0 10px 30px -8px rgb(0 0 0 / .5);
+}
+.wide .ex-pic.type { aspect-ratio: auto; background: none; padding: 8px 0 0 84px; place-content: start; text-align: start; }
+.wide .spellings { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 0; font-size: clamp(30px, 4.4vw, 60px); line-height: 1.25; }
+.wide .spellings li + li::before { content: "="; margin: 0 .45em; color: var(--ink-3); font-family: var(--serif); }
+.stage .ex-pic { justify-self: center; width: 100%; max-width: 860px; background: var(--paper-2); }
+
 @media (min-width: 900px) {
   .exhibit { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: 56px; align-items: center; }
   /* Everything else spans both columns and flows onto its own row, in page order. */
@@ -83,6 +125,18 @@
   .exhibit.flip { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
   .exhibit.flip > .copy, .exhibit.flip > .unfold { grid-column: 2; }
   .exhibit.flip > .ex-pic { grid-column: 1; }
+  .exhibit.wide { grid-template-columns: minmax(0, 1fr); }
+  .exhibit.wide > .copy { grid-column: 1; grid-row: 2; }
+  .exhibit.wide > .ex-pic { grid-column: 1; grid-row: 3; max-width: none; margin: 40px 0 0; }
+  .exhibit.wide > .unfold { grid-column: 1; grid-row: 4; }
+  .exhibit.wide .copy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 56px; align-items: end; }
+  .exhibit.wide .copy > * { grid-column: 2; }
+  .exhibit.wide .copy > .ex-num, .exhibit.wide .copy > h2 { grid-column: 1; }
+  .exhibit.wide .copy > h2 { grid-row: 2 / span 3; align-self: start; margin-top: 0; }
+  .exhibit.wide .copy > .then { grid-row: 2; }
+  .exhibit.wide .copy > .now { grid-row: 3; }
+  .exhibit.stage > .ex-pic { grid-row: 2; margin: 0 0 48px; }
+  .exhibit.stage > .copy { grid-row: 3; }
 }
 .exhibit h2, #proof h2 { max-width: 22ch; }
 .then, .now { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; max-width: 72ch; padding: 14px 0; border-top: 1px solid var(--rule); }
@@ -112,6 +166,15 @@ html.motion .strike { --strike: 0%; }
 
 @media (max-width: 600px) {
   .rail { margin-left: 34px; }
+  .act { padding-top: 72px; }
+  .act-head { margin: 0 0 72px 34px; }
+  .ex-pic.pair { grid-template-columns: 1fr; }
+  .wide .ex-pic.type { padding: 64px 0 0; }
+  .wide .spellings { display: block; font-size: 30px; }
+  .wide .spellings li + li::before { content: none; }
+  .wide .spellings li { text-align: left; }
+  .ex-pic.pair .yr:nth-of-type(1) { left: auto; right: 12px; top: 12px; bottom: auto; }
+  .ex-pic.pair .yr:nth-of-type(2) { left: auto; right: 12px; top: calc(50% + 17px); bottom: auto; }
   .then, .now { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .part.mic { margin-left: 34px; padding: 48px 22px; }
 }

@@ -55,30 +55,6 @@
     })();
   }
 
-  // A file arrives
-  scene("arrive", "A scanned register page is fingerprinted, its acquisition and content credentials recorded and its text read. The AI proposes claims pinned to page regions, and a person accepts one.", 720, 210, (svg, say) => {
-    const file = box(svg, 10, 76, 150, 56, "register_page.png", "f");
-    file.t.setAttribute("y", 26); txt(file, 10, 42, "scanned register", "lbl");
-    const facts = ["sha-256  44677237…6d0d", "acquired  analyst-1, scanner-01", "credentials  no C2PA manifest", "text  Arabic, read"]
-      .map((t, i) => [box(svg, 200, 14 + i * 48, 230, 32, t, "f"), curve(svg, 160, 104, 200, 30 + i * 48)]);
-    const claims = ["region 1 · name · يوسف خالد العلي", "region 3 · mother · فاطمة", "region 4 · born · 1991"]
-      .map((t, i) => [box(svg, 480, 34 + i * 56, 230, 34, t, "f dash"), curve(svg, 430, 174, 480, 51 + i * 56)]);
-    const seal = txt(svg, 480, 24, "accepted by a reviewer, signed", "f g");
-    return async () => {
-      on(file); say("A file arrives.");
-      await wait(900);
-      for (const [b, l] of facts) { on(b, l); await wait(260); }
-      say("Fingerprinted, how it was acquired recorded, content credentials checked, text read.");
-      await wait(1800);
-      for (const [b, l] of claims) { on(b, l); await wait(260); }
-      say("The AI proposes claims, each pinned to the region of the page it came from. None is a fact yet.");
-      await wait(2400);
-      claims[0][0].classList.add("solid"); on(seal);
-      say("A person accepts one. The others stay proposals.", "good");
-      await wait(4200);
-    };
-  });
-
   // A messy sheet
   scene("sheet", "An intake spreadsheet is stored unread until a person names a field for every column. One cell holding several facts yields proposals pinned to its characters. A later version re-reads only added and changed rows.", 720, 236, (svg, say) => {
     const X = [60, 300, 380, 460], W = [240, 80, 80, 90], H = 28, Y = (r) => 8 + r * H;

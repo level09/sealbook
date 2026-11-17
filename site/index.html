@@ -19,7 +19,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <script>try{const t=localStorage.getItem("sealbook-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{}</script>
-<link rel="stylesheet" href="css/site.css?v=1ba68683">
+<link rel="stylesheet" href="css/site.css?v=c42f65cb">
 <link rel="stylesheet" href="css/demo-search.css">
 <link rel="stylesheet" href="css/demo-dupes.css">
 <link rel="stylesheet" href="css/demo-video.css">
@@ -41,7 +41,7 @@
 <link rel="stylesheet" href="css/diagrams.css">
 <link rel="stylesheet" href="css/iso.css">
 <link rel="stylesheet" href="css/invite.css">
-<link rel="stylesheet" href="css/closing.css?v=f7d9c315">
+<link rel="stylesheet" href="css/closing.css?v=7833e32a">
 </head>
 <body>
 <a class="skip" href="#chain">Skip to content</a>
@@ -172,8 +172,14 @@
   <h2>Traditional systems store evidence. They do not read it.</h2>
   <p>An archive holds thousands of files. Analysts type out what they say, remember which video they saw before, and hope nobody asks them to prove the record was never changed. We submit nine exhibits.</p>
 </div>
-<nav class="rail" aria-label="Exhibits"><span>Exhibits</span><a href="#arrive">1</a><a href="#speech">2</a><a href="#dupes">3</a><a href="#people">4</a><a href="#watch">5</a><a href="#connections">6</a><a href="#search">7</a><a href="#review">8</a><a href="#proof">9</a><a href="#finale">Break the seal</a></nav>
+<nav class="rail" aria-label="Exhibits"><span>Exhibits</span><a class="r-act" href="#act-1">Act I</a><a href="#arrive">1</a><a href="#speech">2</a><a href="#dupes">3</a><a class="r-act" href="#act-2">Act II</a><a href="#people">4</a><a href="#watch">5</a><a href="#connections">6</a><a class="r-act" href="#act-3">Act III</a><a href="#search">7</a><a href="#review">8</a><a href="#proof">9</a><a href="#finale">Break the seal</a></nav>
 
+<div class="act act-1">
+<div class="part act-head" id="act-1">
+  <span class="act-num">Act I</span>
+  <h2>It reads.</h2>
+  <p>Every file is read the moment it arrives: scanned pages, recordings and footage, each fact pinned to where it came from.</p>
+</div>
 <section class="link folded exhibit" id="arrive" data-signer="intake desk">
   <div class="copy">
     <span class="ex-num">Exhibit 1</span>
@@ -187,7 +193,6 @@
   </div>
   <figure class="ex-pic"><img src="media/board/photo.jpg" alt="A photo with the regions Sealbook read boxed and labelled" width="640" height="360" loading="lazy"><span class="tag" aria-hidden="true"><small>Exhibit</small>01</span></figure>
   <button class="unfold" type="button" aria-expanded="false">See it run</button>
-  <figure class="diagram" data-diagram="arrive"></figure>
   <div class="demo bench" data-demo="arrive"></div>
 </section>
 
@@ -208,7 +213,7 @@
   <div class="demo" data-demo="speech"></div>
 </section>
 
-<section class="link folded exhibit" id="dupes" data-signer="fingerprint index">
+<section class="link folded exhibit wide" id="dupes" data-signer="fingerprint index">
   <div class="copy">
     <span class="ex-num">Exhibit 3</span>
     <h2>Same footage. Cropped, cut, re-uploaded. Caught.</h2>
@@ -218,13 +223,21 @@
       <p>Re-encoded and resized copies of a photo are found by picture fingerprint. A short audio excerpt is found by sound landmarks, with the time it was cut from recovered. Cropping is different: a cropped copy moves past the fingerprint threshold and is not caught, and the demo shows that too. A distance is not a probability, and nothing is linked until a person confirms it.</p>
     </details>
   </div>
-  <figure class="ex-pic"><img src="media/jdeideh_2017.jpg" alt="A street filmed in 2017, matched to footage from 2015" width="640" height="360" loading="lazy"><span class="tag" aria-hidden="true"><small>Exhibit</small>03</span></figure>
+  <figure class="ex-pic pair"><img src="media/jdeideh_2015.jpg" alt="A street filmed in 2015" width="640" height="360" loading="lazy"><img src="media/jdeideh_2017.jpg" alt="The same street filmed in 2017, proposed as a match to the 2015 footage" width="640" height="360" loading="lazy"><span class="yr" aria-hidden="true">2015</span><span class="yr" aria-hidden="true">2017</span><span class="match" aria-hidden="true">Proposed match</span><span class="tag" aria-hidden="true"><small>Exhibit</small>03</span></figure>
   <button class="unfold" type="button" aria-expanded="false">See it run</button>
   <figure class="diagram" data-diagram="dupes"></figure>
   <div class="demo" data-demo="dupes"></div>
 </section>
 
-<section class="link folded exhibit flip" id="people" data-signer="identity desk">
+</div>
+
+<div class="act act-2">
+<div class="part act-head" id="act-2">
+  <span class="act-num">Act II</span>
+  <h2>It connects.</h2>
+  <p>People, places and events joined across the whole case, and agents that keep looking after you leave.</p>
+</div>
+<section class="link folded exhibit wide" id="people" data-signer="identity desk">
   <div class="copy">
     <span class="ex-num">Exhibit 4</span>
     <h2>Four spellings, one man. One name, two people.</h2>
@@ -241,7 +254,7 @@
   <div class="demo" data-demo="people"></div>
 </section>
 
-<section class="link folded exhibit" id="watch" data-signer="agents">
+<section class="link folded exhibit wide stage" id="watch" data-signer="agents">
   <div class="copy">
     <span class="ex-num">Exhibit 5</span>
     <h2>Agents that keep reading after you go home.</h2>
@@ -280,6 +293,14 @@
   <div class="demo" data-demo="connections"></div>
 </section>
 
+</div>
+
+<div class="act act-3">
+<div class="part act-head" id="act-3">
+  <span class="act-num">Act III</span>
+  <h2><span class="h1-line">You decide.</span> <span class="h1-line">The record proves it.</span></h2>
+  <p>Nothing counts until a person signs it, and every signature can be checked years from now.</p>
+</div>
 <section class="link folded exhibit" id="search" data-signer="search index">
   <div class="copy">
     <span class="ex-num">Exhibit 7</span>
@@ -342,6 +363,7 @@
   <div class="demo proof" data-demo="proof"></div>
   <p class="proof-next"><a class="act-primary" href="#invite">Request a pilot</a></p>
 </section>
+</div>
 
 <div class="part verdict" id="verdict">
   <span class="kicker">Closing</span>
@@ -371,7 +393,7 @@
 </footer>
 
 <script src="js/site.js?v=1fb7d22d"></script>
-<script src="js/demo-arrive.js"></script>
+<script src="js/demo-arrive.js?v=be70ef90"></script>
 <script src="js/demo-search.js"></script>
 <script src="js/demo-dupes.js"></script>
 <script src="js/demo-people.js"></script>
