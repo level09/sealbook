@@ -186,6 +186,24 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .sb-bell .v-list-item.unread .v-list-item-title { font-weight: 650; }
 .sb-bell .v-list-item.unread .v-list-item__prepend .v-icon { color: var(--new); opacity: 1; }
 
+/* seal chip and record panel */
+.sb-seal.v-btn { color: var(--r); border-color: var(--r-line); background: var(--r-wash); text-transform: none; letter-spacing: 0; font-weight: 600; margin-inline-end: 4px; }
+.sb-seal-sub { margin-inline-start: 8px; font: 500 12px/1 var(--mono); opacity: .85; }
+@media (max-width: 959px) { .sb-seal.v-btn { padding: 0 6px; margin-inline-end: 0; } .sb-seal .v-btn__prepend { margin-inline-end: 4px; } }
+.sb-record .sb-rec-line { color: var(--ink-2); margin-top: 2px; }
+.sb-rec-counts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.sb-rec-counts > div { padding: 8px 10px; border-radius: 6px; background: var(--wash); }
+.sb-rec-counts b { display: block; font-size: 20px; font-weight: 600; color: var(--ink); }
+.sb-rec-counts span { font-size: 12px; color: var(--ink-2); }
+.sb-rec-h { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-2); margin: 12px 0 6px; }
+.sb-rec-w { display: flex; align-items: flex-start; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.sb-rec-w .r-dot { margin-top: 2px; }
+.sb-rec-grow { flex: 1; min-width: 0; }
+.sb-rec-mono { font: 12px/1.5 var(--mono); color: var(--ink-3); overflow-wrap: anywhere; }
+.sb-rec-b .sb-rec-mono { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sb-rec-b { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline; padding: 4px 0; font-size: 13px; color: var(--ink-2); }
+.sb-rec-me { margin: 12px 0 0; padding: 8px 10px; border-radius: 6px; background: var(--agent-wash); color: var(--ink); }
+
 /* hint bar */
 .sb-hints { display: flex; gap: 16px; font-size: 12px; color: var(--ink-3); border-top: 1px solid var(--line); background: var(--panel) !important; white-space: nowrap; overflow: hidden; padding: 0 14px; }
 .sb-hints span, .sb-hints button { display: inline-flex; gap: 5px; align-items: center; }

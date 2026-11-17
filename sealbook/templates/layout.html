@@ -29,6 +29,46 @@
         </form>
         <v-spacer></v-spacer>
         <v-tooltip text="Go to (Cmd K)" location="bottom"><template #activator="{ props }"><v-icon-btn v-bind="props" class="sb-pal-btn" icon="ti ti-command" variant="text" aria-label="Command palette" @click="openPalette"></v-icon-btn></template></v-tooltip>
+        <v-menu v-if="seal" v-model="recordOpen" location="bottom end" :close-on-content-click="false">
+            <template #activator="{ props }">
+                <v-btn v-bind="props" class="sb-seal" :class="seal.role" variant="outlined" size="small" :prepend-icon="seal.icon" :aria-label="'The record: ' + seal.word + (seal.sub ? ', ' + seal.sub : '')">
+                    <span>${ isMobile ? seal.short : seal.word }</span><span v-if="seal.sub && !isMobile" class="sb-seal-sub">${ seal.sub }</span>
+                </v-btn>
+            </template>
+            <v-card width="460" max-width="calc(100vw - 16px)" class="sb-record">
+                <v-card-item>
+                    <v-card-title class="text-title-large">${ seal.headline }</v-card-title>
+                    <div class="text-body-medium sb-rec-line">${ seal.line }</div>
+                </v-card-item>
+                <v-card-text>
+                    <div class="sb-rec-counts">
+                        <div><b>${ fmtNum(record.entries) }</b><span>entries in the chain</span></div>
+                        <div><b>${ fmtNum(record.batches) }</b><span>batches closed</span></div>
+                        <div><b>${ fmtNum(record.unanchored) }</b><span>entries not yet in a batch</span></div>
+                    </div>
+                    <template v-if="record.latest">
+                        <h3 class="sb-rec-h">Witnesses for entries ${ fmtNum(record.latest.first_seq) } to ${ fmtNum(record.latest.last_seq) }</h3>
+                        <div v-for="w in record.latest.witnesses" :key="w.kind + (w.where || '') + w.state" class="sb-rec-w">
+                            <span class="r-dot" :class="witnessRole[w.state]" aria-hidden="true"></span>
+                            <div class="sb-rec-grow">
+                                <div class="text-body-medium font-weight-medium">${ w.name }</div>
+                                <div v-if="w.where" class="sb-rec-mono">${ w.where }</div>
+                                <div class="text-body-small r-ink" :class="witnessRole[w.state]">${ w.label }</div>
+                            </div>
+                            <v-btn v-if="w.id" :href="'/api/record/receipt/' + w.id" download size="small" variant="text" prepend-icon="ti ti-download" :aria-label="'Download the ' + w.name + ' receipt'">Receipt</v-btn>
+                        </div>
+                        <h3 class="sb-rec-h">Recent batches</h3>
+                        <div v-for="b in record.recent" :key="b.first_seq" class="sb-rec-b">
+                            <span>${ fmtWhen(b.at) }</span>
+                            <span class="sb-rec-mono">${ fmtNum(b.first_seq) } to ${ fmtNum(b.last_seq) } · root ${ b.root.slice(0, 6) }…${ b.root.slice(-4) }</span>
+                            <span>${ b.held } of ${ b.witnesses } held</span>
+                        </div>
+                    </template>
+                    <p v-if="decisionLine" class="sb-rec-me text-body-medium">${ decisionLine }</p>
+                </v-card-text>
+                <v-card-actions v-if="canReadGuide"><v-btn href="/guide#why-the-record-holds" variant="text" append-icon="ti ti-arrow-right">Why the record holds</v-btn></v-card-actions>
+            </v-card>
+        </v-menu>
         <v-menu v-model="bellOpen" location="bottom end" :close-on-content-click="false">
             <template #activator="{ props }">
                 <v-badge :content="unreadCount" :model-value="unreadCount > 0" color="new" offset-x="4" offset-y="4">
@@ -189,6 +229,11 @@
         const d = Math.round((Date.now() - new Date(iso)) / 86400000);
         return d < 1 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`;
     };
+    // The seal chip's clock: minutes, then hours, then the days words above.
+    const sinceNow = iso => {
+        const m = Math.round((Date.now() - new Date(iso)) / 60000);
+        return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : daysAgo(iso);
+    };
     const storedCase = () => { try { return localStorage.getItem('sb.case'); } catch { return null; } };
     // Text entry and selects swallow shortcuts; checkboxes and buttons do not.
     const TYPING = el => el.isContentEditable || ['TEXTAREA', 'SELECT'].includes(el.tagName)
@@ -205,6 +250,10 @@
                 notesNext: null,
                 notesBusy: false,
                 bellOpen: false,
+                record: null,
+                recordOpen: false,
+                canReadGuide: canRead,
+                witnessRole: {held: 'tier-accepted', pending: 'state-conflict', failed: 'state-negative', none: 'r-neutral'},
                 moreOpen: false,
                 railMini: document.documentElement.classList.contains('sb-mini'),
                 noteIcons: {assigned: 'ti ti-user-plus', mention: 'ti ti-at', reply: 'ti ti-message', decision: 'ti ti-signature', intake_done: 'ti ti-upload'},
@@ -267,6 +316,27 @@
             },
             caseLabel() { return this.caseSel ? this.caseName(this.caseSel) : 'All investigations'; },
             unreadCount() { return this.navCounts.notifications || 0; },
+            // The chip and the panel headline: what the stored receipts say, never a recheck.
+            seal() {
+                const r = this.record, b = r?.latest;
+                if (!r) return null;
+                if (!b) return {role: 'r-neutral', icon: 'ti ti-clock', word: 'Not anchored yet', short: 'Unanchored', headline: 'Not anchored yet',
+                    line: 'The hourly anchor job has not run on this server. Entries are chained, and no outside witness holds them yet.'};
+                if (b.failed)
+                    return {role: 'state-conflict', icon: 'ti ti-alert-triangle', word: 'Receipt missing', short: 'Missing', sub: `${b.held} of ${b.witnesses.length} witnesses`,
+                        headline: 'A witness has no receipt for the latest batch', line: 'The next anchor run sends it again. The receipts held are listed below.'};
+                if (!b.held) return {role: 'r-neutral', icon: 'ti ti-hourglass', word: 'Sealing', short: 'Sealing', sub: 'waiting for witnesses',
+                    headline: 'The latest batch waits for its witnesses', line: 'The batch is closed. The next anchor run sends its root out.'};
+                const ago = sinceNow(b.anchored_at);
+                return {role: 'tier-accepted', icon: 'ti ti-circle-check', word: 'Sealed', short: 'Sealed', sub: `anchored ${ago} · ${b.held} witnesses`,
+                    headline: 'The record is sealed', line: `The latest batch was anchored ${ago}. This is what the stored receipts say.`};
+            },
+            decisionLine() {
+                const d = this.record?.decision;
+                if (!d) return '';
+                const where = `Your last signed decision, at ${this.fmtWhen(d.at)}, is entry ${this.fmtNum(d.seq)}.`;
+                return d.anchored ? `${where} It was anchored at ${this.fmtWhen(d.anchored_at)}.` : `${where} It goes out with the next anchor.`;
+            },
             palAll() {
                 const pages = [
                     ...this.railItems.map(n => ({kind: 'Page', t: n.title, h: n.to, icon: n.icon})),
@@ -285,6 +355,7 @@
         watch: {
             palQ() { this.palI = 0; },
             bellOpen(open) { if (open) this.loadNotes(false); },
+            recordOpen(open) { if (open) this.loadRecord(); },
         },
         methods: {
             // A case's name as people gave it; its slug is the key filters carry.
@@ -381,6 +452,14 @@
                 // A page with its own help registers `?` itself.
                 if (e.key === '?' && !this.toggleHelp) { this.shellHelp = !this.shellHelp; }
             },
+            async loadRecord() {
+                try { this.record = (await axios.get('/api/record/status')).data; } catch {}
+            },
+            fmtNum(n) { return (n ?? 0).toLocaleString('en'); },
+            fmtWhen(iso) {
+                const d = new Date(iso), time = d.toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'});
+                return d.toDateString() === new Date().toDateString() ? time : `${d.toLocaleDateString('en-GB', {day: 'numeric', month: 'short'})}, ${time}`;
+            },
             // Stored notifications: newest unread first, cursor paging, read on open.
             async loadNotes(more) {
                 this.notesBusy = true;
@@ -446,6 +525,7 @@
             window.addEventListener('keydown', this._shellKey);
             this._connectWs();
             this.loadNavCounts();
+            this.loadRecord();
             if (canRead) axios.get('/api/monitor/investigations').then(r => { this.caseList = r.data.items; this.caseNames = r.data.names; });
             if (canRead && this.caseTab) axios.get('/api/cases').then(r => { this.caseDetails = r.data.items; }).catch(() => {});
             {% endif %}

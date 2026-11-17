@@ -8,7 +8,7 @@ from quart import Blueprint, Response, abort, g, render_template, request
 from quart_security import auth_required, current_user
 from sqlalchemy import Text, cast, func, select
 
-from sealbook.anchor.models import Anchor, Batch
+from sealbook.anchor.models import Batch
 from sealbook.anchor.service import _hashes
 from sealbook.cases.models import Case
 from sealbook.discovery.evidence import view_session
@@ -25,9 +25,9 @@ from sealbook.ledger.models import (
     Statement,
     StatementTier,
 )
-from sealbook.ledger.receipts import ots_pending
 from sealbook.monitor.data import Context
 from sealbook.monitor.views import ROLES
+from sealbook.record.views import witnesses
 
 bp_guide = Blueprint("guide", __name__)
 
@@ -144,24 +144,6 @@ async def _log_view(db, st: Statement) -> None:
     await db.commit()
 
 
-async def _anchors(db, batch: Batch) -> list[dict]:
-    """Receipt state per target. A failed attempt is retried next run, so any
-    receipt for a target wins over its earlier failures."""
-    rows = (
-        await db.execute(
-            select(Anchor).where(Anchor.batch_id == batch.id).order_by(Anchor.id)
-        )
-    ).scalars()
-    out = {}
-    for a in rows:
-        if a.receipt is not None:
-            pending = a.kind == "ots" and ots_pending(a.receipt)
-            out[(a.kind, a.target)] = "pending" if pending else "held"
-        else:
-            out.setdefault((a.kind, a.target), "failed")
-    return [{"kind": kind, "state": state} for (kind, _), state in out.items()]
-
-
 @bp_guide.get("/api/guide/proof")
 async def proof():
     db = g.db_session
@@ -224,7 +206,7 @@ async def proof():
                 "path": merkle.inclusion_proof(hashes, index),
                 "root": batch.root if batch else merkle.root(hashes),
                 "closed": batch is not None,
-                "anchors": await _anchors(db, batch) if batch else [],
+                "anchors": await witnesses(db, batch.id) if batch else [],
             },
             "run_signature": {
                 "sig": st.sig["sig"],

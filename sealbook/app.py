@@ -19,6 +19,7 @@ from sealbook import (
     packages,
     people,
     places,
+    record,
     research,
     review,
     runs,
@@ -65,6 +66,7 @@ extensions = [
     runs,
     speech,
     anchor,
+    record,
 ]
 
 app = Stk(__name__, config=Config, extensions=extensions)
