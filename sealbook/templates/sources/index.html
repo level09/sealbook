@@ -6,8 +6,15 @@
 .src-head p { margin: 0; color: rgba(var(--v-theme-on-surface), .6); font-variant-numeric: tabular-nums; }
 .src-panel { border: 1px solid var(--app-line); border-radius: 8px; overflow: hidden; background: rgb(var(--v-theme-surface)); }
 .src-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--app-line); }
-.src-work .who { display: inline-flex; gap: 6px; align-items: baseline; padding: 3px 8px; border: 1px solid var(--app-line); border-radius: 6px; font-size: 13px; }
-.src-work .who b { font-variant-numeric: tabular-nums; }
+.src-filters { align-items: flex-start; gap: 10px 28px; }
+.src-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 32px; }
+.src-group > .lbl { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: rgba(var(--v-theme-on-surface), .6); margin-inline-end: 2px; }
+.src-group .v-chip b { font-variant-numeric: tabular-nums; margin-inline-start: 6px; }
+.src-table tbody tr { cursor: pointer; }
+.src-table tbody tr:hover td { background: rgba(var(--v-theme-on-surface), .04); }
+.src-open { color: inherit; text-decoration: none; font-weight: 500; }
+.src-open .src-muted { font-weight: 400; }
+.src-table tbody tr:hover .src-open, .src-open:focus-visible { text-decoration: underline; }
 .src-bulk { background: rgb(var(--v-theme-on-surface)); color: rgb(var(--v-theme-surface)); }
 .src-bulk .v-field { background: rgb(var(--v-theme-surface)); color: rgb(var(--v-theme-on-surface)); }
 .src-bulk .v-btn.v-btn--disabled { color: rgba(var(--v-theme-surface), .75) !important; border-color: rgba(var(--v-theme-surface), .45) !important; }
@@ -37,25 +44,10 @@
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
   <section class="src-panel">
-    <div class="src-bar src-work" aria-label="Workload, open items per analyst">
-      <span class="src-muted me-1">Workload</span>
-      <template v-if="assignError"><span class="src-muted"><i class="ti ti-plug-connected-x me-1" aria-hidden="true"></i>${ assignError }</span></template>
-      <template v-else>
-        <span class="who" v-for="w in workload" :key="w.id"><span>${ w.name }</span><b>${ w.open.toLocaleString() }</b><span class="src-muted">open</span><span v-if="w.overdue" class="text-overdue"><i class="ti ti-alert-triangle" aria-hidden="true"></i> ${ w.overdue.toLocaleString() } overdue</span></span>
-        <span v-if="unassigned === null" class="src-muted">Loading</span>
-        <span v-else-if="!workload.length" class="src-muted">Nobody holds open work in this case.</span>
-        <span class="who" v-if="unassigned !== null"><span>Unassigned</span><b>${ unassigned.toLocaleString() }</b></span>
-      </template>
-    </div>
     <div class="src-bar">
-      <v-text-field v-model="q" class="src-search" density="compact" hide-details clearable prepend-inner-icon="ti ti-filter" placeholder="Filter by title, origin or hash" style="min-width: 240px; max-width: 300px" aria-label="Filter sources" @update:model-value="typed"></v-text-field>
-      <v-chip-group v-model="chips" multiple filter selected-class="text-primary" aria-label="Filters" @update:model-value="changed">
-        <v-chip v-for="c in chipDefs" :key="c.v" :value="c.v" variant="outlined" size="small" :prepend-icon="c.icon">${ c.t }</v-chip>
-      </v-chip-group>
-      <v-select v-model="c2pa" :items="c2paItems" multiple chips closable-chips density="compact" hide-details variant="outlined" placeholder="Content credentials" prepend-inner-icon="ti ti-shield-check" style="min-width: 150px; max-width: 260px" aria-label="C2PA state" @update:model-value="changed"></v-select>
-      <v-select v-model="by" :items="collectors" item-title="name" item-value="id" clearable density="compact" hide-details variant="outlined" placeholder="Acquired by" prepend-inner-icon="ti ti-user-down" style="min-width: 170px; max-width: 220px" aria-label="Acquired by" @update:model-value="changed"></v-select>
-      <v-date-input v-model="range" multiple="range" clearable density="compact" hide-details variant="outlined" prepend-icon="" prepend-inner-icon="ti ti-calendar" placeholder="Acquired between" style="min-width: 200px; max-width: 260px" aria-label="Acquired between" @update:model-value="changed"></v-date-input>
+      <v-text-field v-model="q" class="src-search" density="compact" hide-details clearable prepend-inner-icon="ti ti-filter" placeholder="Filter by title, origin or hash" style="min-width: 240px; max-width: 340px" aria-label="Filter sources" @update:model-value="typed"></v-text-field>
       <v-chip v-if="batch" closable size="small" prepend-icon="ti ti-stack-2" @click:close="batch = null; changed()">Intake batch ${ batch.slice(0, 8) }</v-chip>
+      <v-btn v-if="filtered" size="small" variant="text" prepend-icon="ti ti-filter-off" @click="clearFilters">Clear filters</v-btn>
       <v-spacer></v-spacer>
       <v-menu :close-on-content-click="false">
         <template #activator="{ props }"><v-tooltip text="Choose columns"><template #activator="{ props: tp }"><v-btn v-bind="{ ...props, ...tp }" icon="ti ti-columns-3" variant="text" size="small" aria-label="Choose columns"></v-btn></template></v-tooltip></template>
@@ -64,6 +56,33 @@
       <v-btn-toggle v-model="mode" mandatory density="compact" variant="outlined" divided aria-label="View">
         <v-btn value="table" icon="ti ti-table" aria-label="Table"></v-btn><v-btn value="grid" icon="ti ti-layout-grid" aria-label="Grid of thumbnails"></v-btn>
       </v-btn-toggle>
+    </div>
+    <div class="src-bar src-filters">
+      <div class="src-group" role="group" aria-label="Type">
+        <span class="lbl">Type</span>
+        <v-chip-group v-model="chips" multiple filter selected-class="text-primary" aria-label="Type" @update:model-value="changed">
+          <v-chip v-for="c in typeChips" :key="c.v" :value="c.v" variant="outlined" size="small" :prepend-icon="c.icon">${ c.t }</v-chip>
+        </v-chip-group>
+      </div>
+      <div class="src-group" role="group" aria-label="Assigned to, with open items per analyst">
+        <span class="lbl">Assigned to</span>
+        <v-chip v-for="w in whoChips" :key="w.v" size="small" :variant="who === w.v ? 'flat' : 'outlined'" :color="who === w.v ? 'primary' : undefined" :prepend-icon="w.icon" :aria-pressed="who === w.v" @click="pickWho(w.v)">${ w.t }<b v-if="w.open !== null">${ w.open.toLocaleString() }</b><span v-if="w.overdue" class="ms-1" :class="who === w.v ? '' : 'text-overdue'"><i class="ti ti-alert-triangle" aria-hidden="true"></i> ${ w.overdue.toLocaleString() } overdue</span></v-chip>
+        <span v-if="assignError" class="src-muted"><i class="ti ti-plug-connected-x me-1" aria-hidden="true"></i>${ assignError }</span>
+        <span v-else-if="unassigned === null" class="src-muted">Loading</span>
+        <span v-else-if="!workload.length" class="src-muted">Nobody holds open work in this case.</span>
+      </div>
+      <div class="src-group" role="group" aria-label="Only">
+        <span class="lbl">Only</span>
+        <v-chip-group v-model="chips" multiple filter selected-class="text-primary" aria-label="Only" @update:model-value="changed">
+          <v-chip v-for="c in onlyChips" :key="c.v" :value="c.v" variant="outlined" size="small" :prepend-icon="c.icon">${ c.t }</v-chip>
+        </v-chip-group>
+      </div>
+      <div class="src-group" role="group" aria-label="Acquired and credentials">
+        <span class="lbl">Acquired</span>
+        <v-select v-model="by" :items="collectors" item-title="name" item-value="id" clearable density="compact" hide-details variant="outlined" placeholder="By anyone" prepend-inner-icon="ti ti-user-down" style="min-width: 170px; max-width: 220px" aria-label="Acquired by" @update:model-value="changed"></v-select>
+        <v-date-input v-model="range" multiple="range" clearable density="compact" hide-details variant="outlined" prepend-icon="" prepend-inner-icon="ti ti-calendar" placeholder="Any date" style="min-width: 200px; max-width: 260px" aria-label="Acquired between" @update:model-value="changed"></v-date-input>
+        <v-select v-model="c2pa" :items="c2paItems" multiple chips closable-chips density="compact" hide-details variant="outlined" placeholder="Content credentials" prepend-inner-icon="ti ti-shield-check" style="min-width: 230px; max-width: 300px; flex: none" aria-label="C2PA state" @update:model-value="changed"></v-select>
+      </div>
     </div>
     <div class="src-bar src-bulk" v-if="selected.length" role="region" aria-label="Bulk actions">
       <i class="ti ti-square-check" aria-hidden="true"></i><strong>${ selected.length.toLocaleString() } selected</strong>
@@ -79,7 +98,7 @@
     <v-data-table-server v-if="mode === 'table'" v-model="selected" class="src-table" :headers="headers" :items="items" :items-length="total || 0" :loading="loading" item-value="sha256" show-select density="compact" fixed-header height="620"
       v-model:sort-by="sortBy" v-model:page="page" v-model:items-per-page="perPage" :items-per-page-options="[25, 50, 100]" :row-props="rowProps" must-sort @update:options="load" @click:row="clickRow">
       <template #item.type="{ item }"><v-tooltip :text="hidden(item) ? 'Sensitive ' + item.type + ': click to reveal, the reveal is logged' : item.type + ' · ' + item.mime"><template #activator="{ props }"><component :is="hidden(item) ? 'button' : 'span'" v-bind="props" class="src-mini" :aria-label="hidden(item) ? 'Reveal ' + item.title + ', logged' : item.type" @click.stop="hidden(item) && reveal(item)"><media-thumb :key="item.sha256 + (revealed[item.sha256] || 0)" :locked="hidden(item)" :sha="item.sha256" :mime="item.mime" :kind="item.type" :caption="false" :link="false" :width="40" :height="28"></media-thumb></component></template></v-tooltip></template>
-      <template #item.title="{ item }"><div class="src-trunc" :title="item.title"><i v-if="item.sensitive" class="ti ti-eye-off me-1 r-ink state-sensitive" title="Sensitive, opening it is logged" aria-label="Sensitive"></i><span v-if="item.next" class="r-chip me-1" :class="NEXT[item.next.state].cls" :title="item.next.label + ': ' + item.next.words"><i :class="NEXT[item.next.state].icon" aria-hidden="true"></i>${ item.next.chip }</span><a :href="openUrl(item)" @click.stop>${ label(item.doc_type) }</a> <span class="src-muted">${ item.title }</span><v-chip v-if="item.synthetic" size="x-small" label variant="outlined" class="ms-1" title="Synthetic filler record for testing at scale; no file is stored">synthetic</v-chip></div></template>
+      <template #item.title="{ item }"><div class="src-trunc" :title="item.title"><i v-if="item.sensitive" class="ti ti-eye-off me-1 r-ink state-sensitive" title="Sensitive, opening it is logged" aria-label="Sensitive"></i><span v-if="item.next" class="r-chip me-1" :class="NEXT[item.next.state].cls" :title="item.next.label + ': ' + item.next.words"><i :class="NEXT[item.next.state].icon" aria-hidden="true"></i>${ item.next.chip }</span><a class="src-open" :href="openUrl(item)" @click.stop>${ label(item.doc_type) } <span class="src-muted">${ item.title }</span></a><v-chip v-if="item.synthetic" size="x-small" label variant="outlined" class="ms-1" title="Synthetic filler record for testing at scale; no file is stored">synthetic</v-chip></div></template>
       <template #item.pass="{ item }"><div v-if="item.pass" class="src-pass"><span v-if="item.pass.priority" class="r-chip me-1" :class="item.pass.priority === 'high' ? 'is-incident' : 'r-neutral'">${ item.pass.priority } priority</span><span v-if="item.pass.open" class="r-chip is-agent" title="Proposed by an agent; check it on the evidence page">to check</span><div class="src-trunc" :title="item.pass.title">${ item.pass.title ?? 'Title hidden on a sensitive item' }</div><div v-if="item.pass.title_ar" class="src-trunc src-ar" dir="rtl" :title="item.pass.title_ar">${ item.pass.title_ar }</div></div><span v-else class="src-muted text-no-wrap">none yet</span></template>
       <template #item.origin="{ item }"><div class="src-trunc src-muted" style="max-width: 200px" :title="item.origin">${ item.origin }</div></template>
       <template #item.acquired_at="{ item }"><span class="text-no-wrap">${ item.acquired_at.slice(0, 10) }</span></template>
@@ -108,7 +127,7 @@
       </div>
       <div class="d-flex align-center justify-end ga-2 px-3 pb-2"><span class="text-body-small src-muted">Sensitive sources stay hatched until a logged reveal.</span><v-pagination v-model="page" :length="Math.max(1, Math.ceil((total || 0) / perPage))" density="compact" total-visible="5" @update:model-value="load()"></v-pagination></div>
     </template>
-    <div class="src-hints" aria-label="Keyboard shortcuts"><span><kbd>j</kbd><kbd>k</kbd>move</span><span><kbd>x</kbd>select</span><span><kbd>Enter</kbd>open</span></div>
+    <div class="src-hints" aria-label="Keyboard shortcuts"><span><kbd>j</kbd><kbd>k</kbd>move</span><span><kbd>x</kbd>select</span><span><kbd>Enter</kbd>open</span><span>or click a row to open it</span></div>
   </section>
   <v-dialog v-model="reviewOpen" max-width="520">
     <v-card title="Request review of open proposals">
@@ -150,10 +169,10 @@ window.app = Vue.createApp({
     const chips = [...(p.get('type') || '').split(',').filter(t => TYPE_CHIPS.includes(t))];
     if (p.get('sensitive') === '1') chips.push('sens');
     if (p.get('findings') === '1') chips.push('find');
-    if (p.get('assignee') === 'unassigned') chips.push('unas');
-    if (p.get('assignee') === 'me') chips.push('mine');
+    const a = p.get('assignee');
+    const who = !a ? null : ['me', 'unassigned'].includes(a) ? a : Number(a);
     return {
-      batch: p.get('batch'), q: p.get('q') || '', chips, c2pa: (p.get('c2pa') || '').split(',').filter(Boolean),
+      batch: p.get('batch'), q: p.get('q') || '', chips, who, c2pa: (p.get('c2pa') || '').split(',').filter(Boolean),
       by: p.get('by'), range: p.get('from') && p.get('to') ? [new Date(p.get('from') + 'T00:00'), new Date(p.get('to') + 'T00:00')] : null,
       collectors: boot.collectors, mode: store.get('sources-mode') || 'table', cols: store.get('sources-cols-2') || DEFAULT_COLS, allHeaders: ALL_HEADERS,
       items: [], total: null, loading: false, page: Number(p.get('page')) || 1, perPage: 50,
@@ -162,13 +181,12 @@ window.app = Vue.createApp({
       reviewOpen: false, reviewCount: {proposals: 0, sources: 0}, reviewer: null, reviewReason: '', reviewCounting: false, reviewSending: false,
       analysts: [], workload: [], unassigned: null, assignError: '', assignee: null, due: null, today: new Date().toLocaleDateString('sv'), assigning: false,
       error: '', snack: false, snackText: '',
-      chipDefs: [
+      typeChips: [
         {v: 'image', t: 'Images', icon: 'ti ti-photo'}, {v: 'pdf', t: 'PDFs', icon: 'ti ti-file-type-pdf'},
         {v: 'audio', t: 'Audio', icon: 'ti ti-volume'}, {v: 'video', t: 'Video', icon: 'ti ti-video'},
-        {v: 'text', t: 'Text and web', icon: 'ti ti-file-text'}, {v: 'sens', t: 'Sensitive', icon: 'ti ti-eye-off'},
-        {v: 'find', t: 'Open findings', icon: 'ti ti-robot'}, {v: 'unas', t: 'Unassigned', icon: 'ti ti-user-question'},
-        {v: 'mine', t: 'Assigned to me', icon: 'ti ti-user'},
+        {v: 'text', t: 'Text and web', icon: 'ti ti-file-text'},
       ],
+      onlyChips: [{v: 'sens', t: 'Sensitive', icon: 'ti ti-eye-off'}, {v: 'find', t: 'Open findings', icon: 'ti ti-robot'}],
       c2paItems: [{title: 'Valid', value: 'valid'}, {title: 'Invalid', value: 'invalid'}, {title: 'No credentials', value: 'absent'}, {title: 'Not checked', value: 'unchecked'}, {title: 'Unknown', value: 'unknown'}],
     };
   },
@@ -180,11 +198,20 @@ window.app = Vue.createApp({
       const p = {investigation: this.caseSel || undefined, batch: this.batch || undefined, q: this.q || undefined,
         type: types.join(',') || undefined, c2pa: this.c2pa.join(',') || undefined, by: this.by || undefined,
         sensitive: c.includes('sens') ? '1' : undefined, findings: c.includes('find') ? '1' : undefined,
-        assignee: c.includes('mine') ? 'me' : c.includes('unas') ? 'unassigned' : undefined};
+        assignee: this.who ?? undefined};
       if (this.range?.length) { p.from = isoDay(this.range[0]); p.to = isoDay(this.range[this.range.length - 1]); }
       return p;
     },
     colleagues() { return this.analysts.filter(a => a.id !== boot.me); },
+    // The workload is the assignee filter: me, nobody, then each analyst holding open work.
+    whoChips() {
+      const mine = this.workload.find(w => w.id === boot.me);
+      return [
+        {v: 'me', t: 'Me', icon: 'ti ti-user', open: mine ? mine.open : null, overdue: mine?.overdue},
+        {v: 'unassigned', t: 'Unassigned', icon: 'ti ti-user-question', open: this.unassigned, overdue: 0},
+        ...this.workload.filter(w => w.id !== boot.me).map(w => ({v: w.id, t: w.name, open: w.open, overdue: w.overdue})),
+      ];
+    },
     filtered() { return Object.entries(this.params).some(([k, v]) => k !== 'investigation' && v !== undefined); },
     assignBlocked() {
       if (this.assignError) return this.assignError;
@@ -204,7 +231,14 @@ window.app = Vue.createApp({
     say(text) { this.snackText = text; this.snack = true; },
     saveCols() { store.set('sources-cols-2', this.cols); },
     rowProps({item, index}) { return {class: index === this.cursor ? 'src-cur' : '', 'data-sha': item.sha256}; },
-    clickRow(_, {item}) { this.cursor = this.items.findIndex(r => r.sha256 === item.sha256); },
+    clickRow(e, {item}) {
+      this.cursor = this.items.findIndex(r => r.sha256 === item.sha256);
+      // A control, the select cell or a text selection is not a request to open the source.
+      if (e.target.closest('a, button, input, label, .v-selection-control') || e.target.closest('td')?.cellIndex === 0 || String(getSelection())) return;
+      if (e.metaKey || e.ctrlKey) window.open(this.openUrl(item), '_blank', 'noopener'); else location.href = this.openUrl(item);
+    },
+    pickWho(v) { this.who = this.who === v ? null : v; this.changed(); },
+    clearFilters() { this.q = ''; this.chips = []; this.who = null; this.c2pa = []; this.by = null; this.range = null; this.batch = null; this.changed(); },
     // Shell contract: follow the top bar's investigation switcher.
     useCase() { this.changed(); },
     typed() { clearTimeout(this._typing); this._typing = setTimeout(() => this.changed(), 250); },

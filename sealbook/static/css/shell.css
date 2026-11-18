@@ -190,6 +190,8 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .sb-seal.v-btn { color: var(--r); border-color: var(--r-line); background: var(--r-wash); text-transform: none; letter-spacing: 0; font-weight: 600; margin-inline-end: 4px; }
 .sb-seal-sub { margin-inline-start: 8px; font: 500 12px/1 var(--mono); opacity: .85; }
 @media (max-width: 959px) { .sb-seal.v-btn { padding: 0 6px; margin-inline-end: 0; } .sb-seal .v-btn__prepend { margin-inline-end: 4px; } }
+/* On a phone the chip is its icon: the word would cover the search box. Its label still names the state. */
+@media (max-width: 599px) { .sb-seal.v-btn { min-width: 0; padding: 0 8px; } .sb-seal .v-btn__content > span { display: none; } .sb-seal .v-btn__prepend { margin-inline-end: 0; } }
 .sb-record .sb-rec-line { color: var(--ink-2); margin-top: 2px; }
 .sb-rec-counts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
 .sb-rec-counts > div { padding: 8px 10px; border-radius: 6px; background: var(--wash); }
