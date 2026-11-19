@@ -1,8 +1,9 @@
 """What left this server: one list joined from rows other modules already store.
 
-Model calls are `run` rows on a model tool, web searches are research access
-statements, web pages are capture runs, link intakes and liveness checks, and
-timestamp requests are `anchor` rows. Nothing here logs anything new; a request
+Model calls are `run` rows on a model tool, plus access statements that name
+an embedding call made with no run (search words, sheet columns). Web searches and
+what they fetch are research access statements, web pages are capture runs, link
+intakes and liveness checks, and timestamp requests are `anchor` rows. Nothing here logs anything new; a request
 with no stored row cannot appear (docs/status.md names those)."""
 
 from __future__ import annotations
@@ -195,7 +196,28 @@ def _sources():
         .join(Payload, Payload.commitment == Statement.commitment)
         .where(
             Statement.prop == Prop.ACCESS,
-            Payload.value["action"].astext == "research",
+            Payload.value["action"].astext.in_(("research", "research_fetch")),
+        )
+    )
+    embedding = Payload.value["embedding"]
+    asked = (
+        select(
+            literal("model"),
+            cast(Statement.id, String),
+            Statement.recorded_at,
+            func.coalesce(
+                Payload.value["investigation"].astext,
+                Payload.value["filter"]["investigation"].astext,
+            ),
+            false(),
+            embedding["route"].astext,
+            false(),
+        )
+        .join(Payload, Payload.commitment == Statement.commitment)
+        .where(
+            Statement.prop == Prop.ACCESS,
+            Payload.value.has_key("embedding"),
+            embedding["route"].astext != "local",
         )
     )
     stamps = select(
@@ -207,7 +229,7 @@ def _sources():
         null(),
         false(),
     )
-    return union_all(models, pages, links, searches, stamps).subquery("out")
+    return union_all(models, pages, links, searches, asked, stamps).subquery("out")
 
 
 def _scope(out, readable: set[str] | None, f: dict) -> list:
@@ -397,6 +419,46 @@ def _page(run: Run, acq, names) -> dict:
     }
 
 
+def _asked(v: dict, who: str | None) -> dict:
+    """An embedding call made with no run, as its access statement recorded it."""
+    route = v["embedding"]["route"]
+    sheet = v["action"] == "map_columns"
+    return {
+        "what": "Column headers and sample values of a sheet, to match its columns"
+        if sheet
+        else "Search words, to find sources by meaning",
+        "detail": None if sheet else "The words searched stay in the access record.",
+        "to": ROUTE.get(route, route),
+        "host": HOST.get(route),
+        "model": v["embedding"].get("model"),
+        "why": f"Sent for {who or 'someone'} while "
+        + ("adding a sheet." if sheet else "searching."),
+        "tone": "ok",
+    }
+
+
+def _count(n: int, one: str, many: str) -> str:
+    return f"{n} {one if n == 1 else many}"
+
+
+def _fetched(v: dict, who: str | None) -> dict:
+    """Result pictures and subtitles a search fetched, as counted before they left."""
+    hosts, videos = v.get("thumbnails") or {}, v.get("subtitles") or 0
+    parts = [
+        hosts and _count(sum(hosts.values()), "result picture", "result pictures"),
+        videos and "the subtitles of " + _count(videos, "video", "videos"),
+    ]
+    return {
+        "what": "Web addresses of search results, to show their pictures and subtitles",
+        "detail": " and ".join(p for p in parts if p).capitalize() + ".",
+        "to": "The results' own hosts",
+        "host": ", ".join([*sorted(hosts), *(["youtube.com"] if videos else [])]),
+        "why": f"Fetched by this server for a search by {who or 'an analyst'}, "
+        "so the browser never contacts those hosts.",
+        "tone": "ok",
+    }
+
+
 async def _hydrate(db, found) -> list[dict]:
     ids = {k: [r.ref for r in found if r.kind == k] for k in KINDS}
     run_ids = [uuid.UUID(r) for r in ids["model"] + ids["web"] if _is_uuid(r)]
@@ -427,11 +489,15 @@ async def _hydrate(db, found) -> list[dict]:
                 .join(Payload, Payload.commitment == Statement.commitment)
                 .where(
                     Statement.id.in_(
-                        [uuid.UUID(r) for r in ids["web"] if r not in runs]
+                        [
+                            uuid.UUID(r)
+                            for r in ids["web"] + ids["model"]
+                            if r not in runs
+                        ]
                     )
                 )
             )
-            if ids["web"]
+            if ids["web"] or ids["model"]
             else []
         )
     }
@@ -481,7 +547,10 @@ async def _hydrate(db, found) -> list[dict]:
             "detail": None,
             "model": None,
         }
-        if r.kind == "model":
+        if r.kind == "model" and r.ref not in runs:
+            st, v = statements[r.ref]
+            row = _asked(v, names.get(st.author_id))
+        elif r.kind == "model":
             run = runs[r.ref]
             acq = acqs.get((run.inputs or {}).get("acquisition"))
             row = _model(run, acq, policies)
@@ -523,6 +592,9 @@ async def _hydrate(db, found) -> list[dict]:
                 "tone": "ok",
                 "source": _source(acq, r.sensitive),
             }
+        elif statements[r.ref][1]["action"] == "research_fetch":
+            st, v = statements[r.ref]
+            row = _fetched(v, names.get(st.author_id))
         else:
             st, v = statements[r.ref]
             kind = v.get("kind", "web")

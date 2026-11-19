@@ -168,6 +168,55 @@ class OutboundTest(unittest.IsolatedAsyncioTestCase):
                     author_id=person.id,
                 ),
             )
+            for subject, value in (
+                # A search by meaning: the words went to the embedding route.
+                (
+                    "search:evidence",
+                    {
+                        "action": "search",
+                        "query": "synthetic meaning words",
+                        "mode": "hybrid",
+                        "filter": {"investigation": CASE, "time": None},
+                        "embedding": {"route": "cloud-zdr", "model": "vendor/embed"},
+                    },
+                ),
+                # The same on a local embedding route never left.
+                (
+                    "search:evidence",
+                    {
+                        "action": "search",
+                        "query": "kept here",
+                        "filter": {"investigation": CASE, "time": None},
+                        "embedding": {"route": "local", "model": "vendor/embed"},
+                    },
+                ),
+                (
+                    "sheet:peek",
+                    {
+                        "action": "map_columns",
+                        "investigation": CASE,
+                        "embedding": {"route": "cloud-zdr", "model": "vendor/embed"},
+                    },
+                ),
+                (
+                    f"investigation:{CASE}",
+                    {
+                        "action": "research_fetch",
+                        "investigation": CASE,
+                        "thumbnails": {"imgs.example.org": 3},
+                        "subtitles": 1,
+                    },
+                ),
+            ):
+                await append(
+                    s,
+                    StatementIn(
+                        subject=subject,
+                        prop=Prop.ACCESS,
+                        value=value | {"at": now.isoformat()},
+                        author_id=person.id,
+                    ),
+                )
 
     async def asyncTearDown(self):
         await ext.engine.dispose()
@@ -190,7 +239,25 @@ class OutboundTest(unittest.IsolatedAsyncioTestCase):
         body, raw = await self.get(analyst)
         what = [i["what"] for i in body["items"]]
         # Sent, read here, refused, a search and a timestamp; no hash or queued run.
-        self.assertEqual(body["total"], 6, what)
+        self.assertEqual(body["total"], 9, what)
+        asked = next(i for i in body["items"] if i["what"].startswith("Search words"))
+        self.assertEqual(
+            (asked["kind"], asked["to"], asked["model"]),
+            ("model", "Hosted model that keeps no data", "vendor/embed"),
+        )
+        self.assertIn("analyst-2", asked["why"])
+        self.assertTrue(
+            any(i["what"].startswith("Column headers") for i in body["items"])
+        )
+        fetched = next(
+            i for i in body["items"] if i["what"].startswith("Web addresses")
+        )
+        self.assertEqual(
+            fetched["detail"], "3 result pictures and the subtitles of 1 video."
+        )
+        self.assertEqual(fetched["host"], "imgs.example.org, youtube.com")
+        self.assertEqual(body["today"]["models"]["cloud-zdr"], 3)
+        self.assertEqual(body["today"]["web"], 2)
         self.assertIn("A scanned page, to read its text", what)
         self.assertIn("Nothing. Read on this server.", what)
         self.assertIn("A web search", what)
@@ -206,6 +273,7 @@ class OutboundTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("analyst-2", search["why"])
         # No evidence values: neither the search words nor a source outside access.
         self.assertNotIn("synthetic query words", raw)
+        self.assertNotIn("synthetic meaning words", raw)
         self.assertNotIn("Unlisted register", raw)
         self.assertEqual(body["today"]["refused"], 1)
         self.assertNotIn(None, body["today"]["models"])
@@ -218,7 +286,7 @@ class OutboundTest(unittest.IsolatedAsyncioTestCase):
 
         admin = await self.client("admin@example.com")
         everything, raw = await self.get(admin)
-        self.assertEqual(everything["total"], 7)
+        self.assertEqual(everything["total"], 10)
         self.assertIn("Unlisted register", raw)
 
         nobody = await self.client("no@example.com")

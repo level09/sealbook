@@ -1209,6 +1209,16 @@ class ResearchTest(unittest.IsolatedAsyncioTestCase):
         r = await client.get(f"/api/research/thumb/{early['id']}")
         self.assertEqual(r.status_code, 200)
         async with ext.async_session_factory() as s:
+            # what the search fetched besides its queries is on record, by host
+            fetched = await s.scalar(
+                select(Payload.value).where(
+                    Payload.value["action"].astext == "research_fetch"
+                )
+            )
+            self.assertEqual(
+                (fetched["thumbnails"], fetched["subtitles"]),
+                ({"i.ytimg.com": 3}, 3),
+            )
             logs = (
                 (
                     await s.execute(

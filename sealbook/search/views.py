@@ -64,13 +64,14 @@ async def search():
         abort(400, description=str(exc))
     query = query.strip()
     started = time.perf_counter()
-    embedding, semantic = None, {"status": "off"}
+    embedding, semantic, asked = None, {"status": "off"}, False
     # A hash names one item; meaning has nothing to add to it.
     if (
         Config.EMBEDDING_MODEL
         and item.get("semantic", True)
         and not service.SHA.fullmatch(query.lower())
     ):
+        asked = True
         try:
             embedding = await embeddings.query(db, query, Config.EMBEDDING_MODEL)
             semantic = {"status": "ok"}
@@ -110,6 +111,7 @@ async def search():
                 "mode": "hybrid" if embedding else "keyword",
                 "filter": mfilter.dump(f),
                 "at": datetime.now(UTC).isoformat(),
+                **({"embedding": embeddings.sent()} if asked else {}),
             },
             author_id=who.id,
         ),

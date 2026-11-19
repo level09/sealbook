@@ -66,15 +66,24 @@ async def preview(acq_id):
     acq, blob, refused = await _acquisition(acq_id)
     if refused:
         return refused
-    return output(
-        await service.preview(
-            g.db_session,
-            acq,
-            blob,
-            request.args.get("dataset"),
-            int(request.args.get("sheet", "1")),
-        )
+    out = await service.preview(
+        g.db_session,
+        acq,
+        blob,
+        request.args.get("dataset"),
+        int(request.args.get("sheet", "1")),
     )
+    if out.pop("asked"):
+        person = await write.principal_for_user(
+            g.db_session, current_user.id, current_user.name or current_user.email
+        )
+        await service.log_asked(
+            g.db_session,
+            person,
+            f"blob:{acq.blob_sha256}",
+            (acq.context or {}).get("investigation"),
+        )
+    return output(out)
 
 
 @bp.post("/api/sheets/<uuid:acq_id>/diff")

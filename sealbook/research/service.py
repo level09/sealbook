@@ -273,6 +273,41 @@ async def log_query(
     return st.id
 
 
+async def log_fetch(
+    db: AsyncSession,
+    who,
+    scope: str,
+    investigation: str,
+    thumbnails: list[str],
+    videos: int,
+) -> None:
+    """The access record for what a search fetches besides its queries: result
+    thumbnails, counted by host, and the subtitles of `videos` YouTube videos.
+    Committed before those requests leave; no address or search word is kept."""
+    hosts: dict[str, int] = {}
+    for url in thumbnails:
+        host = urlsplit(url).hostname or "unknown"
+        hosts[host] = hosts.get(host, 0) + 1
+    if not hosts and not videos:
+        return
+    await write.append(
+        db,
+        StatementIn(
+            subject=scope,
+            prop=Prop.ACCESS,
+            value={
+                "action": "research_fetch",
+                "investigation": investigation,
+                "thumbnails": hosts,
+                "subtitles": videos,
+                "at": datetime.now(UTC).isoformat(),
+            },
+            author_id=who.id,
+        ),
+    )
+    await db.commit()
+
+
 def _pdq(data: bytes) -> tuple[str, int] | None:
     try:
         with Image.open(io.BytesIO(data)) as im:
@@ -430,6 +465,14 @@ async def search(
         (m for m in results if m["r"].kind == "youtube"),
         key=lambda m: (_grounded(heads, m["r"]) is False, m["rank"]),
     )[: Config.RESEARCH_YOUTUBE_SUBTITLES]
+    await log_fetch(
+        db,
+        who,
+        scope,
+        investigation,
+        [m["r"].thumbnail for m in results if m["r"].thumbnail],
+        len(videos),
+    )
     subs = await youtube.subtitles(
         [m["r"].video_id for m in videos], Config.RESEARCH_YOUTUBE_SUBTITLE_SECONDS
     )

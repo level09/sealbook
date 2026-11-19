@@ -124,6 +124,8 @@ async def peek():
         out = await sheets.peek(g.db_session, data, mime, f.filename, case)
     except ValueError as exc:
         abort(422, description=str(exc))
+    if out.pop("asked"):
+        await sheets.log_asked(g.db_session, await _collector(), "sheet:peek", case)
     return _json(out)
 
 

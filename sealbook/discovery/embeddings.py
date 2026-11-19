@@ -190,6 +190,12 @@ async def _post(inputs, references, model, transport):
     return values[: len(inputs)], values[len(inputs) :], served, endpoint, response
 
 
+def sent() -> dict:
+    """What an access record keeps of a call to the embedding route, so the
+    outbound log can list it."""
+    return {"route": Config.EMBEDDING_ROUTE, "model": Config.EMBEDDING_MODEL}
+
+
 async def query(db, words, model, transport=None):
     """Embed one search query against the active space.
 

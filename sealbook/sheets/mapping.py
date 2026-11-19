@@ -329,8 +329,9 @@ async def _ranked(unknown: list[dict]) -> None:
 async def suggest(cols: list[dict], remembered: dict[str, str]) -> dict:
     """Per column: the remembered field (exact header, then the same header with
     spacing and case ignored), else suggestions from header words and value
-    shapes, else the embedding model's ranking when it answers. Returns the columns
-    and, when the model was needed and could not help, a note in words."""
+    shapes, else the embedding model's ranking when it answers. Returns the columns,
+    a note in words when the model was needed and could not help, and `asked`:
+    whether headers and sample values went to the embedding route."""
     by_norm = {norm(h): f for h, f in remembered.items()}
     out, unknown = [], []
     for c in cols:
@@ -348,7 +349,7 @@ async def suggest(cols: list[dict], remembered: dict[str, str]) -> dict:
             note = NO_MODEL
         except (TimeoutError, OSError, httpx2.HTTPError):
             note = MODEL_DOWN
-    return {"columns": out, "note": note}
+    return {"columns": out, "note": note, "asked": bool(unknown) and note != NO_MODEL}
 
 
 def check(sheet: Sheet, key_column: str, mapping: dict[str, str]) -> None:

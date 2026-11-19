@@ -89,13 +89,14 @@ async def search():
         f = mfilter.parse(orjson.dumps(item.get("filter", {})).decode())
     except ValueError as exc:
         abort(400, description=str(exc))
-    embedding, semantic = None, {"status": "off"}
+    embedding, semantic, asked = None, {"status": "off"}, False
     if mode == "hybrid":
         if not Config.EMBEDDING_MODEL:
             abort(
                 503,
                 description="Semantic search needs an embedding model (EMBEDDING_MODEL)",
             )
+        asked = True
         try:
             embedding = await embeddings.query(db, query, Config.EMBEDDING_MODEL)
             semantic = {"status": "ok"}
@@ -138,6 +139,7 @@ async def search():
                 "mode": mode,
                 "filter": mfilter.dump(f),
                 "at": datetime.now(UTC).isoformat(),
+                **({"embedding": embeddings.sent()} if asked else {}),
             },
             author_id=who.id,
         ),

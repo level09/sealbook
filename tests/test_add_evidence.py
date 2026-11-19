@@ -19,7 +19,7 @@ from sealbook.cases import service as cases
 from sealbook.cases.service import ensure as ensure_case
 from sealbook.ingest.batch import _failure
 from sealbook.ingest.service import suggest_doc_type
-from sealbook.ledger.models import Acquisition, Blob, Run
+from sealbook.ledger.models import Acquisition, Blob, Payload, Run
 from sealbook.settings import Config
 from sealbook.sheets import mapping, parse
 from sealbook.sheets.models import DatasetVersion
@@ -322,6 +322,7 @@ class IntakeTest(unittest.IsolatedAsyncioTestCase):
             return {
                 "columns": [c | {"remembered": None, "suggestions": []} for c in cols],
                 "note": mapping.MODEL_DOWN,
+                "asked": True,
             }
 
         up = await peek(side_effect=unnamed)
@@ -330,6 +331,18 @@ class IntakeTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(up["suggest_note"], mapping.MODEL_DOWN)
         self.assertEqual(down["suggestion"]["doc_type"], "detention_register")
         async with ext.async_session_factory() as s:
+            # Only the peek that reached the embedding route left an access record.
+            sent = (
+                await s.scalars(
+                    select(Payload.value).where(
+                        Payload.value["action"].astext == "map_columns"
+                    )
+                )
+            ).all()
+            self.assertEqual(
+                [(v["investigation"], set(v["embedding"])) for v in sent],
+                [("case-r", {"route", "model"})],
+            )
             self.assertEqual(
                 await s.scalar(
                     select(func.count())

@@ -6,12 +6,16 @@ from __future__ import annotations
 
 import asyncio
 import uuid
+from datetime import UTC, datetime
 
 from sqlalchemy import func, select
 
 from sealbook import blobs
+from sealbook.discovery import embeddings
 from sealbook.discovery.service import available
 from sealbook.ingest import service as ingest
+from sealbook.ledger import write
+from sealbook.ledger.contracts import Prop, StatementIn
 from sealbook.ledger.models import (
     Acquisition,
     Blob,
@@ -70,8 +74,9 @@ PEOPLE = frozenset({"name", "person"})
 async def peek(db, data: bytes, mime: str, filename: str, case: str | None) -> dict:
     """What a sheet on the person's own device holds, before it is added: the header
     found, a few rows, and a field per column (remembered from a dataset in the case
-    whose columns it repeats, else suggested). Nothing is stored or logged; the
-    bytes are the person's own and the reply holds only what they sent."""
+    whose columns it repeats, else suggested). Nothing of the sheet is stored; the
+    bytes are the person's own and the reply holds only what they sent. `asked`
+    tells the caller to log a call to the embedding route (`log_asked`)."""
     sheets = await asyncio.to_thread(parse.read, data, mime)
     number = next((i for i, sh in enumerate(sheets, 1) if sh.body), 1)
     sheet = _sheet(sheets, number)
@@ -86,6 +91,7 @@ async def peek(db, data: bytes, mime: str, filename: str, case: str | None) -> d
         "dataset": match["id"] if match else None,
         "columns": found["columns"],
         "suggest_note": found["note"],
+        "asked": found["asked"],
     }
     first = [
         c["remembered"] or next(iter(c["suggestions"]), {}).get("field")
@@ -158,7 +164,29 @@ async def preview(db, acq: Acquisition, blob: Blob, dataset_id, number: int) -> 
     out["version"] = await _version_row(db, version) if version else None
     found = await mapping.suggest(cols, dataset.mapping if dataset else {})
     out["columns"], out["suggest_note"] = found["columns"], found["note"]
+    out["asked"] = found["asked"]
     return out
+
+
+async def log_asked(db, who, subject: str, case: str | None) -> None:
+    """The access record for column headers and sample values sent to the embedding
+    route, which is what puts the call on the outbound log. No header or value is
+    kept."""
+    await write.append(
+        db,
+        StatementIn(
+            subject=subject,
+            prop=Prop.ACCESS,
+            value={
+                "action": "map_columns",
+                "investigation": case,
+                "embedding": embeddings.sent(),
+                "at": datetime.now(UTC).isoformat(),
+            },
+            author_id=who.id,
+        ),
+    )
+    await db.commit()
 
 
 async def _dataset(db, dataset_id, case: str) -> Dataset:
