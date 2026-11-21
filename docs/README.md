@@ -12,6 +12,7 @@ describes the code, its decisions and its limits for contributors.
 | [Discovery and review](discovery.md) | Fingerprints, embeddings and analyst collaboration |
 | [Search evaluation](search-eval.md) | Rerunnable analyst search battery, results and known gaps |
 | [Agent evaluation](agent-eval.md) | Linker, gap, contradiction and brief scores against a planted case, fixed and live; extraction's invented-people check; counts from real data |
+| [Case studies](case-studies.md) | Fictional puzzles that are demo, template and scored test at once; the contract and each case's planted truth and score |
 | [Operations](operations.md) | Configuration, local commands and verification |
 | [Lessons](lessons.md) | Failures found during the build and how to avoid them |
 | [stk upstream notes](stk-upstream.md) | Framework issues and reusable pieces found while building Sealbook |

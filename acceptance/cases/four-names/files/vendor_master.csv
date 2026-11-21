@@ -1,0 +1,61 @@
+Vendor ID,Company,Contact person,Registered,Payment terms (days)
+V001,Windward Ship Repair Ltd,Irena Hadley,2012-07-23,45
+V002,Windward Provisions Ltd,Ulric Marsh,2016-08-07,60
+V003,Tideline Marine Services Ltd,Dora Szabo,2015-04-01,45
+V004,Tideline Logistics Ltd,Lionel Lucan,2016-06-08,60
+V005,Tideline Hydraulics Ltd,Agnes Wilde,2011-08-01,45
+V006,Tideline Fuel Supply Ltd,Clara Ingram,2013-11-21,60
+V007,Starboard Electrical Ltd,Hugo Haldane,2013-04-07,30
+V008,Shoreline Logistics Ltd,Lena Rook,2010-08-26,30
+V009,Shoreline Fuel Supply Ltd,Gideon Szabo,2016-05-14,45
+V010,Seabright Logistics Ltd,Bianca Castell,2020-08-09,45
+V011,Saltway Safety Equipment Ltd,Boris Moreau,2010-06-10,30
+V012,Saltway Electrical Ltd,Nora Voss,2012-10-01,30
+V013,Riverbend Provisions Ltd,Petra Lorne,2010-11-09,30
+V014,Riverbend Electrical Ltd,Lena Hadley,2010-09-19,30
+V015,Riverbend Coatings Ltd,Edith Rook,2016-07-02,30
+V016,Riverbend Catering Ltd,Cyril Moreau,2013-10-04,45
+V017,Rigging Ship Repair Ltd,Magda Kaplan,2010-04-25,45
+V018,Rigging Safety Equipment Ltd,Julia Corvin,2009-02-20,30
+V019,Quayside Provisions Ltd,Agnes Brennan,2011-03-21,60
+V020,Quayside Catering Ltd,Karl Aalto,2020-08-08,30
+V021,Portside Coatings Ltd,Sabine Kaplan,2017-09-19,30
+V022,Northgate Safety Equipment Ltd,Stefan Galt,2021-03-12,30
+V023,Northgate Provisions Ltd,Milan Yates,2019-08-10,30
+V024,Northgate Hydraulics Ltd,Oskar Belmont,2015-05-17,30
+V025,Northgate Fuel Supply Ltd,Nora Szabo,2020-10-28,45
+V026,Northgate Coatings Ltd,Leon Corvin,2018-10-09,45
+V027,Mooring Fuel Supply Ltd,Bertil Quist,2012-04-10,45
+V028,Mariner Safety Equipment Ltd,Teodor Aalto,2021-09-20,60
+V029,Mariner Hydraulics Ltd,Nora Ferrante,2011-05-23,30
+V030,Larkspur Safety Equipment Ltd,Gideon Duarte,2017-12-17,30
+V031,Kassar Marine Supply,Adrian Kassar,2010-06-16,60
+V032,Larkspur Rope and Chain Ltd,Edith Ulmann,2009-05-22,45
+V033,Larkspur Hydraulics Ltd,Irena Farrow,2016-09-03,60
+V034,Lantern Safety Equipment Ltd,Pavel Voss,2014-12-20,30
+V035,Lantern Marine Services Ltd,Sabine Amsel,2011-08-19,30
+V036,Lantern Electrical Ltd,Ilse Gorman,2009-04-08,45
+V037,Ironside Safety Equipment Ltd,Mateo Zoller,2020-08-10,45
+V038,Ironside Electrical Ltd,Rafael Fenwick,2018-10-18,45
+V039,Harbour Ship Repair Ltd,Lena Teller,2019-07-26,30
+V040,Harbour Provisions Ltd,Rafael Okafor,2010-07-07,30
+V041,Harbour Electrical Ltd,Selma Brandt,2011-08-03,60
+V042,Halyard Safety Equipment Ltd,Jonas Marsh,2018-12-06,30
+V043,Halyard Catering Ltd,Paula Thorne,2019-02-22,30
+V044,Gull Ship Repair Ltd,Marta Dempsey,2015-08-24,30
+V045,Gull Provisions Ltd,Hanna Ostrander,2009-10-07,60
+V046,Gull Logistics Ltd,Bianca Kovac,2016-02-14,30
+V047,Driftwood Marine Services Ltd,Dora Sorel,2016-05-20,30
+V048,Driftwood Fuel Supply Ltd,Boris Petrov,2013-08-18,60
+V049,Dockhand Ship Repair Ltd,Nadia Fenwick,2015-11-08,30
+V050,Dockhand Hydraulics Ltd,Selma Voss,2013-12-21,60
+V051,Compass Rope and Chain Ltd,Ines Mertens,2019-08-02,45
+V052,Capstan Electrical Ltd,Freya Brennan,2009-09-13,30
+V053,Breakwater Ship Repair Ltd,Ivan Wexler,2014-02-23,60
+V054,Breakwater Hydraulics Ltd,Agnes Falk,2012-01-15,60
+V055,Bluewater Hydraulics Ltd,Selma Thorne,2015-02-14,30
+V056,Bluewater Catering Ltd,Edith Voss,2020-08-15,60
+V057,Beacon Safety Equipment Ltd,Tomas Marsh,2021-04-26,45
+V058,Beacon Electrical Ltd,Bertil Kessler,2020-05-15,45
+V059,Anchor Safety Equipment Ltd,Viktor Moreau,2017-04-16,60
+V060,Anchor Catering Ltd,Hugo Pelham,2017-11-23,60
