@@ -20,11 +20,13 @@ Not tracked: `film/composition/assets/captures/` (what `capture.py` writes),
 
 ## Sound
 
-- **Voice**: ElevenLabs, voice "George" (`JBFqnCBsd6RMkjVDRZzb`), model `eleven_v4`,
-  stability 0.6, similarity 0.75, synthesised 2026-11-21. The mix plays it at 1.16x with
-  ffmpeg `atempo` (pitch kept), because v4 has no speed setting. The lines are tracked:
-  a new synthesis never sounds the same twice. `audio.py voice` only re-synthesises a
-  line whose words or voice settings changed.
+- **Voice**: ElevenLabs, voice "George" (`JBFqnCBsd6RMkjVDRZzb`), model
+  `eleven_multilingual_v2`, stability 0.6, similarity 0.75, style 0, speed 1.0, speaker
+  boost on, synthesised 2026-11-21. The voice plays at its natural speed: nothing in the
+  mix stretches or pitches it. Cut two sped `eleven_v4` lines up 1.16x with ffmpeg
+  `atempo`, and that overlap-add stretching made the voice sound doubled. The lines are
+  tracked (a new synthesis never sounds the same twice); `audio.py voice` re-synthesises
+  only a line whose words or voice settings changed.
 - **Score**: generated with Google Lyria 2 through fal (`fal-ai/lyria2`) on 2026-11-21:
   five 32.8 s parts, seeds 11 to 15, joined with 4 s crossfades into 147.8 s. Prompt:
   "sparse felt piano and soft sustained strings, calm documentary underscore, patient and
@@ -32,9 +34,12 @@ Not tracked: `film/composition/assets/captures/` (what `capture.py` writes),
   negative prompt: "drums, percussion, vocals, choir, loud, aggressive, electronic beat".
   Lyria RealTime through the Gemini API was tried first and refused the key. Terms of
   use are fal's and Google's for generated audio; regenerating gives different music.
-- **Mix**: the voice track is laid end to end by sample count, the score sits 16 dB down
-  and is ducked under speech (`sidechaincompress`), then one linear gain brings the whole
-  to -16 LUFS integrated, true peak -1.5 dBFS (two-pass `loudnorm`).
+- **Mix**: each line starts at its `at` in `narration.json` (the time the picture is cut
+  to), laid end to end by sample count; the mono line goes to both channels unchanged.
+  The score is a steady bed 16 dB down with no ducking, so nothing pumps behind the words.
+  One gain brings the mix to -16 LUFS integrated, and a limiter holds peaks under
+  -1.5 dBFS. `audio.py mix` also writes the two stems at their gain in the mix,
+  `film/build/voice.wav` and `film/build/score.wav`, to check each on its own.
 
 ## Rebuild from nothing
 
@@ -65,13 +70,13 @@ the main checkout's `instance/blobs`.
 
    ```sh
    python3 film/audio.py voice     # only lines that changed
-   python3 film/audio.py timing    # line starts; the picture in index.html is timed to these
+   python3 film/audio.py timing    # line starts and ends; fails if a line runs into the next
    python3 film/audio.py vtt       # film/captions.vtt
    python3 film/audio.py mix       # film/build/mix.wav
    ```
 
-   A changed line changes every later start. Retime the scenes in
-   `composition/index.html` to the new `timing` before rendering.
+   A line that gets longer may need its `at`, and the scenes in `composition/index.html`
+   that go with it, moved before rendering.
 
 4. Picture (the CLI the `hyperframes` skill runs; in a shell, `npx hyperframes@0.9.77`):
 
@@ -86,7 +91,7 @@ the main checkout's `instance/blobs`.
 
    ```sh
    ffmpeg -y -i film/build/master.mp4 -i film/build/mix.wav -map 0:v -map 1:a \
-     -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 26 -preset slow -tune stillimage \
+     -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 27 -preset slow -tune stillimage \
      -c:a aac -b:a 128k -ar 48000 -shortest -movflags +faststart site/media/case_film.mp4
    ffmpeg -y -ss 54 -i film/build/master.mp4 -frames:v 1 -q:v 3 site/media/case_film.jpg
    cp film/captions.vtt site/media/case_film.vtt

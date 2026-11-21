@@ -1,8 +1,8 @@
 # Script: four stories of how Sealbook helps
 
-140.5 seconds, 1920 x 1080, 30 fps, narrated, with a quiet score. Written for a viewer
-who has never heard of the app. The narration is `narration.json`; `audio.py timing`
-prints when each line starts. The captions (`captions.vtt`) are the narration, one cue
+140.5 seconds, 1920 x 1080, 30 fps, narrated at the voice's natural speed over a steady, quiet score. Written for a viewer
+who has never heard of the app. The narration is `narration.json`; each line's `at` is the time the picture is cut to, and `audio.py timing` checks that no
+line runs into the next. The captions (`captions.vtt`) are the narration, one cue
 per line. Every number comes from `acceptance/cases/*/README.md`,
 `docs/case-studies.md` or the app screen itself.
 
@@ -15,8 +15,8 @@ file from `acceptance/cases/<slug>/files/`; **type** is words only.
 | 0.8 | Investigators, journalists, lawyers and researchers share one problem. | file: a pile of the cases' own material: a scan, the gate photograph, five payment rows, the gate book, the licence |
 | 5.7 | Too much evidence to read, and a result nobody can later prove was not changed. | same, with the line on screen |
 | 10.9 | Sealbook is an app for exactly that. It works in three steps. | type: Sealbook, one line on what it is |
-| 15.5 | You bring the material in. The app reads all of it and proposes connections, each shown with the exact place it came from. | 1, app: the Sources list. 2, app: the consultancy agreement scan with each claim boxed and listed |
-| 22.7 | A person approves each one with a signature, and the record is sealed, so anyone can check it later. | 3, app: a decision with its reason and "Reject and sign"; site: the package checker's verdict |
+| 14.9 | You bring the material in. The app reads all of it and proposes connections, each shown with the exact place it came from. | 1, app: the Sources list. 2, app: the consultancy agreement scan with each claim boxed and listed |
+| 22.6 | A person approves or declines each one with a signature, and the record is sealed, so anyone can check it later. | 3, app: a decision with its reason and "Reject and sign"; site: the package checker's verdict |
 | 29.1 | Four invented cases show how that helps. | type: the four kinds of help |
 | 33.0 | One: a person under several names. Four desks at a freight company each keep a clean file: 14 sources and 1,445 sheet rows. | file: the four desk documents (vendor form, consultancy agreement, guarantee deed, ship agent licence) |
 | 44.2 | Kassar. Qassar. Khassar. Kasar. And on one licence, the name in Arabic. | file: each name lifts off its document as it is spoken, cropped from the scan; "Kasar" is row 28 of the ship agents register; the Arabic name is cropped from the licence |

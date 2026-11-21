@@ -34,6 +34,7 @@ EMAIL = os.environ.get("FILM_USER", "admin@example.com")
 # The keyboard hint bar is fixed to the window and cuts through tall crops.
 QUIET = ".sb-hints { display: none !important; }"
 VIEW = {"width": 1600, "height": 1000}
+NARROW = {"width": 1000, "height": 1400}
 SCALE = 2
 REASON = "Born 19 August 1974 in Torvane: a namesake, not the same man."
 # consultancy_agreement_qassar.jpg and copy_viral.mp4, by SHA-256
@@ -124,11 +125,11 @@ async def shoot(page, name, clip=None, locator=None, pad=0):
     print("wrote", name)
 
 
-async def session(browser, app, case, landing="/todo"):
+async def session(browser, app, case, landing="/todo", view=VIEW):
     from stk.agent_login import create_agent_login_token
 
     ctx = await browser.new_context(
-        viewport=VIEW, device_scale_factor=SCALE, reduced_motion="reduce"
+        viewport=view, device_scale_factor=SCALE, reduced_motion="reduce"
     )
     await ctx.add_init_script(
         f"try{{localStorage.setItem('sb.case','{case}')}}catch(e){{}}"
@@ -191,7 +192,8 @@ async def four_names(browser, app):
 async def conclusion(browser, app, case, name, reveal=False):
     """The signed conclusion on a case's Overview. A sensitive source is revealed
     through the page's own logged reveal first, when the conclusion rests on one."""
-    ctx, page = await session(browser, app, case)
+    # A narrow window wraps the conclusion's lines, so they can be shown large.
+    ctx, page = await session(browser, app, case, view=NARROW)
     await go(page, "/cases/overview", wait=2000)
     if reveal:
         await page.get_by_role("button", name="Reveal and read it").click()

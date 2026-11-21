@@ -3,13 +3,14 @@
     uv run python film/audio.py voice    # synthesise any line whose text changed
     uv run python film/audio.py timing   # print when each line starts, and the length
     uv run python film/audio.py score    # generate the score (Google Lyria 2 on fal)
-    uv run python film/audio.py mix      # place the lines, duck the score, -16 LUFS
+    uv run python film/audio.py mix      # place the lines over a steady bed, -16 LUFS
     uv run python film/audio.py vtt      # write film/captions.vtt, one cue per line
 
-Reads film/narration.json: the voice, the mix tempo and each line with the pause
-before it (`gap`, default 0.45 s). Writes film/audio/lines/<id>.mp3 and
+Reads film/narration.json: the voice, the film length and each line with the time
+it starts (`at`, which the picture is cut to). Writes film/audio/lines/<id>.mp3 and
 film/audio/lines.json and film/audio/score.m4a (all tracked: small, and a new
-synthesis never sounds the same twice), and film/build/mix.wav (not tracked).
+synthesis never sounds the same twice), and film/build/mix.wav with its two stems,
+voice.wav and score.wav (not tracked).
 Needs ELEVENLABS_API_KEY for `voice`, FAL_KEY for `score`, ffmpeg for all steps.
 """
 
@@ -30,7 +31,7 @@ LINES = AUDIO / "lines"
 SPEC = json.loads((FILM / "narration.json").read_text())
 SCORE = AUDIO / "score.m4a"
 MIX = FILM / "build" / "mix.wav"
-START, GAP, TAIL = 0.8, 0.45, 2.5
+BED_DB = -16  # the score under the voice, before the mix gain
 
 SCORE_PROMPT = (
     "sparse felt piano and soft sustained strings, calm documentary underscore, "
@@ -61,7 +62,7 @@ def duration(path: Path) -> float:
 
 
 def line_key(text: str) -> str:
-    """What a synthesis depends on: the words and the voice, not the mix tempo."""
+    """What a synthesis depends on: the words and the voice settings."""
     v = {k: x for k, x in SPEC["voice"].items() if not k.startswith("tempo")}
     return hashlib.sha256(json.dumps([text, v], sort_keys=True).encode()).hexdigest()
 
@@ -103,24 +104,29 @@ def voice():
 
 
 def timing():
-    """Each line's start and end in the film, after the tempo, and the film's length."""
-    tempo = SPEC["voice"].get("tempo", 1.0)
+    """Each line's start and end in the film, and the film's length.
+
+    Lines start at the `at` the picture is cut to. A line that would run into the
+    next one is an error: shorten the words or move the picture, never speed the
+    voice up in the mix."""
     index = json.loads((AUDIO / "lines.json").read_text())
-    t, rows = START, []
-    for i, line in enumerate(SPEC["lines"]):
-        if i:
-            t += line.get("gap", GAP)
-        length = index[line["id"]]["seconds"] / tempo
+    rows = []
+    for line in SPEC["lines"]:
+        length = index[line["id"]]["seconds"]
         rows.append(
             {
                 "id": line["id"],
-                "at": round(t, 2),
-                "end": round(t + length, 2),
+                "at": line["at"],
+                "end": round(line["at"] + length, 2),
                 "text": line["text"],
             }
         )
-        t += length
-    return rows, round(t + TAIL, 1)
+    for a, b in zip(rows, rows[1:], strict=False):
+        if a["end"] + 0.15 > b["at"]:
+            raise SystemExit(
+                f"line {a['id']} ends at {a['end']}, line {b['id']} starts at {b['at']}"
+            )
+    return rows, SPEC["length"]
 
 
 def score():
@@ -173,39 +179,61 @@ def score():
     print("score", SCORE, round(duration(SCORE), 1), "s")
 
 
+def loudness(path: Path) -> dict:
+    err = subprocess.run(
+        [
+            "ffmpeg",
+            "-hide_banner",
+            "-i",
+            str(path),
+            "-af",
+            "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json",
+            "-f",
+            "null",
+            "-",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stderr
+    return json.loads(err[err.rindex("{") : err.rindex("}") + 1])
+
+
 def mix():
+    """Voice at its natural speed, a steady score bed under it, one gain to -16 LUFS.
+
+    Writes film/build/voice.wav and film/build/score.wav (each stem at the gain it has
+    in the mix) and film/build/mix.wav."""
     rows, total = timing()
-    tempo = SPEC["voice"].get("tempo", 1.0)
+    rate = 48000
     # The voice is one track laid end to end: a lead-in of silence, then each line
     # padded with silence up to the next line's start. Sample counts, not timestamps,
-    # place the lines, so nothing can drift or be trimmed.
-    rate = 48000
+    # place the lines. The mono line goes to both channels unchanged.
     inputs, chains, labels = [], [], []
     starts = [r["at"] for r in rows] + [total]
     for i, row in enumerate(rows):
         inputs += ["-i", str(LINES / f"{row['id']}.mp3")]
         span = int(round((starts[i + 1] - starts[i]) * rate))
         chains.append(
-            f"[{i}:a]aresample={rate},aformat=channel_layouts=stereo,atempo={tempo},"
+            f"[{i}:a]aresample={rate},aformat=channel_layouts=stereo,"
             f"apad=whole_len={span},atrim=end_sample={span},asetpts=N/SR/TB[v{i}]"
         )
         labels.append(f"[v{i}]")
     n = len(rows)
-    inputs += ["-i", str(SCORE)]
     lead = int(round(rows[0]["at"] * rate))
     inputs += ["-f", "lavfi", "-i", f"anullsrc=r={rate}:cl=stereo"]
-    chains.append(f"[{n + 1}:a]atrim=end_sample={lead},asetpts=N/SR/TB[lead]")
-    graph = ";".join(chains) + ";"
-    graph += "[lead]" + "".join(labels) + f"concat=n={n + 1}:v=0:a=1[voice];"
-    graph += "[voice]asplit=2[vo][key];"
-    graph += (
-        f"[{n}:a]aresample=48000,aformat=channel_layouts=stereo,apad,atrim=0:{total},volume=0.16,"
-        f"afade=t=in:d=2,afade=t=out:st={total - 4}:d=4[bed];"
+    chains.append(f"[{n}:a]atrim=end_sample={lead},asetpts=N/SR/TB[lead]")
+    graph = (
+        ";".join(chains)
+        + ";[lead]"
+        + "".join(labels)
+        + f"concat=n={n + 1}:v=0:a=1[out]"
     )
-    graph += "[bed][key]sidechaincompress=threshold=0.02:ratio=6:attack=60:release=900[ducked];"
-    graph += "[vo][ducked]amix=inputs=2:normalize=0[out]"
-    MIX.parent.mkdir(parents=True, exist_ok=True)
-    raw = MIX.with_name("mix_raw.wav")
+    build = MIX.parent
+    build.mkdir(parents=True, exist_ok=True)
+    voice_raw, bed_raw, mix_raw = (
+        build / f"{k}_raw.wav" for k in ("voice", "score", "mix")
+    )
     run(
         "ffmpeg",
         "-y",
@@ -216,35 +244,21 @@ def mix():
         graph,
         "-map",
         "[out]",
-        "-ar",
-        "48000",
-        "-ac",
-        "2",
-        str(raw),
+        str(voice_raw),
     )
-    # Two-pass loudness: measure, then one linear gain to -16 LUFS, so the score
-    # between lines is not lifted the way single-pass dynamic loudnorm lifts it.
-    norm = "loudnorm=I=-16:TP=-1.5:LRA=11"
-    err = subprocess.run(
-        [
-            "ffmpeg",
-            "-hide_banner",
-            "-i",
-            str(raw),
-            "-af",
-            norm + ":print_format=json",
-            "-f",
-            "null",
-            "-",
-        ],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stderr
-    m = json.loads(err[err.rindex("{") : err.rindex("}") + 1])
-    norm += (
-        f":measured_I={m['input_i']}:measured_TP={m['input_tp']}:measured_LRA={m['input_lra']}"
-        f":measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true"
+    # A steady bed: one fixed level the whole way, no ducking, so nothing pumps
+    # behind the words.
+    run(
+        "ffmpeg",
+        "-y",
+        "-loglevel",
+        "error",
+        "-i",
+        str(SCORE),
+        "-af",
+        f"aresample={rate},aformat=channel_layouts=stereo,apad,atrim=0:{total},"
+        f"volume={BED_DB}dB,afade=t=in:d=2,afade=t=out:st={total - 4}:d=4",
+        str(bed_raw),
     )
     run(
         "ffmpeg",
@@ -252,15 +266,42 @@ def mix():
         "-loglevel",
         "error",
         "-i",
-        str(raw),
+        str(voice_raw),
+        "-i",
+        str(bed_raw),
+        "-filter_complex",
+        "amix=inputs=2:normalize=0",
+        str(mix_raw),
+    )
+    gain = -16 - float(loudness(mix_raw)["input_i"])
+    for src, dst in ((voice_raw, build / "voice.wav"), (bed_raw, build / "score.wav")):
+        run(
+            "ffmpeg",
+            "-y",
+            "-loglevel",
+            "error",
+            "-i",
+            str(src),
+            "-af",
+            f"volume={gain:.2f}dB",
+            "-c:a",
+            "pcm_f32le",
+            str(dst),
+        )
+    run(
+        "ffmpeg",
+        "-y",
+        "-loglevel",
+        "error",
+        "-i",
+        str(mix_raw),
         "-af",
-        norm,
-        "-ar",
-        "48000",
+        f"volume={gain:.2f}dB,alimiter=limit=0.841:level=false",
         str(MIX),
     )
-    raw.unlink()
-    print("mix", MIX, total, "s")
+    for p in (voice_raw, bed_raw, mix_raw):
+        p.unlink()
+    print("mix", MIX, total, "s, gain", round(gain, 2), "dB")
 
 
 if __name__ == "__main__":

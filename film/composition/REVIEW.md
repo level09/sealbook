@@ -1,47 +1,58 @@
-# Review, cut two, 2026-11-21
+# Review, cut two remix, 2026-11-21
 
-140.5 s at 1920 x 1080, 30 fps. Web file `site/media/case_film.mp4`: H.264 High CRF 26
-with AAC 128k stereo, 13.4 MB. Loudness of the web file: -16.1 LUFS integrated, LRA
-3.3 LU, true peak -1.2 dBFS (the mix itself: -16.0 LUFS, -1.5 dBFS).
+140.5 s at 1920 x 1080, 30 fps. Web file `site/media/case_film.mp4`: H.264 High CRF 27
+with AAC 128k stereo, 12.5 MB. Web file loudness: -16.1 LUFS integrated, LRA 3.4 LU,
+true peak -1.3 dBFS. Stems in `film/build/`: voice -16.0 LUFS; score -31.9 LUFS, peak
+-15.3 dBFS, so the bed sits about 16 LU under the voice the whole way.
 
-## Creative calls
+## The doubled sound
 
-- Written for a newcomer: who has the problem, what Sealbook is, three steps, then four
-  cases named as four kinds of help. The fraud case is longest and carries the reveal.
-- The reveal is built from the case's files, not a screen: each name is cropped from
-  its own document as it is spoken, the five crops gather beside one face, and the
-  surveyor's register row is brought close and pulled apart.
-- The picture is timed to the narration, not the other way round. The voice runs at
-  1.16x to keep the film near the requested length; it is still 2:20, five seconds over.
-- One `index.html` for the whole film; `check` warns on its size, kept on purpose.
+Owner report: "an echo or double sound" in the first narrated cut.
 
-## Measured and looked at
+Cause: the voice was sped up 1.16x in the mix with ffmpeg `atempo`, overlap-add time
+stretching, which gives speech a phasey, doubled texture. The pumping score bed may have
+added to it: it was ducked by a sidechain compressor (ratio 6, release 900 ms) behind
+every word, and the score carries a hall reverb.
 
-- `check`: no errors. Kept warnings: `dead_stretch` where a screen holds under the voice
-  (34 to 39 s, 64 to 68 s, 93 to 98 s, 107 to 111 s, 120 to 124 s), `line_unread` on
-  on-screen lines the narration speaks at the same time, `text_below_floor` on screen
-  labels inside captured app crops.
-- Contact sheets of the web file every 2.4 s; settled frames of every beat.
-- Sound measured with `ebur128` and `volumedetect`: the score alone sits near -34 dB
-  between lines, speech near -18 dB. I cannot hear; the transcript is the check.
-- Transcribed the web file's audio (Gemini through OpenRouter): every line came back as
-  written. The four spellings read as "Qassar" four times, since they sound alike; the
-  screen carries the spelling.
+Fix: the voice is regenerated at its natural speed (`eleven_multilingual_v2`, speed 1.0)
+and never stretched. The lines fit the existing picture times, three starts moved by up
+to 0.6 s. The score is now a steady bed with no ducking.
 
-## Newcomer test, on the transcript alone
+What each measurement showed, cut two against this remix, on line 07 (10 s):
 
-What it is: an app that reads a pile of evidence, proposes connections with where each
-came from, and seals a record anyone can check. Who it is for: investigators,
-journalists, lawyers, researchers. Machine against person: the app reads and proposes; a
-person approves or declines each link, signs, and writes the conclusion. All three can be
-answered from the transcript. Weakest line: "Sealbook is an app for exactly that" leans on
-the line before it; the three steps that follow carry the meaning.
+| Signal | Autocorrelation peak, 25 to 400 ms | Left against right | Model ("doubled, echoed, phasey?", 0 to 3) |
+| --- | --- | --- | --- |
+| Raw ElevenLabs line, cut two | 0.07 | mono | 0 |
+| Same line after `atempo` | 0.075 at 25 ms | identical, no lag | 0 |
+| Cut two voice stem | 0.035 | identical, no lag | 3, then 0 on a repeat |
+| Cut two padding and concat only | 0.035 | identical | 3 ("two slightly misaligned copies") |
+| Cut two final mix | 0.035 | voice centred, no lag | 3 ("doubling and flanging") |
+| Score (both cuts) | 0.49 to 0.51 at 36 to 46 ms | wide stereo | 0, "warm concert hall reverb", no voice-like element |
+| Remix raw line | 0.053 | mono | 0 |
+| Remix voice stem | 0.052 | identical, no lag | 0, and 0 on a repeat |
+| Remix final mix | 0.054 | voice centred, no lag | 0, and 0 on a repeat |
 
-## Weakest spots
+No measurement found a delayed copy of the voice at any stage. The voice was always
+identical in both channels. The listening model rated the same cut-two stem 3 on one run
+and 0 on the next, so it is a weak instrument. Taken together: the stretch is the known
+cause, and nothing else in the chain doubles the voice. The score's high
+autocorrelation is its reverb and sustained notes, not an echo of speech.
 
-- The first frame is empty paper (the pile enters from 0.3 s); the poster covers it on the
-  site.
-- The never-there disagreement panel has no marks, because its rows change order between
-  page loads.
-- Old footage: the two clips are the case's files; the match itself is the app's Copies
-  tab, shown beside them.
+A transcription of the remixed film matches the captions line for line. The four
+spellings come back as one, since they sound alike; the screen carries the spelling.
+
+## Picture fixes in this pass
+
+- Step 3 now reads "A person approves or declines each one with a signature", over the
+  reject form, and the narration says the same.
+- The film opens on a document already on the page, not on empty paper.
+- The four conclusions are captured in a narrower window, so their lines wrap. They show
+  about a third larger, and each scrolls from the sentence to the confidence, the
+  alternatives set aside and what is not established.
+
+## Kept warnings and weak spots
+
+- `dead_stretch` where a screen holds under the voice, `line_unread` on lines the voice
+  speaks, `text_below_floor` inside captured app crops.
+- The never-there disagreement panel has no marks; its rows change order between loads.
+- 2:20, five seconds over the asked length; the picture was not recut.

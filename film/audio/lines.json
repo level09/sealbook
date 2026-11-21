@@ -1,92 +1,92 @@
 {
  "01": {
-  "key": "b496e98159c0162629ee709bf9422c053cdddd684ab562ea069b2ab7f875c202",
+  "key": "0285e5ff9c33fa6e352e5262b49458163c5fd1b4677b1a1e160f08c4387d6b22",
   "text": "Investigators, journalists, lawyers and researchers share one problem.",
-  "seconds": 5.2
+  "seconds": 4.27
  },
  "02": {
-  "key": "3e6ec19c82af327c953d60fe659e21bd8e27dc8c76a47f3b2aab6e827f1c392d",
+  "key": "764ac09f3be50460d9da0c5cf34b64a7065562c83d4256edb92bd4cf497b7438",
   "text": "Too much evidence to read, and a result nobody can later prove was not changed.",
-  "seconds": 5.52
+  "seconds": 4.83
  },
  "03": {
-  "key": "78f3030714968e37636dab6fed926739bbd77ff9b08e83dc958ace6580a384d4",
+  "key": "21574bf5aae2c9dd71f945d6e212957ceabadb7652f3e53da9993e7a0f5f8ca9",
   "text": "Sealbook is an app for exactly that. It works in three steps.",
-  "seconds": 4.72
+  "seconds": 3.67
  },
  "04": {
-  "key": "901c5b7cb9395eead9067fef8ba6e49c070e81f96026803f7c01d2ad17d39cd0",
+  "key": "506d572009b3adaf07f4a378202dd742ae2e1d71870f5baf77d27ff51d5c5ac1",
   "text": "You bring the material in. The app reads all of it and proposes connections, each shown with the exact place it came from.",
-  "seconds": 7.84
+  "seconds": 7.57
  },
  "05": {
-  "key": "474d56b5b087a5a40235a1ee38f0c0a2c1fa53ad518a272238c653a557cebb81",
-  "text": "A person approves each one with a signature, and the record is sealed, so anyone can check it later.",
-  "seconds": 6.48
- },
- "06": {
-  "key": "b40b9f991464050debb46a45f8cfa9b90446018f4ee4d34efe907bcd85331427",
-  "text": "Four invented cases show how that helps.",
-  "seconds": 3.04
- },
- "07": {
-  "key": "c9837225b57074f279b0b152362bec7e64e422cfac6d3e675ab2f23f05d3c3f8",
-  "text": "One: a person under several names. Four desks at a freight company each keep a clean file: 14 sources and 1,445 sheet rows.",
-  "seconds": 11.84
- },
- "08": {
-  "key": "2466d153e23ec42a690d51787cb66adadbc1ed2811f2590db0c0adc783ebb3f2",
-  "text": "Kassar. Qassar. Khassar. Kasar. And on one licence, the name in Arabic.",
-  "seconds": 7.2
- },
- "09": {
-  "key": "a8225d46d651ba305b7bac1e289d84be09cce20b7891d7b148084b5c1ddfc670",
-  "text": "Four spellings, two alphabets, one man. And one who is not him: a surveyor with the same name, born elsewhere.",
-  "seconds": 9.12
- },
- "10": {
-  "key": "fa0b6b183646a5e2c6c84e85da25ccd1ee06138dfc3949e79143ee428ea1862c",
-  "text": "The app proposed these links. Here, fixed rules with no AI model found 4 of the 6 true links, enough to join all his records.",
-  "seconds": 9.84
- },
- "11": {
-  "key": "a042bc9fcee9213ca45894d4b0cd06add7468e170477273aea8cf0018c805d13",
-  "text": "A person declines the surveyor, and signs each decision with a passkey, a key on their own device.",
-  "seconds": 6.72
- },
- "12": {
-  "key": "38b5f0f4018e3ec5707c0f1bada95e3e18cb1bca547c39d5e05f811a4502fa29",
-  "text": "The case closes on a signed conclusion, checked by a colleague, saying how sure it is and what is not established.",
-  "seconds": 7.44
- },
- "13": {
-  "key": "340a115d969b1619db2a92387a11edc6191ee4d50f2c741cf799aed71c6d0091",
-  "text": "Two: a statement that does not fit. A bookkeeper says she was 34 kilometres from a fire. Exhibit sheets from her phone put her at the yard.",
-  "seconds": 10.24
- },
- "14": {
-  "key": "38282137c541032ad93428ec768e8b681744baa88f3c8a930e4b8b947328e33b",
-  "text": "The app flags two places on one day. A person reads the times, and concludes she was there.",
+  "key": "472912b89ffe40e1a8c58aea5e45d815d734f45cd158524c05d6a6697858fb67",
+  "text": "A person approves or declines each one with a signature, and the record is sealed, so anyone can check it later.",
   "seconds": 6.32
  },
+ "06": {
+  "key": "7f900a0e668358ac12045067242ff72d1b713af153e075b77a71f1a31f2f1511",
+  "text": "Four invented cases show how that helps.",
+  "seconds": 2.6
+ },
+ "07": {
+  "key": "604741e5e925aeb38eba888354587ebdf60343ad22a895caa7ce4e5d490c10b3",
+  "text": "One: a person under several names. Four desks at a freight company each keep a clean file: 14 sources and 1,445 sheet rows.",
+  "seconds": 9.75
+ },
+ "08": {
+  "key": "f7ace691c2d7da186afbb1d74ae9803ad98adc377f4902d91821d53e0091c8ae",
+  "text": "Kassar. Qassar. Khassar. Kasar. And on one licence, the name in Arabic.",
+  "seconds": 4.74
+ },
+ "09": {
+  "key": "b585f73c698f4b99f77d62358da2f1c3b9884c961c553dffe98d58b8cd399b6d",
+  "text": "Four spellings, two alphabets, one man. And one who is not him: a surveyor with the same name, born elsewhere.",
+  "seconds": 7.34
+ },
+ "10": {
+  "key": "1643080c335fde0149bdc67afe6ed565e261dfe026ec2cc59632664fd1745e24",
+  "text": "The app proposed these links. Here, fixed rules with no AI model found 4 of the 6 true links, enough to join all his records.",
+  "seconds": 8.64
+ },
+ "11": {
+  "key": "f371e7d7c4743835c458e28eede2e74324a123439f64401e560447867a87c186",
+  "text": "A person declines the surveyor, and signs each decision with a passkey, a key on their own device.",
+  "seconds": 5.94
+ },
+ "12": {
+  "key": "956c0bbc34eabfb104af85cc3d315e489be9e2d2aaadbf63f7e71731d3f29728",
+  "text": "The case closes on a signed conclusion, checked by a colleague, saying how sure it is and what is not established.",
+  "seconds": 6.41
+ },
+ "13": {
+  "key": "88d2b1f5affbf4e23ec67acd32611acf8c9d4339a3c571d5adeef5cbc90f53aa",
+  "text": "Two: a statement that does not fit. A bookkeeper says she was 34 kilometres from a fire. Exhibit sheets from her phone put her at the yard.",
+  "seconds": 9.24
+ },
+ "14": {
+  "key": "d7f58b3f24a8d99f225cad535701d6c4ee95cc32f6cea76076cfbbe86bbe42dd",
+  "text": "The app flags two places on one day. A person reads the times, and concludes she was there.",
+  "seconds": 5.57
+ },
  "15": {
-  "key": "3f35e43b64d5ff993763d9e11cbd735f6799bb5f91cd8287c0a1abb0151c7910",
+  "key": "df73c665492c0d74dc20e1d4f2400b5c0400274feb169d5b876fc399f89f7ade",
   "text": "Three: an old clip shared as new. The app ties 8 of 9 reposts to a flood video from two years earlier, mostly by sound. One cropped, mirrored, muted copy is missed.",
-  "seconds": 13.6
+  "seconds": 11.33
  },
  "16": {
-  "key": "1605db66bfbbce016fd0b12030f4addae42bdd4211a6ae1c9431617f908bfe65",
+  "key": "109666a1dc6b7317bc6dfccb2e441ae0779c9f4c194d9c9204f82b0aa0881399",
   "text": "Four: a person who drops out of the record. A statement says when a bus driver was last seen. The app finds 73 days with no log naming him. A lead, not a finding.",
-  "seconds": 13.2
+  "seconds": 10.91
  },
  "17": {
-  "key": "14498ff53cb9c308c09cf177db9f487d3eb15a67fb0ad87ce63ad2c5dfc83453",
+  "key": "0db44827d48e52b022082bc155b00af344859c08477d5a12677992457e9bf25b",
   "text": "Every decision is signed by a person. A court can check the sealed package offline; here, on a test package.",
-  "seconds": 7.76
+  "seconds": 6.73
  },
  "18": {
-  "key": "5e537dad81f9be75deb2f8cbc1159665320269bc86c373197596a713a9f267cf",
+  "key": "0126d852c7ea1946773e6988b02b13593f5402107ca4cad8111f8a37534b7e20",
   "text": "The machine reads more than a person can, and finds the links. A person approves every one.",
-  "seconds": 6.24
+  "seconds": 5.57
  }
 }
