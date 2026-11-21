@@ -23,6 +23,7 @@ from acceptance import eval_agents
 from sealbook import blobs
 from sealbook.agents import read
 from sealbook.cases import conclusions
+from sealbook.collaboration.models import Assignment
 from sealbook.discovery.evidence import copy_reason
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import (
@@ -254,6 +255,104 @@ class SeedStudyTest(Seeding):
             seen = next(c for c in case.claims if c.prop == Prop.SEEN_AT)
             self.assertEqual(case.places[seen.id].name_en, "North Quay")
 
+    def acted(self, slug: str) -> dict:
+        """Two sources over two acts: a log arrives and is read, then a letter
+        arrives, a person accepts and the places are confirmed."""
+        claim = {"from": None, "to": None, "place": None, "tier": "unconfirmed"}
+        return {
+            "story": {"title": "Acts", "puzzle": "p", "fictional": True},
+            "investigation": slug,
+            "places": {},
+            "sources": {
+                k: {"title": t, "doc_type": "log", "sensitivity": "ordinary", "date": d}
+                for k, t, d in (
+                    ("log", "Gate log", "2023-01-02"),
+                    ("letter", "Letter", "2023-01-05"),
+                )
+            },
+            "records": {
+                "a": {"source": "log", "person": "a"},
+                "b": {"source": "letter", "person": "b"},
+            },
+            "clusters": [],
+            "claims": [
+                claim
+                | {
+                    "key": "a.name",
+                    "record": "a",
+                    "prop": "name",
+                    "value": "Mira Holm",
+                },
+                claim
+                | {"key": "b.name", "record": "b", "prop": "name", "value": "Ivo Lund"}
+                | {"tier": "accepted"},
+            ],
+            "acts": [
+                {
+                    "title": "The log",
+                    "day": "2023-01-02",
+                    "story": "A log arrives.",
+                    "shows": ["reading"],
+                    "sources": ["log"],
+                    "steps": ["claims"],
+                    "see": ["/evidence/{source:log}", "/people/{person:a}"],
+                },
+                {
+                    "title": "The letter",
+                    "day": "2023-01-05",
+                    "story": "A letter arrives and its name is accepted.",
+                    "shows": ["reading"],
+                    "sources": ["letter"],
+                    "steps": ["claims", "accept", "places"],
+                    "see": ["/people/{person:b}"],
+                },
+            ],
+        }
+
+    async def seed_spec(self, spec, until=None):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "case.json"
+            path.write_text(json.dumps(spec))
+            async with ext.async_session_factory() as s:
+                return await seed_study(s, self.app, path, until)
+
+    async def test_acts_stop_at_their_boundary(self):
+        """Seeding to act 1 leaves the letter absent and nothing accepted; the full
+        run equals the last boundary; `see` paths resolve to the seeded ids."""
+        first = await self.seed_spec(self.acted("case-act-1"), until=1)
+        last = await self.seed_spec(self.acted("case-act-2"), until=2)
+        full = await self.seed_spec(self.acted("case-act-3"))
+        self.assertEqual((first["sources"], first["claims"]), (1, 1))
+        self.assertEqual([a["title"] for a in first["acts"]], ["The log"])
+        self.assertTrue(first["acts"][0]["see"][0].startswith("/evidence/"))
+        self.assertEqual(
+            first["acts"][0]["see"][1],
+            f"/people/{people.pid(person('case-act-1', 'a'))}",
+        )
+        strip = {k: v for k, v in last.items() if k not in ("investigation", "acts")}
+        self.assertEqual(
+            strip, {k: v for k, v in full.items() if k not in ("investigation", "acts")}
+        )
+        self.assertEqual((last["sources"], last["claims"]), (2, 2))
+        async with ext.async_session_factory() as s:
+            self.assertEqual(await verify_db(s), [])
+            # Only the full runs accepted the letter's name: act 1 decided nothing.
+            self.assertEqual(
+                await self.tiers(s, Prop.NAME), {Tier.ACCEPTED: 2, Tier.UNCONFIRMED: 3}
+            )
+
+    async def test_acts_are_checked_before_anything_is_written(self):
+        spec = self.acted("case-act-bad")
+        spec["acts"][1]["steps"] = ["no such step"]
+        with self.assertRaises(click.ClickException):
+            await self.seed_spec(spec)
+        spec = self.acted("case-act-bad")
+        spec["acts"][1]["sources"] = []
+        with self.assertRaises(click.ClickException):
+            await self.seed_spec(spec)
+        async with ext.async_session_factory() as s:
+            self.assertEqual(await self.tiers(s), {})
+
 
 @unittest.skipUnless(
     POSTGRES, "case seeding needs Postgres (set SQLALCHEMY_DATABASE_URI)"
@@ -291,25 +390,35 @@ class SeedCasesTest(Seeding):
             )
         )
 
-    async def test_never_there_offers_the_alibi(self):
+    async def test_never_there_is_read_by_the_app(self):
+        """Every source is read by the worker's own tools, replaying recorded
+        answers. The read-for-real figure is pinned beside the planted score: how
+        many planted claims extraction recovered, and whether the planted
+        contradictions were flagged on what was written. Two claims extraction did
+        not propose are planted, labelled, as the act says."""
         inv, spec = "case-never-there", json.loads(path_of("never-there").read_text())
         async with ext.async_session_factory() as s:
             out = await seed_study(s, self.app, path_of("never-there"))
-        self.assertEqual((out["sources"], out["claims"]), (53, 152))
-        self.assertEqual(out["contradictions proposals"], 4)
-        self.assertNotIn("linker proposals", out)
-        self.assertNotIn("gaps proposals", out)
+        self.assertEqual(out["sources"], 53)
+        self.assertEqual(
+            out["read"], {"planted": 152, "recovered": 118, "written": 129}
+        )
+        self.assertEqual(len(out["missed"]), 34)
+        self.assertIn("mara_stmt.at", out["missed"])
+        self.assertNotIn("mara_mq3.at", out["missed"])
+        self.assertEqual(out["planted"], 2)
+        self.assertEqual(out["contradictions proposals"], 3)
+        self.assertEqual(out["planted contradictions flagged"], 4)
+        self.assertEqual([len(a["see"]) for a in out["acts"]], [2, 2, 2, 2, 1, 1, 2, 1])
         async with ext.async_session_factory() as s:
             self.assertEqual(await verify_db(s), [])
-            self.assertNotIn(Tier.REJECTED, await self.tiers(s))
-            # The alibi is one finding citing her four places on that day.
-            found = await self.run_of(s, "contradictions", inv)
-            alibi = {
-                str(await self.said(s, inv, r, Prop.SEEN_AT, "2026-03-14"))
-                for r in ("mara_stmt", "mara_jo", "mara_mq3", "mara_mq4")
-            }
-            self.assertIn(alibi, [set(i["claims"]) for i in found["items"]])
-            self.assertIsNone(await self.run_of(s, "linker", inv))
+            # Replayed runs name the model that answered and say it did not run.
+            note = await s.scalar(
+                select(Run.inputs["demo"].astext).where(
+                    Run.tool == "extract", Run.model_served.is_not(None)
+                )
+            )
+            self.assertIn("recorded once", note)
             # The photograph went through intake: geotag read its EXIF position.
             photo = await self.blob_of(s, inv, spec["sources"]["photo"]["title"])
             where = await s.scalar(
@@ -322,7 +431,7 @@ class SeedCasesTest(Seeding):
             )
             lon, lat = map(float, where["geometry"]["coordinates"])
             self.assertEqual((round(lon, 4), round(lat, 4)), (-27.4764, -31.6216))
-            # The voice note's transcript is derived from the recording.
+            # The speech model's words, replayed: "Joe", as it heard the name.
             voice = await self.blob_of(s, inv, spec["sources"]["voice"]["title"])
             derived = await s.scalars(
                 select(Statement.subject)
@@ -339,23 +448,35 @@ class SeedCasesTest(Seeding):
                 for d in derived
             ]
             self.assertTrue(any("I'm still at the yard" in t for t in texts))
-            custody = await self.blob_of(s, inv, spec["sources"]["custody"]["title"])
-            self.assertEqual(
-                await s.scalar(
-                    select(Acquisition.sensitivity).where(
-                        Acquisition.blob_sha256 == custody
-                    )
-                ),
-                "sensitive",
-            )
             c = await self.concluded(s, inv)
-            self.assertEqual(
-                set(c["rests_on"]),
-                {
-                    str(await self.said(s, inv, r, Prop.SEEN_AT, "2026-03-14"))
-                    for r in ("mara_mq3", "mara_mq4")
-                },
+            self.assertEqual(len(c["rests_on"]), 2)
+            # The colleague answered on the claim and marked the exhibits updated.
+            updated = await s.scalar(
+                select(func.count()).where(Assignment.status == "done")
             )
+            self.assertEqual(updated, 2)
+
+    async def test_never_there_stops_after_an_act(self):
+        """To act 4 every source has arrived and been read, and nothing after it
+        has happened: no linker, no hunter, no conclusion."""
+        async with ext.async_session_factory() as s:
+            out = await seed_study(s, self.app, path_of("never-there"), until=4)
+        self.assertEqual((out["sources"], len(out["acts"])), (53, 4))
+        self.assertNotIn("contradictions proposals", out)
+        async with ext.async_session_factory() as s:
+            self.assertIsNone(
+                await self.run_of(s, "contradictions", "case-never-there")
+            )
+            got = await conclusions.listing(s, "case-never-there")
+            self.assertEqual(got["status"]["status"], "open")
+
+    async def test_a_read_case_without_its_recordings_refuses(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "case.json"
+            path.write_text(path_of("never-there").read_text())
+            async with ext.async_session_factory() as s:
+                with self.assertRaisesRegex(click.ClickException, "recordings.json"):
+                    await seed_study(s, self.app, path)
 
     async def test_unwritten_name_finds_the_driver_silence(self):
         inv = "case-unwritten-name"

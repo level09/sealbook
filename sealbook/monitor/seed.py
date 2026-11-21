@@ -676,7 +676,19 @@ async def seeded(session, case=CASE) -> bool:
     metavar="SLUG",
     help="Seed only the case study in acceptance/cases/SLUG (docs/case-studies.md).",
 )
-def demo_seed(full, more, scale, recordings, study):
+@click.option(
+    "--until",
+    type=click.IntRange(min=1),
+    default=None,
+    help="With --case: stop after this act, so the case stands as it did then.",
+)
+@click.option(
+    "--record",
+    is_flag=True,
+    help="With --case: read the case's sources on the live routes and write its "
+    "recordings.json (a throwaway database; make.py --record sets one up).",
+)
+def demo_seed(full, more, scale, recordings, study, until, record):
     """Write a small synthetic case through the ledger write path (dev only)."""
     app = click.get_current_context().ensure_object(ScriptInfo).load_app()
     if app.config.get("STK_ENV") not in ("development", "testing"):
@@ -693,11 +705,16 @@ def demo_seed(full, more, scale, recordings, study):
 
                 if not path_of(study).exists():
                     raise click.ClickException(f"no case study {study}")
-                out = await seed_study(session, app, path_of(study))
+                out = await seed_study(session, app, path_of(study), until, record)
+                acts, missed = out.pop("acts"), out.pop("missed")
                 console.print(
                     f"Seeded {out.pop('investigation')}: "
                     + ", ".join(f"{v} {k}" for k, v in out.items())
                 )
+                if missed:
+                    console.print(f"Not read by the app: {', '.join(missed)}")
+                for n, act in enumerate(acts, start=1):
+                    console.print(f"Act {n}, {act['title']}: " + " ".join(act["see"]))
                 return
             if recordings:
                 from sealbook.monitor.seed_full import add_recordings

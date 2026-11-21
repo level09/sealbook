@@ -95,12 +95,234 @@ person's decision on a finding writes.
 Not handled yet: sheets are ingested as files, not through the sheet mapping step
 (`sheets.confirm`), so no dataset version exists; PDF spans fail (`pages_required`,
 see `blobmeta.py`); audio and video `{"ms"}` pins are untried (claims quote the
-transcript instead); no incidents, findings, assignments or briefs beyond the
-intake brief are seeded; a conclusion cannot cite a match proposal, nor cite a claim
+transcript instead); no incidents or findings are seeded, and assignments only
+where an act asks for them; an act's `day` is the story's, while the ledger records
+seed time; a conclusion cannot cite a match proposal, nor cite a claim
 as the one it contradicts (never-there's conclusion leaves her own Brindle Cross
 claim out). Invented places lie in open sea, so the maps draw dots on
 an empty background. The old-footage case has no people, so its Stories and Case
 map stay empty.
+
+## Acts: a case told in time
+
+A case may carry an ordered `acts` list in `case.json`. Each act is a moment of the
+investigation: sources arrive, then the app or a person takes steps. The seeder
+plays the acts in order through the real write path, and
+`stk demo-seed --case <slug> --until <n>` stops after act n, so the case stands
+exactly as it did then: later sources absent, later decisions not made. The same
+list is meant to drive the case's site page and the film. A case without `acts`
+plays one act that does what the seeder always did (planted claims, accepts,
+clusters, places, the agents its truth scores, the intake brief, the conclusion).
+
+```json
+{
+  "title": "The phone exhibits and the voice note",
+  "day": "2026-03-20",
+  "story": "One or two plain sentences on what happened.",
+  "shows": ["reading"],
+  "sources": ["mq3", "mq4", "voice"],
+  "steps": ["read", "places", "brief"],
+  "see": ["/evidence/{source:voice}", "/people/{person:mara_stmt}"]
+}
+```
+
+- `title`, `day` and `story`: what a reader sees. `day` is the investigation's day
+  for the story; the ledger still records seed time (see the limits below).
+- `shows`: what the act demonstrates, from a fixed vocabulary (`SHOWS` in
+  `sealbook/monitor/study/__init__.py`): reading, first pass, search, same person,
+  contradiction, gap, copies, standing question, assignment, peer review,
+  discovery, sheet matching, timeline, map, conclusion, package. A new word is a
+  one-line change there, with a reason.
+- `sources`: the source keys arriving in this act. Every source arrives in exactly
+  one act; an act may bring none. Arrival is intake plus the worker's local tools.
+- `steps`: what runs or who does what, in order. A string names a step; an object
+  is `{"do": "<step>", ...arguments}`.
+- `see`: app paths where the act shows, built from stable keys: `{source:KEY}`
+  becomes the source's evidence id, `{person:RECORD}` the person written for that
+  record (planted, or matched among what the app read), `{case}` the case slug.
+  The seeder returns them resolved and `stk demo-seed` prints them per act.
+
+The player refuses, before writing anything, an act without one of these keys, an
+unknown step or `shows` word, a source arriving twice or never.
+
+### Steps
+
+| Step | Module | What it does |
+| --- | --- | --- |
+| `claims` | `claims.py` | The planted claims of arrived sources the app does not read, pinned where the case says |
+| `accept` | `claims.py` | The case analyst accepts, signed, the claims `claims` names, or those planted as accepted |
+| `clusters` | `people.py` | The desks' own accepted same-person links, and each sheet row joined to its record |
+| `links` | `people.py` | The analyst accepts the linker's open proposals that join records the case plants as one person (a cluster or a truth pair), and no other |
+| `places` | `places.py` | Imports the planted places once; confirms the place of each written located claim |
+| `agents` | `agents.py` | The agents the planted truth scores, on the fixed answer |
+| `agent` | `agents.py` | One agent by name: `{"do": "agent", "agent": "linker" \| "contradictions" \| "gaps"}` |
+| `brief` | `agents.py` | The intake brief for the case's `batch` |
+| `read` | `reading.py` | The app reads the act's sources marked `read`, replaying recorded model answers |
+| `first pass` | `work.py` | The analyst accepts the first pass the app proposed on `sources` |
+| `assign` | `work.py` | The owner assigns `sources` to the colleague (Noor Adeyemi), due in `days` |
+| `ask` | `work.py` | The owner asks the colleague to check the claim `claim`, with `why` |
+| `reply` | `work.py` | The colleague answers on that claim with `text` |
+| `mark` | `work.py` | The Bayanat work step on assigned `sources`: `done` (Updated, by the colleague) or `returned` (Returned for changes, by the owner) |
+| `conclusion` | `conclusion.py` | The case's signed conclusion and the peer agreement |
+| `join` | `people.py` | The analyst joins `records` (or every planted cluster) as one person, her own signed decision with `why` |
+| `planted` | `claims.py` | Fallback for a read source: the planted `claims` extraction did not propose, by a run labelled planted, with `why` |
+
+Adding a kind of step: write `sealbook/monitor/study/<name>.py` with
+
+```python
+from sealbook.monitor.study import step
+
+@step("my step")
+async def my_step(st, act, args) -> None:
+    ...  # st.session, st.s (Seeder), st.written, st.subjects, st.analyst, st.owner
+```
+
+`load()` imports every module of the package, so nothing else is edited. A step
+writes through the app's own services or the worker's tools, signs a person's
+decision with `st.s.review` or `st.s.assertion`, and must be safe to run when its
+inputs have not arrived yet (it acts on what `st.arrived` and `st.written` hold).
+Keep state a later act needs on `st` (`st.others` for named things such as a
+review request). Add a test of the new step on a small spec, as
+`SeedStudyTest.test_acts_stop_at_their_boundary` does.
+
+### Read by the app, recorded
+
+A source marked `"read": true` gets no planted claims. Intake queues the worker's
+own runs for it (OCR for a scan, speech to text for a recording, extraction and the
+first pass), and the `read` step processes them, and the runs they queue, until
+none is left. Each model answer comes from `recordings.json` beside `case.json`:
+
+- `route` and `models` (extract, ocr, assess, speech): the configuration it was
+  recorded with. Seeding pins these for the case, so intake queues the same runs on
+  any machine, and replay needs no route key.
+- `calls`: one per chat request, keyed by the hash of its model, messages and
+  schema (the prompt and the input): `source`, `tool`, `input_sha256`,
+  `prompt_hash`, `route`, `model_requested`, `model_served`, `provider_served`,
+  `recorded_at`, `status`, `response` and `response_sha256`.
+- `speech`: the speech model's segments for each recording, replayed through the
+  transcript writer.
+
+Replay goes through the route code's own HTTP transport, so the tools, the route
+checks and the provenance they write are the real ones, and each replayed run says
+in its inputs that the answer was recorded and the model did not run. A request
+with no recording (the prompt, the input or the model changed) fails its run and
+seeding stops with the reason; a response whose hash no longer matches stops it
+too. With no `recordings.json`, seeding a case with read sources refuses instead
+of falling back to planted claims. `make.py --record` reads the case again on the
+live routes in a throwaway database (`stk demo-seed --case <slug> --record`); it
+needs OPENROUTER_API_KEY and the local speech weights (`SPEECH_MODEL_DIR`), resumes
+after an interruption, and keeps only the answers asked for. Never edit the file.
+
+After reading, each planted claim of a read source is looked for among what
+extraction wrote: same source, same person (matched by the record's name), same
+property, the same words (for a place, one naming inside the other) and the same
+date. A recovered claim stands for its key, so places, accepts and the conclusion
+apply to what the app wrote; `out["read"]` counts planted, recovered and written.
+The planted truth stays what `acceptance/eval_agents.py` scores.
+
+### Worked example: never-there
+
+`acceptance/cases/never-there/` is read by the app: every source is marked `read`,
+four papers (Mara's and Jo's statements, the exhibit sheets MQ/3 and MQ/4) are
+scanned pages from `make.py --scans`, and the other 47 sources stay typed text.
+The recording was made on 2026-11-21: 110 chat calls on cloud-zdr (5 OCR with
+`google/gemini-4-argon`, the four scans and the photograph; 52 extractions with
+`anthropic/claude-haiku-5.5`; 53 first passes with `google/gemini-3.8-flash`) and
+one local speech to text run (faster-whisper large-v3-turbo). Replay takes about
+12 seconds and calls nothing.
+
+| Act | Day | Shows | Steps | See |
+| --- | --- | --- | --- | --- |
+| 1 The fire and the first statements | 15 Mar | reading, first pass | 18 sources arrive; `read`, `places`, the analyst accepts the fire report's first pass | the fire report, Sources |
+| 2 Mara Quill's statement, on paper | 16 Mar | reading | 31 sources, two of them scans read through OCR | Mara's and Jo's scans |
+| 3 The photograph of the gate | 16 Mar | reading, search | the photo: geotag reads its EXIF place, the first pass says what it shows | the photo, `/search?q=gate` |
+| 4 The phone exhibits and the voice note | 20 Mar | reading | MQ/3, MQ/4, the voice note; speech to text, extraction, the intake brief | the voice note, MQ/3 |
+| 5 One woman in four papers | 21 Mar | same person | the linker; the analyst accepts its proposal for the two sheets and joins the planted clusters herself | Mara's page |
+| 6 Two places on one night | 21 Mar | contradiction | `planted` fallback for two claims, places, accepts, the contradiction hunter | Mara's page |
+| 7 A colleague checks the lead | 23 Mar | assignment, peer review | assign the sheets, ask, reply, marked updated | To do, MQ/4 |
+| 8 The conclusion | 25 Mar | conclusion, peer review | the signed conclusion and the reviewer's agreement | Overview |
+
+What the app read, against the planted truth (`tests/test_case_studies.py` pins it):
+
+- Extraction wrote 129 claims about people. 118 of the 152 planted claims were
+  recovered: every name, birth date, place of birth, occupation and the exhibit
+  sheets' dated places. The 34 it missed are all where a statement places its
+  witness on a day (`seen_at`, such as "I was at home on Tanner's Row"), Mara's
+  "drove to my sister Jo's house in Brindle Cross" among them, and Jo's "my sister
+  Mara Quill came to dinner at my house in Brindle Cross". The model wrote the
+  break-in as a reported event and the people's names, not where they were.
+- So the alibi does not arise from extracted claims alone. Act 6 plants the two
+  Brindle Cross claims from the case file, by their own run whose provenance reads
+  "planted-from-case.json" with the reason; the exhibit sheets' Tanner's Row claims
+  are the app's. With them the hunter flags all four planted contradictions in
+  three proposals: the alibi (one proposal for both pairs), Ivo Brandt's birth year
+  1958 against 1965 and Kofi Mensah's place of birth, those two entirely from
+  extracted claims. The market trap is not offered: Jo's evening claim was not
+  extracted either.
+- The linker's rules proposed three things: the two exhibit sheets' Mara Quill as
+  one person, Ruth Hollin's two papers as one, and one relation. Her statement and
+  her sister's share only her name with the sheets, so no rule joins them; act 5
+  has the analyst join the planted clusters herself, as her signed decision.
+- Speech to text heard "Joe, it's me" for "Jo", and extraction then wrote "Joe" as
+  a person named in the voice note, citing printed text for spoken words.
+- The planted score from `acceptance/eval_agents.py` is unchanged and separate
+  (`tests/test_case_never_there.py`).
+
+### Ready-made features for the next acts
+
+Checked 2026-11-21 against the code; each is a function a new step module can call.
+
+- **Standing question and its wake.** Create `AgentTask(user_id, investigation,
+  kind="standing", spec={"question": ...}, every_seconds=86400)`, then
+  `agents.tasks.queue(db, task, wakes, model=read.FIXED)` and
+  `runs.worker.process(...)` (`seed_flows.agents` does this). A wake is
+  `tasks.wake(db, task.id, key, reason, payload)` or, after a run that wrote an
+  extracted claim, `tasks.evidence(db, run)`, which `worker.process` calls itself.
+  `tasks.tick` only runs in `worker.serve` and needs AGENT_MODEL, so a step queues
+  the woken run itself. The owner must be an active analyst and the case must exist.
+  The fixed answer matches a claim that shares a capitalised word or a number with
+  the question.
+- **Assignment and work steps.** `collaboration.assignments.bulk(db, user, {investigation,
+  assignee, subjects: ["blob:<sha>" | "finding:<key>"], due, priority})` and
+  `assignments.update(db, user, id, {"status": "open" | "done" | "returned"})`;
+  `seed_flows.assign` wraps the first. A return carries no note: the note is a
+  review thread on a claim (`ask`, `reply`). The assignee must be an active analyst
+  (the seeder's signing analysts are inactive demo accounts), and a subject has one
+  open assignment at a time. Steps `assign` and `return` exist.
+- **Peer review request.** `collaboration.service.request_review(db, proposal, user,
+  reviewer_id, reason)` on an unconfirmed claim, or an accepted incident or
+  conclusion; `service.comment(db, request_id, user, text)` replies;
+  `seed_flows.request` and `seed_flows.reply` add the notifications. Steps `ask` and
+  `reply` exist. A conclusion's peer agreement is `conclusions.seed_peer_review`.
+- **Discovery and an incident.** `seed_flows.run_discover(s)` queues and runs the
+  `discover` tool (local, no model) over accepted or corroborated, dated, placed
+  claims; `seed_flows.open_finding(s, kind, month)` finds one;
+  `review.findings.plan(db, user, key, kept, roles, title, None, author)` writes the
+  incident and `seed_flows.gesture(s, user, statements)` signs it in one passkey
+  gesture (`findings.reject` for the other way). Members must be accepted and
+  placed first (`accept`, `places`).
+- **Sheet intake with column mapping.** `sheets.service.confirm(db, acq, blob,
+  {key_column, mapping: {header: field}, sheet, dataset_name}, person)` writes the
+  dataset version and queues `extract_sheet` only when a model route is configured;
+  `seed_flows.sheet_version` shows the whole path with a `Fixed` answer per row
+  (`ROWS`, `answer()`). A case needs its own per-row answers, or a recording of the
+  real one through the `read` step.
+- **Frame reading for photos and video.** The first pass `assess` reads a photo
+  (SEE schema, boxes) or eight video frames with the transcript (WATCH schema), and
+  `_describe` indexes its words as a `description` segment, so search finds the
+  picture by what it shows. On a read source the `read` step replays it; it needs
+  ffmpeg for video frames.
+- **Search indexing.** The `index` tool (local) runs on every text and derived text
+  at arrival and in `read`; `/search?q=...` then finds passages, and a picture by
+  its first pass. `embed` (meaning search) needs the embedding route and is left
+  queued.
+- **Package build.** `packages.service.build(db, brief, user, config)` after a
+  `Brief` and `packages.save_sentence(db, brief, user, text, ids)` on accepted
+  claims. Locally it is blocked twice: `C2PA_SIGN_CERT` and `C2PA_SIGN_KEY` (an
+  es256 certificate and key for `c2patool`) are not configured, and every cited row
+  must be anchored (`stk anchor`: OpenTimestamps and a timestamp authority, network)
+  before a build is allowed. A `package` act can write the brief and its sentences,
+  and must say the build waits for anchoring.
 
 ## One man, four names (fraud)
 
@@ -161,13 +383,11 @@ What the numbers say:
 Each case's own README holds its story, planted truth and score. What
 `stk demo-seed --case <slug>` puts on screen, checked 2026-11-21:
 
-- **The witness who was never there** (`case-never-there`): 53 sources and 152
-  claims. The photograph goes through intake and geotag writes where it was taken
-  from its EXIF; the voice note gets its fixed transcript through the speech
-  writer, in English. The contradiction hunter proposes four disagreements, and
-  Mara Quill's person page sets her four places on 14 March side by side under
-  Sources disagree, with the exhibit titles carrying 21:52 and 22:07. Stories and
-  the Case map show 41 people at 8 places.
+- **The witness who was never there** (`case-never-there`): read by the app in eight
+  acts; see the worked example above. Mara Quill's person page sets her places on
+  14 March side by side under Sources disagree, with the exhibit titles carrying
+  21:52 and 22:07; two of those claims are planted, labelled, because extraction
+  did not propose them.
 - **The name nobody wrote down** (`case-unwritten-name`): 14 sources and 651
   claims, 608 of them log lines pinned to their sheet cells. Each log line is its
   own mention joined to its driver, so Aron Vesk's page reads "86 records joined

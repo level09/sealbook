@@ -17,6 +17,7 @@ agent's word."""
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import re
@@ -28,27 +29,22 @@ from pathlib import Path
 import click
 import orjson
 import stk.extensions as ext
-from sqlalchemy import func, select
+from sqlalchemy import select
 from stk.user.models import User
 
 from sealbook import blobs
-from sealbook.agents import brief, contradictions, gaps, linker, read
-from sealbook.cases import conclusions
+from sealbook.agents import contradictions, gaps, linker, read
 from sealbook.cases.service import ensure as ensure_case
 from sealbook.discovery.evidence import copy_reason
 from sealbook.ingest.service import system_agent
 from sealbook.ledger import write
-from sealbook.ledger.contracts import EvidenceKind as E
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import Blob, Payload, Run, Statement, StatementTier
-from sealbook.ledger.write import append, principal_for_user
+from sealbook.ledger.write import principal_for_user
 from sealbook.monitor import seed_flows as flows
-from sealbook.monitor.data import LOCATED
 from sealbook.monitor.seed import Seeder, seeded
-from sealbook.monitor.seed_full import LLM, intake, users
-from sealbook.people import data as people
+from sealbook.monitor.seed_full import users
 from sealbook.places import cli as places
-from sealbook.places import resolve
 from sealbook.places.models import Place
 from sealbook.runs import worker
 from sealbook.runs.worker import process
@@ -242,14 +238,44 @@ async def run_agent(session, name: str, inv: str, owner) -> dict:
     )
 
 
-async def seed_study(session, app, path: Path) -> dict:
-    """Additive: refuses when the case's investigation already has a source."""
+async def seed_study(
+    session, app, path: Path, until: int | None = None, record: bool = False
+) -> dict:
+    """Additive: refuses when the case's investigation already has a source. Plays
+    the case's acts (`sealbook/monitor/study`), up to act `until` when given. Sources
+    marked `read` are read by the app, replaying `recordings.json`; with `record`
+    the models answer live and the file is written again."""
+    from sealbook.monitor import study
+    from sealbook.monitor.study.recording import Missing, Tape
+
     spec = json.loads(path.read_text(encoding="utf-8"))
     root = path.parent
     inv = spec["investigation"]
-    records = spec.get("records") or {}
     if await seeded(session, inv):
         raise click.ClickException(f"{inv} is already seeded")
+    acts = spec.get("acts") or study.default_acts(spec)
+    study.load()
+    study.check(spec, acts)
+    tape = None
+    if any(src.get("read") for src in spec["sources"].values()):
+        try:
+            tape = Tape.open(root, record)
+        except Missing as exc:
+            raise click.ClickException(str(exc)) from None
+    try:
+        with tape.pinned() if tape else contextlib.nullcontext():
+            out = await _play(session, app, spec, root, acts, until, tape)
+    finally:
+        if tape and record:  # kept even when a run failed, so a rerun resumes
+            tape.save()
+    return out
+
+
+async def _play(session, app, spec, root, acts, until, tape) -> dict:
+    from sealbook.monitor import study
+
+    inv = spec["investigation"]
+    records = spec.get("records") or {}
     story = spec["story"]
     # The case header adds its own counts after the description.
     await ensure_case(
@@ -258,11 +284,6 @@ async def seed_study(session, app, path: Path) -> dict:
     s = Seeder(session)
     s.case = inv
     owner, *_ = await users(session, app, ())
-    analyst = await colleague(s, inv, *ANALYST)
-    extractor = await system_agent(session, "extractor")
-    collector = await principal_for_user(session, owner.id, owner.name or owner.email)
-    batch = str(uuid.uuid4()) if spec.get("batch") else None
-    channel = f"channel:case-study/{root.name}"
 
     # A claim's record is a person record, or else the source itself: a claim
     # about the document, such as the event a post reports.
@@ -272,189 +293,34 @@ async def seed_study(session, app, path: Path) -> dict:
     claims = defaultdict(list)
     for c in spec["claims"]:
         claims[source_of(c)].append(c)
-    pins, text_of = {}, {}
-    order = sorted(spec["sources"], key=lambda k: (spec["sources"][k]["date"] or "", k))
-    for key in order:
-        src = spec["sources"][key]
-        origin = src.get("origin") or channel
-        context = {"title": src["title"], "fictional": True}
-        if batch and key in spec["batch"]:
-            context["batch"] = batch
-        if post := src.get("post"):
-            # The post a file arrived with, kept as its own item the way a page
-            # capture keeps the page beside its media; the claims quote it.
-            await intake(
-                s,
-                f"{key}_post",
-                post["text"].encode(),
-                "text/plain",
-                origin,
-                collector,
-                post.get("doc_type", "social_post"),
-                src["sensitivity"],
-                context | {"title": post["title"], "file": f"{key}_post.txt"},
-            )
-            text_of[key] = f"{key}_post"
-            await settle(s, f"{key}_post")
-        if src.get("file"):
-            file = file_of(root, src["file"])
-            data, mime = file.read_bytes(), MIME[file.suffix.lower()]
-        elif src.get("text") is not None:
-            data, mime, file = src["text"].encode(), "text/plain", Path(f"{key}.txt")
-        else:
-            text, spans = stand_in(spec, key, claims[key])
-            data, mime, file = text.encode(), "text/plain", Path(f"{key}.txt")
-            pins |= spans
-        await intake(
-            s,
-            key,
-            data,
-            mime,
-            origin,
-            collector,
-            src["doc_type"],
-            src["sensitivity"],
-            context | {"file": file.name},
-        )
-        text_of.setdefault(key, key)
-        if src.get("transcript"):
-            said = file_of(root, src["transcript"])
-            text_of[key] = await transcribe(
-                s, key, mime, said, f"acceptance/cases/{root.name}/files/{said.name}"
-            )
-        await settle(s, key)
-        await session.commit()
-
-    # A sheet's rows are separate mentions, as the app's sheet intake writes them:
-    # a record's first row is the record, each later row its own subject, and the
-    # desk that kept the log has already joined them.
-    first_row = {}
-    for c in spec["claims"]:
-        if (row := (c.get("pin") or {}).get("row")) and c["record"] in records:
-            first_row[c["record"]] = min(first_row.get(c["record"], row), row)
-
-    def subject_of(c: dict, doc: str) -> str:
-        if c["record"] not in records:
-            return f"blob:{s.blobs[doc]}"
-        row = (c.get("pin") or {}).get("row")
-        if row is None or row == first_row[c["record"]]:
-            return person(inv, c["record"])
-        return person(inv, f"{c['record']}/row {row}")
-
-    written, accepted, rows = {}, [], {}
-    for key, mine in claims.items():
-        doc = text_of[key]
-        run = await s.run(extractor, "extract", [doc], **LLM)
-        for c in mine:
-            pin = c.get("pin") or pins.get(c["key"])
-            needle, after, at, on = None, "", None, doc
-            if pin is None:
-                needle = c["value"]
-            elif "text" in pin:
-                needle, after = pin["text"], pin.get("after", "")
-            else:
-                at, on = pin, key  # a cell or a box sits in the file itself
-            subject = subject_of(c, doc)
-            st = written[c["key"]] = await s.say(
-                run,
-                on,
-                subject,
-                c["prop"],
-                value_of(c),
-                needle,
-                after,
-                valid=[c["from"], c["to"] or c["from"]] if c["from"] else None,
-                evidence=[E.PRINTED_TEXT],
-                at=at,
-            )
-            if c["tier"] == "accepted":
-                accepted.append(st)
-            if subject.startswith("person:") and subject != person(inv, c["record"]):
-                rows.setdefault((c["record"], subject), st)
-        await s.done(run, len(mine))
-        await session.commit()
-    for st in accepted:
-        await s.review(analyst, st, "accept", "planted as accepted in the case study")
-
-    # Each planted cluster: records a person already joined, one link per member.
-    names = {
-        c["record"]: written[c["key"]] for c in spec["claims"] if c["prop"] == "name"
-    }
-    joiner = await s.principal("case-linker")
-    for cluster in spec.get("clusters") or []:
-        first, *rest = cluster
-        run = await s.run(joiner, "join", [records[first]["source"]])
-        for other in rest:
-            basis = [f"statement:{names[r].id}" for r in (other, first)]
-            link = await s.say(
-                run,
-                records[other]["source"],
-                person(inv, other),
-                Prop.SAME_AS,
-                {"person": person(inv, first).removeprefix("person:"), "basis": basis},
-                evidence=[E.CORROBORATING_FIELD],
-            )
-            await s.review(analyst, link, "accept", "joined earlier by this desk")
-        await s.done(run, len(rest))
-    by_record = defaultdict(list)
-    for (record, subject), st in rows.items():
-        by_record[record].append((subject, st))
-    for record, mentions in by_record.items():
-        run = await s.run(joiner, "join", [records[record]["source"]])
-        for subject, st in mentions:
-            basis = [f"statement:{x.id}" for x in (st, names[record])]
-            link = await s.say(
-                run,
-                records[record]["source"],
-                subject,
-                Prop.SAME_AS,
-                {"person": person(inv, record).removeprefix("person:"), "basis": basis},
-                evidence=[E.CORROBORATING_FIELD],
-            )
-            await s.review(analyst, link, "accept", "one name in one log")
-        await s.done(run, len(mentions))
-    await session.commit()
-
-    sites = await import_places(s, spec)
-    for c in spec["claims"]:
-        if c["place"] in sites and c["prop"] in LOCATED:
-            await append(
-                session,
-                resolve.confirmation(
-                    written[c["key"]].id, sites[c["place"]].id, c["value"], analyst.id
-                ),
-                sign=s.assertion,
-            )
-    await session.commit()
-
-    out = {
-        "investigation": inv,
-        "sources": len(spec["sources"]),
-        "claims": len(written),
-        "clusters": len(spec.get("clusters") or []),
-    }
-    matches = await session.scalar(
-        select(func.count())
-        .select_from(Statement)
-        .where(
-            Statement.prop == Prop.MEDIA_MATCH,
-            Statement.subject.in_([f"blob:{sha}" for sha in s.blobs.values()]),
-        )
+    st = study.Study(
+        session=session,
+        app=app,
+        spec=spec,
+        root=root,
+        s=s,
+        owner=owner,
+        analyst=await colleague(s, inv, *ANALYST),
+        extractor=await system_agent(session, "extractor"),
+        collector=await principal_for_user(
+            session, owner.id, owner.name or owner.email
+        ),
+        batch=str(uuid.uuid4()) if spec.get("batch") else None,
+        channel=f"channel:case-study/{root.name}",
+        claims=claims,
+        tape=tape,
     )
-    if matches:
-        out["match proposals"] = matches
-    for name in agents_for(spec):
-        got = await run_agent(session, name, inv, owner)
-        out[f"{name} proposals"] = len(got.get("written", got.get("items", [])))
-    if batch:
-        run = await brief.queue(session, batch, owner.id, read.FIXED)
-        await session.commit()
-        await process(ext.async_session_factory, run.id)
-        out["briefs"] = 1
-    if spec.get("conclusion"):
-        await conclude(s, spec, inv, written, accepted, analyst)
-        out["signed conclusion"] = 1
-    return out
+    played = await study.play(st, acts, until)
+    return (
+        {
+            "investigation": inv,
+            "sources": len(st.arrived),
+            "claims": len(st.written),
+            "clusters": len(spec.get("clusters") or []),
+        }
+        | st.out
+        | {"acts": played, "missed": st.missed}
+    )
 
 
 async def colleague(s: Seeder, inv: str, handle: str, name: str):
@@ -482,27 +348,6 @@ async def pending(db, prop: str, subjects: list[str]) -> list[tuple]:
     ).all()
 
 
-async def same_person(s: Seeder, spec: dict, inv: str) -> list:
-    """The linker's proposals that join two records the truth plants as one
-    person, read before any is accepted. A proposal with a namesake is left."""
-    groups, _ = await people.identity(s.s)
-
-    def cluster(subject: str) -> str:
-        p = people.pid(subject)
-        return min(groups.get(p, {p}))
-
-    true = {
-        frozenset(cluster(person(inv, r)) for r in pair)
-        for pair in spec["truth"]["same_person"]
-    }
-    subjects = [person(inv, r) for r in spec["records"]]
-    return [
-        st
-        for st, v in await pending(s.s, Prop.SAME_AS, subjects)
-        if frozenset({cluster(st.subject), cluster(f"person:{v['person']}")}) in true
-    ]
-
-
 def copy_family(spec: dict) -> set[str]:
     truth = spec["truth"]
     return {truth["original"]} | {c["file"] for c in truth["copies"]}
@@ -517,42 +362,3 @@ async def copies(s: Seeder, spec: dict) -> list:
         for st, v in await pending(s.s, Prop.MEDIA_MATCH, sorted(family))
         if f"blob:{v['blob']}" in family and copy_reason(v)[2] == "strong"
     ]
-
-
-async def conclude(s: Seeder, spec: dict, inv: str, written, accepted, analyst):
-    """The case's signed conclusion. The analyst first accepts exactly what it
-    rests on: claims by key, the linker's proposals for the planted same-person
-    pairs ("same_person"), the strong matches inside the planted copies
-    ("copies"). "links" cites every accepted same-person link. A match proposal
-    cannot be cited, so "copies" is accepted and not cited. With `peer_review` a
-    second analyst signs agreement."""
-    c = spec["conclusion"]
-    cite, accept = [], []
-    for item in c["rests_on"]:
-        if item == "links":
-            cite.append(item)
-        elif item == "same_person":
-            accept += await same_person(s, spec, inv)
-        elif item == "copies":
-            accept += await copies(s, spec)
-        else:
-            st = written[item]
-            cite.append(str(st.id))
-            if st not in accepted:
-                accept.append(st)
-    for st in accept:
-        await s.review(analyst, st, "accept", "what the case's conclusion rests on")
-    await s.s.commit()
-    form = {k: c[k] for k in ("text", "standard", "alternatives", "not_established")}
-    rows = await conclusions.seed(
-        s.s, inv, form | {"rests_on": cite}, analyst.id, s.assertion
-    )
-    if c.get("peer_review"):
-        # A second Seeder: each holds the passkey of the analyst it made.
-        other = Seeder(s.s)
-        reviewer = await colleague(other, inv, *REVIEWER)
-        await conclusions.seed_peer_review(
-            s.s, rows[0], analyst.id, reviewer.id, other.assertion
-        )
-    await s.s.commit()
-    return rows[0]
