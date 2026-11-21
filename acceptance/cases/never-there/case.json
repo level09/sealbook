@@ -1,0 +1,2338 @@
+{
+  "about": "Planted truth for the case study The witness who was never there, by acceptance/cases/never-there/make.py. All content is fictional.",
+  "story": {
+    "title": "The witness who was never there",
+    "kind": "private crime scene",
+    "puzzle": "Hollin Joinery on Tanner's Row in Larkhaven burned on the night of 14 March 2026, and forty-one people gave statements. The bookkeeper's alibi is one of the plainest: she was at her sister's house in Brindle Cross, 34 km away, from six until past midnight, and her sister agrees she came.",
+    "twist": "The photograph she handed over to show an earlier break-in was taken at the workshop gate at 21:52 that night, and the voice note she sent her sister at 22:07 says she is still at the yard. The contradiction hunter puts her two places on one day side by side; a person reads the times and decides.",
+    "rests_on": [
+      "contradictions",
+      "evidence location",
+      "speech to text"
+    ],
+    "fictional": true
+  },
+  "investigation": "case-never-there",
+  "today": "2026-04-01",
+  "places": {
+    "larkhaven": {
+      "name_en": "Larkhaven",
+      "name_ar": null,
+      "lon": -27.48,
+      "lat": -31.62,
+      "precision_m": 3000
+    },
+    "tanners_row": {
+      "name_en": "Tanner's Row, Larkhaven",
+      "name_ar": null,
+      "lon": -27.47652,
+      "lat": -31.62154,
+      "precision_m": 150
+    },
+    "market": {
+      "name_en": "Larkhaven market",
+      "name_ar": null,
+      "lon": -27.48295,
+      "lat": -31.61702,
+      "precision_m": 100
+    },
+    "crown": {
+      "name_en": "The Crown and Anchor, Larkhaven",
+      "name_ar": null,
+      "lon": -27.48,
+      "lat": -31.62407,
+      "precision_m": 50
+    },
+    "quay": {
+      "name_en": "Larkhaven quay",
+      "name_ar": null,
+      "lon": -27.47367,
+      "lat": -31.61548,
+      "precision_m": 200
+    },
+    "depot": {
+      "name_en": "Ferry Road bus depot, Larkhaven",
+      "name_ar": null,
+      "lon": -27.48738,
+      "lat": -31.62271,
+      "precision_m": 100
+    },
+    "brindle": {
+      "name_en": "Brindle Cross",
+      "name_ar": null,
+      "lon": -27.12133,
+      "lat": -31.62,
+      "precision_m": 2500
+    },
+    "brindle_bus": {
+      "name_en": "Brindle Cross bus station",
+      "name_ar": null,
+      "lon": -27.11974,
+      "lat": -31.61891,
+      "precision_m": 80
+    }
+  },
+  "sources": {
+    "mara": {
+      "title": "Statement of Mara Quill: with her sister in Brindle Cross from 18:00 to past midnight on 14 March",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Mara Quill, bookkeeper at Hollin Joinery, taken on 16 March 2026.\n\nMy name is Mara Quill. I was born in 1981. I keep the books for Hollin Joinery. On Friday 13 March 2026, early in the morning, I found the back gate on Tanner's Row forced and took a photograph of it on my phone, which I have handed over. On Saturday 14 March 2026 I drove to my sister Jo's house in Brindle Cross. I was there from about six in the evening until well past midnight and stayed the night. I heard about the fire on Sunday morning.\n"
+    },
+    "jo": {
+      "title": "Statement of Jo Quill, sister of Mara Quill",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-17",
+      "text": "Statement of Jo Quill, taken on 17 March 2026.\n\nMy name is Jo Quill. I was born in 1978. On Saturday 14 March 2026 I was at home in Brindle Cross all evening. My sister Mara Quill came to dinner at my house in Brindle Cross that night. She got here late, about half past eleven; she said the traffic was bad. She stayed the night.\n"
+    },
+    "mq3": {
+      "title": "Exhibit MQ/3: photograph from Mara Quill's phone, taken 14 March 2026 at 21:52",
+      "doc_type": "exhibit_sheet",
+      "sensitivity": "ordinary",
+      "date": "2026-03-20",
+      "text": "Exhibit MQ/3. Photograph IMG_4471.jpg, handed over by Mara Quill on 16 March 2026 from her phone. She said she took it early on 13 March.\n\nEmbedded metadata: taken 14 March 2026 at 21:52:07 (UTC-2); GPS position with a stated error of 8 metres at the back gate of Hollin Joinery. The metadata places the phone, and so Mara Quill, on Tanner's Row, Larkhaven on 14 March 2026. The picture shows the back gate at night, lit by the phone's flash.\n"
+    },
+    "mq4": {
+      "title": "Exhibit MQ/4: voice note from Mara Quill's phone, sent 14 March 2026 at 22:07",
+      "doc_type": "exhibit_sheet",
+      "sensitivity": "ordinary",
+      "date": "2026-03-20",
+      "text": "Exhibit MQ/4. Voice note sent from Mara Quill's phone to Jo Quill on 14 March 2026 at 22:07 (UTC-2), 11 seconds, recovered from the message history.\n\nTranscript: \"Jo, it's me. Start without me, I'm still at the yard on Tanner's Row. Something's come up with the books. I'll be with you by half eleven.\"\n\nOn 14 March 2026 Mara Quill was at the yard on Tanner's Row when she sent it.\n"
+    },
+    "photo": {
+      "title": "IMG_4471.jpg, the back gate of Hollin Joinery",
+      "doc_type": "photograph",
+      "sensitivity": "ordinary",
+      "date": "2026-03-14",
+      "text": null,
+      "file": "IMG_4471.jpg"
+    },
+    "voice": {
+      "title": "Voice note from Mara Quill to Jo Quill",
+      "doc_type": "voice_note",
+      "sensitivity": "ordinary",
+      "date": "2026-03-14",
+      "text": null,
+      "file": "voice_note.ogg"
+    },
+    "market_log": {
+      "title": "Larkhaven market stall 12 takings book, morning of 14 March 2026",
+      "doc_type": "takings_book",
+      "sensitivity": "ordinary",
+      "date": "2026-03-14",
+      "text": "Larkhaven market, stall 12 (cut flowers). Takings book, Saturday 14 March 2026, morning.\n\n09:40 card sale, tulips, to Jo Quill, a regular. Seen at Larkhaven market on 14 March 2026.\n"
+    },
+    "ivo": {
+      "title": "Statement of Ivo Brandt, night watchman",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Ivo Brandt, taken on 15 March 2026.\n\nMy name is Ivo Brandt. I was born in 1958. I am the night watchman for Larkhaven Security. On 14 March 2026 I walked my rounds on Tanner's Row from ten at night. I saw nobody at the yard. At about four minutes past eleven I saw flames at the back of Hollin Joinery and called the fire service.\n"
+    },
+    "patrol_log": {
+      "title": "Larkhaven Security night patrol log, 14 March 2026",
+      "doc_type": "patrol_log",
+      "sensitivity": "ordinary",
+      "date": "2026-03-14",
+      "text": "Larkhaven Security. Night patrol log, 14 March 2026. Officer: Ivo Brandt.\n\n22:00 start, Tanners Row. 22:30 Mill Lane. 23:04 fire seen at Hollin Joinery, Tanners Row, fire service called. Ivo Brandt was on Tanners Row on 14 March 2026.\n"
+    },
+    "staff_list": {
+      "title": "Larkhaven Security staff list, January 2026",
+      "doc_type": "staff_list",
+      "sensitivity": "ordinary",
+      "date": "2026-01-05",
+      "text": "Larkhaven Security. Staff list, January 2026.\n\nIvo Brandt, night officer, date of birth 1965-02-11.\nSana Whitlock, day officer, date of birth 1993-07-30.\n"
+    },
+    "kofi": {
+      "title": "Statement of Kofi Mensah, apprentice joiner",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Kofi Mensah, taken on 16 March 2026.\n\nMy name is Kofi Mensah. I was born in Pellow Bridge in 2006. I am an apprentice at Hollin Joinery. On 14 March 2026 I was at the Crown and Anchor with friends from eight until closing.\n"
+    },
+    "apprentice_record": {
+      "title": "Apprenticeship record for Kofi Mensah",
+      "doc_type": "apprenticeship_record",
+      "sensitivity": "ordinary",
+      "date": "2024-09-02",
+      "text": "Larkhaven College of Building. Apprenticeship record.\n\nApprentice: Kofi Mensah. Place of birth: Saltmarch. Employer: Hollin Joinery, Tanner's Row. Start: 2 September 2024.\n"
+    },
+    "ruth": {
+      "title": "Statement of Ruth Hollin, owner of Hollin Joinery",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Ruth Hollin, taken on 15 March 2026.\n\nMy name is Ruth Hollin. I was born in 1962. I own Hollin Joinery. On 14 March 2026 I was at home on Larkhaven quay all evening. The fire service rang me at twenty past eleven. Our bookkeeper had told me last week that the accounts would be ready on Monday.\n"
+    },
+    "register": {
+      "title": "Company register extract, Hollin Joinery Ltd",
+      "doc_type": "company_register",
+      "sensitivity": "ordinary",
+      "date": "2026-03-18",
+      "text": "Company register extract. Hollin Joinery Ltd, Tanner's Row, Larkhaven.\n\nDirector: Ruth Hollin, date of birth 1962-08-19. Company secretary: none.\n"
+    },
+    "pia": {
+      "title": "Statement of Pia Lund, neighbour",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Pia Lund, taken on 15 March 2026.\n\nMy name is Pia Lund. I was born in 1969. On 14 March 2026 I was at home in Larkhaven. I went out when I heard the sirens.\n"
+    },
+    "arjun": {
+      "title": "Statement of Arjun Pillai, neighbour",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Arjun Pillai, taken on 15 March 2026.\n\nMy name is Arjun Pillai. I was born in 1975. On 14 March 2026 I was at home on Tanner's Row and saw smoke at about eleven. My neighbour Pia Lund was standing on Tanner's Row, Larkhaven, watching the fire with me.\n"
+    },
+    "tomas": {
+      "title": "Statement of Tomas Ferreira, delivery driver",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-17",
+      "text": "Statement of Tomas Ferreira, taken on 17 March 2026.\n\nMy name is Tomas Ferreira. I was born in 1988. On 14 March 2026 I delivered oak boards to Hollin Joinery on Tanner's Row at about two in the afternoon. The back gate was shut and locked.\n"
+    },
+    "letter": {
+      "title": "Employer's letter for Tomas Ferreira",
+      "doc_type": "employment_letter",
+      "sensitivity": "ordinary",
+      "date": "2026-03-19",
+      "text": "Saltmarch Timber, Brindle Cross depot.\n\nTo whom it may concern. Tomas Ferreira drives for us and was based at Brindle Cross throughout March 2026, with deliveries to Larkhaven on Saturdays.\n"
+    },
+    "dale": {
+      "title": "Interview of Dale Corrin, former employee",
+      "doc_type": "interview_record",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Record of interview with Dale Corrin, 16 March 2026.\n\nMy name is Dale Corrin. I was born in 1990. I worked at Hollin Joinery until January, when Ruth Hollin let me go. On 14 March 2026 I was at the Crown and Anchor from eight until closing. I did not go near the yard.\n"
+    },
+    "nell": {
+      "title": "Statement of Nell Achebe, bar manager at the Crown and Anchor",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Nell Achebe, taken on 16 March 2026.\n\nMy name is Nell Achebe. I was born in 1985. I manage the Crown and Anchor. On 14 March 2026 I worked behind the bar at the Crown and Anchor until closing. Dale Corrin drank at the Crown and Anchor on 14 March 2026 until closing. He was last seen at the Crown and Anchor at noon on 15 March 2026, when he left with a holdall.\n"
+    },
+    "custody": {
+      "title": "Custody record for Dale Corrin, 15 March 2026",
+      "doc_type": "custody_record",
+      "sensitivity": "sensitive",
+      "date": "2026-03-15",
+      "text": "Larkhaven police. Custody record.\n\nDale Corrin was arrested at Brindle Cross bus station on 15 March 2026 at 16:20 on suspicion of arson. Released without charge on 17 March 2026.\n"
+    },
+    "fire_report": {
+      "title": "Fire service incident report, Hollin Joinery, 14 March 2026",
+      "doc_type": "incident_report",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Larkhaven fire service. Incident report.\n\nCall received 23:04 on 14 March 2026 from a night watchman. Fire in the timber store at the back of Hollin Joinery, Tanner's Row. Two crews. Fire out at 01:10. Rear gate found open, padlock missing. Seat of fire near the office. Cause under investigation.\n"
+    },
+    "amara": {
+      "title": "Statement of Amara Osei",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Amara Osei, taken on 15 March 2026.\n\nMy name is Amara Osei. I was born in 1984. On 14 March 2026 I was at home on Tanner's Row and smelled smoke at about eleven.\n"
+    },
+    "bram": {
+      "title": "Statement of Bram Kessler",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Bram Kessler, taken on 16 March 2026.\n\nMy name is Bram Kessler. I was born in 1971. On 14 March 2026 I waited for fares at the taxi rank by the Ferry Road bus depot until midnight.\n"
+    },
+    "celia": {
+      "title": "Statement of Celia Duarte",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-17",
+      "text": "Statement of Celia Duarte, taken on 17 March 2026.\n\nMy name is Celia Duarte. I was born in 1993. On 14 March 2026 I was at the Crown and Anchor for a birthday until half eleven.\n"
+    },
+    "dmitri": {
+      "title": "Statement of Dmitri Volkov",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-18",
+      "text": "Statement of Dmitri Volkov, taken on 18 March 2026.\n\nMy name is Dmitri Volkov. I was born in 1966. On 14 March 2026 I walked my dog along Larkhaven quay at ten and saw nothing unusual.\n"
+    },
+    "esme": {
+      "title": "Statement of Esme Hartley",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Esme Hartley, taken on 15 March 2026.\n\nMy name is Esme Hartley. I was born in 2001. On 14 March 2026 I was at my flat in Larkhaven studying all evening.\n"
+    },
+    "farid": {
+      "title": "Statement of Farid Haddad",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Farid Haddad, taken on 16 March 2026.\n\nMy name is Farid Haddad. I was born in 1979. On 14 March 2026 I closed my bakery on Tanner's Row at six and went upstairs to bed early.\n"
+    },
+    "greta": {
+      "title": "Statement of Greta Lindqvist",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-17",
+      "text": "Statement of Greta Lindqvist, taken on 17 March 2026.\n\nMy name is Greta Lindqvist. I was born in 1958. On 14 March 2026 I heard glass break on Tanner's Row at about a quarter to eleven.\n"
+    },
+    "hiro": {
+      "title": "Statement of Hiro Tanaka",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-18",
+      "text": "Statement of Hiro Tanaka, taken on 18 March 2026.\n\nMy name is Hiro Tanaka. I was born in 1995. On 14 March 2026 I drove the last bus into the Ferry Road bus depot at 23:15.\n"
+    },
+    "ines": {
+      "title": "Statement of Ines Moreau",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Ines Moreau, taken on 15 March 2026.\n\nMy name is Ines Moreau. I was born in 1987. On 14 March 2026 I packed up my stall at Larkhaven market at one in the afternoon.\n"
+    },
+    "jonas": {
+      "title": "Statement of Jonas Weber",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Jonas Weber, taken on 16 March 2026.\n\nMy name is Jonas Weber. I was born in 1973. On 14 March 2026 I played darts at the Crown and Anchor until about eleven.\n"
+    },
+    "kezia": {
+      "title": "Statement of Kezia Banda",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-17",
+      "text": "Statement of Kezia Banda, taken on 17 March 2026.\n\nMy name is Kezia Banda. I was born in 1999. On 14 March 2026 I was babysitting in Larkhaven and saw the glow from the window.\n"
+    },
+    "liam": {
+      "title": "Statement of Liam Byrne",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-18",
+      "text": "Statement of Liam Byrne, taken on 18 March 2026.\n\nMy name is Liam Byrne. I was born in 1982. On 14 March 2026 I parked my van on Tanner's Row at nine and did not move it.\n"
+    },
+    "marisol": {
+      "title": "Statement of Marisol Vega",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Marisol Vega, taken on 15 March 2026.\n\nMy name is Marisol Vega. I was born in 1976. On 14 March 2026 I ran the late shift at the chip shop on Larkhaven quay.\n"
+    },
+    "nadim": {
+      "title": "Statement of Nadim Rahman",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Nadim Rahman, taken on 16 March 2026.\n\nMy name is Nadim Rahman. I was born in 1968. On 14 March 2026 I was at evening prayers and then at home in Larkhaven.\n"
+    },
+    "olu": {
+      "title": "Statement of Olu Adeyemi",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-17",
+      "text": "Statement of Olu Adeyemi, taken on 17 March 2026.\n\nMy name is Olu Adeyemi. I was born in 1991. On 14 March 2026 I cycled home along Tanner's Row at about half ten and saw a light in the joinery office.\n"
+    },
+    "petra": {
+      "title": "Statement of Petra Novak",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-18",
+      "text": "Statement of Petra Novak, taken on 18 March 2026.\n\nMy name is Petra Novak. I was born in 1980. On 14 March 2026 I set up the Saturday craft table at Larkhaven market in the morning.\n"
+    },
+    "quentin": {
+      "title": "Statement of Quentin Ashby",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Quentin Ashby, taken on 15 March 2026.\n\nMy name is Quentin Ashby. I was born in 1963. On 14 March 2026 I ate supper at the Crown and Anchor and left at ten.\n"
+    },
+    "rosa": {
+      "title": "Statement of Rosa Lemaire",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Rosa Lemaire, taken on 16 March 2026.\n\nMy name is Rosa Lemaire. I was born in 1994. On 14 March 2026 I was at a friend's flat in Larkhaven watching a film.\n"
+    },
+    "soren": {
+      "title": "Statement of Soren Dahl",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-17",
+      "text": "Statement of Soren Dahl, taken on 17 March 2026.\n\nMy name is Soren Dahl. I was born in 1977. On 14 March 2026 I heard a car door slam on Tanner's Row shortly before ten.\n"
+    },
+    "tala": {
+      "title": "Statement of Tala Fonoti",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-18",
+      "text": "Statement of Tala Fonoti, taken on 18 March 2026.\n\nMy name is Tala Fonoti. I was born in 2003. On 14 March 2026 I cleaned buses at the Ferry Road bus depot from eight until two.\n"
+    },
+    "ugo": {
+      "title": "Statement of Ugo Bianchi",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Ugo Bianchi, taken on 15 March 2026.\n\nMy name is Ugo Bianchi. I was born in 1960. On 14 March 2026 I checked the moorings on Larkhaven quay at eleven.\n"
+    },
+    "vera": {
+      "title": "Statement of Vera Sokolova",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Vera Sokolova, taken on 16 March 2026.\n\nMy name is Vera Sokolova. I was born in 1986. On 14 March 2026 I drove home through Larkhaven at about eleven and saw the fire engines.\n"
+    },
+    "wen": {
+      "title": "Statement of Wen Li",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-17",
+      "text": "Statement of Wen Li, taken on 17 March 2026.\n\nMy name is Wen Li. I was born in 1992. On 14 March 2026 I closed the laundrette on Tanner's Row at nine.\n"
+    },
+    "xavier": {
+      "title": "Statement of Xavier Ortiz",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-18",
+      "text": "Statement of Xavier Ortiz, taken on 18 March 2026.\n\nMy name is Xavier Ortiz. I was born in 1985. On 14 March 2026 I played in the band at the Crown and Anchor from nine until midnight.\n"
+    },
+    "yasmin": {
+      "title": "Statement of Yasmin Karimi",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Yasmin Karimi, taken on 15 March 2026.\n\nMy name is Yasmin Karimi. I was born in 1997. On 14 March 2026 I was at home in Larkhaven and heard the sirens at about ten past eleven.\n"
+    },
+    "zane": {
+      "title": "Statement of Zane Whitaker",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Zane Whitaker, taken on 16 March 2026.\n\nMy name is Zane Whitaker. I was born in 1974. On 14 March 2026 I walked past Hollin Joinery on Tanner's Row at nine and the gate was shut.\n"
+    },
+    "abebe": {
+      "title": "Statement of Abebe Tesfaye",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-17",
+      "text": "Statement of Abebe Tesfaye, taken on 17 March 2026.\n\nMy name is Abebe Tesfaye. I was born in 1983. On 14 March 2026 I delivered bread to Larkhaven market at seven in the morning.\n"
+    },
+    "brigid": {
+      "title": "Statement of Brigid Nolan",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-18",
+      "text": "Statement of Brigid Nolan, taken on 18 March 2026.\n\nMy name is Brigid Nolan. I was born in 1957. On 14 March 2026 I sat on my balcony over Larkhaven quay until late and saw smoke to the south.\n"
+    },
+    "caio": {
+      "title": "Statement of Caio Mendes",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-15",
+      "text": "Statement of Caio Mendes, taken on 15 March 2026.\n\nMy name is Caio Mendes. I was born in 1989. On 14 March 2026 I collected glasses at the Crown and Anchor from seven.\n"
+    },
+    "dina": {
+      "title": "Statement of Dina Shapiro",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-16",
+      "text": "Statement of Dina Shapiro, taken on 16 March 2026.\n\nMy name is Dina Shapiro. I was born in 1972. On 14 March 2026 I was at home in Larkhaven and went to bed at ten.\n"
+    },
+    "emeka": {
+      "title": "Statement of Emeka Nwosu",
+      "doc_type": "witness_statement",
+      "sensitivity": "ordinary",
+      "date": "2026-03-17",
+      "text": "Statement of Emeka Nwosu, taken on 17 March 2026.\n\nMy name is Emeka Nwosu. I was born in 1996. On 14 March 2026 I saw a small car parked by the joinery's back gate on Tanner's Row at about ten to ten.\n"
+    }
+  },
+  "records": {
+    "mara_stmt": {
+      "source": "mara",
+      "person": "mara"
+    },
+    "jo_stmt": {
+      "source": "jo",
+      "person": "jo"
+    },
+    "mara_jo": {
+      "source": "jo",
+      "person": "mara"
+    },
+    "mara_mq3": {
+      "source": "mq3",
+      "person": "mara"
+    },
+    "mara_mq4": {
+      "source": "mq4",
+      "person": "mara"
+    },
+    "jo_market": {
+      "source": "market_log",
+      "person": "jo"
+    },
+    "ivo_stmt": {
+      "source": "ivo",
+      "person": "ivo"
+    },
+    "ivo_patrol": {
+      "source": "patrol_log",
+      "person": "ivo"
+    },
+    "ivo_staff": {
+      "source": "staff_list",
+      "person": "ivo"
+    },
+    "sana_staff": {
+      "source": "staff_list",
+      "person": "sana"
+    },
+    "kofi_stmt": {
+      "source": "kofi",
+      "person": "kofi"
+    },
+    "kofi_record": {
+      "source": "apprentice_record",
+      "person": "kofi"
+    },
+    "ruth_stmt": {
+      "source": "ruth",
+      "person": "ruth"
+    },
+    "ruth_register": {
+      "source": "register",
+      "person": "ruth"
+    },
+    "pia_stmt": {
+      "source": "pia",
+      "person": "pia"
+    },
+    "pia_arjun": {
+      "source": "arjun",
+      "person": "pia"
+    },
+    "arjun_stmt": {
+      "source": "arjun",
+      "person": "arjun"
+    },
+    "tomas_stmt": {
+      "source": "tomas",
+      "person": "tomas"
+    },
+    "tomas_letter": {
+      "source": "letter",
+      "person": "tomas"
+    },
+    "dale_stmt": {
+      "source": "dale",
+      "person": "dale"
+    },
+    "dale_nell": {
+      "source": "nell",
+      "person": "dale"
+    },
+    "dale_custody": {
+      "source": "custody",
+      "person": "dale"
+    },
+    "nell_stmt": {
+      "source": "nell",
+      "person": "nell"
+    },
+    "amara_stmt": {
+      "source": "amara",
+      "person": "amara"
+    },
+    "bram_stmt": {
+      "source": "bram",
+      "person": "bram"
+    },
+    "celia_stmt": {
+      "source": "celia",
+      "person": "celia"
+    },
+    "dmitri_stmt": {
+      "source": "dmitri",
+      "person": "dmitri"
+    },
+    "esme_stmt": {
+      "source": "esme",
+      "person": "esme"
+    },
+    "farid_stmt": {
+      "source": "farid",
+      "person": "farid"
+    },
+    "greta_stmt": {
+      "source": "greta",
+      "person": "greta"
+    },
+    "hiro_stmt": {
+      "source": "hiro",
+      "person": "hiro"
+    },
+    "ines_stmt": {
+      "source": "ines",
+      "person": "ines"
+    },
+    "jonas_stmt": {
+      "source": "jonas",
+      "person": "jonas"
+    },
+    "kezia_stmt": {
+      "source": "kezia",
+      "person": "kezia"
+    },
+    "liam_stmt": {
+      "source": "liam",
+      "person": "liam"
+    },
+    "marisol_stmt": {
+      "source": "marisol",
+      "person": "marisol"
+    },
+    "nadim_stmt": {
+      "source": "nadim",
+      "person": "nadim"
+    },
+    "olu_stmt": {
+      "source": "olu",
+      "person": "olu"
+    },
+    "petra_stmt": {
+      "source": "petra",
+      "person": "petra"
+    },
+    "quentin_stmt": {
+      "source": "quentin",
+      "person": "quentin"
+    },
+    "rosa_stmt": {
+      "source": "rosa",
+      "person": "rosa"
+    },
+    "soren_stmt": {
+      "source": "soren",
+      "person": "soren"
+    },
+    "tala_stmt": {
+      "source": "tala",
+      "person": "tala"
+    },
+    "ugo_stmt": {
+      "source": "ugo",
+      "person": "ugo"
+    },
+    "vera_stmt": {
+      "source": "vera",
+      "person": "vera"
+    },
+    "wen_stmt": {
+      "source": "wen",
+      "person": "wen"
+    },
+    "xavier_stmt": {
+      "source": "xavier",
+      "person": "xavier"
+    },
+    "yasmin_stmt": {
+      "source": "yasmin",
+      "person": "yasmin"
+    },
+    "zane_stmt": {
+      "source": "zane",
+      "person": "zane"
+    },
+    "abebe_stmt": {
+      "source": "abebe",
+      "person": "abebe"
+    },
+    "brigid_stmt": {
+      "source": "brigid",
+      "person": "brigid"
+    },
+    "caio_stmt": {
+      "source": "caio",
+      "person": "caio"
+    },
+    "dina_stmt": {
+      "source": "dina",
+      "person": "dina"
+    },
+    "emeka_stmt": {
+      "source": "emeka",
+      "person": "emeka"
+    }
+  },
+  "clusters": [
+    [
+      "mara_stmt",
+      "mara_jo",
+      "mara_mq3",
+      "mara_mq4"
+    ],
+    [
+      "jo_stmt",
+      "jo_market"
+    ],
+    [
+      "ivo_stmt",
+      "ivo_patrol",
+      "ivo_staff"
+    ],
+    [
+      "kofi_stmt",
+      "kofi_record"
+    ],
+    [
+      "ruth_stmt",
+      "ruth_register"
+    ],
+    [
+      "pia_stmt",
+      "pia_arjun"
+    ],
+    [
+      "tomas_stmt",
+      "tomas_letter"
+    ],
+    [
+      "dale_stmt",
+      "dale_nell",
+      "dale_custody"
+    ]
+  ],
+  "claims": [
+    {
+      "key": "mara_stmt.name",
+      "record": "mara_stmt",
+      "prop": "name",
+      "value": "Mara Quill",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "accepted"
+    },
+    {
+      "key": "mara_stmt.born",
+      "record": "mara_stmt",
+      "prop": "birth_date",
+      "value": "1981",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "mara_stmt.gate",
+      "record": "mara_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-13",
+      "to": "2026-03-13",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "mara_stmt.at",
+      "record": "mara_stmt",
+      "prop": "seen_at",
+      "value": "Brindle Cross",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "brindle",
+      "tier": "accepted"
+    },
+    {
+      "key": "jo_stmt.name",
+      "record": "jo_stmt",
+      "prop": "name",
+      "value": "Jo Quill",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "jo_stmt.born",
+      "record": "jo_stmt",
+      "prop": "birth_date",
+      "value": "1978",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "jo_stmt.at",
+      "record": "jo_stmt",
+      "prop": "seen_at",
+      "value": "Brindle Cross",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "brindle",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "mara_jo.name",
+      "record": "mara_jo",
+      "prop": "name",
+      "value": "Mara Quill",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "mara_jo.at",
+      "record": "mara_jo",
+      "prop": "seen_at",
+      "value": "Brindle Cross",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "brindle",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "mara_mq3.name",
+      "record": "mara_mq3",
+      "prop": "name",
+      "value": "Mara Quill",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "mara_mq3.at",
+      "record": "mara_mq3",
+      "prop": "seen_at",
+      "value": "Tanner's Row, Larkhaven",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "mara_mq4.name",
+      "record": "mara_mq4",
+      "prop": "name",
+      "value": "Mara Quill",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "mara_mq4.at",
+      "record": "mara_mq4",
+      "prop": "seen_at",
+      "value": "the yard on Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "jo_market.name",
+      "record": "jo_market",
+      "prop": "name",
+      "value": "Jo Quill",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "jo_market.at",
+      "record": "jo_market",
+      "prop": "seen_at",
+      "value": "Larkhaven market",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "market",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ivo_stmt.name",
+      "record": "ivo_stmt",
+      "prop": "name",
+      "value": "Ivo Brandt",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ivo_stmt.born",
+      "record": "ivo_stmt",
+      "prop": "birth_date",
+      "value": "1958",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ivo_stmt.at",
+      "record": "ivo_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ivo_patrol.name",
+      "record": "ivo_patrol",
+      "prop": "name",
+      "value": "Ivo Brandt",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ivo_patrol.at",
+      "record": "ivo_patrol",
+      "prop": "seen_at",
+      "value": "Tanners Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ivo_staff.name",
+      "record": "ivo_staff",
+      "prop": "name",
+      "value": "Ivo Brandt",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ivo_staff.born",
+      "record": "ivo_staff",
+      "prop": "birth_date",
+      "value": "1965-02-11",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "sana_staff.name",
+      "record": "sana_staff",
+      "prop": "name",
+      "value": "Sana Whitlock",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "sana_staff.born",
+      "record": "sana_staff",
+      "prop": "birth_date",
+      "value": "1993-07-30",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "kofi_stmt.name",
+      "record": "kofi_stmt",
+      "prop": "name",
+      "value": "Kofi Mensah",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "kofi_stmt.born_in",
+      "record": "kofi_stmt",
+      "prop": "place_of_birth",
+      "value": "Pellow Bridge",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "kofi_stmt.born",
+      "record": "kofi_stmt",
+      "prop": "birth_date",
+      "value": "2006",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "kofi_stmt.at",
+      "record": "kofi_stmt",
+      "prop": "seen_at",
+      "value": "the Crown and Anchor",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "crown",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "kofi_record.name",
+      "record": "kofi_record",
+      "prop": "name",
+      "value": "Kofi Mensah",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "kofi_record.born_in",
+      "record": "kofi_record",
+      "prop": "place_of_birth",
+      "value": "Saltmarch",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ruth_stmt.name",
+      "record": "ruth_stmt",
+      "prop": "name",
+      "value": "Ruth Hollin",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ruth_stmt.born",
+      "record": "ruth_stmt",
+      "prop": "birth_date",
+      "value": "1962",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ruth_stmt.at",
+      "record": "ruth_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven quay",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "quay",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ruth_register.name",
+      "record": "ruth_register",
+      "prop": "name",
+      "value": "Ruth Hollin",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ruth_register.born",
+      "record": "ruth_register",
+      "prop": "birth_date",
+      "value": "1962-08-19",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "pia_stmt.name",
+      "record": "pia_stmt",
+      "prop": "name",
+      "value": "Pia Lund",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "pia_stmt.born",
+      "record": "pia_stmt",
+      "prop": "birth_date",
+      "value": "1969",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "pia_stmt.at",
+      "record": "pia_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "larkhaven",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "pia_arjun.name",
+      "record": "pia_arjun",
+      "prop": "name",
+      "value": "Pia Lund",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "pia_arjun.at",
+      "record": "pia_arjun",
+      "prop": "seen_at",
+      "value": "Tanner's Row, Larkhaven",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "arjun_stmt.name",
+      "record": "arjun_stmt",
+      "prop": "name",
+      "value": "Arjun Pillai",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "arjun_stmt.born",
+      "record": "arjun_stmt",
+      "prop": "birth_date",
+      "value": "1975",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "arjun_stmt.at",
+      "record": "arjun_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "tomas_stmt.name",
+      "record": "tomas_stmt",
+      "prop": "name",
+      "value": "Tomas Ferreira",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "tomas_stmt.born",
+      "record": "tomas_stmt",
+      "prop": "birth_date",
+      "value": "1988",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "tomas_stmt.at",
+      "record": "tomas_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "tomas_letter.name",
+      "record": "tomas_letter",
+      "prop": "name",
+      "value": "Tomas Ferreira",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "tomas_letter.at",
+      "record": "tomas_letter",
+      "prop": "seen_at",
+      "value": "Brindle Cross",
+      "from": "2026-03-01",
+      "to": "2026-03-31",
+      "place": "brindle",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dale_stmt.name",
+      "record": "dale_stmt",
+      "prop": "name",
+      "value": "Dale Corrin",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dale_stmt.born",
+      "record": "dale_stmt",
+      "prop": "birth_date",
+      "value": "1990",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dale_stmt.at",
+      "record": "dale_stmt",
+      "prop": "seen_at",
+      "value": "the Crown and Anchor",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "crown",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dale_nell.name",
+      "record": "dale_nell",
+      "prop": "name",
+      "value": "Dale Corrin",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dale_nell.at",
+      "record": "dale_nell",
+      "prop": "seen_at",
+      "value": "the Crown and Anchor",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "crown",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dale_nell.last_seen",
+      "record": "dale_nell",
+      "prop": "last_seen",
+      "value": "the Crown and Anchor",
+      "from": "2026-03-15",
+      "to": "2026-03-15",
+      "place": "crown",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dale_custody.name",
+      "record": "dale_custody",
+      "prop": "name",
+      "value": "Dale Corrin",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dale_custody.arrested",
+      "record": "dale_custody",
+      "prop": "arrested_at",
+      "value": "Brindle Cross bus station",
+      "from": "2026-03-15",
+      "to": "2026-03-15",
+      "place": "brindle_bus",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nell_stmt.name",
+      "record": "nell_stmt",
+      "prop": "name",
+      "value": "Nell Achebe",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nell_stmt.born",
+      "record": "nell_stmt",
+      "prop": "birth_date",
+      "value": "1985",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nell_stmt.at",
+      "record": "nell_stmt",
+      "prop": "seen_at",
+      "value": "the Crown and Anchor",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "crown",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "amara_stmt.name",
+      "record": "amara_stmt",
+      "prop": "name",
+      "value": "Amara Osei",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "amara_stmt.born",
+      "record": "amara_stmt",
+      "prop": "birth_date",
+      "value": "1984",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "amara_stmt.at",
+      "record": "amara_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "bram_stmt.name",
+      "record": "bram_stmt",
+      "prop": "name",
+      "value": "Bram Kessler",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "bram_stmt.born",
+      "record": "bram_stmt",
+      "prop": "birth_date",
+      "value": "1971",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "bram_stmt.at",
+      "record": "bram_stmt",
+      "prop": "seen_at",
+      "value": "the Ferry Road bus depot",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "depot",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "celia_stmt.name",
+      "record": "celia_stmt",
+      "prop": "name",
+      "value": "Celia Duarte",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "celia_stmt.born",
+      "record": "celia_stmt",
+      "prop": "birth_date",
+      "value": "1993",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "celia_stmt.at",
+      "record": "celia_stmt",
+      "prop": "seen_at",
+      "value": "the Crown and Anchor",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "crown",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dmitri_stmt.name",
+      "record": "dmitri_stmt",
+      "prop": "name",
+      "value": "Dmitri Volkov",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dmitri_stmt.born",
+      "record": "dmitri_stmt",
+      "prop": "birth_date",
+      "value": "1966",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dmitri_stmt.at",
+      "record": "dmitri_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven quay",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "quay",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "esme_stmt.name",
+      "record": "esme_stmt",
+      "prop": "name",
+      "value": "Esme Hartley",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "esme_stmt.born",
+      "record": "esme_stmt",
+      "prop": "birth_date",
+      "value": "2001",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "esme_stmt.at",
+      "record": "esme_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "larkhaven",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "farid_stmt.name",
+      "record": "farid_stmt",
+      "prop": "name",
+      "value": "Farid Haddad",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "farid_stmt.born",
+      "record": "farid_stmt",
+      "prop": "birth_date",
+      "value": "1979",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "farid_stmt.at",
+      "record": "farid_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "greta_stmt.name",
+      "record": "greta_stmt",
+      "prop": "name",
+      "value": "Greta Lindqvist",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "greta_stmt.born",
+      "record": "greta_stmt",
+      "prop": "birth_date",
+      "value": "1958",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "greta_stmt.at",
+      "record": "greta_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "hiro_stmt.name",
+      "record": "hiro_stmt",
+      "prop": "name",
+      "value": "Hiro Tanaka",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "hiro_stmt.born",
+      "record": "hiro_stmt",
+      "prop": "birth_date",
+      "value": "1995",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "hiro_stmt.at",
+      "record": "hiro_stmt",
+      "prop": "seen_at",
+      "value": "the Ferry Road bus depot",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "depot",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ines_stmt.name",
+      "record": "ines_stmt",
+      "prop": "name",
+      "value": "Ines Moreau",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ines_stmt.born",
+      "record": "ines_stmt",
+      "prop": "birth_date",
+      "value": "1987",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ines_stmt.at",
+      "record": "ines_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven market",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "market",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "jonas_stmt.name",
+      "record": "jonas_stmt",
+      "prop": "name",
+      "value": "Jonas Weber",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "jonas_stmt.born",
+      "record": "jonas_stmt",
+      "prop": "birth_date",
+      "value": "1973",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "jonas_stmt.at",
+      "record": "jonas_stmt",
+      "prop": "seen_at",
+      "value": "the Crown and Anchor",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "crown",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "kezia_stmt.name",
+      "record": "kezia_stmt",
+      "prop": "name",
+      "value": "Kezia Banda",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "kezia_stmt.born",
+      "record": "kezia_stmt",
+      "prop": "birth_date",
+      "value": "1999",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "kezia_stmt.at",
+      "record": "kezia_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "larkhaven",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "liam_stmt.name",
+      "record": "liam_stmt",
+      "prop": "name",
+      "value": "Liam Byrne",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "liam_stmt.born",
+      "record": "liam_stmt",
+      "prop": "birth_date",
+      "value": "1982",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "liam_stmt.at",
+      "record": "liam_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "marisol_stmt.name",
+      "record": "marisol_stmt",
+      "prop": "name",
+      "value": "Marisol Vega",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "marisol_stmt.born",
+      "record": "marisol_stmt",
+      "prop": "birth_date",
+      "value": "1976",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "marisol_stmt.at",
+      "record": "marisol_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven quay",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "quay",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nadim_stmt.name",
+      "record": "nadim_stmt",
+      "prop": "name",
+      "value": "Nadim Rahman",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nadim_stmt.born",
+      "record": "nadim_stmt",
+      "prop": "birth_date",
+      "value": "1968",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "nadim_stmt.at",
+      "record": "nadim_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "larkhaven",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "olu_stmt.name",
+      "record": "olu_stmt",
+      "prop": "name",
+      "value": "Olu Adeyemi",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "olu_stmt.born",
+      "record": "olu_stmt",
+      "prop": "birth_date",
+      "value": "1991",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "olu_stmt.at",
+      "record": "olu_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "petra_stmt.name",
+      "record": "petra_stmt",
+      "prop": "name",
+      "value": "Petra Novak",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "petra_stmt.born",
+      "record": "petra_stmt",
+      "prop": "birth_date",
+      "value": "1980",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "petra_stmt.at",
+      "record": "petra_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven market",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "market",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "quentin_stmt.name",
+      "record": "quentin_stmt",
+      "prop": "name",
+      "value": "Quentin Ashby",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "quentin_stmt.born",
+      "record": "quentin_stmt",
+      "prop": "birth_date",
+      "value": "1963",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "quentin_stmt.at",
+      "record": "quentin_stmt",
+      "prop": "seen_at",
+      "value": "the Crown and Anchor",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "crown",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "rosa_stmt.name",
+      "record": "rosa_stmt",
+      "prop": "name",
+      "value": "Rosa Lemaire",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "rosa_stmt.born",
+      "record": "rosa_stmt",
+      "prop": "birth_date",
+      "value": "1994",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "rosa_stmt.at",
+      "record": "rosa_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "larkhaven",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "soren_stmt.name",
+      "record": "soren_stmt",
+      "prop": "name",
+      "value": "Soren Dahl",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "soren_stmt.born",
+      "record": "soren_stmt",
+      "prop": "birth_date",
+      "value": "1977",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "soren_stmt.at",
+      "record": "soren_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "tala_stmt.name",
+      "record": "tala_stmt",
+      "prop": "name",
+      "value": "Tala Fonoti",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "tala_stmt.born",
+      "record": "tala_stmt",
+      "prop": "birth_date",
+      "value": "2003",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "tala_stmt.at",
+      "record": "tala_stmt",
+      "prop": "seen_at",
+      "value": "the Ferry Road bus depot",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "depot",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ugo_stmt.name",
+      "record": "ugo_stmt",
+      "prop": "name",
+      "value": "Ugo Bianchi",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ugo_stmt.born",
+      "record": "ugo_stmt",
+      "prop": "birth_date",
+      "value": "1960",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "ugo_stmt.at",
+      "record": "ugo_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven quay",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "quay",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "vera_stmt.name",
+      "record": "vera_stmt",
+      "prop": "name",
+      "value": "Vera Sokolova",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "vera_stmt.born",
+      "record": "vera_stmt",
+      "prop": "birth_date",
+      "value": "1986",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "vera_stmt.at",
+      "record": "vera_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "larkhaven",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "wen_stmt.name",
+      "record": "wen_stmt",
+      "prop": "name",
+      "value": "Wen Li",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "wen_stmt.born",
+      "record": "wen_stmt",
+      "prop": "birth_date",
+      "value": "1992",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "wen_stmt.at",
+      "record": "wen_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "xavier_stmt.name",
+      "record": "xavier_stmt",
+      "prop": "name",
+      "value": "Xavier Ortiz",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "xavier_stmt.born",
+      "record": "xavier_stmt",
+      "prop": "birth_date",
+      "value": "1985",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "xavier_stmt.at",
+      "record": "xavier_stmt",
+      "prop": "seen_at",
+      "value": "the Crown and Anchor",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "crown",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yasmin_stmt.name",
+      "record": "yasmin_stmt",
+      "prop": "name",
+      "value": "Yasmin Karimi",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yasmin_stmt.born",
+      "record": "yasmin_stmt",
+      "prop": "birth_date",
+      "value": "1997",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "yasmin_stmt.at",
+      "record": "yasmin_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "larkhaven",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "zane_stmt.name",
+      "record": "zane_stmt",
+      "prop": "name",
+      "value": "Zane Whitaker",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "zane_stmt.born",
+      "record": "zane_stmt",
+      "prop": "birth_date",
+      "value": "1974",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "zane_stmt.at",
+      "record": "zane_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "abebe_stmt.name",
+      "record": "abebe_stmt",
+      "prop": "name",
+      "value": "Abebe Tesfaye",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "abebe_stmt.born",
+      "record": "abebe_stmt",
+      "prop": "birth_date",
+      "value": "1983",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "abebe_stmt.at",
+      "record": "abebe_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven market",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "market",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "brigid_stmt.name",
+      "record": "brigid_stmt",
+      "prop": "name",
+      "value": "Brigid Nolan",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "brigid_stmt.born",
+      "record": "brigid_stmt",
+      "prop": "birth_date",
+      "value": "1957",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "brigid_stmt.at",
+      "record": "brigid_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven quay",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "quay",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "caio_stmt.name",
+      "record": "caio_stmt",
+      "prop": "name",
+      "value": "Caio Mendes",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "caio_stmt.born",
+      "record": "caio_stmt",
+      "prop": "birth_date",
+      "value": "1989",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "caio_stmt.at",
+      "record": "caio_stmt",
+      "prop": "seen_at",
+      "value": "the Crown and Anchor",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "crown",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dina_stmt.name",
+      "record": "dina_stmt",
+      "prop": "name",
+      "value": "Dina Shapiro",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dina_stmt.born",
+      "record": "dina_stmt",
+      "prop": "birth_date",
+      "value": "1972",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "dina_stmt.at",
+      "record": "dina_stmt",
+      "prop": "seen_at",
+      "value": "Larkhaven",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "larkhaven",
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "emeka_stmt.name",
+      "record": "emeka_stmt",
+      "prop": "name",
+      "value": "Emeka Nwosu",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "emeka_stmt.born",
+      "record": "emeka_stmt",
+      "prop": "birth_date",
+      "value": "1996",
+      "from": null,
+      "to": null,
+      "place": null,
+      "tier": "unconfirmed"
+    },
+    {
+      "key": "emeka_stmt.at",
+      "record": "emeka_stmt",
+      "prop": "seen_at",
+      "value": "Tanner's Row",
+      "from": "2026-03-14",
+      "to": "2026-03-14",
+      "place": "tanners_row",
+      "tier": "unconfirmed"
+    }
+  ],
+  "batch": [
+    "mq3",
+    "mq4"
+  ],
+  "truth": {
+    "same_person": [],
+    "twins": [],
+    "gaps": [],
+    "not_gaps": [],
+    "contradictions": [
+      {
+        "claims": [
+          "mara_stmt.at",
+          "mara_mq3.at"
+        ],
+        "why": "the alibi in Brindle Cross against the photograph at the workshop gate, 21:52 on the same night"
+      },
+      {
+        "claims": [
+          "mara_stmt.at",
+          "mara_mq4.at"
+        ],
+        "why": "the alibi in Brindle Cross against the voice note sent from the yard at 22:07"
+      },
+      {
+        "claims": [
+          "ivo_stmt.born",
+          "ivo_staff.born"
+        ],
+        "why": "birth year 1958 against 1965"
+      },
+      {
+        "claims": [
+          "kofi_stmt.born_in",
+          "kofi_record.born_in"
+        ],
+        "why": "Pellow Bridge against Saltmarch"
+      }
+    ],
+    "not_contradictions": [
+      {
+        "claims": [
+          "ivo_stmt.at",
+          "ivo_patrol.at"
+        ],
+        "why": "one street in two spellings"
+      },
+      {
+        "claims": [
+          "ruth_stmt.born",
+          "ruth_register.born"
+        ],
+        "why": "a year against a full date in it"
+      },
+      {
+        "claims": [
+          "dale_nell.last_seen",
+          "dale_custody.arrested"
+        ],
+        "why": "last seen at noon and arrested at 16:20 on the same day"
+      },
+      {
+        "claims": [
+          "pia_stmt.at",
+          "pia_arjun.at"
+        ],
+        "why": "a street inside its town"
+      },
+      {
+        "claims": [
+          "tomas_stmt.at",
+          "tomas_letter.at"
+        ],
+        "why": "a day inside a month"
+      }
+    ],
+    "hard_same_person": [],
+    "traps": [],
+    "hard_contradictions": [],
+    "trap_contradictions": [
+      {
+        "claims": [
+          "jo_stmt.at",
+          "jo_market.at"
+        ],
+        "why": "the market at 09:40 and home in Brindle Cross that evening"
+      }
+    ],
+    "canary": {
+      "pair": [],
+      "contradiction": []
+    }
+  },
+  "media": {
+    "IMG_4471.jpg": {
+      "exif_time": "2026:03:14 21:52:07",
+      "exif_offset": "-02:00",
+      "gps": {
+        "lon": -27.47641,
+        "lat": -31.62162,
+        "error_m": 8
+      },
+      "subject_of": "mq3"
+    },
+    "voice_note.ogg": {
+      "sent": "2026-03-14T22:07:00-02:00",
+      "transcript": "voice_note.json",
+      "subject_of": "mq4"
+    }
+  }
+}

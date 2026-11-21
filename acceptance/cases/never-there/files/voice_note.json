@@ -1,0 +1,25 @@
+{
+ "duration_ms": 10950,
+ "sentences": [
+  {
+   "text": "Jo, it's me.",
+   "start_ms": 0,
+   "end_ms": 1850
+  },
+  {
+   "text": "Start without me, I'm still at the yard on Tanner's Row.",
+   "start_ms": 2200,
+   "end_ms": 5950
+  },
+  {
+   "text": "Something's come up with the books.",
+   "start_ms": 6300,
+   "end_ms": 8400
+  },
+  {
+   "text": "I'll be with you by half eleven.",
+   "start_ms": 8750,
+   "end_ms": 10950
+  }
+ ]
+}
