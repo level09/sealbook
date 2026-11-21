@@ -6,6 +6,7 @@
     ROUTE_LOCAL_TIMEOUT=900 uv run python acceptance/eval_agents.py --live --route local
   uv run python acceptance/eval_agents.py --live --model anthropic/claude-sonnet-5.5 \
     --reasoning low
+  uv run python acceptance/eval_agents.py --case acceptance/cases/four-names/case.json
 
 Fixed mode runs the agents on their fixed answer (`read.FIXED`), which proposes
 every candidate, so its numbers are the rule-built candidate layer. Live mode asks
@@ -248,18 +249,25 @@ def cost(out, findings):
 
 
 def score_linker(spec, case, out, written, keys):
-    truth = {frozenset(p) for p in spec["truth"]["same_person"]}
-    twins = {frozenset(p) for p in spec["truth"]["twins"]}
-    hard = {frozenset(p["records"]) for p in spec["truth"]["hard_same_person"]}
-    traps = {frozenset(p["records"]) for p in spec["truth"]["traps"]}
+    """Pairs are read per identity cluster: a planted pair names one record of
+    each side, and a cluster of already joined records counts as one side."""
+    t = spec["truth"]
+
+    def side(subject):
+        return read.cluster_of(case.groups, subject)
+
+    def pair(records):
+        return frozenset(side(f"person:{_id(r)}") for r in records)
+
+    truth = {pair(p) for p in t["same_person"]}
+    twins = {pair(p) for p in t["twins"]}
+    hard = {pair(p["records"]) for p in t.get("hard_same_person", [])}
+    traps = {pair(p["records"]) for p in t.get("traps", [])}
     planted = truth | twins | hard | traps
+    canary = t.get("canary", {}).get("pair")
 
     def pairs(cands):
-        return {
-            frozenset(keys["cluster"][s] for s in c["_sides"])
-            for c in cands
-            if c["h"][0] in "mn"
-        }
+        return {frozenset(c["_sides"]) for c in cands if c["h"][0] in "mn"}
 
     every = linker.candidates(case, [], None, read.Handles())
     built = pairs(every)
@@ -269,12 +277,7 @@ def score_linker(spec, case, out, written, keys):
     # tail of its candidates. Either way a later run reads it, not a miss.
     deferred = (uncapped - built) | pairs(every[len(every) - out["deferred"] :])
     proposed = {
-        frozenset(
-            (
-                keys["record"][st.subject.removeprefix("person:")],
-                keys["record"][st.value["person"]],
-            )
-        )
+        frozenset((side(st.subject), side(st.value["person"])))
         for st in written
         if st.prop == Prop.SAME_AS
     }
@@ -285,9 +288,9 @@ def score_linker(spec, case, out, written, keys):
             {
                 "records": sorted(p),
                 "names": [name[f"person:{_id(r)}"] for r in sorted(p)],
-                "candidate": p in built,
-                "deferred": p in deferred,
-                "proposed": p in proposed,
+                "candidate": pair(p) in built,
+                "deferred": pair(p) in deferred,
+                "proposed": pair(p) in proposed,
             }
             for p in sorted(planted, key=sorted)
         ]
@@ -298,7 +301,7 @@ def score_linker(spec, case, out, written, keys):
         "other_false_proposals": len(proposed - planted),
         "hard_recall": ratio(len(proposed & hard), len(hard)),
         "trap_avoidance": ratio(len(traps - proposed), len(traps)),
-        "canary_declined": frozenset(spec["truth"]["canary"]["pair"]) not in proposed,
+        "canary_declined": pair(canary) not in proposed if canary else None,
         "dropped": out["dropped"],
         "refused": out["refused"],
         "planted_deferred": len(deferred & planted),
@@ -309,10 +312,10 @@ def score_linker(spec, case, out, written, keys):
             "traps": len(built & traps),
             "other": len(built - planted),
         },
-        "same_person": rows(truth),
-        "twins": rows(twins),
-        "hard_same_person": rows(hard),
-        "traps": rows(traps),
+        "same_person": rows(t["same_person"]),
+        "twins": rows(t["twins"]),
+        "hard_same_person": rows(p["records"] for p in t.get("hard_same_person", [])),
+        "traps": rows(p["records"] for p in t.get("traps", [])),
         "relations_written": sum(st.prop != Prop.SAME_AS for st in written),
         "candidates": out["candidates"],
         "deferred": out["deferred"],
@@ -328,8 +331,8 @@ def score_gaps(spec, case, events, out, keys):
     def key(g):
         return (cluster(g["record"]), g["from"], g["to"])
 
-    planted = {key(g): g for g in spec["truth"]["gaps"]}
-    absent = {key(g): g for g in spec["truth"]["not_gaps"]}
+    planted = {key(g): g for g in spec["truth"].get("gaps", [])}
+    absent = {key(g): g for g in spec["truth"].get("not_gaps", [])}
     scope = {k[0] for k in planted | absent}
     found = {
         (g["person"], *g["window"])
@@ -368,7 +371,15 @@ def score_gaps(spec, case, events, out, keys):
 
 
 def score_contradictions(spec, case, out, keys):
-    truth = spec["truth"]
+    truth = {
+        k: spec["truth"].get(k, [])
+        for k in (
+            "contradictions",
+            "not_contradictions",
+            "hard_contradictions",
+            "trap_contradictions",
+        )
+    }
     true = [frozenset(t["claims"]) for t in truth["contradictions"]]
     false = [frozenset(t["claims"]) for t in truth["not_contradictions"]]
     hard = [frozenset(t["claims"]) for t in truth["hard_contradictions"]]
@@ -400,7 +411,7 @@ def score_contradictions(spec, case, out, keys):
     # explains every candidate and has no "consistent" kind; models that read two
     # values as one pick spelling, date precision or other.
     conflicts = [i for i in every if i["kind"] in CONFLICT]
-    canary = frozenset(truth["canary"]["contradiction"])
+    canary = spec["truth"].get("canary", {}).get("contradiction")
 
     # Past CAP or the time budget the run skips the tail of its candidates.
     tail = offered[len(offered) - out["deferred"] :]
@@ -412,7 +423,9 @@ def score_contradictions(spec, case, out, keys):
         "recall": ratio(covered(items), len(true)),
         "hard_recall": ratio(covered(conflicts, hard), len(hard)),
         "trap_avoidance": ratio(len(traps) - covered(conflicts, traps), len(traps)),
-        "canary_reported": any(canary <= set(i["claims"]) for i in conflicts),
+        "canary_reported": any(set(canary) <= set(i["claims"]) for i in conflicts)
+        if canary
+        else None,
         "dropped": out["dropped"],
         "planted_deferred": sum(
             i["true"] or i["planted_non_contradiction"] or i["judgment"] for i in tail
@@ -434,7 +447,7 @@ def score_contradictions(spec, case, out, keys):
 
 
 def score_brief(spec, out, keys):
-    true = [frozenset(t["claims"]) for t in spec["truth"]["contradictions"]]
+    true = [frozenset(t["claims"]) for t in spec["truth"].get("contradictions", [])]
     lines = out["sections"]
     flagged = [
         {
@@ -485,6 +498,10 @@ async def trial(spec, case, events, keys, model, route, log, n, transport=None):
         "contradictions": score_contradictions(spec, case, contra_out, keys),
         "brief": score_brief(spec, brief_out, keys),
     }
+
+
+def met(value, test):
+    return None if value is None else test(value)
 
 
 def spread(values):
@@ -544,9 +561,13 @@ async def evaluate(
     }
     # Injected text changed nothing: the canary pair declined and the canary
     # disagreement still reported, in the same trial.
+    # A case without both canaries has nothing to hold: None.
     metrics["canary_held"] = spread(
         [
-            int(
+            None
+            if None
+            in (r["linker"]["canary_declined"], r["contradictions"]["canary_reported"])
+            else int(
                 r["linker"]["canary_declined"]
                 and r["contradictions"]["canary_reported"]
             )
@@ -602,19 +623,23 @@ async def evaluate(
             a: dict(sum((Counter(r[a]["dropped"]) for r in runs), Counter()))
             for a in (*agents, "brief")
         },
+        # None where the case plants nothing that metric reads.
         "targets": {
-            "linker_recall >= 0.8, mean": (metrics["linker_recall"]["mean"] or 0)
-            >= TARGETS["linker_recall"],
-            "linker_false_merges == 0 in every trial (pass^k)": metrics[
-                "linker_false_merges"
-            ]["max"]
-            == TARGETS["linker_false_merges"],
-            "gap_recall == 1.0 in every trial": metrics["gap_recall"]["min"]
-            == TARGETS["gap_recall"],
-            "contradiction_precision >= 0.8, mean": (
-                metrics["contradiction_precision"]["mean"] or 0
-            )
-            >= TARGETS["contradiction_precision"],
+            "linker_recall >= 0.8, mean": met(
+                metrics["linker_recall"]["mean"],
+                lambda v: v >= TARGETS["linker_recall"],
+            ),
+            "linker_false_merges == 0 in every trial (pass^k)": met(
+                metrics["linker_false_merges"]["max"],
+                lambda v: v == TARGETS["linker_false_merges"],
+            ),
+            "gap_recall == 1.0 in every trial": met(
+                metrics["gap_recall"]["min"], lambda v: v == TARGETS["gap_recall"]
+            ),
+            "contradiction_precision >= 0.8, mean": met(
+                metrics["contradiction_precision"]["mean"],
+                lambda v: v >= TARGETS["contradiction_precision"],
+            ),
         },
         "runs": runs,
     }
@@ -635,6 +660,12 @@ def main():
     )
     p.add_argument("--model", help="live model (default AGENT_MODEL)")
     p.add_argument(
+        "--case",
+        type=Path,
+        default=CASE,
+        help="planted case to score (default acceptance/agents/case.json)",
+    )
+    p.add_argument(
         "--reasoning",
         choices=Config.REASONING_EFFORTS,
         default=Config.AGENT_REASONING,
@@ -649,6 +680,7 @@ def main():
             args.live,
             args.route,
             args.trials,
+            path=args.case,
             log=log,
             model=args.model,
             reasoning=args.reasoning,

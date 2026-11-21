@@ -17,6 +17,8 @@ ROUTE_LOCAL_BASE_URL=http://127.0.0.1:11434/v1 AGENT_MODEL=qwen3.5:9b \
 uv run python acceptance/eval_agents.py --live \
   --model anthropic/claude-sonnet-5.5 --reasoning low      # a model that must reason
 uv run python acceptance/make_agent_case.py                # regenerate the case
+uv run python acceptance/eval_agents.py \
+  --case acceptance/cases/four-names/case.json             # a case study (case-studies.md)
 ```
 
 Fixed mode asks the fixed answer (`sealbook-demo-fixed-output`), which proposes
