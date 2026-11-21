@@ -78,6 +78,41 @@ two sources look alike, never that they are the same person or document, so the
 Noticer stores proposals as a report and writes a link statement only when the
 person clicks, through the linker's shapes and the normal review gate.
 
+## Conclusions on a case (2026-11-21)
+
+Cases collected signed claims, links and findings and never said what they showed.
+Investigators do not issue verdicts; courts do. A fact-finding body states a
+conclusion against a stated standard of proof, names the alternatives it set aside
+and says what is not established. So a case gets conclusions written and signed by a
+person, never by the machine alone, and a status: open, concluded, or closed without
+a conclusion with a reason.
+
+Both are ledger statements on `case:<slug>`, not a table. A conclusion is one
+`conclusion` statement; where the case stands is the latest accepted `case_status`.
+That reuses what every other decision already has: the passkey gesture and chain,
+review requests and the signed peer agreement, access records, erasure (a conclusion
+carries the people it is about and the ids it rests on, which erasure matches) and
+package disclosure. Revising supersedes, withdrawing retracts, reopening is one more
+status statement; nothing is overwritten. Only accepted items of the case may be
+cited, and a conclusion whose citation is later retracted, rejected, erased or
+replaced reads as no longer standing and cannot be sealed. Its text is masked by
+its citations, as a brief line is.
+
+The confidence scale is data (`sealbook/method/standards.csv`), weakest first:
+reasonable suspicion, reasonable grounds to believe, balance of probabilities, clear
+and convincing. A conclusion keeps the label it was signed with. The scale and the
+practice of naming alternatives and what is not established follow three sources,
+named, not re-read for this change: OHCHR, Commissions of Inquiry and Fact-Finding
+Missions on International Human Rights and Humanitarian Law: Guidance and Practice
+(2015); the Geneva Academy paper on Standards of Proof in Fact-Finding; and US
+Intelligence Community Directive 203, Analytic Standards (alternatives and
+uncertainty). Reread them before claiming the scale matches any one body's practice.
+
+The conclusion drafter proposes, it never concludes. Rules build the candidates from
+what the case accepted and the claims that do not fit; the model words them, cites
+handles only, and a misfit it leaves out is kept in the rules' words, because arguing
+against a conclusion must not depend on the model's choice.
+
 ## Decisions still open
 
 The model/server choice is approved, implemented and measured on the synthetic
