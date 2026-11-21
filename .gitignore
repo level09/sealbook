@@ -36,3 +36,8 @@ site/dist/
 # Wrangler local cache (account id)
 .wrangler/
 site/.dev.vars
+
+# Film renders and captures (rebuilt by film/capture.py and HyperFrames)
+film/build/
+film/composition/assets/captures/
+film/composition/.hyperframes/

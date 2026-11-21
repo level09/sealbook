@@ -131,3 +131,9 @@ Sending needs sealbook.org onboarded once: `npx wrangler@4 email sending enable 
 cd site && npx wrangler@4 d1 execute sealbook-invites --remote \
   --command "SELECT created_at, email, use_case FROM invite ORDER BY id DESC"
 ```
+
+## Film
+
+`media/case_film.mp4` (with `case_film.jpg` and `case_film.vtt`) is built from the tracked
+sources in `film/`; see `film/README.md` to record and render it again. It has no audio
+stream, and its captions are drawn from the `.vtt` file like the walkthrough's.
