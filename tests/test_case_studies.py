@@ -437,13 +437,14 @@ class SeedCasesTest(Seeding):
         spec = json.loads(path_of("unwritten-name").read_text())
         async with ext.async_session_factory() as s:
             out = await seed_study(s, self.app, path_of("unwritten-name"))
-        self.assertEqual((out["sources"], out["claims"]), (14, 651))
+        self.assertEqual((out["sources"], out["claims"]), (18, 669))
         self.assertEqual(out["gaps proposals"], 2)
         self.assertNotIn("contradictions proposals", out)
         async with ext.async_session_factory() as s:
             self.assertEqual(await verify_db(s), [])
-            # Every sheet cell, quote, box and OCR quote held.
-            self.assertNotIn(Tier.REJECTED, await self.tiers(s))
+            # Every sheet cell, quote, box and OCR quote held: the one rejection
+            # is the shared presence the analyst declines in the discovery act.
+            self.assertEqual((await self.tiers(s)).get(Tier.REJECTED), 1)
             found = await self.run_of(s, "gaps", inv)
             # The driver's 73 days off the logs and the open silence since Dana
             # was last seen (the finder's window starts on the last record).
