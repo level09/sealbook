@@ -36,98 +36,201 @@
       "doc_type": "vendor_list",
       "sensitivity": "ordinary",
       "date": "2023-12-31",
-      "file": "files/vendor_master.csv"
+      "file": "files/vendor_master.csv",
+      "sheet": {
+        "dataset": "Vendor master",
+        "key_column": "Vendor ID",
+        "mapping": {
+          "Vendor ID": "key",
+          "Company": "ignore",
+          "Contact person": "name",
+          "Registered": "ignore",
+          "Payment terms (days)": "ignore"
+        }
+      }
     },
     "ledger": {
       "title": "Purchase ledger 2023",
       "doc_type": "ledger",
       "sensitivity": "ordinary",
       "date": "2023-12-31",
-      "file": "files/purchase_ledger_2023.csv"
+      "file": "files/purchase_ledger_2023.csv",
+      "sheet": {
+        "dataset": "Purchase ledger 2023",
+        "key_column": "PO",
+        "mapping": {
+          "PO": "key",
+          "Date": "ignore",
+          "Vendor": "ignore",
+          "Category": "ignore",
+          "Amount": "ignore",
+          "Approved by": "ignore"
+        }
+      }
     },
     "payments": {
       "title": "Outgoing payments 2023",
       "doc_type": "ledger",
       "sensitivity": "ordinary",
       "date": "2023-12-31",
-      "file": "files/payments_2023.csv"
+      "file": "files/payments_2023.csv",
+      "sheet": {
+        "dataset": "Outgoing payments 2023",
+        "key_column": "Payment",
+        "mapping": {
+          "Payment": "key",
+          "Date": "ignore",
+          "Payee": "ignore",
+          "Amount": "ignore",
+          "Against PO": "ignore"
+        }
+      }
     },
     "vendor_form": {
       "title": "Vendor registration form, Kassar Marine Supply",
       "doc_type": "registration_form",
       "sensitivity": "ordinary",
       "date": "2021-06-14",
-      "file": "files/vendor_form_kassar.jpg"
+      "file": "files/vendor_form_kassar.jpg",
+      "read": true
     },
     "consultants": {
       "title": "Approved consultants register",
       "doc_type": "register",
       "sensitivity": "ordinary",
       "date": "2023-01-15",
-      "file": "files/consultants_register.csv"
+      "file": "files/consultants_register.csv",
+      "sheet": {
+        "dataset": "Approved consultants",
+        "key_column": "Ref",
+        "mapping": {
+          "Ref": "key",
+          "Consultant": "name",
+          "Born": "birth_date",
+          "Field": "ignore",
+          "Day rate": "ignore"
+        }
+      }
     },
     "invoices": {
       "title": "Consultancy invoices 2023",
       "doc_type": "ledger",
       "sensitivity": "ordinary",
       "date": "2023-12-31",
-      "file": "files/consultancy_invoices_2023.csv"
+      "file": "files/consultancy_invoices_2023.csv",
+      "sheet": {
+        "dataset": "Consultancy invoices 2023",
+        "key_column": "Invoice",
+        "mapping": {
+          "Invoice": "key",
+          "Date": "ignore",
+          "Consultant": "ignore",
+          "Days": "ignore",
+          "Amount": "ignore"
+        }
+      }
     },
     "agreement": {
       "title": "Consultancy agreement CA-2023-117",
       "doc_type": "contract",
       "sensitivity": "ordinary",
       "date": "2023-01-30",
-      "file": "files/consultancy_agreement_qassar.jpg"
+      "file": "files/consultancy_agreement_qassar.jpg",
+      "read": true
     },
     "guarantees": {
       "title": "Personal guarantees register, credit desk",
       "doc_type": "register",
       "sensitivity": "ordinary",
       "date": "2023-12-31",
-      "file": "files/guarantees_register.csv"
+      "file": "files/guarantees_register.csv",
+      "sheet": {
+        "dataset": "Personal guarantees",
+        "key_column": "Ref",
+        "mapping": {
+          "Ref": "key",
+          "Guarantor": "name",
+          "Father": "father_name",
+          "Born": "birth_date",
+          "Guarantee": "ignore",
+          "Secures": "ignore"
+        }
+      }
     },
     "guarantee_deed": {
       "title": "Personal guarantee G-0422",
       "doc_type": "guarantee",
       "sensitivity": "ordinary",
       "date": "2023-03-09",
-      "file": "files/guarantee_deed_khassar.jpg"
+      "file": "files/guarantee_deed_khassar.jpg",
+      "read": true
     },
     "passport": {
       "title": "Passport copy attached to guarantee G-0422",
       "doc_type": "id_document",
       "sensitivity": "sensitive",
       "date": "2023-03-09",
-      "file": "files/passport_copy.jpg"
+      "file": "files/passport_copy.jpg",
+      "read": true
     },
     "agents": {
       "title": "Licensed ship agents, Port Ondrel, 2023",
       "doc_type": "register",
       "sensitivity": "ordinary",
       "date": "2023-12-31",
-      "file": "files/ship_agents_2023.csv"
+      "file": "files/ship_agents_2023.csv",
+      "sheet": {
+        "dataset": "Licensed ship agents",
+        "key_column": "Ref",
+        "mapping": {
+          "Ref": "key",
+          "Agent": "name",
+          "Licence": "ignore",
+          "Licensed since": "ignore"
+        }
+      }
     },
     "licence": {
       "title": "Ship agent licence PA-2291",
       "doc_type": "licence",
       "sensitivity": "ordinary",
       "date": "2023-01-05",
-      "file": "files/ship_agent_licence.jpg"
+      "file": "files/ship_agent_licence.jpg",
+      "read": true
     },
     "crew": {
       "title": "Crew list, MV Ondrel Star, May 2023",
       "doc_type": "crew_list",
       "sensitivity": "ordinary",
       "date": "2023-05-02",
-      "file": "files/crew_list_ondrel_star.csv"
+      "file": "files/crew_list_ondrel_star.csv",
+      "sheet": {
+        "dataset": "Crew list, MV Ondrel Star",
+        "key_column": "Ref",
+        "mapping": {
+          "Ref": "key",
+          "Name": "name",
+          "Rank": "ignore",
+          "Born": "birth_date"
+        }
+      }
     },
     "surveyors": {
       "title": "Marine surveyors register",
       "doc_type": "register",
       "sensitivity": "ordinary",
       "date": "2023-09-30",
-      "file": "files/marine_surveyors_register.csv"
+      "file": "files/marine_surveyors_register.csv",
+      "sheet": {
+        "dataset": "Marine surveyors",
+        "key_column": "Ref",
+        "mapping": {
+          "Ref": "key",
+          "Surveyor": "name",
+          "Born": "birth_date",
+          "Place of birth": "place_of_birth"
+        }
+      }
     }
   },
   "records": {
@@ -7587,5 +7690,295 @@
       "Whether anyone at the four desks knew."
     ],
     "peer_review": true
-  }
+  },
+  "acts": [
+    {
+      "title": "Procurement's files",
+      "day": "2024-06-03",
+      "story": "Procurement sends its vendor master, the purchase ledger, the payments and the registration form of Kassar Marine Supply. A person maps each sheet's columns, the app writes one person per named row, and it reads the scanned form.",
+      "shows": [
+        "sheet matching",
+        "reading"
+      ],
+      "sources": [
+        "vendors",
+        "ledger",
+        "payments",
+        "vendor_form"
+      ],
+      "steps": [
+        "sheets",
+        "read",
+        "places",
+        {
+          "do": "join",
+          "records": [
+            "vendors/V031",
+            "vendor_form/owner"
+          ],
+          "why": "joined earlier by this desk, which held both records"
+        }
+      ],
+      "see": [
+        "/evidence/{source:vendors}",
+        "/evidence/{source:vendor_form}"
+      ]
+    },
+    {
+      "title": "Finance's files",
+      "day": "2024-06-05",
+      "story": "Finance sends its approved consultants, a year of consultancy invoices and the agreement with A. Qassar, mapped and read the same way.",
+      "shows": [
+        "sheet matching",
+        "reading"
+      ],
+      "sources": [
+        "consultants",
+        "invoices",
+        "agreement"
+      ],
+      "steps": [
+        "sheets",
+        "read",
+        "places",
+        {
+          "do": "join",
+          "records": [
+            "consultants/C014",
+            "agreement/consultant"
+          ],
+          "why": "joined earlier by this desk, which held both records"
+        }
+      ],
+      "see": [
+        "/evidence/{source:consultants}",
+        "/evidence/{source:agreement}"
+      ]
+    },
+    {
+      "title": "The credit desk's files",
+      "day": "2024-06-07",
+      "story": "The credit desk sends its guarantees register, guarantee G-0422 signed by Adrian Khassar and the passport copy attached to it. The intake brief reads the two papers that came together.",
+      "shows": [
+        "sheet matching",
+        "reading"
+      ],
+      "sources": [
+        "guarantees",
+        "guarantee_deed",
+        "passport"
+      ],
+      "steps": [
+        "sheets",
+        "read",
+        {
+          "do": "recognise",
+          "record": "passport/holder",
+          "as": "KASSAR / ADRIAN"
+        },
+        "places",
+        {
+          "do": "join",
+          "records": [
+            "guarantees/G022",
+            "guarantee_deed/guarantor",
+            "passport/holder"
+          ],
+          "why": "joined earlier by this desk, which held both records"
+        },
+        "brief"
+      ],
+      "see": [
+        "/evidence/{source:guarantees}",
+        "/evidence/{source:guarantee_deed}"
+      ]
+    },
+    {
+      "title": "The port's lists",
+      "day": "2024-06-10",
+      "story": "The port sends its licensed ship agents and licence PA-2291, written in Arabic, with two more lists: a ship's crew and the marine surveyors.",
+      "shows": [
+        "sheet matching",
+        "reading"
+      ],
+      "sources": [
+        "agents",
+        "licence",
+        "crew",
+        "surveyors"
+      ],
+      "steps": [
+        "sheets",
+        "read",
+        "places",
+        {
+          "do": "join",
+          "records": [
+            "agents/A027",
+            "licence/holder"
+          ],
+          "why": "joined earlier by this desk, which held both records"
+        }
+      ],
+      "see": [
+        "/evidence/{source:agents}",
+        "/evidence/{source:licence}"
+      ]
+    },
+    {
+      "title": "One name in two alphabets",
+      "day": "2024-06-11",
+      "story": "A search for the supplier's name finds his rows and papers; the same search in Arabic script finds the ship agent's licence.",
+      "shows": [
+        "search"
+      ],
+      "sources": [],
+      "steps": [],
+      "see": [
+        "/search?q=Kassar",
+        "/search?q=قصار"
+      ]
+    },
+    {
+      "title": "The linker proposes",
+      "day": "2024-06-12",
+      "story": "The linker compares every record that shares a name across the desks, by birth date, father and place of birth, with no model. It proposes links between the desks and one with the marine surveyor. Nothing is joined until a person decides.",
+      "shows": [
+        "same person"
+      ],
+      "sources": [],
+      "steps": [
+        {
+          "do": "agent",
+          "agent": "linker"
+        }
+      ],
+      "see": [
+        "/people/{person:vendor_form/owner}",
+        "/review?box=open"
+      ]
+    },
+    {
+      "title": "A person decides",
+      "day": "2024-06-13",
+      "story": "The analyst accepts the links between the desks and declines the surveyor, with her reason: another birth date and another town.",
+      "shows": [
+        "same person"
+      ],
+      "sources": [],
+      "steps": [
+        {
+          "do": "links",
+          "why": "same name in another spelling, same birth"
+        },
+        {
+          "do": "decline",
+          "why": "Not the same man. The surveyors register gives Adrian Kasar 19 August 1974 and Torvane; the consultant's papers give only the year 1974, and the other desks give 2 March 1974 and Velmora. A shared name and birth year are not enough."
+        }
+      ],
+      "see": [
+        "/people/{person:vendor_form/owner}",
+        "/people/{person:surveyors/S009}"
+      ]
+    },
+    {
+      "title": "The conclusion",
+      "day": "2024-06-14",
+      "story": "The analyst writes what the case shows, on the accepted links, with the surveyor set aside and what is not established, and signs it; a reviewer agrees.",
+      "shows": [
+        "conclusion",
+        "peer review"
+      ],
+      "sources": [],
+      "steps": [
+        "conclusion"
+      ],
+      "see": [
+        "/cases/overview"
+      ]
+    },
+    {
+      "title": "The sealed package",
+      "day": "2024-06-17",
+      "story": "The analyst writes a brief that opens with the conclusion and cites the claims she accepted on the papers. The rows are anchored, the package is built and signed, both analysts attest it, and the offline checker verifies it with no database.",
+      "shows": [
+        "package"
+      ],
+      "sources": [],
+      "steps": [
+        {
+          "do": "accept",
+          "claims": [
+            "vendor_form/owner.name",
+            "vendor_form/owner.father_name",
+            "vendor_form/owner.birth_date",
+            "vendor_form/owner.place_of_birth",
+            "agreement/consultant.name",
+            "agreement/consultant.birth_date",
+            "agreement/consultant.place_of_birth",
+            "guarantee_deed/guarantor.name",
+            "guarantee_deed/guarantor.father_name",
+            "guarantee_deed/guarantor.birth_date",
+            "licence/holder.name",
+            "licence/holder.birth_date",
+            "surveyors/S009.name",
+            "surveyors/S009.birth_date",
+            "surveyors/S009.place_of_birth"
+          ],
+          "why": "read on the paper itself"
+        },
+        {
+          "do": "package",
+          "title": "One man, four names",
+          "audience": "court",
+          "sentences": [
+            {
+              "text": "The vendor registration form for Kassar Marine Supply names its owner Adrian Kassar, son of Elias, born on 2 March 1974 in Velmora.",
+              "cite": [
+                "vendor_form/owner.name",
+                "vendor_form/owner.father_name",
+                "vendor_form/owner.birth_date",
+                "vendor_form/owner.place_of_birth"
+              ]
+            },
+            {
+              "text": "Consultancy agreement CA-2023-117 names the consultant A. Qassar, born in 1974 in Velmora.",
+              "cite": [
+                "agreement/consultant.name",
+                "agreement/consultant.birth_date",
+                "agreement/consultant.place_of_birth"
+              ]
+            },
+            {
+              "text": "Personal guarantee G-0422 names the guarantor Adrian Khassar, son of Elias, born on 2 March 1974.",
+              "cite": [
+                "guarantee_deed/guarantor.name",
+                "guarantee_deed/guarantor.father_name",
+                "guarantee_deed/guarantor.birth_date"
+              ]
+            },
+            {
+              "text": "Ship agent licence PA-2291 names أدريان قصار, born on 2 March 1974.",
+              "cite": [
+                "licence/holder.name",
+                "licence/holder.birth_date"
+              ]
+            },
+            {
+              "text": "The marine surveyors register lists a different Adrian Kasar, born on 19 August 1974 in Torvane.",
+              "cite": [
+                "surveyors/S009.name",
+                "surveyors/S009.birth_date",
+                "surveyors/S009.place_of_birth"
+              ]
+            }
+          ],
+          "save": "instance/packages/case-four-names.zip"
+        }
+      ],
+      "see": [
+        "/packages"
+      ]
+    }
+  ]
 }

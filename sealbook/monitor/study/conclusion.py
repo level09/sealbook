@@ -50,6 +50,7 @@ async def conclusion(st, act, args) -> None:
         # A second Seeder: each holds the passkey of the analyst it made.
         other = Seeder(st.session)
         reviewer = await colleague(other, st.inv, *REVIEWER)
+        st.others["reviewer"] = (other, reviewer)  # a later act may need his passkey
         await conclusions.seed_peer_review(
             st.session, rows[0], st.analyst.id, reviewer.id, other.assertion
         )

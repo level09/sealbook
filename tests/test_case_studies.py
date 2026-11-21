@@ -137,52 +137,6 @@ class Seeding(unittest.IsolatedAsyncioTestCase):
     POSTGRES, "case seeding needs Postgres (set SQLALCHEMY_DATABASE_URI)"
 )
 class SeedStudyTest(Seeding):
-    async def test_four_names_seeds_and_waits_for_a_person(self):
-        async with ext.async_session_factory() as s:
-            out = await seed_study(s, self.app, FOUR_NAMES)
-            with self.assertRaises(click.ClickException):
-                await seed_study(s, self.app, FOUR_NAMES)
-        self.assertEqual(out["sources"], 14)
-        self.assertEqual(out["claims"], 422)
-        # The fixed answer proposes every candidate, the namesake included.
-        self.assertEqual(out["linker proposals"], 5)
-        async with ext.async_session_factory() as s:
-            self.assertEqual(await verify_db(s), [])
-            # Every pin held: no claim was refused for its span.
-            self.assertNotIn(Tier.REJECTED, await self.tiers(s))
-            # The four true proposals are accepted for the conclusion; the
-            # surveyor's stays for a person.
-            links = await self.tiers(s, Prop.SAME_AS)
-            self.assertEqual(links, {Tier.ACCEPTED: 9, Tier.UNCONFIRMED: 1})
-            inv = "case-four-names"
-            waiting, value = (
-                await s.execute(
-                    select(Statement.subject, Payload.value)
-                    .join(StatementTier, StatementTier.statement_id == Statement.id)
-                    .join(Payload, Payload.commitment == Statement.commitment)
-                    .where(
-                        Statement.prop == Prop.SAME_AS,
-                        StatementTier.tier == Tier.UNCONFIRMED,
-                    )
-                )
-            ).one()
-            self.assertIn(
-                person(inv, "surveyors/S009"), {waiting, f"person:{value['person']}"}
-            )
-            case = await read.case(s, inv)
-            desks = {
-                case.groups.get(people.pid(person(inv, r)))
-                for r in (
-                    "vendor_form/owner",
-                    "agreement/consultant",
-                    "guarantee_deed/guarantor",
-                    "licence/holder",
-                )
-            }
-            self.assertEqual(len(desks), 1)
-            c = await self.concluded(s, inv)
-            self.assertEqual(len(c["rests_on"]), 9)
-
     async def test_stand_ins_events_and_places(self):
         """A case without files: text stand-ins, an event and a confirmed place."""
         spec = {

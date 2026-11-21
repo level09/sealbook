@@ -7,6 +7,7 @@ sits on its scan).
 
   uv run python acceptance/cases/four-names/make.py            # sheets and case.json
   uv run python acceptance/cases/four-names/make.py --scans    # also the five scans
+  uv run python acceptance/cases/four-names/make.py --record   # read the scans live
 """
 
 import csv
@@ -719,6 +720,242 @@ CONCLUSION = {
 }
 
 
+# How a person maps each sheet's columns at intake (sealbook.sheets): the key, the
+# columns the case reads, and every other column marked Do not read. The three
+# ledgers name companies and payments, not people: they become dataset versions
+# with every column but the key marked Do not read, so no row is read.
+SHEETS = {
+    "vendors": ("Vendor master", "Vendor ID", {"Contact person": "name"}),
+    "ledger": ("Purchase ledger 2023", "PO", {}),
+    "payments": ("Outgoing payments 2023", "Payment", {}),
+    "consultants": (
+        "Approved consultants",
+        "Ref",
+        {"Consultant": "name", "Born": "birth_date"},
+    ),
+    "invoices": ("Consultancy invoices 2023", "Invoice", {}),
+    "guarantees": (
+        "Personal guarantees",
+        "Ref",
+        {"Guarantor": "name", "Father": "father_name", "Born": "birth_date"},
+    ),
+    "agents": ("Licensed ship agents", "Ref", {"Agent": "name"}),
+    "crew": (
+        "Crew list, MV Ondrel Star",
+        "Ref",
+        {"Name": "name", "Born": "birth_date"},
+    ),
+    "surveyors": (
+        "Marine surveyors",
+        "Ref",
+        {"Surveyor": "name", "Born": "birth_date", "Place of birth": "place_of_birth"},
+    ),
+}
+
+
+def sheet_plan(key):
+    dataset, key_column, read = SHEETS[key]
+    header = (FILES / SOURCES[key][4]).read_text().splitlines()[0].split(",")
+    mapping = {h: "key" if h == key_column else read.get(h, "ignore") for h in header}
+    return {"dataset": dataset, "key_column": key_column, "mapping": mapping}
+
+
+DESK_JOIN = "joined earlier by this desk, which held both records"
+# The surveyor against the man's papers, in the analyst's words.
+DECLINE = (
+    "Not the same man. The surveyors register gives Adrian Kasar 19 August 1974 "
+    "and Torvane; the consultant's papers give only the year 1974, and the other "
+    "desks give 2 March 1974 and Velmora. A shared name and birth year are not "
+    "enough."
+)
+# What the brief says, each sentence on claims the analyst accepted.
+BRIEF = [
+    (
+        "The vendor registration form for Kassar Marine Supply names its owner "
+        "Adrian Kassar, son of Elias, born on 2 March 1974 in Velmora.",
+        [
+            "vendor_form/owner.name",
+            "vendor_form/owner.father_name",
+            "vendor_form/owner.birth_date",
+            "vendor_form/owner.place_of_birth",
+        ],
+    ),
+    (
+        "Consultancy agreement CA-2023-117 names the consultant A. Qassar, born in "
+        "1974 in Velmora.",
+        [
+            "agreement/consultant.name",
+            "agreement/consultant.birth_date",
+            "agreement/consultant.place_of_birth",
+        ],
+    ),
+    (
+        "Personal guarantee G-0422 names the guarantor Adrian Khassar, son of "
+        "Elias, born on 2 March 1974.",
+        [
+            "guarantee_deed/guarantor.name",
+            "guarantee_deed/guarantor.father_name",
+            "guarantee_deed/guarantor.birth_date",
+        ],
+    ),
+    (
+        "Ship agent licence PA-2291 names أدريان قصار, born on 2 March 1974.",
+        ["licence/holder.name", "licence/holder.birth_date"],
+    ),
+    (
+        "The marine surveyors register lists a different Adrian Kasar, born on "
+        "19 August 1974 in Torvane.",
+        [
+            "surveyors/S009.name",
+            "surveyors/S009.birth_date",
+            "surveyors/S009.place_of_birth",
+        ],
+    ),
+]
+PACKAGE = "instance/packages/case-four-names.zip"
+# Extraction writes the passport holder as the page prints him, surname first.
+PASSPORT = {"do": "recognise", "record": "passport/holder", "as": "KASSAR / ADRIAN"}
+
+
+def desk(title, day, story, sources, join, before=(), after=()):
+    """One desk's files arriving: sheets mapped, scans read, the desk's own join."""
+    scan = next(k for k in sources if k in SCANS)
+    return {
+        "title": title,
+        "day": day,
+        "story": story,
+        "shows": ["sheet matching", "reading"],
+        "sources": sources,
+        "steps": [
+            "sheets",
+            "read",
+            *before,
+            "places",
+            {"do": "join", "records": join, "why": DESK_JOIN},
+            *after,
+        ],
+        "see": [f"/evidence/{{source:{sources[0]}}}", f"/evidence/{{source:{scan}}}"],
+    }
+
+
+def acts():
+    """The investigation in nine acts. Each desk's files arrive in turn: the sheets
+    through column mapping, the scans read by the app. Act 6 ends with the linker's
+    proposals open, so a person (or the film) can decide them."""
+    return [
+        desk(
+            "Procurement's files",
+            "2024-06-03",
+            "Procurement sends its vendor master, the purchase ledger, the payments "
+            "and the registration form of Kassar Marine Supply. A person maps each "
+            "sheet's columns, the app writes one person per named row, and it reads the scanned form.",
+            ["vendors", "ledger", "payments", "vendor_form"],
+            ["vendors/V031", "vendor_form/owner"],
+        ),
+        desk(
+            "Finance's files",
+            "2024-06-05",
+            "Finance sends its approved consultants, a year of consultancy invoices "
+            "and the agreement with A. Qassar, mapped and read the same way.",
+            ["consultants", "invoices", "agreement"],
+            ["consultants/C014", "agreement/consultant"],
+        ),
+        desk(
+            "The credit desk's files",
+            "2024-06-07",
+            "The credit desk sends its guarantees register, guarantee G-0422 signed "
+            "by Adrian Khassar and the passport copy attached to it. The intake "
+            "brief reads the two papers that came together.",
+            ["guarantees", "guarantee_deed", "passport"],
+            ["guarantees/G022", "guarantee_deed/guarantor", "passport/holder"],
+            [PASSPORT],
+            ["brief"],
+        ),
+        desk(
+            "The port's lists",
+            "2024-06-10",
+            "The port sends its licensed ship agents and licence PA-2291, written in "
+            "Arabic, with two more lists: a ship's crew and the marine surveyors.",
+            ["agents", "licence", "crew", "surveyors"],
+            ["agents/A027", "licence/holder"],
+        ),
+        {
+            "title": "One name in two alphabets",
+            "day": "2024-06-11",
+            "story": "A search for the supplier's name finds his rows and papers; "
+            "the same search in Arabic script finds the ship agent's licence.",
+            "shows": ["search"],
+            "sources": [],
+            "steps": [],
+            "see": ["/search?q=Kassar", "/search?q=قصار"],
+        },
+        {
+            "title": "The linker proposes",
+            "day": "2024-06-12",
+            "story": "The linker compares every record that shares a name across "
+            "the desks, by birth date, father and place of birth, with no model. "
+            "It proposes links between the desks and one with the marine surveyor. "
+            "Nothing is joined until a person decides.",
+            "shows": ["same person"],
+            "sources": [],
+            "steps": [{"do": "agent", "agent": "linker"}],
+            "see": ["/people/{person:vendor_form/owner}", "/review?box=open"],
+        },
+        {
+            "title": "A person decides",
+            "day": "2024-06-13",
+            "story": "The analyst accepts the links between the desks and declines "
+            "the surveyor, with her reason: another birth date and another town.",
+            "shows": ["same person"],
+            "sources": [],
+            "steps": [
+                {"do": "links", "why": "same name in another spelling, same birth"},
+                {"do": "decline", "why": DECLINE},
+            ],
+            "see": [
+                "/people/{person:vendor_form/owner}",
+                "/people/{person:surveyors/S009}",
+            ],
+        },
+        {
+            "title": "The conclusion",
+            "day": "2024-06-14",
+            "story": "The analyst writes what the case shows, on the accepted "
+            "links, with the surveyor set aside and what is not established, and "
+            "signs it; a reviewer agrees.",
+            "shows": ["conclusion", "peer review"],
+            "sources": [],
+            "steps": ["conclusion"],
+            "see": ["/cases/overview"],
+        },
+        {
+            "title": "The sealed package",
+            "day": "2024-06-17",
+            "story": "The analyst writes a brief that opens with the conclusion and "
+            "cites the claims she accepted on the papers. The rows are anchored, the "
+            "package is built and signed, both analysts attest it, and the offline "
+            "checker verifies it with no database.",
+            "shows": ["package"],
+            "sources": [],
+            "steps": [
+                {
+                    "do": "accept",
+                    "claims": [k for _, keys in BRIEF for k in keys],
+                    "why": "read on the paper itself",
+                },
+                {
+                    "do": "package",
+                    "title": "One man, four names",
+                    "audience": "court",
+                    "sentences": [{"text": t, "cite": k} for t, k in BRIEF],
+                    "save": PACKAGE,
+                },
+            ],
+            "see": ["/packages"],
+        },
+    ]
+
+
 def truth():
     same = [sorted(p) for p in combinations(FACE.values(), 2)]
     twins = [sorted((n, r)) for n in (N1, N2) for r in FACE.values()]
@@ -787,6 +1024,7 @@ def main():
         "sources": {
             k: {"title": t, "doc_type": d, "sensitivity": s, "date": dt}
             | {"file": f"files/{f}"}
+            | ({"read": True} if k in SCANS else {"sheet": sheet_plan(k)})
             for k, (t, d, s, dt, f) in SOURCES.items()
         },
         "records": {k: {"source": s, "person": p} for k, (s, p) in RECORDS.items()},
@@ -795,11 +1033,52 @@ def main():
         "batch": ["guarantee_deed", "passport"],
         "truth": truth(),
         "conclusion": CONCLUSION,
+        "acts": acts(),
     }
     (HERE / "case.json").write_text(
         json.dumps(case, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
 
 
+READ_ACTS = 4  # the scans all arrive by act 4; later acts call no model
+
+
+def record():
+    """Read the five scans once on the live routes, in a throwaway database, and
+    write recordings.json: OCR, extraction and the first pass per scan on
+    cloud-zdr, about 15 chat calls. The sheets are answered from the case file and
+    call nothing. Needs OPENROUTER_API_KEY."""
+    import os
+    import secrets
+    import subprocess
+    import tempfile
+
+    from alembic import command
+    from sqlalchemy.engine import make_url
+    from stk.migrations import build_alembic_config, throwaway_database_url
+
+    from sealbook.settings import Config
+
+    with (
+        throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True) as url,
+        tempfile.TemporaryDirectory() as blob_dir,
+    ):
+        command.upgrade(build_alembic_config("sealbook", url, quiet=True), "heads")
+        env = os.environ | {
+            "SQLALCHEMY_DATABASE_URI": make_url(url)
+            .set(drivername="postgresql+asyncpg")
+            .render_as_string(hide_password=False),
+            "BLOB_DIR": blob_dir,
+        }
+        stk = ["uv", "run", "stk"]
+        password = secrets.token_hex(16) + "Aa1!"
+        install = [*stk, "install", "-e", "owner@example.com", "-p", password]
+        subprocess.run(install, env=env, check=True)
+        seed = [*stk, "demo-seed", "--case", HERE.name, "--record"]
+        subprocess.run([*seed, "--until", str(READ_ACTS)], env=env, check=True)
+
+
 if __name__ == "__main__":
     main()
+    if "--record" in sys.argv:
+        record()
