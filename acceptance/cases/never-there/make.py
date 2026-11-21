@@ -78,17 +78,27 @@ RECORDS: dict = {}
 CLAIMS: list = []
 
 
-def source(key, title, doc_type, date, text, sensitivity="ordinary", file=None):
-    SOURCES[key] = {
-        "title": title,
-        "doc_type": doc_type,
-        "sensitivity": sensitivity,
-        "date": date,
-        "text": text,
-    } | ({"file": file} if file else {})
+def source(
+    key, title, doc_type, date, text, sensitivity="ordinary", file=None, transcript=None
+):
+    SOURCES[key] = (
+        {
+            "title": title,
+            "doc_type": doc_type,
+            "sensitivity": sensitivity,
+            "date": date,
+            "text": text,
+        }
+        | ({"file": file} if file else {})
+        | ({"transcript": transcript} if transcript else {})
+    )
 
 
-def claim(key, record, prop, value, start=None, end=None, place=None, tier=None):
+def claim(
+    key, record, prop, value, start=None, end=None, place=None, tier=None, after=None
+):
+    """`after`: text the quote follows, when the value first appears about
+    someone or somewhere else."""
     CLAIMS.append(
         {
             "key": key,
@@ -100,6 +110,7 @@ def claim(key, record, prop, value, start=None, end=None, place=None, tier=None)
             "place": place,
             "tier": tier or "unconfirmed",
         }
+        | ({"pin": {"text": value, "after": after}} if after else {})
     )
 
 
@@ -160,7 +171,15 @@ claim("jo_stmt.name", "jo_stmt", "name", "Jo Quill")
 claim("jo_stmt.born", "jo_stmt", "birth_date", "1978")
 claim("jo_stmt.at", "jo_stmt", "seen_at", "Brindle Cross", DAY, place="brindle")
 claim("mara_jo.name", "mara_jo", "name", "Mara Quill")
-claim("mara_jo.at", "mara_jo", "seen_at", "Brindle Cross", DAY, place="brindle")
+claim(
+    "mara_jo.at",
+    "mara_jo",
+    "seen_at",
+    "Brindle Cross",
+    DAY,
+    place="brindle",
+    after="My sister Mara Quill",
+)
 
 # Her phone: the exhibit sheets the hunter reads, and the media they describe.
 source(
@@ -224,6 +243,7 @@ source(
     DAY,
     None,
     file="voice_note.ogg",
+    transcript="voice_note.json",
 )
 
 # Jo at the market that morning: two places on one day that both hold.
@@ -239,7 +259,15 @@ source(
 )
 record("jo_market", "market_log", "jo")
 claim("jo_market.name", "jo_market", "name", "Jo Quill")
-claim("jo_market.at", "jo_market", "seen_at", "Larkhaven market", DAY, place="market")
+claim(
+    "jo_market.at",
+    "jo_market",
+    "seen_at",
+    "Larkhaven market",
+    DAY,
+    place="market",
+    after="to Jo Quill",
+)
 
 # The night watchman: one place in two spellings, and a birth year that disagrees.
 source(
@@ -280,7 +308,15 @@ claim("ivo_stmt.name", "ivo_stmt", "name", "Ivo Brandt")
 claim("ivo_stmt.born", "ivo_stmt", "birth_date", "1958")
 claim("ivo_stmt.at", "ivo_stmt", "seen_at", "Tanner's Row", DAY, place="tanners_row")
 claim("ivo_patrol.name", "ivo_patrol", "name", "Ivo Brandt")
-claim("ivo_patrol.at", "ivo_patrol", "seen_at", "Tanners Row", DAY, place="tanners_row")
+claim(
+    "ivo_patrol.at",
+    "ivo_patrol",
+    "seen_at",
+    "Tanners Row",
+    DAY,
+    place="tanners_row",
+    after="Ivo Brandt was on",
+)
 claim("ivo_staff.name", "ivo_staff", "name", "Ivo Brandt")
 claim("ivo_staff.born", "ivo_staff", "birth_date", "1965-02-11")
 claim("sana_staff.name", "sana_staff", "name", "Sana Whitlock")
@@ -480,6 +516,7 @@ claim(
     "the Crown and Anchor",
     DAY,
     place="crown",
+    after="Dale Corrin drank at",
 )
 claim(
     "dale_nell.last_seen",
@@ -488,6 +525,7 @@ claim(
     "the Crown and Anchor",
     "2026-03-15",
     place="crown",
+    after="He was last seen at",
 )
 claim("dale_custody.name", "dale_custody", "name", "Dale Corrin")
 claim(
@@ -501,7 +539,13 @@ claim(
 claim("nell_stmt.name", "nell_stmt", "name", "Nell Achebe")
 claim("nell_stmt.born", "nell_stmt", "birth_date", "1985")
 claim(
-    "nell_stmt.at", "nell_stmt", "seen_at", "the Crown and Anchor", DAY, place="crown"
+    "nell_stmt.at",
+    "nell_stmt",
+    "seen_at",
+    "the Crown and Anchor",
+    DAY,
+    place="crown",
+    after="behind the bar at",
 )
 
 source(

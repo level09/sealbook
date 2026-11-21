@@ -115,7 +115,8 @@
       "sensitivity": "ordinary",
       "date": "2026-03-14",
       "text": null,
-      "file": "voice_note.ogg"
+      "file": "voice_note.ogg",
+      "transcript": "voice_note.json"
     },
     "market_log": {
       "title": "Larkhaven market stall 12 takings book, morning of 14 March 2026",
@@ -792,7 +793,11 @@
       "from": "2026-03-14",
       "to": "2026-03-14",
       "place": "brindle",
-      "tier": "unconfirmed"
+      "tier": "unconfirmed",
+      "pin": {
+        "text": "Brindle Cross",
+        "after": "My sister Mara Quill"
+      }
     },
     {
       "key": "mara_mq3.name",
@@ -852,7 +857,11 @@
       "from": "2026-03-14",
       "to": "2026-03-14",
       "place": "market",
-      "tier": "unconfirmed"
+      "tier": "unconfirmed",
+      "pin": {
+        "text": "Larkhaven market",
+        "after": "to Jo Quill"
+      }
     },
     {
       "key": "ivo_stmt.name",
@@ -902,7 +911,11 @@
       "from": "2026-03-14",
       "to": "2026-03-14",
       "place": "tanners_row",
-      "tier": "unconfirmed"
+      "tier": "unconfirmed",
+      "pin": {
+        "text": "Tanners Row",
+        "after": "Ivo Brandt was on"
+      }
     },
     {
       "key": "ivo_staff.name",
@@ -1232,7 +1245,11 @@
       "from": "2026-03-14",
       "to": "2026-03-14",
       "place": "crown",
-      "tier": "unconfirmed"
+      "tier": "unconfirmed",
+      "pin": {
+        "text": "the Crown and Anchor",
+        "after": "Dale Corrin drank at"
+      }
     },
     {
       "key": "dale_nell.last_seen",
@@ -1242,7 +1259,11 @@
       "from": "2026-03-15",
       "to": "2026-03-15",
       "place": "crown",
-      "tier": "unconfirmed"
+      "tier": "unconfirmed",
+      "pin": {
+        "text": "the Crown and Anchor",
+        "after": "He was last seen at"
+      }
     },
     {
       "key": "dale_custody.name",
@@ -1292,7 +1313,11 @@
       "from": "2026-03-14",
       "to": "2026-03-14",
       "place": "crown",
-      "tier": "unconfirmed"
+      "tier": "unconfirmed",
+      "pin": {
+        "text": "the Crown and Anchor",
+        "after": "behind the bar at"
+      }
     },
     {
       "key": "amara_stmt.name",

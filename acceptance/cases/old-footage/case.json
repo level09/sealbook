@@ -25,163 +25,243 @@
  },
  "sources": {
   "original": {
-   "title": "Video posted by Ostra Valley Weather",
+   "title": "Video posted by Ostra Valley Weather on 3 June 2024",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2024-06-03",
    "file": "original.mp4",
    "account": "Ostra Valley Weather",
    "caption": "The Ostra at the Mill Bridge in Lindmark this afternoon. Water still rising.",
+   "post": {
+    "title": "Post by Ostra Valley Weather on 3 June 2024",
+    "doc_type": "social_post",
+    "text": "Ostra Valley Weather\nPosted 3 June 2024\n\nThe Ostra at the Mill Bridge in Lindmark this afternoon. Water still rising.\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "9ef6d93a7a1479ebd898183cb5b452b0b94ddb1d7aa57a2bd243ab8d2dd9c857"
   },
   "flood_promenade": {
-   "title": "Video posted by Harbour Street Cam",
+   "title": "Video posted by Harbour Street Cam on 2 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-02",
    "file": "flood_promenade.mp4",
    "account": "Harbour Street Cam",
    "caption": "Promenade under water by the old castle, Lindmark.",
+   "post": {
+    "title": "Post by Harbour Street Cam on 2 June 2026",
+    "doc_type": "social_post",
+    "text": "Harbour Street Cam\nPosted 2 June 2026\n\nPromenade under water by the old castle, Lindmark.\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "e88fbd56062b73a09c6ebb125356a37f13faba0238cc5d279331b838ba80bf65"
   },
   "flood_footbridge": {
-   "title": "Video posted by Kerrow Farm",
+   "title": "Video posted by Kerrow Farm on 2 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-02",
    "file": "flood_footbridge.mp4",
    "account": "Kerrow Farm",
    "caption": "Our footbridge is gone. The Ostra is higher than we have ever seen it.",
+   "post": {
+    "title": "Post by Kerrow Farm on 2 June 2026",
+    "doc_type": "social_post",
+    "text": "Kerrow Farm\nPosted 2 June 2026\n\nOur footbridge is gone. The Ostra is higher than we have ever seen it.\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "77c738824f6592eec01c14f828f998f4ec7644721b9483e662d34b6e42e4c55c"
   },
   "flood_garden": {
-   "title": "Video posted by N. Ashby",
+   "title": "Video posted by N. Ashby on 1 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-01",
    "file": "flood_garden.mp4",
    "account": "N. Ashby",
    "caption": "The brook at the bottom of the garden this morning, Lower Lindmark.",
+   "post": {
+    "title": "Post by N. Ashby on 1 June 2026",
+    "doc_type": "social_post",
+    "text": "N. Ashby\nPosted 1 June 2026\n\nThe brook at the bottom of the garden this morning, Lower Lindmark.\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "d15b10921b71fccf62a6f04df400b92822166036e8905c2a9ccf1e74b70c9f03"
   },
   "flood_arches": {
-   "title": "Video posted by Ostra Anglers",
+   "title": "Video posted by Ostra Anglers on 2 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-02",
    "file": "flood_arches.mp4",
    "account": "Ostra Anglers",
    "caption": "The arches at Pell Weir. Brown water right up to the stone.",
+   "post": {
+    "title": "Post by Ostra Anglers on 2 June 2026",
+    "doc_type": "social_post",
+    "text": "Ostra Anglers\nPosted 2 June 2026\n\nThe arches at Pell Weir. Brown water right up to the stone.\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "bedeb9e503babd63637142ac7585253ecb4c926b2cd2c541144aeac2199696e2"
   },
   "flood_channel": {
-   "title": "Video posted by Lindmark Civic",
+   "title": "Video posted by Lindmark Civic on 3 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-03",
    "file": "flood_channel.mp4",
    "account": "Lindmark Civic",
    "caption": "The flood channel by the ring road is running full.",
+   "post": {
+    "title": "Post by Lindmark Civic on 3 June 2026",
+    "doc_type": "social_post",
+    "text": "Lindmark Civic\nPosted 3 June 2026\n\nThe flood channel by the ring road is running full.\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "d65de2ed86b55b2eb83b05160ceefa0fee726d1279b2b5baefcc11c55f9fe26c"
   },
   "flood_ford": {
-   "title": "Video posted by Hill Road Watch",
+   "title": "Video posted by Hill Road Watch on 2 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-02",
    "file": "flood_ford.mp4",
    "account": "Hill Road Watch",
    "caption": "Do not try the ford on Hill Road today.",
+   "post": {
+    "title": "Post by Hill Road Watch on 2 June 2026",
+    "doc_type": "social_post",
+    "text": "Hill Road Watch\nPosted 2 June 2026\n\nDo not try the ford on Hill Road today.\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "d49a246c89d425a39c50505d70b6b29cbddb10b501d9ec21e4933185f37cbbe9"
   },
   "copy_lowrate": {
-   "title": "Video posted by Daily Weather Clips",
+   "title": "Video posted by Daily Weather Clips on 1 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-01",
    "file": "copy_lowrate.mp4",
    "account": "Daily Weather Clips",
    "caption": "Massive flooding right now",
+   "post": {
+    "title": "Post by Daily Weather Clips on 1 June 2026",
+    "doc_type": "social_post",
+    "text": "Daily Weather Clips\nPosted 1 June 2026\n\nMassive flooding right now\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "b61f5216606f12769828b9822139fd2eb905c3a9755cd781e133c4dd4a77102a"
   },
   "copy_trim": {
-   "title": "Video posted by Lindmark Now",
+   "title": "Video posted by Lindmark Now on 2 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-02",
    "file": "copy_trim.mp4",
    "account": "Lindmark Now",
    "caption": "Mill Bridge this morning. Stay away from the river.",
+   "post": {
+    "title": "Post by Lindmark Now on 2 June 2026",
+    "doc_type": "social_post",
+    "text": "Lindmark Now\nPosted 2 June 2026\n\nMill Bridge this morning. Stay away from the river.\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "59e57cb0736ef97605da8e8e7b8995d55a43463da3217eea5034fee6426dee77"
   },
   "copy_logo": {
-   "title": "Video posted by Breaking Weather 24",
+   "title": "Video posted by Breaking Weather 24 on 2 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-02",
    "file": "copy_logo.mp4",
    "account": "Breaking Weather 24",
    "caption": "BREAKING: Ostra floods Lindmark",
+   "post": {
+    "title": "Post by Breaking Weather 24 on 2 June 2026",
+    "doc_type": "social_post",
+    "text": "Breaking Weather 24\nPosted 2 June 2026\n\nBREAKING: Ostra floods Lindmark\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "d3711eb11b45091eeee7bbe29fd41f622403cca31560cbdcb8746ccc3f7b73cb"
   },
   "copy_crop": {
-   "title": "Video posted by Valley Storm Chasers",
+   "title": "Video posted by Valley Storm Chasers on 2 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-02",
    "file": "copy_crop.mp4",
    "account": "Valley Storm Chasers",
    "caption": "Close look at the river in Lindmark today",
+   "post": {
+    "title": "Post by Valley Storm Chasers on 2 June 2026",
+    "doc_type": "social_post",
+    "text": "Valley Storm Chasers\nPosted 2 June 2026\n\nClose look at the river in Lindmark today\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "6125102633d73a0be8fcf71131859646b9a1ccb0415fe62710910eba45434e30"
   },
   "copy_mirror": {
-   "title": "Video posted by M. Ferrow",
+   "title": "Video posted by M. Ferrow on 2 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-02",
    "file": "copy_mirror.mp4",
    "account": "M. Ferrow",
    "caption": "Unreal scenes in Lindmark this morning",
+   "post": {
+    "title": "Post by M. Ferrow on 2 June 2026",
+    "doc_type": "social_post",
+    "text": "M. Ferrow\nPosted 2 June 2026\n\nUnreal scenes in Lindmark this morning\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "7764a70a1234d0fe0389ee2924c35465b6ed4fbce8fdc88984b9e04c05dc411a"
   },
   "copy_vertical": {
-   "title": "Video posted by lindmark.shorts",
+   "title": "Video posted by lindmark.shorts on 3 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-03",
    "file": "copy_vertical.mp4",
    "account": "lindmark.shorts",
    "caption": "Ostra today",
+   "post": {
+    "title": "Post by lindmark.shorts on 3 June 2026",
+    "doc_type": "social_post",
+    "text": "lindmark.shorts\nPosted 3 June 2026\n\nOstra today\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "8ad9f159df744af62f9a8af78c6749d50f47929b88f15f8b7ebccf7cb6234490"
   },
   "copy_viral": {
-   "title": "Video posted by World Weather Now",
+   "title": "Video posted by World Weather Now on 2 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-02",
    "file": "copy_viral.mp4",
    "account": "World Weather Now",
    "caption": "JUST IN: the Ostra bursts its banks in Lindmark this morning",
+   "post": {
+    "title": "Post by World Weather Now on 2 June 2026",
+    "doc_type": "social_post",
+    "text": "World Weather Now\nPosted 2 June 2026\n\nJUST IN: the Ostra bursts its banks in Lindmark this morning\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "349903b81faad0bd067b3bb8e02a9e28a8c7fbb58175250f51b3ac09566fed51"
   },
   "copy_viral_muted": {
-   "title": "Video posted by Weather Repost Hub",
+   "title": "Video posted by Weather Repost Hub on 3 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-03",
    "file": "copy_viral_muted.mp4",
    "account": "Weather Repost Hub",
    "caption": "Lindmark right now (sound off)",
+   "post": {
+    "title": "Post by Weather Repost Hub on 3 June 2026",
+    "doc_type": "social_post",
+    "text": "Weather Repost Hub\nPosted 3 June 2026\n\nLindmark right now (sound off)\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "0f6e1a651a85ab8f657059d6dd8c733db01a34d77dfa9f9b3b54b905f8e134e1"
   },
   "copy_short_muted": {
-   "title": "Video posted by clipsdaily.reel",
+   "title": "Video posted by clipsdaily.reel on 3 June 2026",
    "doc_type": "video",
    "sensitivity": "ordinary",
    "date": "2026-06-03",
    "file": "copy_short_muted.mp4",
    "account": "clipsdaily.reel",
    "caption": "Flood in Lindmark, no words",
+   "post": {
+    "title": "Post by clipsdaily.reel on 3 June 2026",
+    "doc_type": "social_post",
+    "text": "clipsdaily.reel\nPosted 3 June 2026\n\nFlood in Lindmark, no words\n\nFictional: the account, the caption and the date are invented.\n"
+   },
    "sha256": "96c6fdd8b675b5ab010a2c4e1d8deb5e88d6b7cbda4ce2f6378e55b1c8622244"
   },
   "pile_plane_clouds": {
@@ -349,7 +429,8 @@
   {
    "key": "original.caption",
    "record": "original",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "The Ostra at the Mill Bridge in Lindmark this afternoon. Water still rising.",
    "from": "2024-06-03",
    "to": "2024-06-03",
@@ -359,7 +440,8 @@
   {
    "key": "flood_promenade.caption",
    "record": "flood_promenade",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "Promenade under water by the old castle, Lindmark.",
    "from": "2026-06-02",
    "to": "2026-06-02",
@@ -369,7 +451,8 @@
   {
    "key": "flood_footbridge.caption",
    "record": "flood_footbridge",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "Our footbridge is gone. The Ostra is higher than we have ever seen it.",
    "from": "2026-06-02",
    "to": "2026-06-02",
@@ -379,7 +462,8 @@
   {
    "key": "flood_garden.caption",
    "record": "flood_garden",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "The brook at the bottom of the garden this morning, Lower Lindmark.",
    "from": "2026-06-01",
    "to": "2026-06-01",
@@ -389,7 +473,8 @@
   {
    "key": "flood_arches.caption",
    "record": "flood_arches",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "The arches at Pell Weir. Brown water right up to the stone.",
    "from": "2026-06-02",
    "to": "2026-06-02",
@@ -399,7 +484,8 @@
   {
    "key": "flood_channel.caption",
    "record": "flood_channel",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "The flood channel by the ring road is running full.",
    "from": "2026-06-03",
    "to": "2026-06-03",
@@ -409,7 +495,8 @@
   {
    "key": "flood_ford.caption",
    "record": "flood_ford",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "Do not try the ford on Hill Road today.",
    "from": "2026-06-02",
    "to": "2026-06-02",
@@ -419,7 +506,8 @@
   {
    "key": "copy_lowrate.caption",
    "record": "copy_lowrate",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "Massive flooding right now",
    "from": "2026-06-01",
    "to": "2026-06-01",
@@ -429,7 +517,8 @@
   {
    "key": "copy_trim.caption",
    "record": "copy_trim",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "Mill Bridge this morning. Stay away from the river.",
    "from": "2026-06-02",
    "to": "2026-06-02",
@@ -439,7 +528,8 @@
   {
    "key": "copy_logo.caption",
    "record": "copy_logo",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "BREAKING: Ostra floods Lindmark",
    "from": "2026-06-02",
    "to": "2026-06-02",
@@ -449,7 +539,8 @@
   {
    "key": "copy_crop.caption",
    "record": "copy_crop",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "Close look at the river in Lindmark today",
    "from": "2026-06-02",
    "to": "2026-06-02",
@@ -459,7 +550,8 @@
   {
    "key": "copy_mirror.caption",
    "record": "copy_mirror",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "Unreal scenes in Lindmark this morning",
    "from": "2026-06-02",
    "to": "2026-06-02",
@@ -469,7 +561,8 @@
   {
    "key": "copy_vertical.caption",
    "record": "copy_vertical",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "Ostra today",
    "from": "2026-06-03",
    "to": "2026-06-03",
@@ -479,7 +572,8 @@
   {
    "key": "copy_viral.caption",
    "record": "copy_viral",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "JUST IN: the Ostra bursts its banks in Lindmark this morning",
    "from": "2026-06-02",
    "to": "2026-06-02",
@@ -489,7 +583,8 @@
   {
    "key": "copy_viral_muted.caption",
    "record": "copy_viral_muted",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "Lindmark right now (sound off)",
    "from": "2026-06-03",
    "to": "2026-06-03",
@@ -499,7 +594,8 @@
   {
    "key": "copy_short_muted.caption",
    "record": "copy_short_muted",
-   "prop": "caption",
+   "prop": "reports",
+   "event": "other",
    "value": "Flood in Lindmark, no words",
    "from": "2026-06-03",
    "to": "2026-06-03",

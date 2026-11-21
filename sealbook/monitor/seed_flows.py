@@ -244,12 +244,19 @@ async def first_pass(s, key: str, answer: dict) -> None:
     await write.seal_run(s.s, run, await worker.assess(c))
 
 
-async def transcript(s, key: str, sentences: list[dict], duration_ms: int) -> None:
+async def transcript(
+    s,
+    key: str,
+    sentences: list[dict],
+    duration_ms: int,
+    lang: str = "ar",
+    origin: str = "acceptance/data/expected.json",
+) -> None:
     """A transcription of `key` from fixed lines (the script the synthetic clip was
-    spoken from), written as the transcribe tool writes: one derived text blob per
-    line located by ms, indexed, and the joined transcript. The run ingest queued,
-    if any, becomes this run, so the worker never transcribes the clip twice.
-    Registers the transcript as `<key>_tx`."""
+    spoken from, in `origin`), written as the transcribe tool writes: one derived
+    text blob per line located by ms, indexed, and the joined transcript. The run
+    ingest queued, if any, becomes this run, so the worker never transcribes the
+    clip twice. Registers the transcript as `<key>_tx`."""
     acq = await _acq(s, key)
     blob = await s.s.get(Blob, s.blobs[key])
     run = await s.s.scalar(
@@ -265,9 +272,7 @@ async def transcript(s, key: str, sentences: list[dict], duration_ms: int) -> No
     )
     # No extract_* inputs: the claims below are the demo's, not a model's.
     run.inputs = {"blobs": [blob.sha256], "acquisition": str(acq.id)}
-    c = await _start(
-        s, run, acq, "transcript copied from acceptance/data/expected.json"
-    )
+    c = await _start(s, run, acq, f"transcript copied from {origin}")
     segments = [
         {"ms": [x["start_ms"], x["end_ms"]], "text": x["text"]} for x in sentences
     ]
@@ -293,7 +298,7 @@ async def transcript(s, key: str, sentences: list[dict], duration_ms: int) -> No
                 "source": blob.sha256,
                 "read": [0, duration_ms],
                 "duration_ms": duration_ms,
-                "language": {"language": "ar", "probability": 1.0},
+                "language": {"language": lang, "probability": 1.0},
                 "model": {"repo": FIXED, "demo": True},
                 "segments": segments,
             }

@@ -12,6 +12,7 @@ Commons may regenerate; commons.json records the SHA-256 of each one used.
 ATTRIBUTION.md is written from files/commons.json.
 """
 
+import datetime
 import hashlib
 import json
 import re
@@ -449,28 +450,37 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def day(iso: str) -> str:
+    d = datetime.date.fromisoformat(iso)
+    return f"{d.day} {d:%B %Y}"
+
+
+def posted(key, date, account, caption):
+    """A clip posted with a caption, and the post as a capture keeps it: the
+    account, the day and the words, which the seeder ingests beside the clip."""
+    return {
+        "title": f"Video posted by {account} on {day(date)}",
+        "doc_type": "video",
+        "sensitivity": "ordinary",
+        "date": date,
+        "file": f"{key}.mp4",
+        "account": account,
+        "caption": caption,
+        "post": {
+            "title": f"Post by {account} on {day(date)}",
+            "doc_type": "social_post",
+            "text": f"{account}\nPosted {day(date)}\n\n{caption}\n\n"
+            "Fictional: the account, the caption and the date are invented.\n",
+        },
+    }
+
+
 def case():
     sources = {}
     for key, (_, _, _, _, date, account, caption) in {**ORIGINAL, **LOOKALIKES}.items():
-        sources[key] = {
-            "title": f"Video posted by {account}",
-            "doc_type": "video",
-            "sensitivity": "ordinary",
-            "date": date,
-            "file": f"{key}.mp4",
-            "account": account,
-            "caption": caption,
-        }
+        sources[key] = posted(key, date, account, caption)
     for key, (_, _, _, _, _, _, date, account, caption) in COPIES.items():
-        sources[key] = {
-            "title": f"Video posted by {account}",
-            "doc_type": "video",
-            "sensitivity": "ordinary",
-            "date": date,
-            "file": f"{key}.mp4",
-            "account": account,
-            "caption": caption,
-        }
+        sources[key] = posted(key, date, account, caption)
     for (key, _), date in zip(PILE.items(), PILE_DATES, strict=True):
         sources[key] = {
             "title": f"Video in the tip line inbox, {key.removeprefix('pile_').replace('_', ' ')}",
@@ -481,11 +491,14 @@ def case():
         }
     for s in sources.values():
         s["sha256"] = sha256(FILES / s["file"])
+    # Each caption is the event its post reports, unconfirmed: no person, and a
+    # place with no coordinates.
     claims = [
         {
             "key": f"{key}.caption",
             "record": key,
-            "prop": "caption",
+            "prop": "reports",
+            "event": "other",
             "value": s["caption"],
             "from": s["date"],
             "to": s["date"],

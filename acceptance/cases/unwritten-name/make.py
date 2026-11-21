@@ -3,7 +3,8 @@
 A fictional missing person case: Ostry Coaches, an invented bus company in the
 invented town of Wenmere. Writes case.json (the planted case and its truth, in the
 shape of acceptance/agents/case.json plus a `story`), the log sheets and statements
-under files/, and two scanned pages. The two pictures in files/ are not made here;
+under files/, and two scanned pages. The two pictures in files/ are not made here,
+but the depot photograph has a real operator's van cut off its right edge;
 files/ATTRIBUTION.md says where each came from.
 
   uv run python acceptance/cases/unwritten-name/make.py              # everything
@@ -486,7 +487,11 @@ CLAIMS = []
 RECORDS = {}
 
 
-def claim(key, record, prop, value, start=None, end=None, place=None, event=None):
+def claim(
+    key, record, prop, value, start=None, end=None, place=None, event=None, pin=None
+):
+    """`pin`: where the claim sits when it is not its value quoted from the text:
+    a sheet cell, a box on a picture, or a quote the value is read from."""
     CLAIMS.append(
         {
             "key": key,
@@ -499,13 +504,26 @@ def claim(key, record, prop, value, start=None, end=None, place=None, event=None
             "tier": "unconfirmed",
         }
         | ({"event": event} if event else {})
+        | ({"pin": pin} if pin else {})
     )
 
 
-def record(key, source, person, name):
+def record(key, source, person, name, pin=None):
     RECORDS[key] = {"source": source, "person": person}
     if name:
-        claim(f"{key}.name", key, "name", name)
+        claim(f"{key}.name", key, "name", name, pin=pin)
+
+
+def quote(text, after=None):
+    return {"text": text} | ({"after": after} if after else {})
+
+
+def whole(name):
+    """The whole picture: the person it shows, named by whoever handed it over."""
+    from PIL import Image
+
+    width, height = Image.open(FILES / name).size
+    return {"page": 1, "bbox": [0, 0, width, height]}
 
 
 def build(gate, fuel, dispatch):
@@ -520,14 +538,22 @@ def build(gate, fuel, dispatch):
         ("fuel", fuel, 5, "Wenmere depot pump P2"),
         ("dispatch", dispatch, 4, "Wenmere coach station"),
     ):
-        for row in rows:
+        for n, row in enumerate(rows, start=2):  # the header is row 1
             key = forms.get((src, row[col]))
             if key is None:  # relief or blank: nobody named
                 continue
-            rec = f"{key}_{src}"
+            rec, cell = f"{key}_{src}", {"sheet": 1, "row": n, "column": col + 1}
             if rec not in RECORDS:
-                record(rec, src, key, row[col])
-            claim(f"{rec}.{row[0]}", rec, "seen_at", value, row[0], place="station")
+                record(rec, src, key, row[col], pin=cell)
+            claim(
+                f"{rec}.{row[0]}",
+                rec,
+                "seen_at",
+                value,
+                row[0],
+                place="station",
+                pin=cell,
+            )
 
     record("dana_flatmate", "flatmate", "dana", "Dana Kovar")
     claim("dana_flatmate.age", "dana_flatmate", "age", "24")
@@ -539,6 +565,7 @@ def build(gate, fuel, dispatch):
         "the flat in Wenmere",
         "2026-03-14",
         place="wenmere",
+        pin=quote("She left the flat"),
     )
     record("dana_notice", "notice", "dana", "Dana Kovar")
     claim("dana_notice.sex", "dana_notice", "sex", "female")
@@ -568,8 +595,9 @@ def build(gate, fuel, dispatch):
         "stand 3, Wenmere coach station",
         "2026-03-14",
         place="station",
+        pin=quote("I saw the woman get on"),
     )
-    record("dana_photo", "photo", "dana", "Dana Kovar")
+    record("dana_photo", "photo", "dana", "Dana Kovar", pin=whole("dana_kovar.jpg"))
 
     record("aron_supervisor", "supervisor", "aron", "Aron Vesk")
     claim(
@@ -579,6 +607,7 @@ def build(gate, fuel, dispatch):
         "stand 3, Wenmere coach station",
         "2026-03-14",
         place="station",
+        pin=quote("driven by Aron Vesk"),
     )
     record("aron_manager", "manager", "aron", "Aron Vesk")
     claim(
@@ -586,6 +615,7 @@ def build(gate, fuel, dispatch):
         "aron_manager",
         "occupation",
         "bus driver, route 9 lates",
+        pin=quote("The route 9 lates are Aron Vesk's duty"),
     )
     record("ivo_manager", "manager", "ivo", "Ivo Sand")
     claim(
@@ -605,6 +635,7 @@ def build(gate, fuel, dispatch):
         "2026-01-01",
         "2026-12-31",
         place="holt_cross",
+        pin=quote("Drivers based at Holt Cross during 2026"),
     )
     record("nils_charges", "charges", "nils", "Nils Harrow")
     claim(
@@ -623,6 +654,7 @@ def build(gate, fuel, dispatch):
         "Wenmere",
         "2026-04-20",
         place="wenmere",
+        pin=quote("Wenmere", after="Leon Abbot"),
     )
     record("leon_bail", "bail", "leon", "Leon Abbot")
     claim(
@@ -787,6 +819,20 @@ h1{{font-family:Arial;font-size:30px;letter-spacing:3px;border-bottom:3px solid 
 </div></body></html>"""
 
 
+DEPOT_WIDTH = 1086  # the photograph's width with the van at its right edge cut off
+
+
+def crop_depot():
+    """Cut the real operator's van and its lettering off the right edge of the
+    depot photograph. Idempotent: a picture already cut is left alone."""
+    from PIL import Image
+
+    path = FILES / "wenmere_depot.jpg"
+    img = Image.open(path)
+    if img.width > DEPOT_WIDTH:
+        img.crop((0, 0, DEPOT_WIDTH, img.height)).save(path, quality=92)
+
+
 def render_scans(gate):
     sys.path.insert(0, str(HERE.parents[2]))
     from PIL import Image
@@ -837,6 +883,7 @@ def main():
     )
     for name, text in TEXTS.items():
         (FILES / name).write_text(text + "\n" + FICTIONAL + "\n", encoding="utf-8")
+    crop_depot()
     build(gate, fuel, dispatch)
     check()
     clusters = [
