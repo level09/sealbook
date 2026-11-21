@@ -1,0 +1,652 @@
+{
+ "about": "Planted truth for acceptance/cases/old-footage/eval.py, by make.py. The footage is real (see files/ATTRIBUTION.md); places, accounts, captions and dates are fictional.",
+ "story": {
+  "title": "The footage that was two years old",
+  "kind": "verification",
+  "puzzle": "On the morning of 2 June 2026 a clip of the river Ostra over its banks in Lindmark spreads under the caption 'JUST IN'. A newsroom's tip line holds 36 clips from the same days, many of them brown water under grey skies, and has to say which ones are new.",
+  "twist": "The viral clip is a cropped, mirrored, trimmed, logo-stamped re-encode of a video Ostra Valley Weather posted on 3 June 2024. Its picture no longer matches but its sound does, and the fingerprints tie it and seven other reposts to the two-year-old original.",
+  "rests_on": [
+   "video_fingerprints",
+   "audio_landmarks",
+   "media_match_review"
+  ],
+  "fictional": true
+ },
+ "investigation": "case-old-footage",
+ "today": "2026-06-03",
+ "places": {
+  "lindmark": {
+   "name_en": "Lindmark",
+   "note": "Invented town on the invented river Ostra. The footage was filmed elsewhere; see files/ATTRIBUTION.md.",
+   "lon": null,
+   "lat": null,
+   "precision_m": null
+  }
+ },
+ "sources": {
+  "original": {
+   "title": "Video posted by Ostra Valley Weather",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2024-06-03",
+   "file": "original.mp4",
+   "account": "Ostra Valley Weather",
+   "caption": "The Ostra at the Mill Bridge in Lindmark this afternoon. Water still rising.",
+   "sha256": "9ef6d93a7a1479ebd898183cb5b452b0b94ddb1d7aa57a2bd243ab8d2dd9c857"
+  },
+  "flood_promenade": {
+   "title": "Video posted by Harbour Street Cam",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-02",
+   "file": "flood_promenade.mp4",
+   "account": "Harbour Street Cam",
+   "caption": "Promenade under water by the old castle, Lindmark.",
+   "sha256": "e88fbd56062b73a09c6ebb125356a37f13faba0238cc5d279331b838ba80bf65"
+  },
+  "flood_footbridge": {
+   "title": "Video posted by Kerrow Farm",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-02",
+   "file": "flood_footbridge.mp4",
+   "account": "Kerrow Farm",
+   "caption": "Our footbridge is gone. The Ostra is higher than we have ever seen it.",
+   "sha256": "77c738824f6592eec01c14f828f998f4ec7644721b9483e662d34b6e42e4c55c"
+  },
+  "flood_garden": {
+   "title": "Video posted by N. Ashby",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-01",
+   "file": "flood_garden.mp4",
+   "account": "N. Ashby",
+   "caption": "The brook at the bottom of the garden this morning, Lower Lindmark.",
+   "sha256": "d15b10921b71fccf62a6f04df400b92822166036e8905c2a9ccf1e74b70c9f03"
+  },
+  "flood_arches": {
+   "title": "Video posted by Ostra Anglers",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-02",
+   "file": "flood_arches.mp4",
+   "account": "Ostra Anglers",
+   "caption": "The arches at Pell Weir. Brown water right up to the stone.",
+   "sha256": "bedeb9e503babd63637142ac7585253ecb4c926b2cd2c541144aeac2199696e2"
+  },
+  "flood_channel": {
+   "title": "Video posted by Lindmark Civic",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-03",
+   "file": "flood_channel.mp4",
+   "account": "Lindmark Civic",
+   "caption": "The flood channel by the ring road is running full.",
+   "sha256": "d65de2ed86b55b2eb83b05160ceefa0fee726d1279b2b5baefcc11c55f9fe26c"
+  },
+  "flood_ford": {
+   "title": "Video posted by Hill Road Watch",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-02",
+   "file": "flood_ford.mp4",
+   "account": "Hill Road Watch",
+   "caption": "Do not try the ford on Hill Road today.",
+   "sha256": "d49a246c89d425a39c50505d70b6b29cbddb10b501d9ec21e4933185f37cbbe9"
+  },
+  "copy_lowrate": {
+   "title": "Video posted by Daily Weather Clips",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-01",
+   "file": "copy_lowrate.mp4",
+   "account": "Daily Weather Clips",
+   "caption": "Massive flooding right now",
+   "sha256": "b61f5216606f12769828b9822139fd2eb905c3a9755cd781e133c4dd4a77102a"
+  },
+  "copy_trim": {
+   "title": "Video posted by Lindmark Now",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-02",
+   "file": "copy_trim.mp4",
+   "account": "Lindmark Now",
+   "caption": "Mill Bridge this morning. Stay away from the river.",
+   "sha256": "59e57cb0736ef97605da8e8e7b8995d55a43463da3217eea5034fee6426dee77"
+  },
+  "copy_logo": {
+   "title": "Video posted by Breaking Weather 24",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-02",
+   "file": "copy_logo.mp4",
+   "account": "Breaking Weather 24",
+   "caption": "BREAKING: Ostra floods Lindmark",
+   "sha256": "d3711eb11b45091eeee7bbe29fd41f622403cca31560cbdcb8746ccc3f7b73cb"
+  },
+  "copy_crop": {
+   "title": "Video posted by Valley Storm Chasers",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-02",
+   "file": "copy_crop.mp4",
+   "account": "Valley Storm Chasers",
+   "caption": "Close look at the river in Lindmark today",
+   "sha256": "6125102633d73a0be8fcf71131859646b9a1ccb0415fe62710910eba45434e30"
+  },
+  "copy_mirror": {
+   "title": "Video posted by M. Ferrow",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-02",
+   "file": "copy_mirror.mp4",
+   "account": "M. Ferrow",
+   "caption": "Unreal scenes in Lindmark this morning",
+   "sha256": "7764a70a1234d0fe0389ee2924c35465b6ed4fbce8fdc88984b9e04c05dc411a"
+  },
+  "copy_vertical": {
+   "title": "Video posted by lindmark.shorts",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-03",
+   "file": "copy_vertical.mp4",
+   "account": "lindmark.shorts",
+   "caption": "Ostra today",
+   "sha256": "8ad9f159df744af62f9a8af78c6749d50f47929b88f15f8b7ebccf7cb6234490"
+  },
+  "copy_viral": {
+   "title": "Video posted by World Weather Now",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-02",
+   "file": "copy_viral.mp4",
+   "account": "World Weather Now",
+   "caption": "JUST IN: the Ostra bursts its banks in Lindmark this morning",
+   "sha256": "349903b81faad0bd067b3bb8e02a9e28a8c7fbb58175250f51b3ac09566fed51"
+  },
+  "copy_viral_muted": {
+   "title": "Video posted by Weather Repost Hub",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-03",
+   "file": "copy_viral_muted.mp4",
+   "account": "Weather Repost Hub",
+   "caption": "Lindmark right now (sound off)",
+   "sha256": "0f6e1a651a85ab8f657059d6dd8c733db01a34d77dfa9f9b3b54b905f8e134e1"
+  },
+  "copy_short_muted": {
+   "title": "Video posted by clipsdaily.reel",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-03",
+   "file": "copy_short_muted.mp4",
+   "account": "clipsdaily.reel",
+   "caption": "Flood in Lindmark, no words",
+   "sha256": "96c6fdd8b675b5ab010a2c4e1d8deb5e88d6b7cbda4ce2f6378e55b1c8622244"
+  },
+  "pile_plane_clouds": {
+   "title": "Video in the tip line inbox, plane clouds",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-05-01",
+   "file": "pile_plane_clouds.mp4",
+   "sha256": "1969b989ddc0ff89c962d45e0560ed0e35808d9edca4aa7587b53d6066a8ac72"
+  },
+  "pile_cumulus": {
+   "title": "Video in the tip line inbox, cumulus",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-08",
+   "file": "pile_cumulus.mp4",
+   "sha256": "94f6185eb56d05f154ed7246c76aafe303d2ed59702cec182e83340764fb22d8"
+  },
+  "pile_arcus": {
+   "title": "Video in the tip line inbox, arcus",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-05-15",
+   "file": "pile_arcus.mp4",
+   "sha256": "190be23185f84aa5cbc8cdd103443550f4d75e7fb9bff3f210bf88b38cca5298"
+  },
+  "pile_ghat_mist": {
+   "title": "Video in the tip line inbox, ghat mist",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-22",
+   "file": "pile_ghat_mist.mp4",
+   "sha256": "9c21c4ef7cbb4b64616a2f7df66cfbe151c01c20bcf8a4a62e70ddaf1b75f2c9"
+  },
+  "pile_lone_tree": {
+   "title": "Video in the tip line inbox, lone tree",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-05-01",
+   "file": "pile_lone_tree.mp4",
+   "sha256": "eaba1cd65163b9d991738042be741c20f05ddfbb3029e31f4e4598eebd2a933d"
+  },
+  "pile_weir_pool": {
+   "title": "Video in the tip line inbox, weir pool",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-08",
+   "file": "pile_weir_pool.mp4",
+   "sha256": "dcb6e8d71496c1644360fc4e3eddfb0713253d372784cafbfb491118e38c9091"
+  },
+  "pile_falls_brown": {
+   "title": "Video in the tip line inbox, falls brown",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-05-15",
+   "file": "pile_falls_brown.mp4",
+   "sha256": "d0ef72f9fa80e34455b5b8a23f16a2176b4a01b229c8caa6a19db5e7fd0efe34"
+  },
+  "pile_falls_tall": {
+   "title": "Video in the tip line inbox, falls tall",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-22",
+   "file": "pile_falls_tall.mp4",
+   "sha256": "4da303642d7b3e446c1d756dda6ad8e166b651129956d6d6f2cc1b540d57236b"
+  },
+  "pile_falls_small": {
+   "title": "Video in the tip line inbox, falls small",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-05-01",
+   "file": "pile_falls_small.mp4",
+   "sha256": "2b933537de5a5fb9a4173c1fb429b397a5e3214bf04e19b32034753a80cb2f73"
+  },
+  "pile_falls_cliff": {
+   "title": "Video in the tip line inbox, falls cliff",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-08",
+   "file": "pile_falls_cliff.mp4",
+   "sha256": "5000a66a9ce47b16f6b744af562fd71e247d22c303e8daa88a1c153a6a1658a8"
+  },
+  "pile_rain_puddle": {
+   "title": "Video in the tip line inbox, rain puddle",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-05-15",
+   "file": "pile_rain_puddle.mp4",
+   "sha256": "f30031f4465f57f216c1dfffabd2b7c5cba5db456a66870c60dbc59465173de3"
+  },
+  "pile_lake_drops": {
+   "title": "Video in the tip line inbox, lake drops",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-22",
+   "file": "pile_lake_drops.mp4",
+   "sha256": "f4fd5b51bd71fc63d2973c73b08e7b1f4ecbcf9a3be44e994641be29eef0a26f"
+  },
+  "pile_rain_trees": {
+   "title": "Video in the tip line inbox, rain trees",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-05-01",
+   "file": "pile_rain_trees.mp4",
+   "sha256": "102985ce1b16e171f6e68d25bd99f3466eb92c667834534419a57fd07da06c2d"
+  },
+  "pile_snow_roofs": {
+   "title": "Video in the tip line inbox, snow roofs",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-08",
+   "file": "pile_snow_roofs.mp4",
+   "sha256": "ac6a9e594670ee86a9407d9ec933a6fbcf88854514fcde1a7b02e1090535c4eb"
+  },
+  "pile_snow_wall": {
+   "title": "Video in the tip line inbox, snow wall",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-05-15",
+   "file": "pile_snow_wall.mp4",
+   "sha256": "c3af774addaf6031c16ca887f45c0a6f1080108ac3cc8fb4c12f159b052dc870"
+  },
+  "pile_wide_river": {
+   "title": "Video in the tip line inbox, wide river",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-22",
+   "file": "pile_wide_river.mp4",
+   "sha256": "a8ceb0dbc78755263116e955b87f3c82e92a478f8653858232a7885c77fc57dc"
+  },
+  "pile_lake_ice": {
+   "title": "Video in the tip line inbox, lake ice",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-05-01",
+   "file": "pile_lake_ice.mp4",
+   "sha256": "3aa12b3b8817d9b4f3d3a7a7d1fb3ed7e89b9a0e8d3506a337f8c6c5a5b30dbd"
+  },
+  "pile_marsh_drone": {
+   "title": "Video in the tip line inbox, marsh drone",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-08",
+   "file": "pile_marsh_drone.mp4",
+   "sha256": "a6aa2faf3da66c4a7da16414cf14ec7e793859593b25229913aaae5c173ade49"
+  },
+  "pile_rail_line": {
+   "title": "Video in the tip line inbox, rail line",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-05-15",
+   "file": "pile_rail_line.mp4",
+   "sha256": "629441eaf5b32f9145c529e73efd657cab9ad6471d1a1e83a65e6b147783489e"
+  },
+  "pile_statue_fountain": {
+   "title": "Video in the tip line inbox, statue fountain",
+   "doc_type": "video",
+   "sensitivity": "ordinary",
+   "date": "2026-06-22",
+   "file": "pile_statue_fountain.mp4",
+   "sha256": "d0496b9c349f091a4b079cf6f045e9c47c8031583eba08965028a4a787b61ac4"
+  }
+ },
+ "claims": [
+  {
+   "key": "original.caption",
+   "record": "original",
+   "prop": "caption",
+   "value": "The Ostra at the Mill Bridge in Lindmark this afternoon. Water still rising.",
+   "from": "2024-06-03",
+   "to": "2024-06-03",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "flood_promenade.caption",
+   "record": "flood_promenade",
+   "prop": "caption",
+   "value": "Promenade under water by the old castle, Lindmark.",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "flood_footbridge.caption",
+   "record": "flood_footbridge",
+   "prop": "caption",
+   "value": "Our footbridge is gone. The Ostra is higher than we have ever seen it.",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "flood_garden.caption",
+   "record": "flood_garden",
+   "prop": "caption",
+   "value": "The brook at the bottom of the garden this morning, Lower Lindmark.",
+   "from": "2026-06-01",
+   "to": "2026-06-01",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "flood_arches.caption",
+   "record": "flood_arches",
+   "prop": "caption",
+   "value": "The arches at Pell Weir. Brown water right up to the stone.",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "flood_channel.caption",
+   "record": "flood_channel",
+   "prop": "caption",
+   "value": "The flood channel by the ring road is running full.",
+   "from": "2026-06-03",
+   "to": "2026-06-03",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "flood_ford.caption",
+   "record": "flood_ford",
+   "prop": "caption",
+   "value": "Do not try the ford on Hill Road today.",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "copy_lowrate.caption",
+   "record": "copy_lowrate",
+   "prop": "caption",
+   "value": "Massive flooding right now",
+   "from": "2026-06-01",
+   "to": "2026-06-01",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "copy_trim.caption",
+   "record": "copy_trim",
+   "prop": "caption",
+   "value": "Mill Bridge this morning. Stay away from the river.",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "copy_logo.caption",
+   "record": "copy_logo",
+   "prop": "caption",
+   "value": "BREAKING: Ostra floods Lindmark",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "copy_crop.caption",
+   "record": "copy_crop",
+   "prop": "caption",
+   "value": "Close look at the river in Lindmark today",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "copy_mirror.caption",
+   "record": "copy_mirror",
+   "prop": "caption",
+   "value": "Unreal scenes in Lindmark this morning",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "copy_vertical.caption",
+   "record": "copy_vertical",
+   "prop": "caption",
+   "value": "Ostra today",
+   "from": "2026-06-03",
+   "to": "2026-06-03",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "copy_viral.caption",
+   "record": "copy_viral",
+   "prop": "caption",
+   "value": "JUST IN: the Ostra bursts its banks in Lindmark this morning",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "copy_viral_muted.caption",
+   "record": "copy_viral_muted",
+   "prop": "caption",
+   "value": "Lindmark right now (sound off)",
+   "from": "2026-06-03",
+   "to": "2026-06-03",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "copy_short_muted.caption",
+   "record": "copy_short_muted",
+   "prop": "caption",
+   "value": "Flood in Lindmark, no words",
+   "from": "2026-06-03",
+   "to": "2026-06-03",
+   "place": "lindmark",
+   "tier": "unconfirmed"
+  }
+ ],
+ "truth": {
+  "original": "original",
+  "copies": [
+   {
+    "file": "copy_lowrate",
+    "of": "original",
+    "transformations": [
+     "reencode",
+     "downscale"
+    ],
+    "how": "re-encoded at 120 kbit/s and 320 pixels wide",
+    "sound": true
+   },
+   {
+    "file": "copy_trim",
+    "of": "original",
+    "transformations": [
+     "trim",
+     "reencode"
+    ],
+    "how": "trimmed to seconds 5 to 17",
+    "sound": true
+   },
+   {
+    "file": "copy_logo",
+    "of": "original",
+    "transformations": [
+     "logo",
+     "reencode"
+    ],
+    "how": "a red banner across the top and a logo block in the lower right",
+    "sound": true
+   },
+   {
+    "file": "copy_crop",
+    "of": "original",
+    "transformations": [
+     "crop",
+     "reencode"
+    ],
+    "how": "cropped to the central 70% and scaled back up",
+    "sound": true
+   },
+   {
+    "file": "copy_mirror",
+    "of": "original",
+    "transformations": [
+     "mirror",
+     "reencode"
+    ],
+    "how": "mirrored left to right",
+    "sound": true
+   },
+   {
+    "file": "copy_vertical",
+    "of": "original",
+    "transformations": [
+     "crop",
+     "vertical",
+     "reencode"
+    ],
+    "how": "cut to an upright 9:16 frame from the centre, as a phone short",
+    "sound": true
+   },
+   {
+    "file": "copy_viral",
+    "of": "original",
+    "transformations": [
+     "crop",
+     "mirror",
+     "trim",
+     "logo",
+     "reencode",
+     "downscale"
+    ],
+    "how": "cropped to the central 80%, mirrored, trimmed to seconds 3 to 17, logo-stamped and re-encoded at 480 pixels wide",
+    "sound": true
+   },
+   {
+    "file": "copy_viral_muted",
+    "of": "copy_viral",
+    "transformations": [
+     "crop",
+     "mirror",
+     "trim",
+     "logo",
+     "reencode",
+     "downscale",
+     "muted"
+    ],
+    "how": "the viral copy downloaded, muted and uploaded again",
+    "sound": false
+   },
+   {
+    "file": "copy_short_muted",
+    "of": "original",
+    "transformations": [
+     "crop",
+     "vertical",
+     "mirror",
+     "reencode",
+     "muted"
+    ],
+    "how": "cut to an upright 9:16 frame, mirrored, with its sound removed",
+    "sound": false
+   }
+  ],
+  "lookalikes": {
+   "flood_promenade": "a different recording of a river in flood; not a copy",
+   "flood_footbridge": "a different recording of a river in flood; not a copy",
+   "flood_garden": "a different recording of a river in flood; not a copy",
+   "flood_arches": "a different recording of a river in flood; not a copy",
+   "flood_channel": "a different recording of a river in flood; not a copy",
+   "flood_ford": "a different recording of a river in flood; not a copy"
+  },
+  "pile": [
+   "pile_arcus",
+   "pile_cumulus",
+   "pile_falls_brown",
+   "pile_falls_cliff",
+   "pile_falls_small",
+   "pile_falls_tall",
+   "pile_ghat_mist",
+   "pile_lake_drops",
+   "pile_lake_ice",
+   "pile_lone_tree",
+   "pile_marsh_drone",
+   "pile_plane_clouds",
+   "pile_rail_line",
+   "pile_rain_puddle",
+   "pile_rain_trees",
+   "pile_snow_roofs",
+   "pile_snow_wall",
+   "pile_statue_fountain",
+   "pile_weir_pool",
+   "pile_wide_river"
+  ],
+  "known_misses": {
+   "copy_short_muted": "no proposal with any member of the family: the crop and mirror defeat the frame hash and there is no sound to align"
+  },
+  "note": "transformations are relative to the original. Every pair inside {original, copies} is the same recording; no other pair in this set is. known_misses are measured by eval.py, not hidden."
+ }
+}
