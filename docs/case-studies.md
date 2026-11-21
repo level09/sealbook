@@ -26,37 +26,64 @@ uv run stk demo-seed --case <slug>                                         # int
 
 Keys the seeder reads beyond that shape, all optional:
 
-- `sources.<key>.file`: a path under the case directory. Without it the seeder writes
-  a text stand-in listing the source's claims. `sources.<key>.origin` overrides the
-  acquisition origin.
-- `claims[].pin`: where the claim sits in its file. A sheet cell
-  (`{"sheet", "row", "column"}`, the header is row 1), a box on a scan
-  (`{"page", "bbox"}`), or a quote found in a text file (`{"text", "after"}`). Every
-  extracted claim needs one: the gate rejects an agent's claim without a valid span.
-  Stand-in sources pin their own claims.
-- `claims[].event`: the event kind of an `event` claim, as in the agent case.
+- `sources.<key>.file`: a path under the case directory or its `files/`.
+  `sources.<key>.text`: the source's words, ingested as a text item when it has no
+  file. With neither, the seeder writes a text stand-in listing the source's claims.
+  `sources.<key>.origin` overrides the acquisition origin.
+- `sources.<key>.transcript`: a file of fixed words for a scan or a recording. A
+  scan's text is written by the app's OCR tool and a recording's sentences
+  (`{"duration_ms", "sentences": [{"text", "start_ms", "end_ms"}]}`) by the speech
+  writer, as a demo run with fixed output; the source's claims quote that text.
+- `sources.<key>.post`: `{"title", "text", "doc_type"}`, the post a file arrived
+  with. It is its own text item beside the file, as a page capture keeps the page
+  beside its media, and the source's claims quote it.
+- `claims[].pin`: where the claim sits. A sheet cell (`{"sheet", "row", "column"}`,
+  the header is row 1), a box on a scan (`{"page", "bbox"}`), or a quote in the
+  source's text (`{"text", "after"}`). A claim with no pin quotes its own value from
+  the source's text. Every extracted claim needs a span: the gate rejects an
+  agent's claim without one.
+- `claims[].record`: a key of `records` (a person), or a source key for a claim
+  about the document itself, such as the event a post reports (`reports`).
+- `claims[].event`: the kind of an `event` or `reports` claim.
 - `places.<key>`: `name_en`, `name_ar` (may be empty), `lon`, `lat`, `precision_m`.
-  The seeder imports them as sites a person recorded and confirms every located
-  claim that names one.
+  Places with coordinates are imported as sites a person recorded, as a town
+  (2 km or more), a neighbourhood (1 km) or a site, and every located claim that
+  names one is confirmed. A place without coordinates stays a name and is never
+  drawn.
 
 `truth` keys the case does not plant may be left out or empty. The scores that read
 them come out `null`, and so do their targets, instead of a failure. Same-person
 pairs are scored per identity cluster: a planted pair names one record on each side,
 and records already joined in `clusters` count as one side.
 
-`stk demo-seed --case <slug>` refuses a case that is already seeded. It ingests each
-file through intake, writes every claim as an extraction statement, has a case
-analyst accept the claims planted as `accepted` and each planted cluster's
-same-person links with a passkey signature, confirms the planted places, then runs
-the linker on the fixed answer so its proposals wait in Review. In a worktree, set
-`BLOB_DIR` to the main checkout's `instance/blobs` so the main server can read the
-files.
+`stk demo-seed --case <slug>` refuses a case that is already seeded. Sources enter
+through intake in date order, and the worker's local tools (geotag, thumbnail,
+fingerprint, index) run on each before the next, so a clip is compared only with
+clips already held and a photograph gets `photographed_at` from its EXIF. Each claim
+is an extraction statement. A sheet's rows are separate mentions, as the sheet
+intake writes them: a record's first row is the record and each later row a person
+the desk has already joined to it. A case analyst accepts the claims planted as
+`accepted` and each planted cluster's same-person links with a passkey signature
+and confirms the planted places. Then the agents the planted truth scores run on
+the fixed answer, so their proposals wait for a person: the linker for
+`same_person` or `twins`, the contradiction hunter for `contradictions`,
+`not_contradictions` or `trap_contradictions`, the gap finder for `gaps` or
+`not_gaps`, and the intake brief for a `batch`. In a worktree, set `BLOB_DIR` to the
+main checkout's `instance/blobs` so the main server can read the files.
+
+What the pages read: Stories and the Case map show dated person claims of a
+located kind (`seen_at`, `last_seen`, `arrested_at`, `detained_at`,
+`detention_branch`, `transferred_to`); the map draws only those whose place a
+person confirmed. Incidents come from accepted incident statements, which only a
+person's decision on a finding writes.
 
 Not handled yet: sheets are ingested as files, not through the sheet mapping step
-(`sheets.confirm`), so no dataset version exists; scans are pinned by box and no
-OCR runs; PDF spans fail (`pages_required`, see `blobmeta.py`); audio and video
-claims would need `{"ms"}` pins, which no case has tried; no incidents, findings,
-assignments or briefs are seeded, and only the linker runs.
+(`sheets.confirm`), so no dataset version exists; PDF spans fail (`pages_required`,
+see `blobmeta.py`); audio and video `{"ms"}` pins are untried (claims quote the
+transcript instead); no incidents, findings, assignments or briefs beyond the
+intake brief are seeded. Invented places lie in open sea, so the maps draw dots on
+an empty background. The old-footage case has no people, so its Stories and Case
+map stay empty.
 
 ## One man, four names (fraud)
 
@@ -70,7 +97,9 @@ the ship agent Adrian Kasar, أدريان قصار on his licence, are one man b
 2 March 1974 in Velmora, son of Elias.
 
 The pile: 14 sources, nine sheets with 1,445 rows and five scans, 230 person records
-(222 people) and 417 claims. Three ledgers (purchases, payments, consultancy invoices)
+(222 people) and 422 claims. Each of the five forms says where and when it was
+signed or seen in person, so the man's trail runs from June 2021 to March 2023
+across the three invented sites of Port Ondrel. Three ledgers (purchases, payments, consultancy invoices)
 carry 1,220 rows and no person records. The two scans with a face use one generated
 portrait; see `files/ATTRIBUTION.md`.
 
@@ -108,4 +137,31 @@ What the numbers say:
   full date, and a different place of birth does not rule a pair out. The deck
   cadet never reaches it: his birth date rules him out against every desk.
 - A reader holding one desk's file sees nothing wrong. The rules build the five
-  candidates from 417 claims with no model, and a person still decides each link.
+  candidates from 422 claims with no model, and a person still decides each link.
+
+## The other three cases, seeded
+
+Each case's own README holds its story, planted truth and score. What
+`stk demo-seed --case <slug>` puts on screen, checked 2026-11-21:
+
+- **The witness who was never there** (`case-never-there`): 53 sources and 152
+  claims. The photograph goes through intake and geotag writes where it was taken
+  from its EXIF; the voice note gets its fixed transcript through the speech
+  writer, in English. The contradiction hunter proposes four disagreements, and
+  Mara Quill's person page sets her four places on 14 March side by side under
+  Sources disagree, with the exhibit titles carrying 21:52 and 22:07. Stories and
+  the Case map show 41 people at 8 places.
+- **The name nobody wrote down** (`case-unwritten-name`): 14 sources and 651
+  claims, 608 of them log lines pinned to their sheet cells. Each log line is its
+  own mention joined to its driver, so Aron Vesk's page reads "86 records joined
+  as one person". The gap finder proposes both planted gaps; his page shows "No
+  evidence for 73 days" and the gap from 14 March to 26 May 2026. The supervisor's
+  scanned statement is read by the OCR tool from its fixed text. The depot
+  photograph has the real operator's van cut off its right edge.
+- **The footage that was two years old** (`case-old-footage`): 36 clips and the 16
+  posts that came with a caption, each clip fingerprinted as it arrives in posting
+  order. The viral clip's Copies tab lists "Same recording, Video posted by Ostra
+  Valley Weather on 3 June 2024, strong". Every proposal waits for a person, the
+  weak single-landmark ones too. Each caption is the event its post reports,
+  unconfirmed; Lindmark has no coordinates and is not drawn. The case has no
+  people, so Stories and the Case map are empty.

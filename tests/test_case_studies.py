@@ -57,7 +57,7 @@ class FourNamesScoreTest(unittest.TestCase):
         out join the licence, whose father إلياس keys as ياس (the article ال
         stripped) against Elias; the consultant's records, which name no father,
         still bridge the licence to the other three."""
-        self.assertEqual(self.report["claims"], 417)
+        self.assertEqual(self.report["claims"], 422)
         self.assertTrue(self.report["complete"])
         self.assertEqual(self.linker["recall"], 0.667)
         missed = [
@@ -125,7 +125,7 @@ class SeedStudyTest(Seeding):
             with self.assertRaises(click.ClickException):
                 await seed_study(s, self.app, FOUR_NAMES)
         self.assertEqual(out["sources"], 14)
-        self.assertEqual(out["claims"], 417)
+        self.assertEqual(out["claims"], 422)
         # The fixed answer proposes every candidate, the namesake included.
         self.assertEqual(out["linker proposals"], 5)
         async with ext.async_session_factory() as s:

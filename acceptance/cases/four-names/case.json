@@ -14,7 +14,22 @@
   },
   "investigation": "case-four-names",
   "today": "2024-06-30",
-  "places": {},
+  "places": {
+    "freight_lines": {
+      "name_en": "Ondrel Freight Lines, Port Ondrel",
+      "name_ar": null,
+      "lon": -26.104,
+      "lat": 44.302,
+      "precision_m": 100
+    },
+    "harbour_house": {
+      "name_en": "Harbour House, Port Ondrel",
+      "name_ar": null,
+      "lon": -26.092,
+      "lat": 44.296,
+      "precision_m": 100
+    }
+  },
   "sources": {
     "vendors": {
       "title": "Vendor master list, procurement",
@@ -7134,6 +7149,25 @@
       }
     },
     {
+      "key": "vendor_form/owner.seen_at",
+      "record": "vendor_form/owner",
+      "prop": "seen_at",
+      "value": "Ondrel Freight Lines, Port Ondrel",
+      "from": "2021-06-14",
+      "to": "2021-06-14",
+      "place": "freight_lines",
+      "tier": "unconfirmed",
+      "pin": {
+        "page": 1,
+        "bbox": [
+          533,
+          832,
+          1046,
+          927
+        ]
+      }
+    },
+    {
       "key": "agreement/consultant.name",
       "record": "agreement/consultant",
       "prop": "name",
@@ -7191,6 +7225,25 @@
       }
     },
     {
+      "key": "agreement/consultant.seen_at",
+      "record": "agreement/consultant",
+      "prop": "seen_at",
+      "value": "Ondrel Freight Lines, Port Ondrel",
+      "from": "2023-01-30",
+      "to": "2023-01-30",
+      "place": "freight_lines",
+      "tier": "unconfirmed",
+      "pin": {
+        "page": 1,
+        "bbox": [
+          533,
+          862,
+          1047,
+          957
+        ]
+      }
+    },
+    {
       "key": "guarantee_deed/guarantor.name",
       "record": "guarantee_deed/guarantor",
       "prop": "name",
@@ -7244,6 +7297,25 @@
           467,
           733,
           520
+        ]
+      }
+    },
+    {
+      "key": "guarantee_deed/guarantor.seen_at",
+      "record": "guarantee_deed/guarantor",
+      "prop": "seen_at",
+      "value": "Ondrel Freight Lines credit desk, Port Ondrel",
+      "from": "2023-03-09",
+      "to": "2023-03-09",
+      "place": "freight_lines",
+      "tier": "unconfirmed",
+      "pin": {
+        "page": 1,
+        "bbox": [
+          530,
+          647,
+          1064,
+          779
         ]
       }
     },
@@ -7324,6 +7396,25 @@
       }
     },
     {
+      "key": "passport/holder.seen_at",
+      "record": "passport/holder",
+      "prop": "seen_at",
+      "value": "Ondrel Freight Lines credit desk",
+      "from": "2023-03-09",
+      "to": "2023-03-09",
+      "place": "freight_lines",
+      "tier": "unconfirmed",
+      "pin": {
+        "page": 1,
+        "bbox": [
+          535,
+          943,
+          1068,
+          1040
+        ]
+      }
+    },
+    {
       "key": "licence/holder.name",
       "record": "licence/holder",
       "prop": "name",
@@ -7377,6 +7468,25 @@
           808,
           738,
           862
+        ]
+      }
+    },
+    {
+      "key": "licence/holder.seen_at",
+      "record": "licence/holder",
+      "prop": "seen_at",
+      "value": "Harbour House, Port Ondrel",
+      "from": "2023-01-05",
+      "to": "2023-01-05",
+      "place": "harbour_house",
+      "tier": "unconfirmed",
+      "pin": {
+        "page": 1,
+        "bbox": [
+          537,
+          1022,
+          1109,
+          1121
         ]
       }
     }

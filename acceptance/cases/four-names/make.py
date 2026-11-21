@@ -104,16 +104,16 @@ RECORDS = {}  # record key: (source, person)
 CLAIMS = []
 
 
-def claim(record, prop, value, pin=None):
+def claim(record, prop, value, pin=None, when=None, place=None):
     CLAIMS.append(
         {
             "key": f"{record}.{prop}",
             "record": record,
             "prop": prop,
             "value": value,
-            "from": None,
-            "to": None,
-            "place": None,
+            "from": when,
+            "to": when,
+            "place": place,
             "tier": "unconfirmed",
         }
         | ({"pin": pin} if pin else {})
@@ -394,6 +394,12 @@ SCANS = {
             ("Owner's place of birth", TOWN, "place_of_birth"),
             ("Registered office", "Quay Road 14, Port Ondrel", None),
             ("Vendor ID", "V031", None),
+            (
+                "Signed in person at",
+                "Ondrel Freight Lines, Port Ondrel, 14 June 2021",
+                "seen_at",
+                "Ondrel Freight Lines, Port Ondrel",
+            ),
         ],
     ),
     "agreement": (
@@ -407,6 +413,12 @@ SCANS = {
             ("Scope", "Review of port logistics and agency costs", None),
             ("Term", "1 February 2023 to 31 January 2024", None),
             ("Fee", "650.00 per day, invoiced monthly", None),
+            (
+                "Signed in person at",
+                "Ondrel Freight Lines, Port Ondrel, 30 January 2023",
+                "seen_at",
+                "Ondrel Freight Lines, Port Ondrel",
+            ),
         ],
     ),
     "guarantee_deed": (
@@ -418,7 +430,12 @@ SCANS = {
             ("Son of", FATHER, "father_name"),
             ("Date of birth", BORN, "birth_date"),
             ("Secures", "Ondrel Logistics credit line, up to 1,200,000.00", None),
-            ("Witnessed at", "Port Ondrel, 9 March 2023", None),
+            (
+                "Witnessed at",
+                "Ondrel Freight Lines credit desk, Port Ondrel, 9 March 2023",
+                "seen_at",
+                "Ondrel Freight Lines credit desk, Port Ondrel",
+            ),
         ],
     ),
     "passport": (
@@ -430,6 +447,12 @@ SCANS = {
             ("Sex", "M", "sex", "male"),
             ("Date of birth", BORN, "birth_date"),
             ("Place of birth", TOWN, "place_of_birth"),
+            (
+                "Original seen in person at",
+                "Ondrel Freight Lines credit desk, 9 March 2023",
+                "seen_at",
+                "Ondrel Freight Lines credit desk",
+            ),
         ],
     ),
     "licence": (
@@ -442,8 +465,28 @@ SCANS = {
             ("Date of birth", BORN, "birth_date"),
             ("Licence", "PA-2291", None),
             ("Valid until", "31 December 2024", None),
+            (
+                "Issued in person at",
+                "Harbour House, Port Ondrel, 5 January 2023",
+                "seen_at",
+                "Harbour House, Port Ondrel",
+            ),
         ],
     ),
+}
+# Where and when each form puts the man in person: one trail across the four
+# desks, each read off its own form.
+TRAIL = {
+    "vendor_form": ("2021-06-14", "freight_lines"),
+    "licence": ("2023-01-05", "harbour_house"),
+    "agreement": ("2023-01-30", "freight_lines"),
+    "guarantee_deed": ("2023-03-09", "freight_lines"),
+    "passport": ("2023-03-09", "freight_lines"),
+}
+# Invented places, in open sea so no map puts the story in a real town.
+PLACES = {  # key: name, lon, lat, precision in metres
+    "freight_lines": ("Ondrel Freight Lines, Port Ondrel", -26.104, 44.302, 100),
+    "harbour_house": ("Harbour House, Port Ondrel", -26.092, 44.296, 100),
 }
 SCAN_PERSON = {
     "vendor_form": "vendor_form/owner",
@@ -540,7 +583,9 @@ def scan_claims():
             # the field it was read from.
             if prop:
                 value = read[0] if read else shown
-                claim(record, prop, value, {"page": 1, "bbox": boxes[key][prop]})
+                when, place = TRAIL[key] if prop == "seen_at" else (None, None)
+                pin = {"page": 1, "bbox": boxes[key][prop]}
+                claim(record, prop, value, pin, when, place)
 
 
 # ---- sources, truth, case.json ---------------------------------------------------------
@@ -712,7 +757,10 @@ def main():
         },
         "investigation": INVESTIGATION,
         "today": TODAY,
-        "places": {},
+        "places": {
+            k: {"name_en": n, "name_ar": None, "lon": lon, "lat": lat, "precision_m": m}
+            for k, (n, lon, lat, m) in PLACES.items()
+        },
         "sources": {
             k: {"title": t, "doc_type": d, "sensitivity": s, "date": dt}
             | {"file": f"files/{f}"}
