@@ -40,7 +40,9 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
 - `index.html`: the home page as a closing argument, each section a `section.link` in
   the demonstration chain. The opening sets the headline and the pilot request beside
   the walkthrough film (`media/walkthrough.mp4`), with a storyboard of six stills from it
-  (`media/board/`, each seeking the film to its moment). "The charge" (`#charge`) states
+  (`media/board/`, each seeking the film to its moment). "Four cases" (`#cases`) follows:
+  one card per case study with its twist and its measured score, each linking to its page.
+  "The charge" (`#charge`) states
   the case against traditional systems, and a sticky rail (`.rail`) numbers the
   exhibits. Exhibits 1 to 8 (`.link.exhibit`) each set the traditional way, struck
   through (`.then`), against what Sealbook does (`.now`), and stay folded until "See it
@@ -50,6 +52,18 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
   line along the way and show in full in Proof or once a seal breaks. The precise
   technical text sits in a `details.how` fold inside `.copy`, so it is still part of
   the hashed chain.
+- `cases/<slug>.html`, `css/cases.css`, `js/cases.js`: one page per case study in
+  `acceptance/cases/` (four-names, never-there, old-footage, unwritten-name), in the same
+  order on every page: the story and its twist, the pile, what the machine found, what the
+  person decided, the score, the limit, the way to court, and the credits from the case's
+  `files/ATTRIBUTION.md`. Separate pages give each case its own link. Every figure is one
+  the case's README or its test (`tests/test_case_*.py`) states; change them together.
+  Each page and card says the case is fictional. `build_cases.sh` rebuilds their pictures
+  and clips in `media/cases/` from the case files (needs ffmpeg).
+- The case film slot (`figure.case-film`, on the home page and the fraud case page) points
+  at `media/case_film.mp4` with `media/case_film.jpg` as its poster. `js/cases.js` asks
+  for the film with a HEAD request and keeps the slot hidden until it exists, so adding
+  the two files is all it takes to show it.
 - `tour.html`: the nine other demos, folded until opened or linked to.
 - `status.html`: what we learned, and the implemented, measured and planned lists read
   from `data/case.json`.
@@ -91,7 +105,7 @@ script, notes or app code:
 
 ```sh
 rm -rf site/dist && mkdir -p site/dist/data
-cp -R site/index.html site/tour.html site/status.html site/verify.html site/favicon.svg site/og.png site/css site/js site/fonts site/media site/dist/
+cp -R site/index.html site/tour.html site/status.html site/verify.html site/cases site/favicon.svg site/og.png site/css site/js site/fonts site/media site/dist/
 cp site/data/case.json site/dist/data/
 cd site && npx wrangler@4 deploy
 ```

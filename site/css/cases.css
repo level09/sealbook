@@ -1,0 +1,88 @@
+/* The four case studies: the cards on the home page and one page per case. */
+
+/* Home: the cases section sits outside the chain, between the opening and the charge. */
+.part.cases { max-width: none; margin: 0 0 120px; scroll-margin-top: calc(var(--head) + 16px); }
+.cases > p { max-width: 62ch; }
+.case-grid { list-style: none; margin: 40px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px 36px; }
+.case-card a { display: grid; gap: 0; color: var(--ink); text-decoration: none; }
+.case-card img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 10px; background: var(--paper-2);
+  box-shadow: 0 24px 48px -30px rgb(27 26 23 / .5); transition: transform .4s var(--ease), box-shadow .4s var(--ease); }
+.case-card img.scan { object-position: top; outline: 1px solid var(--rule); outline-offset: -1px; }
+.case-card a:hover img { transform: translateY(-3px); box-shadow: 0 30px 56px -30px rgb(27 26 23 / .6); }
+.case-card a:hover h3 { color: var(--violet); }
+.case-card a:focus-visible { outline: 2px solid var(--violet); outline-offset: 6px; border-radius: 10px; }
+.cc-kind { margin: 18px 0 6px; font: 500 12px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.case-card h3 { margin: 0 0 8px; font: 400 clamp(1.6rem, 2.4vw, 2.1rem)/1.12 var(--serif); letter-spacing: -.02em; transition: color .2s; }
+.cc-twist { margin: 0 0 14px; max-width: 60ch; color: var(--ink-2); text-wrap: pretty; }
+.cc-score { margin: 0; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 15px; color: var(--ink-2); }
+.cc-score b { display: block; font: 500 1.15rem/1.3 var(--serif); color: var(--ok); }
+.cc-more { margin-top: 10px; font: 500 14px var(--sans); color: var(--violet); }
+.cases > p.fine { max-width: 90ch; margin-top: 40px; font-size: 13px; }
+
+/* The case film: hidden until media/case_film.mp4 exists (js/cases.js). */
+.case-film { margin: 40px 0 0; }
+.case-film[hidden] { display: none; }
+.case-film video { display: block; width: 100%; height: auto; border-radius: 10px; background: var(--paper-3); box-shadow: 0 24px 50px -28px rgb(27 26 23 / .45); }
+.case-film figcaption { max-width: 70ch; margin: 10px 0 0; font-size: 13px; color: var(--ink-3); }
+
+/* A case page. */
+.case { max-width: 1180px; margin: 0 auto; padding: 32px var(--gutter) 40px; }
+.case-back { display: inline-block; margin-bottom: 28px; font: 500 14px var(--sans); color: var(--ink-2); }
+.case-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 56px; align-items: center; margin-bottom: 96px; }
+.case-hero h1 { max-width: 14ch; margin-bottom: 22px; }
+.case-hero .lede { margin: 0 0 22px; }
+.fiction { display: inline-block; margin: 0; padding: 6px 12px; border: 1.5px dashed var(--ink-3); border-radius: 6px; font-size: 14px; color: var(--ink-2); max-width: 46ch; }
+.fiction b { font-weight: 600; color: var(--ink); }
+.case-pic { margin: 0; }
+.case-pic img, .case-pic video { display: block; width: 100%; height: auto; border-radius: 10px; background: var(--paper-2); box-shadow: 0 24px 50px -28px rgb(27 26 23 / .45); }
+.case-pic img.scan { outline: 1px solid var(--rule); outline-offset: -1px; }
+.case-pic figcaption, .docs figcaption, .clips figcaption, .voice figcaption { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink-3); }
+.case .case-film { margin: 0 0 96px; }
+
+/* Each part of the story: its name on the left, the prose on the right. */
+.beat { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 8px 48px; padding: 28px 0 36px; border-top: 1px solid var(--rule); }
+.beat > h2 { margin: 0; font: 400 1.5rem/1.25 var(--serif); letter-spacing: -.01em; }
+.beat > div { min-width: 0; }
+.beat p { max-width: 64ch; margin: 0 0 14px; color: var(--ink-2); text-wrap: pretty; }
+.beat p:last-child { margin-bottom: 0; }
+.beat .twist { font: 400 1.4rem/1.45 var(--serif); color: var(--ink); max-width: 46ch; }
+.beat .big { margin-bottom: 14px; font: 400 clamp(2rem, 4vw, 3rem)/1.08 var(--serif); letter-spacing: -.025em; color: var(--ok); max-width: 20ch; }
+.beat .fine { margin-top: 18px; }
+.beat.limit > div { max-width: 72ch; padding: 18px 22px; border-radius: 10px; background: var(--paper-2); }
+.beat.limit p { color: var(--ink); }
+.beat.court a { color: var(--ink); }
+.case [lang="ar"] { font-size: 1.08em; }
+
+/* The pile and the clips: the case's own files, side by side. */
+.docs { list-style: none; margin: 24px 0 4px; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; }
+.docs figure { margin: 0; }
+.docs img { display: block; width: 100%; height: auto; border-radius: 6px; outline: 1px solid var(--rule); outline-offset: -1px; }
+.docs figcaption b { display: block; font: 500 1rem/1.3 var(--serif); color: var(--ink); }
+.clips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.clips figure { margin: 0; }
+.clips video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 8px; background: #000; }
+.clips figcaption b { display: block; font: 500 1rem/1.3 var(--serif); color: var(--ink); }
+.voice { margin: 22px 0 0; padding: 16px 18px; border-radius: 10px; background: var(--paper-2); }
+.voice audio { display: block; width: 100%; margin-bottom: 10px; }
+.voice ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font: 400 1.05rem/1.45 var(--serif); }
+.voice .mono { margin-right: 10px; font-size: 12px; color: var(--ink-3); }
+
+.next-cases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; list-style: none; margin: 16px 0 0; padding: 0; }
+.next-cases a { display: block; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 10px; color: var(--ink); text-decoration: none; transition: border-color .2s, background .2s; }
+.next-cases a:hover { border-color: var(--ink-3); background: var(--paper-2); }
+.next-cases small { display: block; font: 500 11px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.next-cases span { font: 400 1.15rem/1.3 var(--serif); }
+.credits { padding-top: 28px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); }
+.credits h2 { margin: 0 0 8px; font: 500 14px/1.4 var(--sans); color: var(--ink-2); }
+.credits p { max-width: 90ch; margin: 0 0 10px; overflow-wrap: anywhere; }
+
+@media (max-width: 1000px) {
+  .case-hero { grid-template-columns: minmax(0, 1fr); gap: 32px; margin-bottom: 64px; }
+  .beat { grid-template-columns: minmax(0, 1fr); }
+  .next-cases { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .case-grid { grid-template-columns: minmax(0, 1fr); gap: 44px; }
+  .clips { grid-template-columns: minmax(0, 1fr); }
+  .docs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
