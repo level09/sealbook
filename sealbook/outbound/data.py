@@ -58,6 +58,7 @@ SENT = {
     "gaps": "Claims about a person, to find silences in the record",
     "notice": "Two sources, to say why they resemble each other",
     "approximate": "Passages naming a place, to suggest where it is",
+    "conclude": "Accepted links and findings of a case, to draft conclusions",
 }
 TASK = {
     "ocr": "reading text",
@@ -75,6 +76,7 @@ TASK = {
     "gaps": "the gap finder",
     "notice": "the noticer",
     "approximate": "the place finder",
+    "conclude": "the conclusion drafter",
 }
 ROUTE = {
     "local": "This server",

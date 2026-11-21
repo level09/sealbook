@@ -16,6 +16,7 @@ from sealbook.agents import (
     answer,
     approximate,
     brief,
+    conclude,
     contradictions,
     linker,
     noticer,
@@ -134,6 +135,52 @@ async def contradiction_status(rid):
     ):
         abort(404)
     return _json({"status": run.status})
+
+
+@bp_agents.post("/conclusions")
+async def draft_conclusions():
+    from sealbook.cases.service import Unknown, require
+
+    db = g.db_session
+    try:
+        case = await require(db, (await _item()).get("investigation"))
+    except Unknown:
+        abort(404)
+    if gap := missing():
+        return _json({"reason": "off", "missing": gap}, 409)
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    try:
+        run = await conclude.queue(db, case.slug, current_user.id, Config.AGENT_MODEL)
+    except ValueError as exc:
+        return _json({"reason": "busy", "message": str(exc)}, 409)
+    await db.commit()
+    return _json({"run": str(run.id)}, 202)
+
+
+@bp_agents.get("/conclusions")
+async def read_conclusion_drafts():
+    from sealbook.cases.service import Unknown, require
+
+    db = g.db_session
+    try:
+        case = await require(db, request.args.get("investigation"))
+    except Unknown:
+        abort(404)
+    return _json(await conclude.show(db, current_user, case.slug))
+
+
+@bp_agents.get("/conclusions/runs/<uuid:rid>")
+async def conclusion_draft_status(rid):
+    run = await g.db_session.get(Run, rid)
+    if run is None or run.tool != conclude.TOOL:
+        abort(404)
+    if run.inputs.get("for_user") != current_user.id and not current_user.has_role(
+        "admin"
+    ):
+        abort(404)
+    return _json({"status": run.status, "error": run.error})
 
 
 @bp_agents.post("/approximate")
