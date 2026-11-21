@@ -676,7 +676,8 @@ async def erase(session: AsyncSession, ref, by, reason: str) -> dict:
     deleted (working drafts) and packages disclosing one are revoked, which stops
     their download; their PACKAGE statements stay. Findings and incident links
     naming an erased statement or person lose their values too, with statements
-    about them, and finding keys keep only their key and state. Caller commits."""
+    about them, and finding keys keep only their key and state; so do conclusions
+    naming the person or resting on an erased statement. Caller commits."""
     if not reason.strip():
         raise ValueError("erasure needs a reason")
     # Chain lock first, the order finalize takes it in, so the two never deadlock.
@@ -721,15 +722,23 @@ async def erase(session: AsyncSession, ref, by, reason: str) -> dict:
         select(Statement.id)
         .join(Payload, Payload.commitment == Statement.commitment)
         .where(
-            # ACCESS: research queries name the people they were built from.
+            # ACCESS: research queries name the people they were built from. A
+            # conclusion names the people it is about and the claims it rests on.
             Statement.prop.in_(
-                [Prop.FINDING, Prop.INVOLVED, Prop.SUPPORTED_BY, Prop.ACCESS]
+                [
+                    Prop.FINDING,
+                    Prop.INVOLVED,
+                    Prop.SUPPORTED_BY,
+                    Prop.ACCESS,
+                    Prop.CONCLUSION,
+                ]
             ),
             or_(
                 Payload.value["person"].astext == func.any(refs),
                 Payload.value["statement"].astext == func.any(ids),
                 Payload.value["members"].has_any(ids),
                 Payload.value["people"].has_any(refs),
+                Payload.value["rests_on"].has_any(ids),
             ),
         )
         .cte("linked", recursive=True)

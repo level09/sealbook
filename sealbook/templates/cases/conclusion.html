@@ -1,0 +1,176 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.cd-page { max-width: 1100px; display: flex; flex-direction: column; gap: 16px; }
+.cd-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+.cd-muted { color: var(--ink-3); }
+.cd-head { display: flex; flex-direction: column; gap: 10px; }
+.cd-kicker { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; color: var(--ink-3); }
+.cd-chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-weight: 600; font-size: 13px; background: var(--wash); color: var(--ink-2); }
+.cd-chip.ok { background: var(--accepted-wash); color: var(--accepted); }
+.cd-chip.bad { background: var(--negative-wash); color: var(--negative); }
+.cd-text { margin: 0; font-weight: 500; max-width: 60ch; }
+.cd-broken { display: flex; gap: 8px; align-items: baseline; padding: 8px 12px; border-radius: 8px; background: var(--negative-wash); color: var(--negative); border: 1px solid var(--negative-line); }
+.cd-facts { display: grid; gap: 8px; margin: 0; }
+.cd-facts > div { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 12px; }
+.cd-facts dt { color: var(--ink-3); font-size: 13px; padding-top: 2px; }
+.cd-facts dd { margin: 0; }
+.cd-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cd-panel h2 { margin: 0 0 10px; }
+.cd-item { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--line); }
+.cd-item:first-of-type { border-top: 0; }
+.cd-item i { font-size: 18px; color: var(--ink-3); }
+.cd-item .s { color: var(--ink-3); font-size: 13px; }
+.cd-state { font-size: 12px; font-weight: 700; padding: 0 8px; border-radius: 4px; white-space: nowrap; background: var(--accepted-wash); color: var(--accepted); }
+.cd-state.gone { background: var(--negative-wash); color: var(--negative); }
+.cd-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+@media (max-width: 599px) { .cd-facts > div { grid-template-columns: 1fr; gap: 0; } .cd-item { grid-template-columns: 24px minmax(0, 1fr); } .cd-item .cd-state { grid-column: 2; justify-self: start; } }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="cd-page py-4">
+  <v-alert v-if="error" type="error" variant="tonal" density="compact">${ error }</v-alert>
+  <template v-if="d">
+    <section class="cd-panel cd-head" aria-labelledby="cd-h">
+      <div class="cd-kicker">
+        <a href="/cases/overview" @click="switchCase(d.investigation)">${ caseName(d.investigation) }</a>
+        <span>Conclusion</span>
+        <span class="cd-chip" :class="c.state === 'standing' ? (c.stands ? 'ok' : 'bad') : ''">${ stateWords }</span>
+      </div>
+      <h1 v-if="c.text" id="cd-h" class="cd-text text-headline-medium" dir="auto">${ c.text }</h1>
+      <h1 v-else id="cd-h" class="cd-text text-title-large cd-muted">${ c.state === 'erased' ? 'Erased with a person it named. The signature stays on the record; the words are gone.' : 'This conclusion rests on a sensitive source you have not revealed in this session.' }</h1>
+      <div v-if="c.state === 'standing' && !c.stands" class="cd-broken" role="status"><i class="ti ti-alert-triangle" aria-hidden="true"></i><span>${ brokenLine(c) }</span></div>
+      <dl v-if="c.text" class="cd-facts">
+        <div><dt>Confidence</dt><dd><b>${ c.standard.label }</b><span class="cd-muted">. ${ c.standard.meaning }</span></dd></div>
+        <div><dt>Signed</dt><dd>By ${ c.by } on ${ day(c.at) } with a passkey.</dd></div>
+        <div><dt>Peer review</dt><dd>${ peerLine(c.peer) }</dd></div>
+        <div><dt>The case</dt><dd>${ statusLine(d.status) }</dd></div>
+      </dl>
+      <div v-if="c.state === 'standing' && c.text" class="cd-actions">
+        <v-btn v-if="c.peer.state === 'asked' && mayAgree" color="primary" variant="flat" prepend-icon="ti ti-key" :loading="signBusy" @click="agree">I agree, sign the peer review</v-btn>
+        <v-btn v-if="c.peer.state !== 'none'" variant="outlined" prepend-icon="ti ti-message" :href="'/inbox?item=request:' + c.peer.request">Discuss in Inbox</v-btn>
+        <v-btn v-if="c.peer.state === 'none'" variant="outlined" prepend-icon="ti ti-user-check" @click="openAsk">Ask a colleague to peer review</v-btn>
+        <v-btn variant="outlined" prepend-icon="ti ti-pencil" :href="'/cases/conclusions/new?investigation=' + encodeURIComponent(d.investigation) + '&revises=' + c.id">Revise</v-btn>
+        <v-btn v-if="c.mine" variant="text" prepend-icon="ti ti-arrow-back-up" @click="withdraw = {reason: ''}">Withdraw</v-btn>
+      </div>
+      <p v-if="c.locked" class="cd-muted mb-0">It rests on <bdi>${ c.locked.map(l => l.title).join(', ') }</bdi>. Revealing is logged on each source's record.</p>
+      <div v-if="c.locked" class="cd-actions"><v-btn variant="outlined" prepend-icon="ti ti-eye" @click="reveal(c.locked, load)">Reveal and read it</v-btn></div>
+    </section>
+
+    <section v-if="d.items.length" class="cd-panel" aria-labelledby="cd-h-rests">
+      <h2 id="cd-h-rests" class="text-title-large">What it rests on</h2>
+      <p class="cd-muted mt-n1">${ plural(d.items.length, 'accepted item') }, as cited when it was signed. ${ gone ? plural(gone, 'item') + ' no longer ' + (gone === 1 ? 'stands' : 'stand') + '.' : 'All still stand.' }</p>
+      <div v-for="i in d.items" :key="i.id" class="cd-item">
+        <i :class="ICON[i.kind]" aria-hidden="true"></i>
+        <div>
+          <a v-if="i.href" :href="i.href">${ i.text || 'An item no longer on record' }</a>
+          <span v-else>${ i.text || 'An item no longer on record' }</span>
+          <div v-if="i.about || i.source" class="s">${ [i.about, i.source].filter(Boolean).join('. ') }</div>
+        </div>
+        <span class="cd-state" :class="{gone: i.state !== 'stands'}">${ i.state === 'stands' ? 'accepted' : i.words }</span>
+      </div>
+    </section>
+
+    <section v-if="c.text" class="cd-panel" aria-labelledby="cd-h-alt">
+      <h2 id="cd-h-alt" class="text-title-large">Alternatives set aside</h2>
+      <ul class="cd-list"><li v-for="(a, i) in c.alternatives" :key="i"><bdi>${ a.text }</bdi>. <span class="cd-muted">Why not: <bdi>${ a.why }</bdi></span></li></ul>
+    </section>
+
+    <section v-if="c.text" class="cd-panel" aria-labelledby="cd-h-open">
+      <h2 id="cd-h-open" class="text-title-large">Not established</h2>
+      <ul v-if="c.not_established.length" class="cd-list"><li v-for="(n, i) in c.not_established" :key="i" dir="auto">${ n }</li></ul>
+      <p v-else class="cd-muted mb-0">Nothing was recorded as not established.</p>
+    </section>
+
+    <section v-if="d.versions.length > 1" class="cd-panel" aria-labelledby="cd-h-v">
+      <h2 id="cd-h-v" class="text-title-large">Versions</h2>
+      <div v-for="v in d.versions" :key="v.id" class="cd-item">
+        <i class="ti ti-history" aria-hidden="true"></i>
+        <div><a :href="'/cases/conclusions/' + v.id" dir="auto">${ v.text || 'Erased' }</a><div class="s">${ v.by }, ${ day(v.at) }</div></div>
+        <span class="cd-state" :class="{gone: v.state !== 'standing'}">${ VERSION[v.state] }</span>
+      </div>
+    </section>
+  </template>
+
+  <v-dialog :model-value="!!ask" width="520" @update:model-value="v => { if (!v) ask = null }"><v-card v-if="ask" border>
+    <v-card-item><v-card-title>Ask for a peer review</v-card-title><v-card-subtitle style="white-space: normal">A colleague who did not write it checks the conclusion and signs that they agree, or says why not in the thread.</v-card-subtitle></v-card-item>
+    <v-card-text>
+      <v-select v-model="ask.reviewer" :items="analysts" item-title="name" item-value="id" label="Colleague" class="mb-2"></v-select>
+      <v-textarea v-model="ask.reason" label="What to check" rows="2" auto-grow></v-textarea>
+    </v-card-text>
+    <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="ask = null">Cancel</v-btn><v-btn color="primary" variant="flat" :disabled="!ask.reviewer || !ask.reason.trim()" :loading="ask.busy" @click="sendAsk">Send</v-btn></v-card-actions>
+  </v-card></v-dialog>
+
+  <v-dialog :model-value="!!withdraw" width="520" @update:model-value="v => { if (!v) withdraw = null }"><v-card v-if="withdraw" border>
+    <v-card-item><v-card-title>Withdraw the conclusion</v-card-title><v-card-subtitle style="white-space: normal">It stays on the record as withdrawn. If it is the case's only conclusion, the case is open again.</v-card-subtitle></v-card-item>
+    <v-card-text><v-textarea v-model="withdraw.reason" label="Reason" rows="2" auto-grow autofocus></v-textarea></v-card-text>
+    <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="withdraw = null">Cancel</v-btn><v-btn color="primary" variant="flat" prepend-icon="ti ti-key" :disabled="!withdraw.reason.trim()" @click="sendWithdraw">Sign with passkey</v-btn></v-card-actions>
+  </v-card></v-dialog>
+  {% include "entity/_sign.html" %}
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="application/json" id="boot">{{ boot|tojson|safe }}</script>
+<script type="module">
+import {brokenLine, day, peerLine, plural, reveal, signing, statusLine} from '/static/js/conclusions.js';
+
+const boot = JSON.parse(document.getElementById('boot').textContent);
+const err = e => e.response?.data?.error || e.response?.data?.message || e.response?.data?.description || e.message;
+const ICON = {link: 'ti ti-link', finding: 'ti ti-chart-dots-3', claim: 'ti ti-quote', gone: 'ti ti-circle-off'};
+const VERSION = {standing: 'current', revised: 'revised', withdrawn: 'withdrawn', erased: 'erased'};
+
+window.app = Vue.createApp({
+  mixins: [layoutMixin, signing], delimiters: config.delimiters,
+  data: () => ({d: null, error: '', ask: null, withdraw: null, analysts: [], ICON, VERSION}),
+  computed: {
+    c() { return this.d.conclusion; },
+    gone() { return this.d.items.filter(i => i.state !== 'stands').length; },
+    stateWords() {
+      const c = this.c;
+      if (c.state === 'standing') return c.stands ? 'Stands' : 'No longer stands';
+      return {revised: 'Revised', withdrawn: 'Withdrawn', erased: 'Erased'}[c.state];
+    },
+    mayAgree() { return !!this.c.reviewing; },
+  },
+  methods: {
+    plural, day, peerLine, statusLine, brokenLine, reveal,
+    async load() {
+      try {
+        this.d = (await axios.get(`/api/cases/conclusions/${boot.id}`)).data;
+        if (this.d.investigation && this.caseSel !== this.d.investigation) this.switchCase(this.d.investigation);
+      } catch (e) { this.error = e.response?.status === 404 ? 'No conclusion with that link.' : err(e); }
+    },
+    async openAsk() {
+      if (!this.analysts.length) this.analysts = (await axios.get('/api/collaboration/analysts')).data.items;
+      this.ask = {reviewer: null, reason: 'Peer review of the conclusion: what it rests on, the confidence level, the alternatives and what is not established.', busy: false};
+    },
+    async sendAsk() {
+      this.ask.busy = true;
+      try {
+        await axios.post('/api/collaboration/requests', {item: {statement: this.c.id, reviewer: this.ask.reviewer, reason: this.ask.reason}});
+        this.ask = null;
+        this.say('Sent for peer review. Your colleague is notified.');
+        await this.load();
+      } catch (e) { this.say(err(e)); this.ask.busy = false; }
+    },
+    agree() {
+      this.stage({conclusion: this.c.id}, '/api/review/conclusions/peer/options', 'Peer review: I agree', async () => {
+        this.say('Peer review signed with your passkey.');
+        await this.load();
+      });
+    },
+    sendWithdraw() {
+      const reason = this.withdraw.reason;
+      this.withdraw = null;
+      this.stage({conclusion: this.c.id, reason}, '/api/review/conclusions/withdraw/options', 'Withdraw the conclusion', async () => {
+        this.say('Withdrawn. Signed with your passkey.');
+        await this.load();
+      });
+    },
+  },
+  mounted() { this.load(); },
+});
+registerStkComponents(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

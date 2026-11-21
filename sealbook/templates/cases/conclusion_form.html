@@ -1,0 +1,238 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+.cf-page { max-width: 1240px; }
+.cf-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+.cf-muted { color: var(--ink-3); }
+.cf-cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+.cf-form { display: flex; flex-direction: column; gap: 22px; }
+.cf-form h2, .cf-side h2 { margin: 0 0 4px; }
+.cf-step p { margin: 0 0 10px; }
+.cf-scale { display: grid; gap: 6px; }
+.cf-level { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; align-items: baseline; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.cf-level input { margin: 0; }
+.cf-level.on { border-color: var(--accepted-line); background: var(--accepted-wash); }
+.cf-level .m { grid-column: 2; color: var(--ink-3); font-size: 13px; }
+.cf-pick { max-height: 360px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+.cf-pick h3 { position: sticky; top: 0; z-index: 1; margin: 0; padding: 6px 12px; background: var(--panel); box-shadow: inset 0 -1px 0 var(--line); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+.cf-item { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; padding: 8px 12px; border-top: 1px solid var(--line); cursor: pointer; align-items: baseline; }
+.cf-item input { margin: 0; }
+.cf-item .s { grid-column: 2; color: var(--ink-3); font-size: 12.5px; }
+.cf-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.cf-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.cf-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; border-top: 1px solid var(--line); padding-top: 16px; }
+.cf-side { background: var(--agent-wash); border-color: var(--agent-line); display: flex; flex-direction: column; gap: 12px; }
+.cf-draft { border-top: 1px solid var(--agent-solid); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.cf-draft .t { font-weight: 600; margin: 0; }
+.cf-draft ul { margin: 0; padding-left: 18px; }
+.cf-against { padding: 8px 10px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
+.cf-against .w { margin: 0 0 4px; }
+.cf-against .c { font-size: 13px; color: var(--ink-2); }
+@media (max-width: 959px) { .cf-cols { grid-template-columns: 1fr; } .cf-row { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<v-container fluid class="cf-page py-4">
+  <v-alert v-if="!slug" type="info" variant="tonal" density="compact">Pick a case in the sidebar first.</v-alert>
+  <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mb-3">${ error }</v-alert>
+  <div v-if="slug" class="cf-cols">
+    <section class="cf-panel cf-form" aria-labelledby="cf-h">
+      <header>
+        <h1 id="cf-h" class="text-headline-small">${ revises ? 'Revise the conclusion' : 'Write a conclusion' }</h1>
+        <p class="cf-muted mt-1 mb-0">${ caseName(slug) }. A conclusion is yours: you write it, choose what it rests on and sign it with your passkey. It states what the evidence shows on a stated standard; it is not a verdict.</p>
+      </header>
+
+      <div class="cf-step">
+        <h2 class="text-title-medium">What is concluded</h2>
+        <p class="cf-muted text-body-medium">One sentence.</p>
+        <v-textarea v-model="f.text" rows="2" auto-grow counter="400" maxlength="400" label="Conclusion" hide-details="auto" dir="auto"></v-textarea>
+      </div>
+
+      <div class="cf-step">
+        <h2 class="text-title-medium">How sure</h2>
+        <p class="cf-muted text-body-medium">The team's scale, weakest first.</p>
+        <div class="cf-scale" role="radiogroup" aria-label="Confidence">
+          <label v-for="l in scale" :key="l.key" class="cf-level" :class="{on: f.standard === l.key}">
+            <input type="radio" name="standard" :value="l.key" v-model="f.standard">
+            <b>${ l.label }</b><span class="m">${ l.meaning }</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="cf-step">
+        <h2 class="text-title-medium">What it rests on</h2>
+        <p class="cf-muted text-body-medium">Accepted items of this case only. ${ f.rests_on.length ? plural(f.rests_on.length, 'item') + ' chosen.' : 'Choose at least one.' }</p>
+        <v-text-field v-model="q" density="compact" prepend-inner-icon="ti ti-search" label="Filter" hide-details class="mb-2"></v-text-field>
+        <div class="cf-pick">
+          <template v-for="g in groups" :key="g.key">
+            <h3 v-if="g.items.length">${ g.title } (${ g.items.length })</h3>
+            <label v-for="i in g.items" :key="i.id" class="cf-item">
+              <input type="checkbox" :value="i.id" v-model="f.rests_on">
+              <span>${ i.text }</span>
+              <span v-if="i.about || i.source" class="s">${ [i.about, i.source].filter(Boolean).join('. ') }</span>
+            </label>
+          </template>
+          <p v-if="!total" class="cf-muted pa-3 mb-0">${ loaded ? 'Nothing in this case is accepted yet. Accept claims, links or findings in Review first.' : 'Loading what this case has accepted.' }</p>
+        </div>
+      </div>
+
+      <div class="cf-step">
+        <h2 class="text-title-medium">Alternatives considered</h2>
+        <p class="cf-muted text-body-medium">Each other explanation you weighed, and why it was set aside.</p>
+        <div v-for="(a, i) in f.alternatives" :key="i" class="cf-row mb-2">
+          <v-text-field v-model="a.text" density="compact" label="Alternative" hide-details dir="auto"></v-text-field>
+          <v-text-field v-model="a.why" density="compact" label="Why it was set aside" hide-details dir="auto"></v-text-field>
+          <v-btn icon="ti ti-x" variant="text" size="small" :aria-label="'Remove alternative ' + (i + 1)" @click="f.alternatives.splice(i, 1)"></v-btn>
+        </div>
+        <v-btn variant="text" size="small" prepend-icon="ti ti-plus" @click="f.alternatives.push({text: '', why: ''})">Add an alternative</v-btn>
+      </div>
+
+      <div class="cf-step">
+        <h2 class="text-title-medium">Not established</h2>
+        <p class="cf-muted text-body-medium">What the case does not show yet.</p>
+        <div v-for="(n, i) in f.not_established" :key="i" class="cf-line mb-2">
+          <v-text-field v-model="f.not_established[i]" density="compact" label="Not established" hide-details dir="auto"></v-text-field>
+          <v-btn icon="ti ti-x" variant="text" size="small" :aria-label="'Remove line ' + (i + 1)" @click="f.not_established.splice(i, 1)"></v-btn>
+        </div>
+        <v-btn variant="text" size="small" prepend-icon="ti ti-plus" @click="f.not_established.push('')">Add a line</v-btn>
+      </div>
+
+      <footer class="cf-foot">
+        <v-checkbox v-if="status && status.status !== 'concluded'" v-model="f.conclude" density="compact" hide-details label="Mark the case concluded"></v-checkbox>
+        <v-spacer></v-spacer>
+        <v-btn variant="text" :href="'/cases/overview'">Cancel</v-btn>
+        <v-btn color="primary" variant="flat" prepend-icon="ti ti-key" :disabled="!ready" :loading="signBusy" @click="submit">Sign with passkey</v-btn>
+      </footer>
+      <p v-if="!ready && missing" class="cf-muted text-body-small mb-0" aria-live="polite">${ missing }</p>
+    </section>
+
+    <aside class="cf-panel cf-side" aria-labelledby="cf-h-draft">
+      <div>
+        <h2 id="cf-h-draft" class="text-title-large">Drafts from the agent</h2>
+        <p class="cf-muted text-body-medium mb-0">The conclusion drafter reads what this case has accepted, proposes conclusions and lists the claims that do not fit. Proposals only: nothing is concluded on its word.</p>
+      </div>
+      <div><v-btn color="agent" variant="outlined" prepend-icon="ti ti-sparkles" :loading="drafting" @click="draft">${ drafts && drafts.model ? 'Draft again' : 'Draft conclusions' }</v-btn></div>
+      <p v-if="drafts && drafts.model && drafts.model.demo" class="cf-muted text-body-small mb-0">Fixed answer, no model ran: a demonstration of the steps.</p>
+      <div v-for="(d, i) in (drafts ? drafts.items : [])" :key="i" class="cf-draft">
+        <p class="t" dir="auto">${ d.conclusion }</p>
+        <div class="text-body-small">Rests on:</div>
+        <ul class="text-body-small"><li v-for="b in d.basis" :key="b.id">${ b.text }</li></ul>
+        <div v-if="d.against.length" class="text-body-small">What does not fit:</div>
+        <div v-for="(a, j) in d.against" :key="j" class="cf-against">
+          <template v-if="a.locked.length"><span class="cf-muted">Rests on a sensitive source you have not revealed.</span></template>
+          <template v-else>
+            <p class="w text-body-medium" dir="auto">${ a.why }</p>
+            <div v-for="c in a.claims" :key="c.id" class="c"><a :href="c.href">${ c.record || 'A record' }</a>: ${ c.field } <bdi>${ c.value }</bdi>${ c.when ? ', ' + c.when : '' }. ${ c.source }, ${ c.decided ? 'accepted' : 'unconfirmed' }.</div>
+          </template>
+        </div>
+        <p v-if="!d.against.length" class="cf-muted text-body-small mb-0">The drafter found nothing in the case that does not fit.</p>
+        <div><v-btn size="small" variant="tonal" color="agent" prepend-icon="ti ti-arrow-left" @click="use(d)">Start from this draft</v-btn></div>
+      </div>
+      <p v-if="drafts && drafts.outcome && !drafts.items.length" class="cf-muted mb-0">${ drafts.outcome.reason }</p>
+    </aside>
+  </div>
+  {% include "entity/_sign.html" %}
+</v-container>
+{% endblock %}
+{% block js %}
+<script type="application/json" id="boot">{{ boot|tojson|safe }}</script>
+<script type="module">
+import {plural, signing} from '/static/js/conclusions.js';
+
+const boot = JSON.parse(document.getElementById('boot').textContent);
+const params = new URLSearchParams(location.search);
+const err = e => e.response?.data?.error || e.response?.data?.message || e.response?.data?.description || e.message;
+const pause = ms => new Promise(r => setTimeout(r, ms));
+
+window.app = Vue.createApp({
+  mixins: [layoutMixin, signing], delimiters: config.delimiters,
+  data: () => ({
+    scale: boot.scale, revises: params.get('revises'), found: null, loaded: false, q: '', status: null,
+    f: {text: '', standard: null, rests_on: [], alternatives: [{text: '', why: ''}], not_established: [''], conclude: true},
+    drafts: null, drafting: false, error: '',
+  }),
+  computed: {
+    slug() { return params.get('investigation') || this.caseSel; },
+    groups() {
+      const f = this.found || {links: [], findings: [], claims: []}, q = this.q.toLowerCase();
+      const keep = i => !q || `${i.text} ${i.about || ''} ${i.source || ''}`.toLowerCase().includes(q);
+      return [
+        {key: 'links', title: 'Same-person links', items: f.links.filter(keep)},
+        {key: 'findings', title: 'Findings', items: f.findings.filter(keep)},
+        {key: 'claims', title: 'Claims', items: f.claims.filter(keep)},
+      ];
+    },
+    total() { return this.groups.reduce((n, g) => n + g.items.length, 0); },
+    alternatives() { return this.f.alternatives.filter(a => a.text.trim() || a.why.trim()); },
+    missing() {
+      if (!this.f.text.trim()) return 'Write the conclusion.';
+      if (!this.f.standard) return 'Choose how sure the team is.';
+      if (!this.f.rests_on.length) return 'Choose what it rests on.';
+      if (!this.alternatives.length) return 'Name at least one alternative and why it was set aside.';
+      if (this.alternatives.some(a => !a.text.trim() || !a.why.trim())) return 'Each alternative needs why it was set aside.';
+      return '';
+    },
+    ready() { return !this.missing; },
+  },
+  methods: {
+    plural,
+    useCase() { this.load(); },
+    async load() {
+      if (!this.slug) return;
+      const params = {investigation: this.slug};
+      try {
+        const [found, cc] = await Promise.all([axios.get('/api/cases/conclusions/citeable', {params}), axios.get('/api/cases/conclusions', {params})]);
+        this.found = found.data; this.status = cc.data.status; this.loaded = true;
+        if (this.revises) {
+          const {data} = await axios.get(`/api/cases/conclusions/${this.revises}`);
+          const c = data.conclusion;
+          Object.assign(this.f, {text: c.text, standard: c.standard.key, rests_on: c.rests_on.filter(i => this.known(i)), alternatives: c.alternatives.map(a => ({...a})), not_established: [...c.not_established, '']});
+        }
+      } catch (e) { this.error = err(e); }
+      this.loadDrafts();
+    },
+    known(id) { const f = this.found; return [...f.links, ...f.findings, ...f.claims].some(i => i.id === id); },
+    async loadDrafts() {
+      try { this.drafts = (await axios.get('/api/agents/conclusions', {params: {investigation: this.slug}})).data; }
+      catch { this.drafts = null; }
+    },
+    async draft() {
+      this.drafting = true; this.error = '';
+      try {
+        const {data} = await axios.post('/api/agents/conclusions', {item: {investigation: this.slug}});
+        for (let i = 0; i < 120; i++) {
+          await pause(1000);
+          const r = (await axios.get(`/api/agents/conclusions/runs/${data.run}`)).data;
+          if (r.status === 'failed') throw new Error(r.error || 'The drafter failed.');
+          if (r.status === 'done') break;
+        }
+        await this.loadDrafts();
+      } catch (e) {
+        const d = e.response?.data;
+        this.error = d?.reason === 'off' ? 'The agents are off on this server: ' + d.missing.join(', ') + ' is not set.' : err(e);
+      } finally { this.drafting = false; }
+    },
+    use(d) {
+      this.f.text = d.conclusion;
+      this.f.rests_on = d.basis.map(b => b.id);
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      this.say('Draft copied. Check it, name the alternatives and what is not established, then sign.');
+    },
+    submit() {
+      const item = {
+        investigation: this.slug, text: this.f.text.trim(), standard: this.f.standard, rests_on: this.f.rests_on,
+        alternatives: this.alternatives, not_established: this.f.not_established.filter(n => n.trim()),
+        conclude: this.f.conclude, revises: this.revises || undefined,
+      };
+      this.stage(item, '/api/review/conclusions/options', this.revises ? 'Revise the conclusion' : 'Sign the conclusion', async out => {
+        const id = out.statements.find(s => s.prop === 'conclusion').id;
+        location.href = '/cases/conclusions/' + id;
+      });
+    },
+  },
+  mounted() { this.load(); },
+});
+registerStkComponents(app);
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}

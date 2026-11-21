@@ -170,6 +170,8 @@ def subject_label(subject: str, files: dict) -> str:
     kind, _, ref = subject.partition(":")
     if kind == "blob":
         return files.get(ref, f"blob {ref[:8]}")
+    if kind == "case":
+        return f"case {ref}"
     return f"{kind} {ref[:6]}"
 
 
@@ -201,6 +203,7 @@ TOOL_WORDS = {
     "contradictions": "contradiction hunter",
     "notice": "noticer",
     "approximate": "place finder",
+    "conclude": "conclusion drafter",
     "notice_link": "noticer link proposal",
     "import": "import",
 }

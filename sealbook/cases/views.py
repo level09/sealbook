@@ -4,7 +4,7 @@ import orjson
 from quart import Blueprint, Response, abort, g, render_template, request
 from quart_security import current_user
 
-from sealbook.cases import overview, service
+from sealbook.cases import conclusions, overview, service
 from sealbook.collaboration.views import guard, no_store
 from sealbook.ledger.write import principal_for_user
 
@@ -67,3 +67,63 @@ async def case_overview():
     except service.Unknown:
         abort(404)
     return _json(await overview.overview(db, current_user, case.slug))
+
+
+# --- conclusions ---------------------------------------------------------------
+# Reads only; every write is a signed gesture through /api/review/conclusions/*.
+
+
+async def _slug(db) -> str:
+    try:
+        return (await service.require(db, request.args.get("investigation"))).slug
+    except service.Unknown:
+        abort(404)
+
+
+@bp_case_pages.get("/cases/conclusions/new")
+async def conclusion_form():
+    return await render_template(
+        "cases/conclusion_form.html", boot={"scale": conclusions.standards()}
+    )
+
+
+@bp_case_pages.get("/cases/conclusions/<uuid:cid>")
+async def conclusion_page(cid):
+    return await render_template("cases/conclusion.html", boot={"id": str(cid)})
+
+
+@bp_cases.get("/conclusions")
+async def conclusion_list():
+    db = g.db_session
+    slug = await _slug(db)
+    out = await conclusions.listing(db, slug, current_user)
+    shown = [
+        i
+        for c in out["conclusions"]
+        if c.get("text")
+        for i in [c["id"], *c["rests_on"]]
+    ]
+    await conclusions.log_view(db, current_user, slug, shown)
+    await db.commit()
+    return _json(out)
+
+
+@bp_cases.get("/conclusions/citeable")
+async def conclusion_citeable():
+    db = g.db_session
+    return _json(await conclusions.citeable(db, await _slug(db)))
+
+
+@bp_cases.get("/conclusions/<uuid:cid>")
+async def conclusion_detail(cid):
+    db = g.db_session
+    out = await conclusions.detail(db, cid, current_user)
+    if out is None:
+        abort(404)
+    c = out["conclusion"]
+    if c.get("text"):
+        await conclusions.log_view(
+            db, current_user, out["investigation"], [c["id"], *c["rests_on"]]
+        )
+        await db.commit()
+    return _json(out)

@@ -70,14 +70,15 @@
           <div class="ibx-about">
             <media-thumb v-if="doc(cur.req)" :sha="doc(cur.req).sha256" :file="doc(cur.req).title" :href="srcHref(cur.req)" :caption="false" :width="isMobile ? 64 : 96" :height="isMobile ? 44 : 64"></media-thumb>
             <div class="t">
-              <div class="text-body-small ibx-muted">Review request on a ${ cur.req.proposal.prop === 'finding' ? 'finding' : 'claim' }</div>
+              <div class="text-body-small ibx-muted">Review request on a ${ cur.req.proposal.prop === 'finding' ? 'finding' : cur.req.proposal.prop === 'conclusion' ? 'conclusion' : 'claim' }</div>
               <div><strong dir="auto">${ sentence(cur.req) }</strong>
                 <span class="r-chip ms-1" :class="'tier-' + cur.req.proposal.tier">${ cur.req.proposal.tier }</span></div>
               <div class="text-body-small ibx-muted"><template v-if="doc(cur.req)">In <a :href="srcHref(cur.req)">${ doc(cur.req).title }</a><template v-if="spanLabel(cur.req.proposal.span)">, ${ spanLabel(cur.req.proposal.span) }</template>,</template>
                 proposed by <actor-chip v-if="cur.req.proposal.actor" :actor="{kind: cur.req.proposal.actor.kind, name: cur.req.proposal.actor.label, detail: cur.req.proposal.actor.detail}"></actor-chip></div>
               <div class="d-flex ga-2 mt-2 flex-wrap">
                 <v-btn v-if="doc(cur.req)" size="small" variant="outlined" prepend-icon="ti ti-file-search" :href="srcHref(cur.req)">Open source</v-btn>
-                <v-btn size="small" :color="decidable(cur.req) ? 'primary' : undefined" :variant="decidable(cur.req) ? 'flat' : 'outlined'" prepend-icon="ti ti-checklist" :href="'/review?request=' + cur.req.id">${ decidable(cur.req) ? 'Decide in Review' : 'Open in Review' }</v-btn>
+                <v-btn v-if="cur.req.proposal.prop === 'conclusion'" size="small" variant="flat" color="primary" prepend-icon="ti ti-signature" :href="'/cases/conclusions/' + cur.req.proposal.id">Open the conclusion</v-btn>
+                <v-btn v-else size="small" :color="decidable(cur.req) ? 'primary' : undefined" :variant="decidable(cur.req) ? 'flat' : 'outlined'" prepend-icon="ti ti-checklist" :href="'/review?request=' + cur.req.id">${ decidable(cur.req) ? 'Decide in Review' : 'Open in Review' }</v-btn>
               </div>
             </div>
           </div>

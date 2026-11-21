@@ -39,12 +39,75 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
 .ov-more { display: block; padding: 10px 20px; border-top: 1px solid var(--line); font-weight: 550; }
 .ov-empty { padding: 12px 20px 16px; }
 @media (max-width: 959px) { .ov-cols { grid-template-columns: 1fr; } }
+/* The case's conclusion leads the page: what was concluded, how sure, what is open. */
+.cc-panel { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; border-color: var(--line-strong); }
+.cc-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 16px; }
+.cc-head h2, .cc-head p { margin: 0; }
+.cc-status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: 13px; background: var(--wash); color: var(--ink-2); white-space: nowrap; }
+.cc-status.cc-done { background: var(--accepted-wash); color: var(--accepted); }
+.cc-status.cc-closed { background: var(--wash); color: var(--ink-3); }
+.cc-one { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.cc-text { margin: 0; font-weight: 500; max-width: 62ch; }
+.cc-broken { display: flex; gap: 8px; align-items: baseline; padding: 8px 12px; border-radius: 8px; background: var(--negative-wash); color: var(--negative); border: 1px solid var(--negative-line); }
+.cc-facts { display: grid; gap: 6px; margin: 0; }
+.cc-facts > div { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 12px; }
+.cc-facts dt { color: var(--ink-3); font-size: 13px; padding-top: 1px; }
+.cc-facts dd { margin: 0; }
+.cc-actions { margin-left: -8px; }
+.cc-empty { margin: 0; max-width: 70ch; }
+.cc-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; border-top: 1px solid var(--line); padding-top: 14px; }
+@media (max-width: 599px) { .cc-facts > div { grid-template-columns: 1fr; gap: 0; } }
 </style>
 {% endblock %}
 {% block content %}
 <v-container fluid class="ov-page py-4">
   <v-alert v-if="!caseSel" type="info" variant="tonal" density="compact">Pick a case in the sidebar to see where it stands.</v-alert>
   <v-alert v-if="error" type="error" density="compact">${ error }</v-alert>
+
+  <section v-if="cc" class="ov-panel cc-panel" aria-labelledby="ov-h-conclusion">
+    <header class="cc-head">
+      <div>
+        <h2 id="ov-h-conclusion" class="text-title-large">${ cc.conclusions.length > 1 ? 'Conclusions' : 'Conclusion' }</h2>
+        <p class="ov-muted text-body-medium mt-1">${ statusLine(cc.status) }</p>
+      </div>
+      <span class="cc-status" :class="STATUS[cc.status.status].cls"><i :class="STATUS[cc.status.status].icon" aria-hidden="true"></i>${ STATUS[cc.status.status].label }</span>
+    </header>
+    <article v-for="c in cc.conclusions" :key="c.id" class="cc-one">
+      <template v-if="c.state === 'erased'">
+        <p class="ov-muted">A conclusion here was erased with a person it named. Its signature stays on the record; its words are gone.</p>
+      </template>
+      <template v-else-if="c.locked">
+        <p class="ov-muted mb-0">This conclusion rests on ${ c.locked.length === 1 ? 'a sensitive source' : c.locked.length + ' sensitive sources' } you have not revealed in this session: <bdi>${ c.locked.map(l => l.title).join(', ') }</bdi>. Revealing is logged on each source's record.</p>
+        <div><v-btn variant="outlined" size="small" prepend-icon="ti ti-eye" @click="reveal(c.locked, load)">Reveal and read it</v-btn></div>
+      </template>
+      <template v-else>
+        <p class="cc-text text-headline-small" dir="auto">${ c.text }</p>
+        <div v-if="!c.stands" class="cc-broken" role="status"><i class="ti ti-alert-triangle" aria-hidden="true"></i><span>${ brokenLine(c) }</span></div>
+        <dl class="cc-facts">
+          <div><dt>Confidence</dt><dd><b>${ c.standard.label }</b><span class="ov-muted">. ${ c.standard.meaning }</span></dd></div>
+          <div><dt>Rests on</dt><dd>${ plural(c.rests_on.length, 'accepted item') }, signed by ${ c.by } on ${ day(c.at) }. ${ peerLine(c.peer) }</dd></div>
+          <div v-if="c.alternatives.length"><dt>Alternatives set aside</dt><dd><span v-for="(a, i) in c.alternatives" :key="i" class="d-block"><bdi>${ a.text }</bdi>. <span class="ov-muted">Why not: <bdi>${ a.why }</bdi></span></span></dd></div>
+          <div><dt>Not established</dt><dd><span v-for="(n, i) in c.not_established" :key="i" class="d-block" dir="auto">${ n }</span><span v-if="!c.not_established.length" class="ov-muted">Nothing was recorded as not established.</span></dd></div>
+        </dl>
+        <div class="cc-actions"><v-btn :href="'/cases/conclusions/' + c.id" variant="text" size="small" append-icon="ti ti-arrow-right">What it rests on</v-btn></div>
+      </template>
+    </article>
+    <p v-if="!cc.conclusions.length" class="ov-muted cc-empty">${ cc.status.status === 'closed' ? 'The case was closed without a conclusion.' : 'No conclusion yet. A conclusion says what the case shows, how sure the team is on a stated standard, the alternatives set aside and what is not established. A person writes and signs it.' }</p>
+    <footer class="cc-foot">
+      <v-btn v-if="cc.status.status !== 'closed'" color="primary" variant="flat" prepend-icon="ti ti-signature" :href="'/cases/conclusions/new?investigation=' + encodeURIComponent(caseSel)">Write a conclusion</v-btn>
+      <v-btn v-if="cc.status.status === 'open'" variant="outlined" prepend-icon="ti ti-folder-x" @click="ask = {status: 'closed', reason: ''}">Close without a conclusion</v-btn>
+      <v-btn v-if="cc.status.status !== 'open'" variant="outlined" prepend-icon="ti ti-folder-open" @click="ask = {status: 'open', reason: ''}">Reopen the case</v-btn>
+      <span v-if="cc.earlier" class="ov-muted text-body-small">${ plural(cc.earlier, 'earlier conclusion') } revised or withdrawn, kept on the record.</span>
+    </footer>
+  </section>
+
+  <v-dialog :model-value="!!ask" width="520" @update:model-value="v => { if (!v) ask = null }"><v-card v-if="ask" border>
+    <v-card-item><v-card-title>${ ask.status === 'open' ? 'Reopen the case' : 'Close without a conclusion' }</v-card-title>
+      <v-card-subtitle style="white-space: normal">${ ask.status === 'open' ? 'Conclusions already signed stay on the record. Say why the case is open again.' : 'Say why the case ends without a conclusion. It can be reopened later.' }</v-card-subtitle></v-card-item>
+    <v-card-text><v-textarea v-model="ask.reason" label="Reason" rows="2" auto-grow autofocus counter="2000"></v-textarea></v-card-text>
+    <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="ask = null">Cancel</v-btn><v-btn color="primary" variant="flat" prepend-icon="ti ti-key" :disabled="!ask.reason.trim()" :loading="signBusy" @click="changeStatus">Sign with passkey</v-btn></v-card-actions>
+  </v-card></v-dialog>
+  {% include "entity/_sign.html" %}
 
   <section v-if="s" class="ov-panel ov-stands" aria-labelledby="ov-h-stands">
     <header>
@@ -112,14 +175,15 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
 {% block js %}
 <script type="module">
 import {plural} from '/static/js/changes.js';
+import {STATUS, brokenLine, day, peerLine, reveal, signing, statusLine} from '/static/js/conclusions.js';
 
 const TIERS = [{k: 'accepted', s: 'accepted, signed by a person', href: '/people'}, {k: 'corroborated', s: 'corroborated by independent origins', href: '/people'}, {k: 'unconfirmed', s: 'unconfirmed, waiting for review', href: '/review?box=open'}];
 const err = e => e.response?.data?.message || e.response?.data?.description || e.message;
 const when = iso => new Date(iso).toLocaleString(undefined, {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
 
 window.app = Vue.createApp({
-  mixins: [layoutMixin], delimiters: config.delimiters,
-  data: () => ({s: null, away: null, todo: null, error: '', reading: false, done: 0, TIERS}),
+  mixins: [layoutMixin, signing], delimiters: config.delimiters,
+  data: () => ({s: null, away: null, todo: null, cc: null, ask: null, error: '', reading: false, done: 0, TIERS, STATUS}),
   computed: {
     claimTotal() { return this.s ? TIERS.reduce((n, t) => n + this.s.claims[t.k], 0) : 0; },
     waiting() { return this.s?.sources.waiting || []; },
@@ -147,7 +211,7 @@ window.app = Vue.createApp({
       const d = this.todo, late = due => !!due && due < new Date().toLocaleDateString('sv');
       return [
         ...d.assigned.map(a => ({key: a.sha, title: a.title, why: a.status === 'returned' ? 'Returned to you for changes.' : 'Assigned to you. Read it and decide its claims.', href: '/evidence/' + a.sha, pill: a.status === 'returned' ? 'returned' : late(a.due) ? 'overdue' : a.priority + ' priority', hi: a.status === 'returned' || late(a.due)})),
-        ...d.asked.map(q => ({key: q.request, title: q.reason, why: `${q.from} is waiting for your decision.`, href: q.incident ? '/incidents/' + q.incident : '/review?request=' + q.request, pill: 'asked'})),
+        ...d.asked.map(q => ({key: q.request, title: q.reason, why: `${q.from} is waiting for your decision.`, href: q.conclusion ? '/cases/conclusions/' + q.conclusion : q.incident ? '/incidents/' + q.incident : '/review?request=' + q.request, pill: 'asked'})),
         ...d.triage.map(t => ({key: t.sha, title: t.title || (t.hidden ? 'Title hidden: sensitive item' : 'Untitled item'), why: 'Read for you. Check the first pass and sign it.', href: '/evidence/' + t.sha, pill: t.priority + ' priority', hi: t.priority === 'high'})),
         ...d.groups.map(g => ({key: g.id, title: `${plural(g.posts, 'post')} that report one event`, why: 'One decision creates the incident.', href: '/discover?f=' + g.id, pill: 'group'})),
         ...d.findings.map(f => ({key: f.id, title: f.reason, why: `${f.label}. One signature records it.`, href: '/discover?f=' + f.id, pill: f.band})),
@@ -155,17 +219,26 @@ window.app = Vue.createApp({
     },
   },
   methods: {
-    plural,
+    plural, day, statusLine, brokenLine, peerLine, reveal,
     ago(at) { const h = Math.round((Date.now() - new Date(at)) / 36e5); return h < 1 ? 'Just now' : h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`; },
     useCase() { this.load(); },
     async load() {
-      if (!this.caseSel) { this.s = null; return; }
+      if (!this.caseSel) { this.s = null; this.cc = null; return; }
       const params = {investigation: this.caseSel};
       try {
         const {data} = await axios.get('/api/cases/overview', {params});
         this.s = data.stands; this.away = data.away; this.error = '';
       } catch (e) { this.error = err(e); }
       axios.get('/api/todo', {params}).then(r => { this.todo = r.data; }).catch(() => { this.todo = null; });
+      axios.get('/api/cases/conclusions', {params}).then(r => { this.cc = r.data; }).catch(() => { this.cc = null; });
+    },
+    changeStatus() {
+      const {status, reason} = this.ask;
+      this.ask = null;
+      this.stage({investigation: this.caseSel, status, reason}, '/api/review/conclusions/status/options', status === 'open' ? 'Reopen the case' : 'Close the case without a conclusion', async () => {
+        this.say(status === 'open' ? 'The case is open again. Signed with your passkey.' : 'The case is closed. Signed with your passkey.');
+        this.load();
+      });
     },
     // No bulk path: each source goes through the evidence page's own Read it now or Try again.
     async readAll() {

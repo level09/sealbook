@@ -126,5 +126,16 @@ def violations() -> dict[str, tuple[str, ...]]:
     }
 
 
+@cache
+def standards() -> dict[str, dict]:
+    """The scale a conclusion states its confidence on, weakest first, with one line
+    each on what it means (standards.csv, the team's to change). A conclusion keeps
+    the label it was signed with, so a later edit of the scale never rewrites it."""
+    return {
+        r["key"]: {"label": r["label"].strip(), "meaning": r["meaning"].strip()}
+        for r in _rows("standards.csv")
+    }
+
+
 assert priority("incident", "some_evidence") == "high"
 assert priority("post_incident", "some_evidence") == "low"

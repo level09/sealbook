@@ -73,9 +73,9 @@ async def request_review(db, proposal, user, reviewer_id, reason):
     if not isinstance(reason, str) or not reason.strip() or len(reason) > 4000:
         raise ValueError("reason must contain 1 to 4000 characters")
     tier = (await db.get(StatementTier, proposal.id)).tier
-    # An accepted incident is sent for peer review on its incident statement.
+    # An accepted incident or conclusion is sent for peer review on its statement.
     if tier != Tier.UNCONFIRMED and not (
-        proposal.prop == Prop.INCIDENT and tier == Tier.ACCEPTED
+        proposal.prop in (Prop.INCIDENT, Prop.CONCLUSION) and tier == Tier.ACCEPTED
     ):
         raise ValueError("only pending proposals can be assigned")
     if await db.get(Payload, proposal.commitment) is None:

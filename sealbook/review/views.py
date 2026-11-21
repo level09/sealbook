@@ -12,6 +12,7 @@ from quart import Blueprint, Response, abort, g, render_template, request, url_f
 from quart_security import auth_required, current_user
 from sqlalchemy import func, select
 
+from sealbook.cases import conclusions
 from sealbook.collaboration import live
 from sealbook.collaboration import service as collaboration
 from sealbook.discovery import service as discovery
@@ -588,6 +589,34 @@ async def incident_peer_review():
         lambda db, who: findings.no_review_needed(
             db, current_user, item.get("incident"), who
         )
+    )
+
+
+@review.post("/api/review/conclusions/options")
+async def conclusion_write():
+    item = await _item()
+    return await _planned(lambda db, who: conclusions.plan(db, item, who))
+
+
+@review.post("/api/review/conclusions/status/options")
+async def case_status():
+    item = await _item()
+    return await _planned(lambda db, who: conclusions.plan_status(db, item, who))
+
+
+@review.post("/api/review/conclusions/withdraw/options")
+async def conclusion_withdraw():
+    item = await _item()
+    return await _planned(
+        lambda db, who: conclusions.plan_withdraw(db, current_user, item, who)
+    )
+
+
+@review.post("/api/review/conclusions/peer/options")
+async def conclusion_agree():
+    item = await _item()
+    return await _planned(
+        lambda db, who: conclusions.plan_agree(db, current_user, item, who)
     )
 
 

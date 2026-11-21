@@ -155,6 +155,17 @@ class Prop(enum.StrEnum):
     # "basis" (statement refs) and optionally "why". Proposed by an agent, decided
     # by a person; never collapses source origins.
     RELATION = "relation"
+    # A person's conclusion on a case (subject "case:<slug>"), value {"text": one
+    # sentence, "lang", "standard": a key of method.standards(), "standard_label",
+    # "rests_on": [accepted statement ids], "people": ["person:<uuid>" the cited
+    # statements are about], "alternatives": [{"text", "why"}], "not_established":
+    # [text], "gesture"}. Human authored and passkey signed, never by an agent; a
+    # revision supersedes it, a withdrawal retracts it.
+    CONCLUSION = "conclusion"
+    # Where a case stands (subject "case:<slug>"), value {"status": "open" |
+    # "concluded" | "closed", "reason": text, "at", "gesture"}. The latest accepted
+    # one holds; with none the case is open.
+    CASE_STATUS = "case_status"
 
 
 # Props whose value is read out of document bytes: an agent-authored one without a

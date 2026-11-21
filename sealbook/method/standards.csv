@@ -1,0 +1,5 @@
+key,label,meaning
+reasonable_suspicion,Reasonable suspicion,"Reliable information points this way, enough to keep looking, not enough to rely on."
+reasonable_grounds,Reasonable grounds to believe,"Enough consistent, reliable information that an ordinary careful person would believe it."
+balance_of_probabilities,Balance of probabilities,"More likely than not, once the alternatives are weighed."
+clear_and_convincing,Clear and convincing,"Highly probable; the alternatives considered are set aside on the evidence."

@@ -640,6 +640,11 @@ REVIEWED = {
     Prop.DESCRIPTION: "a description line",
     Prop.LABEL: "a label",
     Prop.INCIDENT: "the incident",
+    Prop.CONCLUSION: "the conclusion",
+}
+STATUS_WORDS = {
+    "open": "reopen the case",
+    "closed": "close the case without a conclusion",
 }
 
 
@@ -666,7 +671,11 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
         ],
     )
 
-    reviewed = [_about(s.subject) for s in statements if s.prop == Prop.REVIEW]
+    reviewed = [
+        _about(s.subject)
+        for s in statements
+        if s.prop in (Prop.REVIEW, Prop.RETRACTION)
+    ]
     props = dict(
         (
             await db.execute(
@@ -705,6 +714,21 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
             why_ = f": {v['reason']}" if v.get("reason") else ""
             what = REVIEWED.get(props.get(_about(s.subject)), "the claim")
             return f"{v['verdict']} {what}{why_}"
+        if s.prop == Prop.CONCLUSION:
+            n = len(v["rests_on"])
+            return (
+                f"\u201c{v['text']}\u201d, {v['standard_label'].lower()}, resting on "
+                f"{n} accepted item{'s' if n != 1 else ''}"
+            )
+        if s.prop == Prop.CASE_STATUS:
+            if v["status"] == "concluded":
+                return "mark the case concluded"
+            return f"{STATUS_WORDS[v['status']]}: {v['reason']}"
+        if (
+            s.prop == Prop.RETRACTION
+            and props.get(_about(s.subject)) == Prop.CONCLUSION
+        ):
+            return f"withdraw the conclusion: {v['reason']}"
         return f"undo {short(s.subject)}"
 
     return [

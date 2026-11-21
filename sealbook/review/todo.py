@@ -27,7 +27,8 @@ LIMIT = 50
 
 async def asked(db, user) -> list[dict]:
     """Open review requests addressed to this person, oldest first: a pending
-    proposal, or an accepted incident whose peer review is not yet signed."""
+    proposal, or an accepted incident or conclusion whose peer review is not yet
+    signed."""
     target = aliased(StatementTier)
     about = aliased(Statement)
     review = aliased(Statement)
@@ -59,7 +60,7 @@ async def asked(db, user) -> list[dict]:
                 or_(
                     target.tier == Tier.UNCONFIRMED,
                     and_(
-                        about.prop == Prop.INCIDENT,
+                        about.prop.in_([Prop.INCIDENT, Prop.CONCLUSION]),
                         target.tier == Tier.ACCEPTED,
                         ~signed,
                     ),
@@ -78,6 +79,9 @@ async def asked(db, user) -> list[dict]:
             "at": st.recorded_at.isoformat(),
             "incident": subject.removeprefix("incident:")
             if subject.startswith("incident:")
+            else None,
+            "conclusion": st.subject.removeprefix("statement:")
+            if subject.startswith("case:")
             else None,
         }
         for st, v, name, subject in rows
