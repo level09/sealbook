@@ -1,0 +1,12 @@
+# The storyboard under the home page film and where each case starts in it.
+# seek: the second a still or a case link plays the film from (a caption start in media/case_film.vtt)
+# still: the second the picture is taken at
+# case: the case page whose "Watch this case in the film" link and film start use this seek
+# After a new render: edit these, then run: python3 site/build_film_board.py
+seek	still	label	case
+15.46	18	You bring the material in
+32.98	47	One man, four names	four-names
+83.04	86	The witness who was never there	never-there
+99.22	104	The footage that was two years old	old-footage
+112.24	116	The name nobody wrote down	unwritten-name
+124.92	128	A court checks the package offline

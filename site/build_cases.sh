@@ -34,4 +34,4 @@ ffmpeg -v error -y -ss 4 -i "$f/copy_viral.mp4" -frames:v 1 -q:v 4 "$out/old-foo
 f=$src/unwritten-name/files
 pic "$f/gate_book_14_march.jpg" 1120:840:60:60 900 unwritten-name-gate-book.jpg
 pic "$f/supervisor_statement.jpg" 1120:1000:60:40 560 unwritten-name-statement.jpg
-pic "$f/wenmere_depot.jpg" none 1200 unwritten-name-depot.jpg
+pic "$f/wenmere_depot.jpg" none 1086 unwritten-name-depot.jpg

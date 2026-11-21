@@ -10,10 +10,9 @@ script; a honeypot field and five requests per hour per salted IP hash keep it q
 Workers assets answer a Range request with the whole file and Chrome then cannot seek.
 
 The form asks for an email and an optional note only. The page has a sticky header
-with five chapter links and a Contents popover listing every section; section jumps
-are instant because demos grow as a smooth scroll passes them. The opening shows a
-credited Commons photo turning into its picture fingerprint (`js/hero.js`), and each
-section has a small shape diagram (`js/diagrams.js`).
+with chapter links and a Contents popover listing every section; section jumps are
+instant because demos grow as a smooth scroll passes them. Each tour section has a
+small shape diagram (`js/diagrams.js`).
 
 ## Regenerate data
 
@@ -37,34 +36,49 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
 
 ## Structure
 
-- `index.html`: the home page as a closing argument, each section a `section.link` in
-  the demonstration chain. The opening sets the headline and the pilot request beside
-  the walkthrough film (`media/walkthrough.mp4`), with a storyboard of six stills from it
-  (`media/board/`, each seeking the film to its moment). "Four cases" (`#cases`) follows:
-  one card per case study with its twist and its measured score, each linking to its page.
-  "The charge" (`#charge`) states
-  the case against traditional systems, and a sticky rail (`.rail`) numbers the
-  exhibits. Exhibits 1 to 8 (`.link.exhibit`) each set the traditional way, struck
-  through (`.then`), against what Sealbook does (`.now`), and stay folded until "See it
-  run" opens their live demo. "Don't take our word for it" (`#finale`, `.mic`) leads
-  into Proof, which is Exhibit 9, then the verdict (`#verdict`) and the pilot request.
-  Comparisons say "traditional systems", never a named product. Seals stay to one quiet
-  line along the way and show in full in Proof or once a seal breaks. The precise
-  technical text sits in a `details.how` fold inside `.copy`, so it is still part of
-  the hashed chain.
+- `index.html`: the home page, written for someone who has never heard of Sealbook, in
+  this order, each part answering one question:
+  1. The opening (`#opening`): what it is and who it is for. The headline, one
+     paragraph and the case film (`media/case_film.mp4`), with a storyboard of six
+     stills under it, each seeking the film to its moment.
+  2. How it works (`#how`): the film's three steps, beside the isometric picture of the
+     flow (`js/iso.js`).
+  3. Four cases (`#cases`): one card per case study with its twist and measured score,
+     each linking to its page.
+  4. What a person decides (`#decide`): approvals and the signed conclusion, shown on the
+     conclusion of "The name nobody wrote down" with its confidence scale (labels from
+     `sealbook/method/standards.csv`).
+  5. Break the seal (`#finale`) and Proof (`#proof`): the seal, the tamper demo, the
+     witnesses, the package for a court and the checker.
+  6. Where the evidence goes (`#data`), then what is measured and what is not
+     (`#measured`, pointing to Status), the closing line and the pilot request.
+
+  Each `section.link` is a link in the demonstration chain; parts in `div.part` are not
+  hashed. The precise technical text sits in a `details.how` fold inside `.copy`, so it is
+  still part of the hashed chain. The headline is the owner's and stays as written.
+- `js/film.js`: the film player on the home page and the fraud case page. One drawn play
+  control on the poster, then the browser's own; captions drawn from the WebVTT file,
+  not a `<track>`, because an iPhone refuses to play the film inline with one
+  (`docs/lessons.md`). A figure's `data-start`, or `index.html#t=<seconds>` from a case
+  page's "Watch this case in the film", sets where play starts; playing waits for the
+  tap, so phones play inline and with sound.
+- `film_board.tsv`, `build_film_board.py`: the storyboard's moments and each case's start
+  in the film, kept in one file. After a new render, edit the seconds there and run
+  `python3 site/build_film_board.py`: it writes the stills to `media/board/film-*.jpg`,
+  the board's buttons in `index.html`, every case page's film start, and new `?v=` values
+  for `case_film.mp4`, `.jpg` and `.vtt`.
 - `cases/<slug>.html`, `css/cases.css`, `js/cases.js`: one page per case study in
   `acceptance/cases/` (four-names, never-there, old-footage, unwritten-name), in the same
   order on every page: the story and its twist, the pile, what the machine found, what the
   person decided, the score, the limit, the way to court, and the credits from the case's
-  `files/ATTRIBUTION.md`. Separate pages give each case its own link. Every figure is one
+  `files/ATTRIBUTION.md`. The signed conclusion closes the story, read from the case's
+  `case.json` when the pages were written. Separate pages give each case its own link. Every figure is one
   the case's README or its test (`tests/test_case_*.py`) states; change them together.
   Each page and card says the case is fictional. `build_cases.sh` rebuilds their pictures
   and clips in `media/cases/` from the case files (needs ffmpeg).
-- The case film slot (`figure.case-film`, on the home page and the fraud case page) points
-  at `media/case_film.mp4` with `media/case_film.jpg` as its poster. `js/cases.js` asks
-  for the film with a HEAD request and keeps the slot hidden until it exists, so adding
-  the two files is all it takes to show it.
-- `tour.html`: the nine other demos, folded until opened or linked to.
+- `tour.html`: earlier demos on the old sample case, folded until opened or linked to,
+  including the eight exhibits that used to sit on the home page. Nothing on the home
+  page sends a newcomer there first; it is linked from Contents and the closing links.
 - `status.html`: what we learned, and the implemented, measured and planned lists read
   from `data/case.json`.
 - `verify.html`, `js/verify-package.js`, `js/verify-page.js`, `css/verify.css`: check a
@@ -73,23 +87,15 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
   `tests/test_site_verify.py` runs every offline verifier case through both. It does not
   check the TSA CMS signature, the OpenTimestamps proof to Bitcoin, the C2PA claim or
   key pins, and lists those as not run.
-- `js/closing-motion.js`, `css/closing.css`: the home page's motion and exhibit styles.
-  Each exhibit's tag is stamped, the traditional line struck through, and the Sealbook
-  line rises; the charge and the verdict light up as they scroll; the mic drop's letters
-  fall. GSAP 3.15 with ScrollTrigger and SplitText is self-hosted in `js/vendor/`
-  (GreenSock standard license, free for this use). Reduced motion leaves the page still.
-- `js/site.js`: theme, data loading, the chain, and the `window.sealbook` API
-  documented at the top of the file. Demo scripts call `sealbook.onReady(data => ...)`
-  and mount into their `[data-demo]` element.
-- `js/demo-*.js`, `css/demo-*.css`: one script and stylesheet per chapter demo.
-- `js/hero.js`, `css/hero.css`: the opening photo turning into its picture fingerprint. The
-  PDQ value is hardcoded there; recompute it if `media/street_photo.jpg` changes.
-- `js/iso.js`, `css/iso.css`: the opening's isometric picture of the whole flow
-  (`figure[data-iso]`): files, the reader, hatched proposals, the signing ring and the
-  sealed book, drawn from one `box()` helper in the page's own colours.
-- `js/diagrams.js`, `css/diagrams.css`: an animated diagram above each chapter demo,
-  one `figure[data-diagram]` per section. Values are copied from `data/case.json` by hand,
-  so update them when the case is rebuilt. Outside `.copy`, so the chain does not hash them.
+- `js/closing-motion.js`, `css/closing.css`: the home page's styles and motion, and the
+  tour's exhibit styles. Each exhibit's tag is stamped, the traditional line struck
+  through, and the Sealbook line rises; the verdict lights up as it scrolls; the mic
+  drop's letters fall. GSAP 3.15 with ScrollTrigger and SplitText is self-hosted in
+  `js/vendor/` (GreenSock standard license, free for this use). Reduced motion leaves the
+  page still.
+- `media/walkthrough.*` and the six `media/board/*.jpg` stills of the old walkthrough are
+  no longer referenced by any page; the tour's exhibits still use some `media/board/`
+  stills as pictures.
 
 ## Keep it true
 
@@ -136,4 +142,4 @@ cd site && npx wrangler@4 d1 execute sealbook-invites --remote \
 
 `media/case_film.mp4` (with `case_film.jpg` and `case_film.vtt`) is built from the tracked
 sources in `film/`; see `film/README.md` to record and render it again. It is narrated, with
-a generated score, and its captions are drawn from the `.vtt` file like the walkthrough's.
+a generated score, and its captions are drawn from the `.vtt` file by `js/film.js`.
