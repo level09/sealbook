@@ -22,7 +22,7 @@ class Config(stk.Config):
     STK_SMOKE_SKIP = ["/oauth/authorize"]
     STK_CLI_SECTIONS = [
         ("Runs", ["runner", "enrich", "discover", "places", "basemap", "speech-model"]),
-        ("Case data", ["demo-seed", "erase"]),
+        ("Case data", ["demo-seed", "demo-cert", "erase"]),
         ("Anchors", ["anchor", "verify-anchors"]),
     ]
 

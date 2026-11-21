@@ -49,87 +49,12 @@ from sealbook.ledger.write import (
     verify_db,
 )
 from sealbook.packages import service
+from sealbook.packages.cli import make_signing_cert
 from sealbook.packages.models import Package, Sentence
 from sealbook.settings import Config
 from tests.passkey import SoftPasskey
 
 POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
-
-
-def make_signing_cert(directory: Path) -> tuple[str, str]:
-    """A throwaway ES256 CA plus leaf, the shape c2patool accepts for signing."""
-    from datetime import timedelta
-
-    from cryptography import x509
-    from cryptography.hazmat.primitives import hashes, serialization
-    from cryptography.hazmat.primitives.asymmetric import ec
-    from cryptography.x509.oid import ExtendedKeyUsageOID, NameOID
-
-    now = datetime.now(UTC)
-
-    def name(cn):
-        return x509.Name(
-            [
-                x509.NameAttribute(NameOID.COMMON_NAME, cn),
-                x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Sealbook test"),
-            ]
-        )
-
-    def builder(subject, issuer, key):
-        return (
-            x509.CertificateBuilder()
-            .subject_name(subject)
-            .issuer_name(issuer)
-            .public_key(key.public_key())
-            .serial_number(x509.random_serial_number())
-            .not_valid_before(now - timedelta(days=1))
-            .not_valid_after(now + timedelta(days=30))
-        )
-
-    ca, leaf = (
-        ec.generate_private_key(ec.SECP256R1()),
-        ec.generate_private_key(ec.SECP256R1()),
-    )
-    ca_cert = (
-        builder(name("ca"), name("ca"), ca)
-        .add_extension(x509.BasicConstraints(ca=True, path_length=None), True)
-        .add_extension(
-            x509.KeyUsage(False, False, False, False, False, True, True, False, False),
-            True,
-        )
-        .sign(ca, hashes.SHA256())
-    )
-    leaf_cert = (
-        builder(name("signer"), ca_cert.subject, leaf)
-        .add_extension(x509.BasicConstraints(ca=False, path_length=None), True)
-        .add_extension(
-            x509.KeyUsage(True, False, False, False, False, False, False, False, False),
-            True,
-        )
-        .add_extension(
-            x509.ExtendedKeyUsage([ExtendedKeyUsageOID.EMAIL_PROTECTION]), False
-        )
-        .add_extension(
-            x509.AuthorityKeyIdentifier.from_issuer_public_key(ca.public_key()), False
-        )
-        .add_extension(
-            x509.SubjectKeyIdentifier.from_public_key(leaf.public_key()), False
-        )
-        .sign(ca, hashes.SHA256())
-    )
-    cert, key = directory / "cert.pem", directory / "key.pem"
-    cert.write_bytes(
-        leaf_cert.public_bytes(serialization.Encoding.PEM)
-        + ca_cert.public_bytes(serialization.Encoding.PEM)
-    )
-    key.write_bytes(
-        leaf.private_bytes(
-            serialization.Encoding.PEM,
-            serialization.PrivateFormat.PKCS8,
-            serialization.NoEncryption(),
-        )
-    )
-    return str(cert), str(key)
 
 
 class FakeAnchor:

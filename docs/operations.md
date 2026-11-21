@@ -352,6 +352,36 @@ entries and sends the root, a hash and nothing else, to the OpenTimestamps calen
 The second witness, an RFC 3161 timestamp authority, is refused until its signer is
 pinned in settings, and each run says so.
 
+### Packages on a development machine
+
+Build refuses until `C2PA_SIGN_CERT` and `C2PA_SIGN_KEY` name an ES256 signing
+certificate chain and its key. For development and testing, `uv run stk demo-cert`
+writes a throwaway certificate authority and signing certificate (365 days,
+`--days` changes it, `--force` replaces it) to `instance/demo-cert/`, which git
+ignores, and prints the two lines to put in `.env`. It refuses outside development
+and testing, as `demo-seed` does. The certificate's subject says what it is:
+"Sealbook demo certificate, not issued by a trusted authority".
+
+A demo certificate signs exactly as a bought one does: `c2patool` checks the cover's
+signature and every document hash the same way and reports `Valid`. What differs is
+trust. A certificate from an authority on the C2PA trust list makes a verifier
+report the signer as known (`Trusted`); the demo authority is on no list, so
+c2patool 0.27 adds the failure `signingCredential.untrusted` ("signing certificate
+untrusted") beside its `Valid`, and nobody should rely on who signed. This
+is a content credential certificate, not a website (TLS) certificate: it has no
+domain name and has nothing to do with HTTPS.
+
+A package also needs every row it carries anchored. `stk anchor` once is enough:
+it closes a Merkle batch over the chain and sends the batch root, a hash and
+nothing else, to the OpenTimestamps calendars and the timestamp authority. Run on
+2026-11-21 against a scratch database it contacted `a.pool.opentimestamps.org`,
+`b.pool.opentimestamps.org` and `freetsa.org/tsr`, and both receipts came back.
+Offline it fails and builds stay refused; nothing stands in for a receipt outside
+the tests, which use a partner-held root instead (`FakeAnchor` in
+`tests/test_packages.py`). `stk demo-seed --case four-names` runs this anchor
+itself in its last act and saves the finalized package at
+`instance/packages/case-four-names.zip`.
+
 `stk demo-seed` refuses outside development. To seed a hosted demo, or to add the
 five recordings to one seeded before them, set the environment for that one command:
 `docker compose exec -e STK_ENV=development website stk demo-seed --recordings`.
