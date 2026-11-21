@@ -7,6 +7,21 @@
             <v-chip size="small">${ brief.audience }</v-chip>
         </div>
         <p class="pk-preview mb-4" role="note"><b>Preview</b> Briefs and packages are still being built. You can write a brief and choose its sentences${ signing ? ', and a package can be built, but expect rough edges.' : '. Building the signed package is off on this server until a signing certificate is set, so Build will say no.' }</p>
+        <section v-for="cs in brief.conclusions" :key="cs.case" class="pk-opening mb-4" :aria-label="'Conclusions of ' + cs.name">
+            <div class="d-flex flex-wrap align-baseline" style="gap: 4px 12px;">
+                <h2 class="text-title-large">Opens with: ${ cs.name }</h2>
+                <span class="text-body-medium text-medium-emphasis">${ cs.status.status === 'concluded' ? 'Concluded' : cs.status.status === 'closed' ? 'Closed without a conclusion' : 'Open' }. The package carries each signed conclusion with what it rests on.</span>
+            </div>
+            <p v-if="!cs.conclusions.length" class="text-medium-emphasis mt-2 mb-0">This case has no signed conclusion yet.</p>
+            <article v-for="c in cs.conclusions" :key="c.id" class="pk-conclusion">
+                <p v-if="c.text" class="text-title-medium mb-1" dir="auto">${ c.text }</p>
+                <p v-else class="text-medium-emphasis mb-1">${ c.state === 'erased' ? 'Erased with a person it named.' : 'Rests on a sensitive source you have not revealed.' }</p>
+                <p v-if="c.text" class="text-body-medium mb-1">${ c.standard.label }. Rests on ${ c.rests_on.length } accepted item${ c.rests_on.length === 1 ? '' : 's' }, signed by ${ c.by }.${ c.peer.state === 'agreed' ? ' Peer reviewed by ' + c.peer.by + '.' : '' }</p>
+                <p v-if="c.text && c.not_established.length" class="text-body-medium mb-1">Not established: ${ c.not_established.join('; ') }.</p>
+                <p v-if="!c.stands && c.state === 'standing'" class="pk-stale mb-1">No longer stands on what it cited. Revise or withdraw it before building.</p>
+                <a :href="'/cases/conclusions/' + c.id" class="text-body-small">What it rests on</a>
+            </article>
+        </section>
         <v-row>
             <v-col cols="12" md="7">
                 <v-card class="mb-6">
@@ -76,6 +91,10 @@
 
 {% block css %}
     <style>
+        .pk-opening { padding: 16px 20px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--panel); }
+        .pk-opening h2 { margin: 0; }
+        .pk-conclusion { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+        .pk-stale { color: var(--negative); font-weight: 600; }
         .pk-preview { display: flex; gap: 10px; align-items: baseline; padding: 10px 14px; border: thin solid var(--line-strong); border-radius: 6px; background: var(--wash); font-size: 13px; }
         .pk-preview b { flex: none; font: 600 11px/1.6 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 0 6px; border-radius: 4px; background: var(--ink); color: var(--panel); }
     </style>

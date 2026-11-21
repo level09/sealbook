@@ -33,6 +33,7 @@ from sealbook.ledger.models import (
     StatementTier,
 )
 from sealbook.ledger.write import append, current_clause, principal_for_user
+from sealbook.monitor.filter import source, statement_blob
 from sealbook.packages.models import Brief, Package, Sentence
 
 FACTUAL = (Tier.ACCEPTED, Tier.CORROBORATED)
@@ -48,6 +49,8 @@ NOT_CITABLE = (
     Prop.REVIEW_COMMENT,
     Prop.FINGERPRINT,
     Prop.MEDIA_MATCH,
+    Prop.CONCLUSION,
+    Prop.CASE_STATUS,
 )
 
 # ponytail: profiles are a module constant chosen without partner or legal input;
@@ -163,12 +166,73 @@ def _cited_ids(brief: Brief) -> list[uuid.UUID]:
     return list(dict.fromkeys(ids))
 
 
-async def collect(db: AsyncSession, brief: Brief) -> dict:
+async def cases_of(db: AsyncSession, brief: Brief) -> list[str]:
+    """The cases a brief belongs to: those whose sources hold a statement it cites."""
+    ids = [i for s in brief.sentences for i in s.statement_ids]
+    if not ids:
+        return []
+    found = await db.scalars(
+        select(Acquisition.context["investigation"].astext)
+        .join(Statement, Acquisition.blob_sha256 == source(statement_blob()))
+        .where(Statement.id.in_(ids))
+        .distinct()
+    )
+    return sorted(c for c in found if c)
+
+
+async def case_conclusions(db: AsyncSession, brief: Brief, user=None) -> list[dict]:
+    """What a brief opens with: each of its cases, where it stands and its standing
+    conclusions, each saying whether it still stands on what it cited."""
+    from sealbook.cases import conclusions
+    from sealbook.cases.models import Case
+
+    out = []
+    for slug in await cases_of(db, brief):
+        found = await conclusions.listing(db, slug, user)
+        name = await db.scalar(select(Case.name).where(Case.slug == slug))
+        out.append(
+            {
+                "case": slug,
+                "name": name or slug,
+                "status": found["status"],
+                "conclusions": [
+                    c for c in found["conclusions"] if c["state"] == "standing"
+                ],
+            }
+        )
+    return out
+
+
+def _sealed(found: list[dict]) -> tuple[list[uuid.UUID], list[uuid.UUID]]:
+    """The statements a package carries for its cases' conclusions: each conclusion
+    and the status it left the case in, then what the conclusions rest on. One that
+    no longer stands is refused: it is revised or withdrawn before it is sealed."""
+    own, rests = [], []
+    for case in found:
+        for c in case["conclusions"]:
+            if not c["stands"]:
+                raise Refused(
+                    "a conclusion of this case no longer stands on what it cited; "
+                    "revise or withdraw it before building"
+                )
+            own.append(uuid.UUID(c["id"]))
+            rests += [uuid.UUID(i) for i in c["rests_on"]]
+        if case["conclusions"] and case["status"].get("id"):
+            own.append(uuid.UUID(case["status"]["id"]))
+    return own, rests
+
+
+async def collect(db: AsyncSession, brief: Brief, opening: list | None = None) -> dict:
     """The rows a brief's package discloses: cited statements plus the reviews and
     attestations about them, the DERIVED_FROM links from their text to the
-    acquired files, those files' acquisitions and the runs."""
-    cited = _cited_ids(brief)
-    await require_factual(db, cited)
+    acquired files, those files' acquisitions and the runs. `opening` is the brief's
+    case conclusions (case_conclusions), carried with what they rest on."""
+    own, rests = _sealed(opening or [])
+    facts = list(dict.fromkeys([*rests, *_cited_ids(brief)]))
+    # A conclusion and the case status are records about the case, never a fact a
+    # sentence cites; what they rest on must be factual like any citation.
+    await require_factual(db, facts)
+    cited = list(dict.fromkeys([*own, *facts]))
     about = [f"statement:{i}" for i in cited]
     statements = list(
         (
@@ -470,7 +534,8 @@ async def build(db: AsyncSession, brief: Brief, user, config) -> Package:
             "packages are off on this server: no signing certificate is set "
             "(C2PA_SIGN_CERT and C2PA_SIGN_KEY)"
         )
-    rows = await collect(db, brief)
+    opening = await case_conclusions(db, brief)
+    rows = await collect(db, brief, opening)
     blob_dir = config["BLOB_DIR"]
     directory = Path(tempfile.mkdtemp(prefix="package-"))
     try:
@@ -479,6 +544,33 @@ async def build(db: AsyncSession, brief: Brief, user, config) -> Package:
                 {
                     "title": brief.title,
                     "audience": brief.audience,
+                    # The brief opens with its cases' signed conclusions.
+                    "conclusions": [
+                        {
+                            "case": case["case"],
+                            "name": case["name"],
+                            "status": case["status"]["status"],
+                            "status_statement": case["status"].get("id"),
+                            "conclusions": [
+                                {
+                                    k: c.get(k)
+                                    for k in (
+                                        "id",
+                                        "text",
+                                        "standard",
+                                        "rests_on",
+                                        "alternatives",
+                                        "not_established",
+                                        "by",
+                                        "at",
+                                    )
+                                }
+                                | {"peer_review": c["peer"]}
+                                for c in case["conclusions"]
+                            ],
+                        }
+                        for case in opening
+                    ],
                     "sentences": [
                         {
                             "ord": s.ord,

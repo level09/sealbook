@@ -86,7 +86,25 @@ async def _brief(b: Brief) -> dict:
             for s in b.sentences
         ],
         "packages": [_package(p, await service.attesters(db, p)) for p in pkgs],
+        "conclusions": await _opening(db, b),
     }
+
+
+async def _opening(db, b: Brief) -> list[dict]:
+    """The brief's cases' conclusions it opens with, each read logged on its case."""
+    from sealbook.cases import conclusions
+
+    found = await service.case_conclusions(db, b, current_user)
+    for case in found:
+        shown = [
+            i
+            for c in case["conclusions"]
+            if c.get("text")
+            for i in [c["id"], *c["rests_on"]]
+        ]
+        await conclusions.log_view(db, current_user, case["case"], shown)
+    await db.commit()
+    return found
 
 
 async def _refusing(coro):
