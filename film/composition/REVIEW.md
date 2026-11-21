@@ -1,47 +1,47 @@
-# Review, 2026-11-21
+# Review, cut two, 2026-11-21
 
-Rendered 96.0 s at 1920 x 1080, 30 fps. Web file `site/media/case_film.mp4` is H.264
-High, CRF 26, no audio stream, 7.9 MB.
+140.5 s at 1920 x 1080, 30 fps. Web file `site/media/case_film.mp4`: H.264 High CRF 26
+with AAC 128k stereo, 13.4 MB. Loudness of the web file: -16.1 LUFS integrated, LRA
+3.3 LU, true peak -1.2 dBFS (the mix itself: -16.0 LUFS, -1.5 dBFS).
 
 ## Creative calls
 
-- One storyline, given by the brief: the four-names case in full, three short beats,
-  a close. No alternative storylines were built.
-- No voice and no music. The words are on screen; `film/captions.vtt` carries the
-  limits (no model ran, 4 of 6 links, the test package, by day not by hour), drawn by
-  the site over the bottom of the frame. `check` warns `film_silent`; kept on purpose.
-- The whole film is one `index.html` (13 scenes, one timeline) instead of one file per
-  scene. `check` warns about file size and density; kept, because every scene shares
-  the same camera and mark helpers and the timings read top to bottom in one place.
-- Real screens are 2x captures shown large inside a panel, with a camera that pushes to
-  the part that matters and a violet mark around it; red dashed marks are namesakes and
-  the blank driver line.
+- Written for a newcomer: who has the problem, what Sealbook is, three steps, then four
+  cases named as four kinds of help. The fraud case is longest and carries the reveal.
+- The reveal is built from the case's files, not a screen: each name is cropped from
+  its own document as it is spoken, the five crops gather beside one face, and the
+  surveyor's register row is brought close and pulled apart.
+- The picture is timed to the narration, not the other way round. The voice runs at
+  1.16x to keep the film near the requested length; it is still 2:20, five seconds over.
+- One `index.html` for the whole film; `check` warns on its size, kept on purpose.
 
-## What was measured, what was only looked at
+## Measured and looked at
 
-- `check`: no errors. Warnings kept: `film_silent`, `composition_file_too_large`,
-  `timeline_track_too_dense`, `nested_structure_needs_subcomposition`.
-- Looked at: contact sheets of the full render every 1.5 s, settled frames of every
-  beat, the web encode at full size on the densest frame (beat 8) and the poster.
-- Not checked on a phone or an iPhone. Sub lines are 32 px on a 1080 frame, so on a
-  phone-width player they are small; the headlines carry the story there.
+- `check`: no errors. Kept warnings: `dead_stretch` where a screen holds under the voice
+  (34 to 39 s, 64 to 68 s, 93 to 98 s, 107 to 111 s, 120 to 124 s), `line_unread` on
+  on-screen lines the narration speaks at the same time, `text_below_floor` on screen
+  labels inside captured app crops.
+- Contact sheets of the web file every 2.4 s; settled frames of every beat.
+- Sound measured with `ebur128` and `volumedetect`: the score alone sits near -34 dB
+  between lines, speech near -18 dB. I cannot hear; the transcript is the check.
+- Transcribed the web file's audio (Gemini through OpenRouter): every line came back as
+  written. The four spellings read as "Qassar" four times, since they sound alike; the
+  screen carries the spelling.
 
-## What a first-time viewer saw, and what was fixed
+## Newcomer test, on the transcript alone
 
-- The sources page first showed three rows only (the crop was too short); recaptured.
-- The People search was too small to read; now shown at 1.5x on the name column.
-- The two sub lines in the search beat overlapped; the second now waits for its cue.
-- The passkey push cropped the dialog's sides; the dialog now has room to move.
-- The candidate duplicates text was too small; the camera now pushes to the two
-  "likely two people" lines.
-- The marks on Mara Quill's exhibits cut through the times; they now hold both lines.
-- The gate book first zoomed onto the wrong row; it now shows the DRIVER header, the
-  blank line, 22:41 out and "22:40 only".
+What it is: an app that reads a pile of evidence, proposes connections with where each
+came from, and seals a record anyone can check. Who it is for: investigators,
+journalists, lawyers, researchers. Machine against person: the app reads and proposes; a
+person approves or declines each link, signs, and writes the conclusion. All three can be
+answered from the transcript. Weakest line: "Sealbook is an app for exactly that" leans on
+the line before it; the three steps that follow carry the meaning.
 
-## Weakest shots
+## Weakest spots
 
-- Beat 8 leaves the lower part of its panel empty once the camera pushes in.
-- Beat 11 (old footage) is the case's files only; the app had not fingerprinted the
-  clips when this was made. Recapture it from the evidence page (see `../script.md`).
-- Every seam is the same blur swap through the paper ground; one or two cuts through an
-  object on screen would read less like slides.
+- The first frame is empty paper (the pile enters from 0.3 s); the poster covers it on the
+  site.
+- The never-there disagreement panel has no marks, because its rows change order between
+  page loads.
+- Old footage: the two clips are the case's files; the match itself is the app's Copies
+  tab, shown beside them.

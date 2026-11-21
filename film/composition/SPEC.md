@@ -5,10 +5,10 @@ four spellings in a pile no reader would cross-check, that a person approves eve
 link with a signature, and that the seal can be checked later; then sees three other
 kinds of case get the same treatment.
 
-OUTPUT: HyperFrames, 1920 x 1080, 30 fps, silent (captions come from `film/captions.vtt`,
+OUTPUT: HyperFrames, 1920 x 1080, 30 fps; narration and score are mixed by `film/audio.py` (captions come from `film/captions.vtt`,
 drawn by the site over the bottom 130 px, so nothing essential sits below y 950).
 
-TIME: 96 s x 30 = 2880 frames. No music.
+TIME: 140.5 s x 30 = 4215 frames, timed to the narration (`film/audio.py timing`).
 
 LOOK: the site's own medium, paper and ink.
 - Ground `#f6f3ec` (paper), panels `#ece8de`, rules `#d3cdbf`. Ink `#1b1a17`, second ink

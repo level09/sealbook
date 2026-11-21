@@ -7,7 +7,9 @@ Run against a local development server with agent login on (see film/README.md):
 Writes PNG crops of real app screens, the cases' own pictures and clips, the site
 fonts and a verified test package screen into film/composition/assets/captures/,
 which is not tracked. Viewport and scale are fixed so every run frames the same.
-Nothing here signs, accepts or rejects: the passkey prompt is opened and cancelled.
+Nothing here signs, accepts or rejects: the reject form is filled and cancelled.
+The one write is the page's own logged reveal of the passport copy, which the
+four-names conclusion rests on.
 """
 
 from __future__ import annotations
@@ -33,6 +35,10 @@ EMAIL = os.environ.get("FILM_USER", "admin@example.com")
 QUIET = ".sb-hints { display: none !important; }"
 VIEW = {"width": 1600, "height": 1000}
 SCALE = 2
+REASON = "Born 19 August 1974 in Torvane: a namesake, not the same man."
+# consultancy_agreement_qassar.jpg and copy_viral.mp4, by SHA-256
+AGREEMENT = "3c4f5e86f27957086f031173c7d3eac00b277491ff80bf78fcb3304241d4429c"
+VIRAL = "349903b81faad0bd067b3bb8e02a9e28a8c7fbb58175250f51b3ac09566fed51"
 
 FILES = {
     "four-names/files/vendor_form_kassar.jpg": "scan_vendor.jpg",
@@ -44,6 +50,7 @@ FILES = {
     "unwritten-name/files/gate_book_14_march.jpg": "gate_book.jpg",
     "old-footage/files/original.mp4": "footage_original.mp4",
     "old-footage/files/copy_viral.mp4": "footage_viral.mp4",
+    "four-names/files/id_photo.jpg": "portrait.jpg",
 }
 FONTS = [
     "IBMPlexSans-normal-400-latin.woff2",
@@ -148,15 +155,9 @@ async def four_names(browser, app):
         page, "fn_sources", clip={"x": 196, "y": 56, "width": 1390, "height": 905}
     )
 
-    await go(page, "/review?box=open", wait=2500)
-    await shoot(page, "fn_scan", clip={"x": 640, "y": 120, "width": 560, "height": 860})
-
-    for name, query in (
-        ("fn_search_latin", "Adrian Kassar"),
-        ("fn_search_arabic", "قصار"),
-    ):
-        await go(page, "/people?q=" + quote(query))
-        await shoot(page, name, clip={"x": 196, "y": 250, "width": 1396, "height": 380})
+    # The consultancy agreement scan with its claims boxed where they sit.
+    await go(page, f"/evidence/{AGREEMENT}", wait=2500)
+    await shoot(page, "fn_scan", clip={"x": 208, "y": 205, "width": 904, "height": 595})
 
     true_link = surveyor = None
     for sid in await proposals(app):
@@ -170,26 +171,33 @@ async def four_names(browser, app):
 
     await go(page, f"/review?statement={true_link}", wait=2000)
     await shoot(page, "fn_link", clip={"x": 640, "y": 120, "width": 945, "height": 460})
-    await page.get_by_role("button", name="Accept").first.click()
-    dialog = page.locator(".v-overlay--active .v-card").filter(
-        has_text="Confirm with your passkey"
-    )
-    await dialog.wait_for()
-    await page.wait_for_timeout(800)
-    await shoot(page, "fn_passkey", locator=dialog, pad=0)
-    await page.get_by_role("button", name="Cancel").click()
 
+    # The surveyor: a person rejects him. Stop at the signature prompt, then cancel.
     await go(page, f"/review?statement={surveyor}", wait=2000)
     await shoot(
         page, "fn_surveyor", clip={"x": 640, "y": 120, "width": 945, "height": 460}
     )
+    await page.get_by_role("button", name="Reject").first.click()
+    await page.locator("#rv-reason").fill(REASON)
+    await page.wait_for_timeout(600)
+    form = page.locator(".rv-form").first
+    await shoot(page, "fn_reject", locator=form, pad=16)
+    # The film stops before "Reject and sign": signing needs the analyst's own
+    # passkey, and the capture account has none.
+    await form.get_by_role("button", name="Cancel").click()
+    await ctx.close()
 
-    await go(page, "/people?q=" + quote("Adrian Kassar"))
-    await page.get_by_role("link", name="Adrian Khassar").first.click()
-    await page.wait_for_load_state("networkidle")
-    await page.add_style_tag(content=QUIET)
-    await page.wait_for_timeout(1500)
-    await shoot(page, "fn_dupes", locator=card(page, "Candidate duplicates"))
+
+async def conclusion(browser, app, case, name, reveal=False):
+    """The signed conclusion on a case's Overview. A sensitive source is revealed
+    through the page's own logged reveal first, when the conclusion rests on one."""
+    ctx, page = await session(browser, app, case)
+    await go(page, "/cases/overview", wait=2000)
+    if reveal:
+        await page.get_by_role("button", name="Reveal and read it").click()
+        await page.wait_for_timeout(2500)
+    panel = page.locator(".cc-panel").first
+    await shoot(page, name, locator=panel, pad=0)
     await ctx.close()
 
 
@@ -207,6 +215,17 @@ async def other_cases(browser, app):
     ctx, page = await person(browser, app, "case-never-there", "Mara Quill")
     fork = page.locator(".ppl-fork", has_text="Two places on one day").first
     await shoot(page, "nt_disagree", locator=fork.locator("xpath=.."), pad=12)
+    await ctx.close()
+
+    ctx, page = await session(browser, app, "case-old-footage")
+    await go(page, f"/evidence/{VIRAL}", wait=2000)
+    await page.get_by_role("tab", name="Copies").first.click()
+    await page.wait_for_timeout(1500)
+    await shoot(
+        page, "of_player", clip={"x": 208, "y": 205, "width": 516, "height": 290}
+    )
+    row = page.locator(".ev-rel").filter(has_text="3 June 2024").last
+    await shoot(page, "of_copy", locator=row, pad=0)
     await ctx.close()
 
     ctx, page = await person(browser, app, "case-unwritten-name", "Aron Vesk")
@@ -241,6 +260,10 @@ async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         await four_names(browser, app)
+        await conclusion(browser, app, "case-four-names", "fn_conclusion", reveal=True)
+        await conclusion(browser, app, "case-never-there", "nt_conclusion")
+        await conclusion(browser, app, "case-old-footage", "of_conclusion")
+        await conclusion(browser, app, "case-unwritten-name", "un_conclusion")
         await other_cases(browser, app)
         await verifier(browser)
         await browser.close()

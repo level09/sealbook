@@ -1,48 +1,47 @@
-# Script: One man, four names
+# Script: four stories of how Sealbook helps
 
-96 seconds, 1920 x 1080, 30 fps, no sound. On-screen words are set in the film; the
-captions in `captions.vtt` add the limits and are drawn by the site over the bottom of
-the frame, so nothing essential sits there. Every number comes from
-`acceptance/cases/*/README.md`, `docs/case-studies.md` or the app screen itself.
+140.5 seconds, 1920 x 1080, 30 fps, narrated, with a quiet score. Written for a viewer
+who has never heard of the app. The narration is `narration.json`; `audio.py timing`
+prints when each line starts. The captions (`captions.vtt`) are the narration, one cue
+per line. Every number comes from `acceptance/cases/*/README.md`,
+`docs/case-studies.md` or the app screen itself.
 
-Source of each picture: **app** is a capture of the seeded case on a local
-development server (`capture.py`); **file** is the case's own file from
-`acceptance/cases/<slug>/files/`.
+Picture sources: **app** is a capture of the seeded cases (`capture.py`, run against
+the database that holds all four cases with their conclusions); **file** is a case's own
+file from `acceptance/cases/<slug>/files/`; **type** is words only.
 
-| # | Time | Picture | On screen | Caption |
-| --- | --- | --- | --- | --- |
-| 1 | 0.0 to 5.5 | file: the five four-names scans fanned on the desk | One man, four names. A fictional case. Every person, company and place in it is invented. | A fictional fraud case. Every name, firm and place in it is invented. |
-| 2 | 5.5 to 12.5 | app: Sources page, starting on the case description ("1,445 sheet rows and five scans, 14 sources, 225 people"), pulling out to the list | 14 sources. 1,445 sheet rows. Five scans. Each desk at the freight company checked its own file and found nothing wrong. | The app counts 225 people. Four of them are one man. |
-| 3 | 12.5 to 19.5 | app: Review, "A. Qassar" boxed on the consultancy agreement scan, then the page | Every row and every scan is read. Each value is boxed where it sits, so a person can check it against the page. | Sheets are read cell by cell, scans box by box. |
-| 4 | 19.5 to 29.5 | app: People search "Adrian Kassar", then "قصار"; four desk records marked violet, two namesakes red | One name, searched in any spelling or script. Four desks wrote him four ways: Kassar, Qassar, Khassar, Kasar. Then: In Arabic script too. And two namesakes sit in the same files. | One search finds every record that could be him. / His ship agent licence writes the name in Arabic. |
-| 5 | 29.5 to 39.5 | app: Review, linker proposal "Same person? Adrian Qassar and Adrian Kasar", push into the licence card with the Arabic name and 2 Mar 1974 | The linker proposes. It shows why. Five proposals from 417 claims, by fixed rules, each with the passages behind it. | No model ran in this demo. The rules alone built the five proposals. / They found 4 of the 6 true links between his desks. |
-| 6 | 39.5 to 48.5 | app: the surveyor proposal, born 1974 against 19 Aug 1974 (red), then the Reject button | A namesake it must not merge. A marine surveyor, Adrian Kasar, born 19 August 1974 in Torvane. A person declines him. | Here the rules list the surveyor, and a person declines him. / A live model declined him too: the places of birth differ. |
-| 7 | 48.5 to 54.5 | app: "Confirm with your passkey" for the true link, the row and its hash marked | Nothing joins until a person signs. Their passkey signs exactly the row on screen, hash and all. | Signing needs the analyst's own passkey, so the film stops at the prompt. |
-| 8 | 54.5 to 61.0 | app: Adrian Khassar's page, Candidate duplicates, the two "likely two people" lines | Same name is not same person. His page lists who may be him, and keeps the deck cadet and the surveyor apart. | Approving the four true links joins all nine of his records. |
-| 9 | 61.0 to 68.0 | app (site page): `site/verify.html` on a test package, "Every check that ran passed" and the checks | The seal lets anyone check it later. A court can verify a package offline, without trusting the app. Note: Checker shown on a test package. Signed packages are in preview. | The checker runs in the browser and sends nothing. Shown here on a test package. |
-| 10 | 68.0 to 75.0 | file: IMG_4471.jpg; app: Mara Quill's page, "Two places on one day, 2026-03-14", exhibit sheets MQ/3 and MQ/4 marked | Another fictional case. The witness who was never there. The app flags two places on one day. A person reads the times: 21:52 and 22:07. | The app finds the clash by day, not by hour. The times are for a person to read. |
-| 11 | 75.0 to 82.0 | file: original.mp4 and copy_viral.mp4 side by side | Another fictional case. The footage that was two years old. 8 of 9 reposts tied to the 2024 original, mostly by sound. One cropped, mirrored, muted copy is missed. | The picture no longer matches. The sound does. |
-| 12 | 82.0 to 89.0 | file: gate book page, the 22:40 line with no driver; app: Aron Vesk's track, "last seen" then "No evidence for 73 days" | Another fictional case. The name nobody wrote down. A statement says when the driver was last seen. The app finds 73 days with no record of him. | The app does not notice on its own that someone stopped appearing. The statement starts the watch. |
-| 13 | 89.0 to 96.0 | type only | The machine reads more than a person can, and finds the links. A person signs every finding. The seal proves it later. Four fictional cases. sealbook.org | Every case in this film is fictional. |
+| Time | Narration | Picture |
+| --- | --- | --- |
+| 0.8 | Investigators, journalists, lawyers and researchers share one problem. | file: a pile of the cases' own material: a scan, the gate photograph, five payment rows, the gate book, the licence |
+| 5.7 | Too much evidence to read, and a result nobody can later prove was not changed. | same, with the line on screen |
+| 10.9 | Sealbook is an app for exactly that. It works in three steps. | type: Sealbook, one line on what it is |
+| 15.5 | You bring the material in. The app reads all of it and proposes connections, each shown with the exact place it came from. | 1, app: the Sources list. 2, app: the consultancy agreement scan with each claim boxed and listed |
+| 22.7 | A person approves each one with a signature, and the record is sealed, so anyone can check it later. | 3, app: a decision with its reason and "Reject and sign"; site: the package checker's verdict |
+| 29.1 | Four invented cases show how that helps. | type: the four kinds of help |
+| 33.0 | One: a person under several names. Four desks at a freight company each keep a clean file: 14 sources and 1,445 sheet rows. | file: the four desk documents (vendor form, consultancy agreement, guarantee deed, ship agent licence) |
+| 44.2 | Kassar. Qassar. Khassar. Kasar. And on one licence, the name in Arabic. | file: each name lifts off its document as it is spoken, cropped from the scan; "Kasar" is row 28 of the ship agents register; the Arabic name is cropped from the licence |
+| 51.0 | Four spellings, two alphabets, one man. And one who is not him: a surveyor with the same name, born elsewhere. | file: the names gather beside one face (the case's generated portrait, labelled), "Born 2 March 1974, Velmora"; the surveyor's row from the marine surveyors register is brought close, then pulled apart, red |
+| 59.8 | The app proposed these links. Here, fixed rules with no AI model found 4 of the 6 true links, enough to join all his records. | app: the proposal joining Adrian Qassar and Adrian Kasar, pushing into the licence card with the Arabic name and 2 Mar 1974 |
+| 68.8 | A person declines the surveyor, and signs each decision with a passkey, a key on their own device. | app: the surveyor proposal (1974 against 19 Aug 1974), then the reject form with its reason and "Reject and sign" |
+| 75.3 | The case closes on a signed conclusion, checked by a colleague, saying how sure it is and what is not established. | app: the case Overview's conclusion: the four names are one man, reasonable grounds to believe, peer reviewed, the surveyor set aside, what is not established |
+| 83.0 | Two: a statement that does not fit. A bookkeeper says she was 34 kilometres from a fire. Exhibit sheets from her phone put her at the yard. | file: her photograph of the gate; app: "Two places on one day, 2026-03-14" on her page |
+| 92.5 | The app flags two places on one day. A person reads the times, and concludes she was there. | app: the case's conclusion, reasonable grounds to believe |
+| 99.2 | Three: an old clip shared as new. The app ties 8 of 9 reposts to a flood video from two years earlier, mostly by sound. One cropped, mirrored, muted copy is missed. | file: the original and the shared clip side by side; app: the shared clip's Copies tab, the 2024 original, 118 of 118 sound points, strong; then the conclusion |
+| 112.2 | Four: a person who drops out of the record. A statement says when a bus driver was last seen. The app finds 73 days with no log naming him. A lead, not a finding. | file: the gate book page, the 22:40 line with no driver; app: "No evidence for 73 days" on his track; then the conclusion, worded as a lead |
+| 124.9 | Every decision is signed by a person. A court can check the sealed package offline; here, on a test package. | site: the package checker's list of checks, labelled "Checker shown on a test package" |
+| 132.6 | The machine reads more than a person can, and finds the links. A person approves every one. | type: the two claims |
 
-## What the film does not show, and why
+## Limits the film keeps
 
-- **The signature itself.** A passkey gesture needs the analyst's own authenticator, so
-  beat 7 stops at the prompt; nothing is signed or written by `capture.py`. The signed
-  state in beat 8 is the seeded desk links, which a case analyst accepted with a passkey
-  signature when the case was seeded.
-- **The person declining the surveyor.** In the seeded app the linker ran without a
-  model, so the surveyor proposal waits in Review; beat 6 shows the Reject button, not a
-  rejection. The live model's decline is in `docs/case-studies.md`.
-- **A four-names package.** Building a signed package is off on a server without a
-  signing certificate, and the case has none. Beat 9 shows the site's checker on the
-  offline verifier's own test package (`tests/test_verify_package.py`), and says so.
-- **The old-footage match in the app.** When the film was made the 44 clips in
-  `case-old-footage` were still "processing" on the development server (no worker had
-  fingerprinted them), so beat 11 is built from the case's files. Recapture it from the
-  evidence page of `copy_viral.mp4` once the worker has run, and replace the right clip
-  with the match panel.
-
-## Recapture later
-
-- Beat 11 from app screens, as above.
+- Four of six true links, found by fixed rules with no model; the narration says so.
+- The surveyor: the scratch database leaves his proposal open, so the film shows the
+  reject form with a reason and stops before "Reject and sign". The capture account has
+  no passkey, so no signing prompt is shown; the note on screen says signing needs the
+  person's own passkey. Nothing is signed or written by the capture apart from the logged
+  reveal of the passport (the four-names conclusion rests on it) and the sign-in session.
+- Never-there: the clash is by day; a person reads the times from the exhibit sheets.
+- Old-footage: 8 of 9 copies, mostly by sound; one copy missed.
+- Unwritten-name: found because a statement says when he was last seen; a lead, not a
+  finding.
+- The checker runs on the offline verifier's own test package, and the screen says so.
+- Every case is invented; the portrait is generated and labelled.
