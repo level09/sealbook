@@ -1,0 +1,6871 @@
+{
+ "about": "Planted case and truth for the case study 'The name nobody wrote down', by acceptance/cases/unwritten-name/make.py. All content is fictional.",
+ "story": {
+  "title": "The name nobody wrote down",
+  "kind": "missing person",
+  "puzzle": "Dana Kovar, a nurse, boarded the last bus out of Wenmere on Saturday 14 March 2026 and never reached her night shift in Holt Cross. The bus company's gate log, fuel receipts and dispatch sheet run to several hundred lines over five months, and nobody reading them saw anything wrong.",
+  "twist": "Aron Vesk, who drove her bus, is named in every log until that night and in none for the next 73 days, though the roster kept him on route 9 and the gate line for his last run was left blank. The gap finder sets his silence beside the day Dana was last seen; a person decides what it means.",
+  "rests_on": [
+   "gap finder",
+   "timeline"
+  ],
+  "fictional": true
+ },
+ "investigation": "case-unwritten-name",
+ "today": "2026-07-01",
+ "places": {
+  "wenmere": {
+   "name_en": "Wenmere",
+   "name_ar": "Wenmere",
+   "lon": -24.5,
+   "lat": 47.3,
+   "precision_m": 4000
+  },
+  "station": {
+   "name_en": "Wenmere coach station and depot",
+   "name_ar": "Wenmere coach station and depot",
+   "lon": -24.505,
+   "lat": 47.302,
+   "precision_m": 150
+  },
+  "holt_cross": {
+   "name_en": "Holt Cross depot",
+   "name_ar": "Holt Cross depot",
+   "lon": -24.29,
+   "lat": 47.36,
+   "precision_m": 300
+  }
+ },
+ "sources": {
+  "gate": {
+   "title": "Wenmere depot gate log, February to June 2026",
+   "doc_type": "gate_log",
+   "sensitivity": "ordinary",
+   "date": "2026-06-30",
+   "file": "gate_log.csv"
+  },
+  "fuel": {
+   "title": "Wenmere depot fuel receipts, February to June 2026",
+   "doc_type": "fuel_receipts",
+   "sensitivity": "ordinary",
+   "date": "2026-06-30",
+   "file": "fuel_receipts.csv"
+  },
+  "dispatch": {
+   "title": "Route dispatch sheet, March 2026",
+   "doc_type": "dispatch_sheet",
+   "sensitivity": "ordinary",
+   "date": "2026-03-31",
+   "file": "dispatch_march.csv"
+  },
+  "roster": {
+   "title": "Shift roster, February to June 2026",
+   "doc_type": "roster",
+   "sensitivity": "ordinary",
+   "date": "2026-01-26",
+   "file": "shift_roster.csv"
+  },
+  "gatebook": {
+   "title": "Wenmere gate book, page for 14 March 2026",
+   "doc_type": "gate_log",
+   "sensitivity": "ordinary",
+   "date": "2026-03-14",
+   "file": "gate_book_14_march.jpg"
+  },
+  "supervisor": {
+   "title": "Statement of the station night supervisor",
+   "doc_type": "testimony",
+   "sensitivity": "ordinary",
+   "date": "2026-03-16",
+   "file": "supervisor_statement.jpg",
+   "transcript": "supervisor_statement.txt"
+  },
+  "manager": {
+   "title": "Depot manager's note to the police",
+   "doc_type": "casework_note",
+   "sensitivity": "ordinary",
+   "date": "2026-03-18",
+   "file": "manager_note.txt"
+  },
+  "flatmate": {
+   "title": "Statement of Dana Kovar's flatmate",
+   "doc_type": "testimony",
+   "sensitivity": "ordinary",
+   "date": "2026-03-15",
+   "file": "flatmate_statement.txt"
+  },
+  "notice": {
+   "title": "Missing person notice for Dana Kovar",
+   "doc_type": "appeal",
+   "sensitivity": "ordinary",
+   "date": "2026-03-16",
+   "file": "missing_notice.txt"
+  },
+  "photo": {
+   "title": "Photograph of Dana Kovar given to the police",
+   "doc_type": "photo",
+   "sensitivity": "ordinary",
+   "date": "2026-03-15",
+   "file": "dana_kovar.jpg"
+  },
+  "depot": {
+   "title": "Wenmere depot, the yard from the gate",
+   "doc_type": "photo",
+   "sensitivity": "ordinary",
+   "date": null,
+   "file": "wenmere_depot.jpg"
+  },
+  "charges": {
+   "title": "Wenmere police charge sheet extract, spring 2026",
+   "doc_type": "charge_sheet",
+   "sensitivity": "sensitive",
+   "date": "2026-04-21",
+   "file": "charge_sheet.txt"
+  },
+  "bail": {
+   "title": "Bail record for Leon Abbot",
+   "doc_type": "release_certificate",
+   "sensitivity": "sensitive",
+   "date": "2026-04-21",
+   "file": "bail_record.txt"
+  },
+  "staff": {
+   "title": "Holt Cross depot staff list 2026",
+   "doc_type": "staff_list",
+   "sensitivity": "ordinary",
+   "date": "2026-01-05",
+   "file": "holt_cross_staff_2026.txt"
+  }
+ },
+ "records": {
+  "mara_gate": {
+   "source": "gate",
+   "person": "mara"
+  },
+  "ivo_gate": {
+   "source": "gate",
+   "person": "ivo"
+  },
+  "nils_gate": {
+   "source": "gate",
+   "person": "nils"
+  },
+  "petra_gate": {
+   "source": "gate",
+   "person": "petra"
+  },
+  "aron_gate": {
+   "source": "gate",
+   "person": "aron"
+  },
+  "leon_gate": {
+   "source": "gate",
+   "person": "leon"
+  },
+  "petra_fuel": {
+   "source": "fuel",
+   "person": "petra"
+  },
+  "mara_fuel": {
+   "source": "fuel",
+   "person": "mara"
+  },
+  "nils_fuel": {
+   "source": "fuel",
+   "person": "nils"
+  },
+  "ivo_fuel": {
+   "source": "fuel",
+   "person": "ivo"
+  },
+  "aron_fuel": {
+   "source": "fuel",
+   "person": "aron"
+  },
+  "leon_fuel": {
+   "source": "fuel",
+   "person": "leon"
+  },
+  "petra_dispatch": {
+   "source": "dispatch",
+   "person": "petra"
+  },
+  "nils_dispatch": {
+   "source": "dispatch",
+   "person": "nils"
+  },
+  "mara_dispatch": {
+   "source": "dispatch",
+   "person": "mara"
+  },
+  "aron_dispatch": {
+   "source": "dispatch",
+   "person": "aron"
+  },
+  "leon_dispatch": {
+   "source": "dispatch",
+   "person": "leon"
+  },
+  "dana_flatmate": {
+   "source": "flatmate",
+   "person": "dana"
+  },
+  "dana_notice": {
+   "source": "notice",
+   "person": "dana"
+  },
+  "dana_supervisor": {
+   "source": "supervisor",
+   "person": "dana"
+  },
+  "dana_photo": {
+   "source": "photo",
+   "person": "dana"
+  },
+  "aron_supervisor": {
+   "source": "supervisor",
+   "person": "aron"
+  },
+  "aron_manager": {
+   "source": "manager",
+   "person": "aron"
+  },
+  "ivo_manager": {
+   "source": "manager",
+   "person": "ivo"
+  },
+  "ivo_staff": {
+   "source": "staff",
+   "person": "ivo"
+  },
+  "nils_charges": {
+   "source": "charges",
+   "person": "nils"
+  },
+  "leon_charges": {
+   "source": "charges",
+   "person": "leon"
+  },
+  "leon_bail": {
+   "source": "bail",
+   "person": "leon"
+  }
+ },
+ "clusters": [
+  [
+   "aron_dispatch",
+   "aron_fuel",
+   "aron_gate",
+   "aron_manager",
+   "aron_supervisor"
+  ],
+  [
+   "dana_flatmate",
+   "dana_notice",
+   "dana_photo",
+   "dana_supervisor"
+  ],
+  [
+   "ivo_fuel",
+   "ivo_gate",
+   "ivo_manager",
+   "ivo_staff"
+  ],
+  [
+   "leon_bail",
+   "leon_charges",
+   "leon_dispatch",
+   "leon_fuel",
+   "leon_gate"
+  ],
+  [
+   "mara_dispatch",
+   "mara_fuel",
+   "mara_gate"
+  ],
+  [
+   "nils_charges",
+   "nils_dispatch",
+   "nils_fuel",
+   "nils_gate"
+  ],
+  [
+   "petra_dispatch",
+   "petra_fuel",
+   "petra_gate"
+  ]
+ ],
+ "claims": [
+  {
+   "key": "mara_gate.name",
+   "record": "mara_gate",
+   "prop": "name",
+   "value": "M. Lind",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-02",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-02",
+   "to": "2026-02-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.name",
+   "record": "ivo_gate",
+   "prop": "name",
+   "value": "I. Sand",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-02",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-02",
+   "to": "2026-02-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.name",
+   "record": "nils_gate",
+   "prop": "name",
+   "value": "N. Harrow",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-02",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-02",
+   "to": "2026-02-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.name",
+   "record": "petra_gate",
+   "prop": "name",
+   "value": "P. Coyle",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-02",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-02",
+   "to": "2026-02-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.name",
+   "record": "aron_gate",
+   "prop": "name",
+   "value": "A. Vesk",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-02",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-02",
+   "to": "2026-02-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-03",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-03",
+   "to": "2026-02-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-03",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-03",
+   "to": "2026-02-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-03",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-03",
+   "to": "2026-02-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-03",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-03",
+   "to": "2026-02-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.name",
+   "record": "leon_gate",
+   "prop": "name",
+   "value": "L. Abbot",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-03",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-03",
+   "to": "2026-02-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-03",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-03",
+   "to": "2026-02-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-04",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-04",
+   "to": "2026-02-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-04",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-04",
+   "to": "2026-02-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-04",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-04",
+   "to": "2026-02-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-04",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-04",
+   "to": "2026-02-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-05",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-05",
+   "to": "2026-02-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-05",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-05",
+   "to": "2026-02-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-05",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-05",
+   "to": "2026-02-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-05",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-05",
+   "to": "2026-02-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-05",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-05",
+   "to": "2026-02-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-06",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-06",
+   "to": "2026-02-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-06",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-06",
+   "to": "2026-02-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-06",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-06",
+   "to": "2026-02-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-06",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-06",
+   "to": "2026-02-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-07",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-07",
+   "to": "2026-02-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-07",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-07",
+   "to": "2026-02-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-07",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-07",
+   "to": "2026-02-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-07",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-07",
+   "to": "2026-02-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-07",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-07",
+   "to": "2026-02-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-09",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-09",
+   "to": "2026-02-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-09",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-09",
+   "to": "2026-02-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-09",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-09",
+   "to": "2026-02-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-09",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-09",
+   "to": "2026-02-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-10",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-10",
+   "to": "2026-02-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-10",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-10",
+   "to": "2026-02-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-10",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-10",
+   "to": "2026-02-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-10",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-10",
+   "to": "2026-02-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-10",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-10",
+   "to": "2026-02-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-10",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-10",
+   "to": "2026-02-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-11",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-11",
+   "to": "2026-02-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-11",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-11",
+   "to": "2026-02-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-11",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-11",
+   "to": "2026-02-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-11",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-11",
+   "to": "2026-02-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-12",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-12",
+   "to": "2026-02-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-12",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-12",
+   "to": "2026-02-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-12",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-12",
+   "to": "2026-02-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-12",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-12",
+   "to": "2026-02-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-12",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-12",
+   "to": "2026-02-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-13",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-13",
+   "to": "2026-02-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-13",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-13",
+   "to": "2026-02-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-13",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-13",
+   "to": "2026-02-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-13",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-13",
+   "to": "2026-02-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-13",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-13",
+   "to": "2026-02-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-14",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-14",
+   "to": "2026-02-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-14",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-14",
+   "to": "2026-02-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-14",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-14",
+   "to": "2026-02-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-14",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-14",
+   "to": "2026-02-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-14",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-14",
+   "to": "2026-02-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-16",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-16",
+   "to": "2026-02-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-16",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-16",
+   "to": "2026-02-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-16",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-16",
+   "to": "2026-02-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-16",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-16",
+   "to": "2026-02-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-17",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-17",
+   "to": "2026-02-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-17",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-17",
+   "to": "2026-02-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-17",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-17",
+   "to": "2026-02-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-17",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-17",
+   "to": "2026-02-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-17",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-17",
+   "to": "2026-02-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-17",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-17",
+   "to": "2026-02-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-18",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-18",
+   "to": "2026-02-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-18",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-18",
+   "to": "2026-02-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-18",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-18",
+   "to": "2026-02-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-18",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-18",
+   "to": "2026-02-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-02-19",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-19",
+   "to": "2026-02-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-19",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-19",
+   "to": "2026-02-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-19",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-19",
+   "to": "2026-02-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-19",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-19",
+   "to": "2026-02-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-19",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-19",
+   "to": "2026-02-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-20",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-20",
+   "to": "2026-02-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-20",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-20",
+   "to": "2026-02-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-20",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-20",
+   "to": "2026-02-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-20",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-20",
+   "to": "2026-02-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-21",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-21",
+   "to": "2026-02-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-21",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-21",
+   "to": "2026-02-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-21",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-21",
+   "to": "2026-02-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-21",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-21",
+   "to": "2026-02-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-21",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-21",
+   "to": "2026-02-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-23",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-23",
+   "to": "2026-02-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-23",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-23",
+   "to": "2026-02-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-23",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-23",
+   "to": "2026-02-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-23",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-23",
+   "to": "2026-02-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-24",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-24",
+   "to": "2026-02-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-24",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-24",
+   "to": "2026-02-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-24",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-24",
+   "to": "2026-02-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-24",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-24",
+   "to": "2026-02-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-25",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-25",
+   "to": "2026-02-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-25",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-25",
+   "to": "2026-02-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-26",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-26",
+   "to": "2026-02-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-26",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-26",
+   "to": "2026-02-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-26",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-26",
+   "to": "2026-02-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-27",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-27",
+   "to": "2026-02-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-27",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-27",
+   "to": "2026-02-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-27",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-27",
+   "to": "2026-02-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-02-28",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-28",
+   "to": "2026-02-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-02-28",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-28",
+   "to": "2026-02-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-02-28",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-28",
+   "to": "2026-02-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-02-28",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-28",
+   "to": "2026-02-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-02-28",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-02-28",
+   "to": "2026-02-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-02",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-02",
+   "to": "2026-03-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-02",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-02",
+   "to": "2026-03-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-02",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-02",
+   "to": "2026-03-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-03-02",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-02",
+   "to": "2026-03-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-03",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-03",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-03",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-03",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-03-03",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-04",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-04",
+   "to": "2026-03-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-04",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-04",
+   "to": "2026-03-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-05",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-05",
+   "to": "2026-03-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-05",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-05",
+   "to": "2026-03-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-05",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-05",
+   "to": "2026-03-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-03-05",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-05",
+   "to": "2026-03-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-06",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-06",
+   "to": "2026-03-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-06",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-06",
+   "to": "2026-03-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-06",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-06",
+   "to": "2026-03-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-06",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-06",
+   "to": "2026-03-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-07",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-07",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-07",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-07",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-03-07",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-09",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-09",
+   "to": "2026-03-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-09",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-09",
+   "to": "2026-03-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-09",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-09",
+   "to": "2026-03-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-03-09",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-09",
+   "to": "2026-03-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-10",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-10",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-10",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-03-10",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-10",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-11",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-11",
+   "to": "2026-03-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-03-11",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-11",
+   "to": "2026-03-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-11",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-11",
+   "to": "2026-03-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-12",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-12",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-03-12",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-12",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-13",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-13",
+   "to": "2026-03-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-13",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-13",
+   "to": "2026-03-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-13",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-13",
+   "to": "2026-03-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-13",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-13",
+   "to": "2026-03-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-14",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-14",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-14",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-14",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-16",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-16",
+   "to": "2026-03-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-16",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-16",
+   "to": "2026-03-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-16",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-16",
+   "to": "2026-03-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-17",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-17",
+   "to": "2026-03-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-17",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-17",
+   "to": "2026-03-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-17",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-17",
+   "to": "2026-03-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-17",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-17",
+   "to": "2026-03-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-18",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-18",
+   "to": "2026-03-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-18",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-18",
+   "to": "2026-03-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-19",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-19",
+   "to": "2026-03-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-19",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-19",
+   "to": "2026-03-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-19",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-19",
+   "to": "2026-03-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-20",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-20",
+   "to": "2026-03-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-20",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-20",
+   "to": "2026-03-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-20",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-20",
+   "to": "2026-03-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-20",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-20",
+   "to": "2026-03-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-21",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-21",
+   "to": "2026-03-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-21",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-21",
+   "to": "2026-03-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-21",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-21",
+   "to": "2026-03-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-21",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-21",
+   "to": "2026-03-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-23",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-23",
+   "to": "2026-03-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-23",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-23",
+   "to": "2026-03-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-24",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-24",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-24",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-24",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-25",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-25",
+   "to": "2026-03-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-25",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-25",
+   "to": "2026-03-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-26",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-26",
+   "to": "2026-03-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-26",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-26",
+   "to": "2026-03-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-26",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-26",
+   "to": "2026-03-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-27",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-27",
+   "to": "2026-03-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-27",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-27",
+   "to": "2026-03-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-27",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-27",
+   "to": "2026-03-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-27",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-27",
+   "to": "2026-03-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-28",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-28",
+   "to": "2026-03-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-28",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-28",
+   "to": "2026-03-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-28",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-28",
+   "to": "2026-03-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-28",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-28",
+   "to": "2026-03-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-30",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-30",
+   "to": "2026-03-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-30",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-30",
+   "to": "2026-03-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-30",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-30",
+   "to": "2026-03-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-03-31",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-31",
+   "to": "2026-03-31",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-03-31",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-31",
+   "to": "2026-03-31",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-03-31",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-31",
+   "to": "2026-03-31",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-03-31",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-03-31",
+   "to": "2026-03-31",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-04-01",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-01",
+   "to": "2026-04-01",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-01",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-01",
+   "to": "2026-04-01",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-02",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-02",
+   "to": "2026-04-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-02",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-02",
+   "to": "2026-04-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-04-03",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-03",
+   "to": "2026-04-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-03",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-03",
+   "to": "2026-04-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-03",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-03",
+   "to": "2026-04-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-04-04",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-04",
+   "to": "2026-04-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-04",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-04",
+   "to": "2026-04-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-04",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-04",
+   "to": "2026-04-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-06",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-06",
+   "to": "2026-04-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-07",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-07",
+   "to": "2026-04-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-07",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-07",
+   "to": "2026-04-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-08",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-08",
+   "to": "2026-04-08",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-09",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-09",
+   "to": "2026-04-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-09",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-09",
+   "to": "2026-04-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-10",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-10",
+   "to": "2026-04-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-11",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-11",
+   "to": "2026-04-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-11",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-11",
+   "to": "2026-04-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-13",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-13",
+   "to": "2026-04-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-14",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-14",
+   "to": "2026-04-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-14",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-14",
+   "to": "2026-04-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-15",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-15",
+   "to": "2026-04-15",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-16",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-16",
+   "to": "2026-04-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-16",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-16",
+   "to": "2026-04-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-17",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-17",
+   "to": "2026-04-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-17",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-17",
+   "to": "2026-04-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-18",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-18",
+   "to": "2026-04-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-04-18",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-18",
+   "to": "2026-04-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-20",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-20",
+   "to": "2026-04-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-21",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-21",
+   "to": "2026-04-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-23",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-23",
+   "to": "2026-04-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-24",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-24",
+   "to": "2026-04-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-25",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-25",
+   "to": "2026-04-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-27",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-27",
+   "to": "2026-04-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-28",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-28",
+   "to": "2026-04-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-04-30",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-04-30",
+   "to": "2026-04-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-01",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-01",
+   "to": "2026-05-01",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-02",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-02",
+   "to": "2026-05-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-04",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-04",
+   "to": "2026-05-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-05",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-05",
+   "to": "2026-05-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-07",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-07",
+   "to": "2026-05-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-08",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-08",
+   "to": "2026-05-08",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-09",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-09",
+   "to": "2026-05-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-11",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-11",
+   "to": "2026-05-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-12",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-12",
+   "to": "2026-05-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-14",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-14",
+   "to": "2026-05-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-15",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-15",
+   "to": "2026-05-15",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-16",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-16",
+   "to": "2026-05-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-18",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-18",
+   "to": "2026-05-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-19",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-19",
+   "to": "2026-05-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-21",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-21",
+   "to": "2026-05-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-22",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-22",
+   "to": "2026-05-22",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-23",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-23",
+   "to": "2026-05-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-25",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-25",
+   "to": "2026-05-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-26",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-26",
+   "to": "2026-05-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-05-26",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-26",
+   "to": "2026-05-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-05-27",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-27",
+   "to": "2026-05-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-28",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-28",
+   "to": "2026-05-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-05-28",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-28",
+   "to": "2026-05-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-29",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-29",
+   "to": "2026-05-29",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-05-30",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-30",
+   "to": "2026-05-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-05-30",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-30",
+   "to": "2026-05-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-05-30",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-05-30",
+   "to": "2026-05-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-01",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-01",
+   "to": "2026-06-01",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-01",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-01",
+   "to": "2026-06-01",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-01",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-01",
+   "to": "2026-06-01",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-01",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-01",
+   "to": "2026-06-01",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-02",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-02",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-02",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-02",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-03",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-03",
+   "to": "2026-06-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-03",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-03",
+   "to": "2026-06-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-04",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-04",
+   "to": "2026-06-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-04",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-04",
+   "to": "2026-06-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-04",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-04",
+   "to": "2026-06-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-04",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-04",
+   "to": "2026-06-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-05",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-05",
+   "to": "2026-06-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-05",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-05",
+   "to": "2026-06-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-05",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-05",
+   "to": "2026-06-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-06",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-06",
+   "to": "2026-06-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-06",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-06",
+   "to": "2026-06-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-06",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-06",
+   "to": "2026-06-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-08",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-08",
+   "to": "2026-06-08",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-08",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-08",
+   "to": "2026-06-08",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-08",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-08",
+   "to": "2026-06-08",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-08",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-08",
+   "to": "2026-06-08",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-09",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-09",
+   "to": "2026-06-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-09",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-09",
+   "to": "2026-06-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-09",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-09",
+   "to": "2026-06-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-09",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-09",
+   "to": "2026-06-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-10",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-10",
+   "to": "2026-06-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-10",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-10",
+   "to": "2026-06-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-11",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-11",
+   "to": "2026-06-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-11",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-11",
+   "to": "2026-06-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-11",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-11",
+   "to": "2026-06-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-11",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-11",
+   "to": "2026-06-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-12",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-12",
+   "to": "2026-06-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-12",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-12",
+   "to": "2026-06-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-12",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-12",
+   "to": "2026-06-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-13",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-13",
+   "to": "2026-06-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-13",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-13",
+   "to": "2026-06-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-13",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-13",
+   "to": "2026-06-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-13",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-13",
+   "to": "2026-06-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-15",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-15",
+   "to": "2026-06-15",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-15",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-15",
+   "to": "2026-06-15",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-15",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-15",
+   "to": "2026-06-15",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-15",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-15",
+   "to": "2026-06-15",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-15",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-15",
+   "to": "2026-06-15",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-16",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-16",
+   "to": "2026-06-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-16",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-16",
+   "to": "2026-06-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-16",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-16",
+   "to": "2026-06-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-16",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-16",
+   "to": "2026-06-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-16",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-16",
+   "to": "2026-06-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-17",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-17",
+   "to": "2026-06-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-17",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-17",
+   "to": "2026-06-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-17",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-17",
+   "to": "2026-06-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-18",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-18",
+   "to": "2026-06-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-18",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-18",
+   "to": "2026-06-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-18",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-18",
+   "to": "2026-06-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-18",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-18",
+   "to": "2026-06-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-19",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-19",
+   "to": "2026-06-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-19",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-19",
+   "to": "2026-06-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-19",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-19",
+   "to": "2026-06-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-19",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-19",
+   "to": "2026-06-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-20",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-20",
+   "to": "2026-06-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-20",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-20",
+   "to": "2026-06-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-20",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-20",
+   "to": "2026-06-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-22",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-22",
+   "to": "2026-06-22",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-22",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-22",
+   "to": "2026-06-22",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-22",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-22",
+   "to": "2026-06-22",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-22",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-22",
+   "to": "2026-06-22",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-23",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-23",
+   "to": "2026-06-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-23",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-23",
+   "to": "2026-06-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-23",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-23",
+   "to": "2026-06-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-23",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-23",
+   "to": "2026-06-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-23",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-23",
+   "to": "2026-06-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-24",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-24",
+   "to": "2026-06-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-24",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-24",
+   "to": "2026-06-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-24",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-24",
+   "to": "2026-06-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-25",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-25",
+   "to": "2026-06-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-25",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-25",
+   "to": "2026-06-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-25",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-25",
+   "to": "2026-06-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-26",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-26",
+   "to": "2026-06-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-26",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-26",
+   "to": "2026-06-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-26",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-26",
+   "to": "2026-06-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-26",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-26",
+   "to": "2026-06-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-27",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-27",
+   "to": "2026-06-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-27",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-27",
+   "to": "2026-06-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-27",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-27",
+   "to": "2026-06-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-27",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-27",
+   "to": "2026-06-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-29",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-29",
+   "to": "2026-06-29",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-29",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-29",
+   "to": "2026-06-29",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-29",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-29",
+   "to": "2026-06-29",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-29",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-29",
+   "to": "2026-06-29",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-29",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-29",
+   "to": "2026-06-29",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_gate.2026-06-30",
+   "record": "petra_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-30",
+   "to": "2026-06-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_gate.2026-06-30",
+   "record": "mara_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-30",
+   "to": "2026-06-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_gate.2026-06-30",
+   "record": "nils_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-30",
+   "to": "2026-06-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_gate.2026-06-30",
+   "record": "ivo_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-30",
+   "to": "2026-06-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_gate.2026-06-30",
+   "record": "aron_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-30",
+   "to": "2026-06-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_gate.2026-06-30",
+   "record": "leon_gate",
+   "prop": "seen_at",
+   "value": "Wenmere depot gate",
+   "from": "2026-06-30",
+   "to": "2026-06-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.name",
+   "record": "petra_fuel",
+   "prop": "name",
+   "value": "COYLE P",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-02-02",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-02",
+   "to": "2026-02-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.name",
+   "record": "mara_fuel",
+   "prop": "name",
+   "value": "LIND M",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-02-02",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-02",
+   "to": "2026-02-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.name",
+   "record": "nils_fuel",
+   "prop": "name",
+   "value": "HARROW N",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-02",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-02",
+   "to": "2026-02-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.name",
+   "record": "ivo_fuel",
+   "prop": "name",
+   "value": "SAND I",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-02-02",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-02",
+   "to": "2026-02-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.name",
+   "record": "aron_fuel",
+   "prop": "name",
+   "value": "VESK A",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-02-02",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-02",
+   "to": "2026-02-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-02-03",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-03",
+   "to": "2026-02-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.name",
+   "record": "leon_fuel",
+   "prop": "name",
+   "value": "ABBOT L",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-03",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-03",
+   "to": "2026-02-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-02-04",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-04",
+   "to": "2026-02-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-02-04",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-04",
+   "to": "2026-02-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-04",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-04",
+   "to": "2026-02-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-05",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-05",
+   "to": "2026-02-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-02-06",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-06",
+   "to": "2026-02-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-06",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-06",
+   "to": "2026-02-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-06",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-06",
+   "to": "2026-02-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-02-07",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-07",
+   "to": "2026-02-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-02-07",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-07",
+   "to": "2026-02-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-07",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-07",
+   "to": "2026-02-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-09",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-09",
+   "to": "2026-02-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-02-09",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-09",
+   "to": "2026-02-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-10",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-10",
+   "to": "2026-02-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-02-11",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-11",
+   "to": "2026-02-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-02-11",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-11",
+   "to": "2026-02-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-11",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-11",
+   "to": "2026-02-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-12",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-12",
+   "to": "2026-02-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-02-12",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-12",
+   "to": "2026-02-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-02-13",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-13",
+   "to": "2026-02-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-13",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-13",
+   "to": "2026-02-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-13",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-13",
+   "to": "2026-02-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-02-14",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-14",
+   "to": "2026-02-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-14",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-14",
+   "to": "2026-02-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-02-16",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-16",
+   "to": "2026-02-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-02-16",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-16",
+   "to": "2026-02-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-02-17",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-17",
+   "to": "2026-02-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-02-19",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-19",
+   "to": "2026-02-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-19",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-19",
+   "to": "2026-02-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-19",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-19",
+   "to": "2026-02-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-20",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-20",
+   "to": "2026-02-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-21",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-21",
+   "to": "2026-02-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-02-21",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-21",
+   "to": "2026-02-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-21",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-21",
+   "to": "2026-02-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-02-23",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-23",
+   "to": "2026-02-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-23",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-23",
+   "to": "2026-02-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-02-23",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-23",
+   "to": "2026-02-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-02-26",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-26",
+   "to": "2026-02-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-02-26",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-26",
+   "to": "2026-02-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-26",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-26",
+   "to": "2026-02-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-02-27",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-27",
+   "to": "2026-02-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-02-28",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-28",
+   "to": "2026-02-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-02-28",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-28",
+   "to": "2026-02-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-02-28",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-02-28",
+   "to": "2026-02-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-03-02",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-02",
+   "to": "2026-03-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-03-03",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-03-03",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-03-04",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-04",
+   "to": "2026-03-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-03-05",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-05",
+   "to": "2026-03-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-03-06",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-06",
+   "to": "2026-03-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-03-07",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-03-07",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-03-07",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-03-09",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-09",
+   "to": "2026-03-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-03-09",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-09",
+   "to": "2026-03-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-03-10",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-03-10",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-03-10",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-03-11",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-11",
+   "to": "2026-03-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-03-11",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-11",
+   "to": "2026-03-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-03-11",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-11",
+   "to": "2026-03-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-03-12",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-03-12",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-03-12",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-03-13",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-13",
+   "to": "2026-03-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-03-13",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-13",
+   "to": "2026-03-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-03-14",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-03-14",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-03-14",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-03-16",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-16",
+   "to": "2026-03-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-03-16",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-16",
+   "to": "2026-03-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-03-19",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-19",
+   "to": "2026-03-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-03-23",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-23",
+   "to": "2026-03-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-03-24",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-03-24",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-03-24",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-03-27",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-27",
+   "to": "2026-03-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-03-28",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-28",
+   "to": "2026-03-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-03-30",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-30",
+   "to": "2026-03-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-03-31",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-03-31",
+   "to": "2026-03-31",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-04-01",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-01",
+   "to": "2026-04-01",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-04-03",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-03",
+   "to": "2026-04-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-04-03",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-03",
+   "to": "2026-04-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-04-04",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-04",
+   "to": "2026-04-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-04-08",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-08",
+   "to": "2026-04-08",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-04-11",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-11",
+   "to": "2026-04-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-04-13",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-13",
+   "to": "2026-04-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-04-14",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-14",
+   "to": "2026-04-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-04-14",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-14",
+   "to": "2026-04-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-04-15",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-15",
+   "to": "2026-04-15",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-04-16",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-16",
+   "to": "2026-04-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-04-17",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-17",
+   "to": "2026-04-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-04-17",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-17",
+   "to": "2026-04-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-04-20",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-20",
+   "to": "2026-04-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-04-21",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-21",
+   "to": "2026-04-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-04-25",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-25",
+   "to": "2026-04-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-04-27",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-27",
+   "to": "2026-04-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-04-28",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-04-28",
+   "to": "2026-04-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-05-02",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-02",
+   "to": "2026-05-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-05-08",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-08",
+   "to": "2026-05-08",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-05-09",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-09",
+   "to": "2026-05-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-05-16",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-16",
+   "to": "2026-05-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-05-22",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-22",
+   "to": "2026-05-22",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-05-23",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-23",
+   "to": "2026-05-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-05-25",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-25",
+   "to": "2026-05-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-05-26",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-26",
+   "to": "2026-05-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-05-28",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-28",
+   "to": "2026-05-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-05-28",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-28",
+   "to": "2026-05-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-05-29",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-29",
+   "to": "2026-05-29",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-05-30",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-05-30",
+   "to": "2026-05-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-06-01",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-01",
+   "to": "2026-06-01",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-06-02",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-06-02",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-02",
+   "to": "2026-06-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-06-03",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-03",
+   "to": "2026-06-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-06-04",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-04",
+   "to": "2026-06-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-06-05",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-05",
+   "to": "2026-06-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-06-06",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-06",
+   "to": "2026-06-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-06-08",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-08",
+   "to": "2026-06-08",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-06-09",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-09",
+   "to": "2026-06-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-06-10",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-10",
+   "to": "2026-06-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-06-11",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-11",
+   "to": "2026-06-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-06-12",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-12",
+   "to": "2026-06-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-06-13",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-13",
+   "to": "2026-06-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-06-15",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-15",
+   "to": "2026-06-15",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-06-16",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-16",
+   "to": "2026-06-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-06-17",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-17",
+   "to": "2026-06-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-06-17",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-17",
+   "to": "2026-06-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-06-18",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-18",
+   "to": "2026-06-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-06-18",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-18",
+   "to": "2026-06-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-06-18",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-18",
+   "to": "2026-06-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-06-18",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-18",
+   "to": "2026-06-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-06-19",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-19",
+   "to": "2026-06-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-06-20",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-20",
+   "to": "2026-06-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-06-20",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-20",
+   "to": "2026-06-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_fuel.2026-06-22",
+   "record": "nils_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-22",
+   "to": "2026-06-22",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-06-22",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-22",
+   "to": "2026-06-22",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_fuel.2026-06-23",
+   "record": "mara_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-23",
+   "to": "2026-06-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-06-24",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-24",
+   "to": "2026-06-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_fuel.2026-06-26",
+   "record": "petra_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-26",
+   "to": "2026-06-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-06-26",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-26",
+   "to": "2026-06-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_fuel.2026-06-29",
+   "record": "ivo_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-29",
+   "to": "2026-06-29",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-06-29",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-29",
+   "to": "2026-06-29",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_fuel.2026-06-30",
+   "record": "aron_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-30",
+   "to": "2026-06-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_fuel.2026-06-30",
+   "record": "leon_fuel",
+   "prop": "seen_at",
+   "value": "Wenmere depot pump P2",
+   "from": "2026-06-30",
+   "to": "2026-06-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.name",
+   "record": "petra_dispatch",
+   "prop": "name",
+   "value": "Coyle",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-02",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-02",
+   "to": "2026-03-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.name",
+   "record": "nils_dispatch",
+   "prop": "name",
+   "value": "Harrow",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-02",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-02",
+   "to": "2026-03-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.name",
+   "record": "mara_dispatch",
+   "prop": "name",
+   "value": "Lind",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-02",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-02",
+   "to": "2026-03-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_dispatch.name",
+   "record": "aron_dispatch",
+   "prop": "name",
+   "value": "Vesk",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_dispatch.2026-03-02",
+   "record": "aron_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-02",
+   "to": "2026-03-02",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-03",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-03",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.name",
+   "record": "leon_dispatch",
+   "prop": "name",
+   "value": "Abbot",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-03",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-03",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_dispatch.2026-03-03",
+   "record": "aron_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-03",
+   "to": "2026-03-03",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-04",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-04",
+   "to": "2026-03-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-04",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-04",
+   "to": "2026-03-04",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-05",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-05",
+   "to": "2026-03-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-05",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-05",
+   "to": "2026-03-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-05",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-05",
+   "to": "2026-03-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_dispatch.2026-03-05",
+   "record": "aron_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-05",
+   "to": "2026-03-05",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-06",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-06",
+   "to": "2026-03-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-06",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-06",
+   "to": "2026-03-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-06",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-06",
+   "to": "2026-03-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-06",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-06",
+   "to": "2026-03-06",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-07",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-07",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-07",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-07",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_dispatch.2026-03-07",
+   "record": "aron_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-07",
+   "to": "2026-03-07",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-09",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-09",
+   "to": "2026-03-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-09",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-09",
+   "to": "2026-03-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-09",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-09",
+   "to": "2026-03-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_dispatch.2026-03-09",
+   "record": "aron_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-09",
+   "to": "2026-03-09",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-10",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-10",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-10",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-10",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_dispatch.2026-03-10",
+   "record": "aron_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-10",
+   "to": "2026-03-10",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-11",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-11",
+   "to": "2026-03-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-11",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-11",
+   "to": "2026-03-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_dispatch.2026-03-11",
+   "record": "aron_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-11",
+   "to": "2026-03-11",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-12",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-12",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-12",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_dispatch.2026-03-12",
+   "record": "aron_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-12",
+   "to": "2026-03-12",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-13",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-13",
+   "to": "2026-03-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-13",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-13",
+   "to": "2026-03-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-13",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-13",
+   "to": "2026-03-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-13",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-13",
+   "to": "2026-03-13",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-14",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-14",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-14",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-14",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-16",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-16",
+   "to": "2026-03-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-16",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-16",
+   "to": "2026-03-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-16",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-16",
+   "to": "2026-03-16",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-17",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-17",
+   "to": "2026-03-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-17",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-17",
+   "to": "2026-03-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-17",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-17",
+   "to": "2026-03-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-17",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-17",
+   "to": "2026-03-17",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-18",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-18",
+   "to": "2026-03-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-18",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-18",
+   "to": "2026-03-18",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-19",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-19",
+   "to": "2026-03-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-19",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-19",
+   "to": "2026-03-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-19",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-19",
+   "to": "2026-03-19",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-20",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-20",
+   "to": "2026-03-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-20",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-20",
+   "to": "2026-03-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-20",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-20",
+   "to": "2026-03-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-20",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-20",
+   "to": "2026-03-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-21",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-21",
+   "to": "2026-03-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-21",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-21",
+   "to": "2026-03-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-21",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-21",
+   "to": "2026-03-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-21",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-21",
+   "to": "2026-03-21",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-23",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-23",
+   "to": "2026-03-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-23",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-23",
+   "to": "2026-03-23",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-24",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-24",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-24",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-24",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-24",
+   "to": "2026-03-24",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-25",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-25",
+   "to": "2026-03-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-25",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-25",
+   "to": "2026-03-25",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-26",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-26",
+   "to": "2026-03-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-26",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-26",
+   "to": "2026-03-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-26",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-26",
+   "to": "2026-03-26",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-27",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-27",
+   "to": "2026-03-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-27",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-27",
+   "to": "2026-03-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-27",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-27",
+   "to": "2026-03-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-27",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-27",
+   "to": "2026-03-27",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-28",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-28",
+   "to": "2026-03-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-28",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-28",
+   "to": "2026-03-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-28",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-28",
+   "to": "2026-03-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-28",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-28",
+   "to": "2026-03-28",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-30",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-30",
+   "to": "2026-03-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-30",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-30",
+   "to": "2026-03-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-30",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-30",
+   "to": "2026-03-30",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "petra_dispatch.2026-03-31",
+   "record": "petra_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-31",
+   "to": "2026-03-31",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_dispatch.2026-03-31",
+   "record": "nils_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-31",
+   "to": "2026-03-31",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_dispatch.2026-03-31",
+   "record": "leon_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-31",
+   "to": "2026-03-31",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "mara_dispatch.2026-03-31",
+   "record": "mara_dispatch",
+   "prop": "seen_at",
+   "value": "Wenmere coach station",
+   "from": "2026-03-31",
+   "to": "2026-03-31",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_flatmate.name",
+   "record": "dana_flatmate",
+   "prop": "name",
+   "value": "Dana Kovar",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_flatmate.age",
+   "record": "dana_flatmate",
+   "prop": "age",
+   "value": "24",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_flatmate.occupation",
+   "record": "dana_flatmate",
+   "prop": "occupation",
+   "value": "nurse",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_flatmate.last_seen",
+   "record": "dana_flatmate",
+   "prop": "last_seen",
+   "value": "the flat in Wenmere",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "wenmere",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_notice.name",
+   "record": "dana_notice",
+   "prop": "name",
+   "value": "Dana Kovar",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_notice.sex",
+   "record": "dana_notice",
+   "prop": "sex",
+   "value": "female",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_notice.age",
+   "record": "dana_notice",
+   "prop": "age",
+   "value": "24",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_notice.last_seen",
+   "record": "dana_notice",
+   "prop": "last_seen",
+   "value": "Wenmere coach station",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_notice.missing",
+   "record": "dana_notice",
+   "prop": "event",
+   "value": "Missing since Saturday 14 March 2026",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed",
+   "event": "missing"
+  },
+  {
+   "key": "dana_supervisor.name",
+   "record": "dana_supervisor",
+   "prop": "name",
+   "value": "Dana Kovar",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_supervisor.last_seen",
+   "record": "dana_supervisor",
+   "prop": "last_seen",
+   "value": "stand 3, Wenmere coach station",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "dana_photo.name",
+   "record": "dana_photo",
+   "prop": "name",
+   "value": "Dana Kovar",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_supervisor.name",
+   "record": "aron_supervisor",
+   "prop": "name",
+   "value": "Aron Vesk",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_supervisor.last_seen",
+   "record": "aron_supervisor",
+   "prop": "last_seen",
+   "value": "stand 3, Wenmere coach station",
+   "from": "2026-03-14",
+   "to": "2026-03-14",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_manager.name",
+   "record": "aron_manager",
+   "prop": "name",
+   "value": "Aron Vesk",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "aron_manager.occupation",
+   "record": "aron_manager",
+   "prop": "occupation",
+   "value": "bus driver, route 9 lates",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_manager.name",
+   "record": "ivo_manager",
+   "prop": "name",
+   "value": "Ivo Sand",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_manager.last_seen",
+   "record": "ivo_manager",
+   "prop": "last_seen",
+   "value": "the depot",
+   "from": "2026-02-20",
+   "to": "2026-02-20",
+   "place": "station",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_staff.name",
+   "record": "ivo_staff",
+   "prop": "name",
+   "value": "Ivo Sand",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "ivo_staff.based",
+   "record": "ivo_staff",
+   "prop": "seen_at",
+   "value": "Holt Cross depot",
+   "from": "2026-01-01",
+   "to": "2026-12-31",
+   "place": "holt_cross",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_charges.name",
+   "record": "nils_charges",
+   "prop": "name",
+   "value": "Nils Harrow",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "nils_charges.arrested",
+   "record": "nils_charges",
+   "prop": "arrested_at",
+   "value": "Wenmere town centre",
+   "from": "2026-04-01",
+   "to": "2026-04-01",
+   "place": "wenmere",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_charges.name",
+   "record": "leon_charges",
+   "prop": "name",
+   "value": "Leon Abbot",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_charges.arrested",
+   "record": "leon_charges",
+   "prop": "arrested_at",
+   "value": "Wenmere",
+   "from": "2026-04-20",
+   "to": "2026-04-20",
+   "place": "wenmere",
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_bail.name",
+   "record": "leon_bail",
+   "prop": "name",
+   "value": "Leon Abbot",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed"
+  },
+  {
+   "key": "leon_bail.released",
+   "record": "leon_bail",
+   "prop": "event",
+   "value": "Released on bail",
+   "from": "2026-04-21",
+   "to": "2026-04-21",
+   "place": null,
+   "tier": "unconfirmed",
+   "event": "released"
+  }
+ ],
+ "batch": [
+  "supervisor",
+  "manager",
+  "flatmate"
+ ],
+ "truth": {
+  "same_person": [],
+  "twins": [],
+  "gaps": [
+   {
+    "record": "aron_gate",
+    "from": "2026-03-14",
+    "to": "2026-05-26",
+    "why": "last seen driving the 22:40 the night Dana vanished, then in no log for 73 days"
+   },
+   {
+    "record": "dana_notice",
+    "from": "2026-03-14",
+    "to": null,
+    "why": "last seen boarding the 22:40, nothing since"
+   }
+  ],
+  "not_gaps": [
+   {
+    "record": "nils_charges",
+    "from": "2026-04-01",
+    "to": "2026-05-30",
+    "why": "arrested, back on the gate log 59 days later: under the 60-day threshold"
+   },
+   {
+    "record": "leon_charges",
+    "from": "2026-04-21",
+    "to": "2026-06-30",
+    "why": "off the logs 70 days, but a release on bail closes the silence"
+   },
+   {
+    "record": "ivo_manager",
+    "from": "2026-02-20",
+    "to": "2026-06-01",
+    "why": "gone from the Wenmere logs 101 days, but a year-only record of him at Holt Cross ends on 31 December, so it may fall inside the silence"
+   },
+   {
+    "record": "petra_gate",
+    "from": "2026-04-04",
+    "to": "2026-06-13",
+    "why": "70 days on recorded leave; no last-seen, arrest or missing account starts a watch on her, so the finder never measures this silence"
+   }
+  ],
+  "contradictions": [],
+  "not_contradictions": [],
+  "hard_same_person": [],
+  "traps": [],
+  "hard_contradictions": [],
+  "trap_contradictions": [],
+  "canary": {
+   "pair": [],
+   "contradiction": []
+  }
+ }
+}
