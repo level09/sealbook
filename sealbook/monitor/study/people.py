@@ -28,7 +28,10 @@ async def clusters(st, act, args) -> None:
     s, inv, records = st.s, st.inv, st.records
     names = _names(st)
     joiner = await s.principal("case-linker")
-    for cluster in st.spec.get("clusters") or []:
+    # `{"do": "clusters", "only": "rows"}` joins each sheet row to its record and
+    # leaves the planted clusters to the analyst's own `join`.
+    desks = [] if args.get("only") == "rows" else st.spec.get("clusters") or []
+    for cluster in desks:
         first, *rest = cluster
         if tuple(cluster) in st.joined or not all(r in names for r in cluster):
             continue

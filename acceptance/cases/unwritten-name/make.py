@@ -118,6 +118,19 @@ SHIFTS = {"early": ("05:40", "14:10"), "late": ("14:30", "23:50")}
 # left without a driver. The 22:40 is the last departure of route 9.
 NIGHT = date(2026, 3, 14)
 ROSTER_LEAVE = {"petra": ("2026-04-06", "2026-06-12")}
+# The depot hands its gate log and fuel receipts over in three batches, each the
+# lines up to its last day: key suffix, first day, last day, words, file suffix.
+BATCHES = (
+    ("1", "2026-02-02", "2026-03-31", "February and March 2026", "feb_mar"),
+    ("2", "2026-04-01", "2026-04-30", "April 2026", "apr"),
+    ("3", "2026-05-01", "2026-06-30", "May and June 2026", "may_jun"),
+)
+
+
+def batch(rows, n):
+    """The rows of batch `n` (its key suffix), by the date in their first cell."""
+    _, lo, hi, _, _ = next(b for b in BATCHES if b[0] == n)
+    return [r for r in rows if lo <= r[0] <= hi]
 
 
 def days():
@@ -379,20 +392,20 @@ TEXTS = {
 }
 
 SOURCES = {  # key: title, document type, sensitivity, document date, file
-    "gate": (
-        "Wenmere depot gate log, February to June 2026",
-        "gate_log",
-        "ordinary",
-        "2026-06-30",
-        "gate_log.csv",
-    ),
-    "fuel": (
-        "Wenmere depot fuel receipts, February to June 2026",
-        "fuel_receipts",
-        "ordinary",
-        "2026-06-30",
-        "fuel_receipts.csv",
-    ),
+    **{
+        f"{kind}{n}": (
+            f"{title}, {words}",
+            doc_type,
+            "ordinary",
+            hi,
+            f"{stem}_{suffix}.csv",
+        )
+        for kind, title, doc_type, stem in (
+            ("gate", "Wenmere depot gate log", "gate_log", "gate_log"),
+            ("fuel", "Wenmere depot fuel receipts", "fuel_receipts", "fuel_receipts"),
+        )
+        for n, _, hi, words, suffix in BATCHES
+    },
     "dispatch": (
         "Route dispatch sheet, March 2026",
         "dispatch_sheet",
@@ -529,17 +542,19 @@ def whole(name):
 def build(gate, fuel, dispatch):
     """One claim per log line that names a driver, on the line's day."""
     forms = {
-        (src, DRIVERS[k][i]): k
+        (kind, DRIVERS[k][i]): k
         for k in DRIVERS
-        for src, i in (("gate", 1), ("fuel", 2), ("dispatch", 3))
+        for kind, i in (("gate", 1), ("fuel", 2), ("dispatch", 3))
     }
-    for src, rows, col, value in (
-        ("gate", gate, 3, "Wenmere depot gate"),
-        ("fuel", fuel, 5, "Wenmere depot pump P2"),
-        ("dispatch", dispatch, 4, "Wenmere coach station"),
-    ):
+    sheets = [("dispatch", "dispatch", dispatch, 4, "Wenmere coach station")]
+    for n, *_ in BATCHES:
+        sheets += [
+            ("gate", f"gate{n}", batch(gate, n), 3, "Wenmere depot gate"),
+            ("fuel", f"fuel{n}", batch(fuel, n), 5, "Wenmere depot pump P2"),
+        ]
+    for kind, src, rows, col, value in sheets:
         for n, row in enumerate(rows, start=2):  # the header is row 1
-            key = forms.get((src, row[col]))
+            key = forms.get((kind, row[col]))
             if key is None:  # relief or blank: nobody named
                 continue
             rec, cell = f"{key}_{src}", {"sheet": 1, "row": n, "column": col + 1}
@@ -671,7 +686,7 @@ def build(gate, fuel, dispatch):
 
 GAPS = [  # record of the person, silence start, end (None: no record since)
     (
-        "aron_gate",
+        "aron_gate1",
         "2026-03-14",
         "2026-05-26",
         "last seen driving the 22:40 the night Dana vanished, then in no log for 73 days",
@@ -699,7 +714,7 @@ NOT_GAPS = [
         "Cross ends on 31 December, so it may fall inside the silence",
     ),
     (
-        "petra_gate",
+        "petra_gate1",
         "2026-04-04",
         "2026-06-13",
         "70 days on recorded leave; no last-seen, arrest or missing account starts a "
@@ -723,7 +738,7 @@ STORY = {
         "line for his last run was left blank. The gap finder sets his silence beside "
         "the day Dana was last seen; a person decides what it means."
     ),
-    "rests_on": ["gap finder", "timeline"],
+    "rests_on": ["gap finder", "timeline", "standing question", "discovery"],
     "fictional": True,
 }
 
@@ -801,7 +816,7 @@ def check():
         for r, a, b, _ in GAPS + NOT_GAPS
         if b
     }
-    assert days_["aron_gate"] == 73 and days_["nils_charges"] == 59, days_
+    assert days_["aron_gate1"] == 73 and days_["nils_charges"] == 59, days_
 
 
 # ---- scanned pages ---------------------------------------------------------------
@@ -902,6 +917,240 @@ def render_scans(gate):
         browser.close()
 
 
+# ---- the investigation in acts -----------------------------------------------------
+# docs/case-studies.md, "Acts". Each act is a moment of the investigation; the
+# seeder plays them in order and `--until n` stops after act n.
+
+JOIN = (
+    "the logs name a driver by initial and surname, and the depot manager says who "
+    "drives each route and bus; one driver in every paper"
+)
+QUESTION = "Tell me when Aron Vesk is named in a new record."
+
+
+def arrive(*steps):
+    """What follows a batch of papers: each sheet row joined to its record, the
+    analyst's joins across papers, and the places confirmed."""
+    return [
+        {"do": "clusters", "only": "rows"},
+        {"do": "join", "clusters": "planted", "why": JOIN},
+        "places",
+        *steps,
+    ]
+
+
+def acts():
+    night = NIGHT.isoformat()
+    lines = [
+        c
+        for c in CLAIMS
+        if c["prop"] == "seen_at"
+        and c["from"] == night
+        and RECORDS[c["record"]]["source"] != "staff"
+    ]
+    aron = sorted(
+        (
+            c
+            for c in CLAIMS
+            if c["prop"] == "seen_at" and RECORDS[c["record"]]["person"] == "aron"
+        ),
+        key=lambda c: c["from"],
+    )
+    back = next(c for c in aron if c["from"] > night)
+    seen = ["dana_supervisor.last_seen", "dana_notice.last_seen"]
+    seen += ["aron_supervisor.last_seen"]
+    leon = [c["key"] for c in lines if RECORDS[c["record"]]["person"] == "leon"]
+    return [
+        {
+            "title": "A nurse does not reach her night shift",
+            "day": "2026-03-16",
+            "story": "Dana Kovar left her flat in Wenmere for the 22:40 bus to Holt "
+            "Cross on Saturday 14 March and never reached the clinic. Her flatmate's "
+            "statement, the missing person notice and her photograph arrive; the "
+            "analyst joins the three papers about her as one person.",
+            "shows": ["same person", "timeline"],
+            "sources": ["flatmate", "notice", "photo"],
+            "steps": ["claims", *arrive()],
+            "see": ["/people/{person:dana_notice}"],
+        },
+        {
+            "title": "The night supervisor saw her board",
+            "day": "2026-03-16",
+            "story": "The station's night supervisor says she showed Dana to stand 3 "
+            "and saw her board the 22:40, driven by Aron Vesk. Her signed statement "
+            "is a scanned page, read by the OCR tool from its fixed text. The gate "
+            "book page for that night and a photograph of the depot yard come with "
+            "it; the gate line for bus 14 at 22:41 has no driver.",
+            "shows": ["reading"],
+            "sources": ["supervisor", "gatebook", "depot"],
+            "steps": ["claims", *arrive()],
+            "see": [
+                "/evidence/{source:supervisor}",
+                "/evidence/{source:gatebook}",
+            ],
+        },
+        {
+            "title": "Who drives route 9",
+            "day": "2026-03-18",
+            "story": "The depot manager writes that the route 9 lates are Aron "
+            "Vesk's duty on bus 14, and sends the roster. The intake brief reads "
+            "the first three papers together.",
+            "shows": ["same person"],
+            "sources": ["manager", "roster", "staff"],
+            "steps": ["claims", *arrive("brief")],
+            "see": ["/people/{person:aron_supervisor}"],
+        },
+        {
+            "title": "The depot's logs to the end of March",
+            "day": "2026-04-01",
+            "story": "Ostry Coaches hands over the gate log and fuel receipts for "
+            "February and March and the March dispatch sheet: several hundred "
+            "lines, each driver named by initial and surname or by fuel card. Each "
+            "line is its own mention, joined to its driver. Aron Vesk's last named "
+            "line is 12 March.",
+            "shows": ["same person", "timeline"],
+            "sources": ["dispatch", "gate1", "fuel1"],
+            "steps": ["claims", *arrive()],
+            "see": [
+                "/evidence/{source:gate1}",
+                "/people/{person:aron_supervisor}",
+            ],
+        },
+        {
+            "title": "A standing question on the driver",
+            "day": "2026-04-02",
+            "story": "The analyst asks the case to tell her when Aron Vesk is named "
+            "in a new record. Its first check reads what the case already holds: "
+            "the papers that name him up to 12 March and the night of the 14th.",
+            "shows": ["standing question"],
+            "sources": [],
+            "steps": [{"do": "question", "question": QUESTION}],
+            "see": ["/desk?investigation={case}"],
+        },
+        {
+            "title": "April's logs, and nothing on him",
+            "day": "2026-05-04",
+            "story": "The April gate log and fuel receipts arrive, with a police "
+            "charge sheet and a bail record about two other drivers. The question "
+            "wakes on the new lines and finds no record naming him: his late duty "
+            "goes out every working day under relief.",
+            "shows": ["standing question"],
+            "sources": ["gate2", "fuel2", "charges", "bail"],
+            "steps": ["claims", *arrive("wake")],
+            "see": ["/desk?investigation={case}", "/evidence/{source:gate2}"],
+        },
+        {
+            "title": "May and June: his name is back",
+            "day": "2026-07-01",
+            "story": "The logs for May and June arrive. The question wakes again and "
+            "reports the new gate log and fuel receipts that name him, from 26 May.",
+            "shows": ["standing question"],
+            "sources": ["gate3", "fuel3"],
+            "steps": ["claims", *arrive("wake")],
+            "see": ["/desk?investigation={case}", "/evidence/{source:gate3}"],
+        },
+        {
+            "title": "Seventy-three days with no name",
+            "day": "2026-07-01",
+            "story": "The gap finder sets the supervisor's last sight of Aron Vesk "
+            "on 14 March beside his next named log line on 26 May: no record of "
+            "him for 73 days. It also flags that nothing places Dana Kovar after "
+            "that night. It proposes; a person decides what the silence means.",
+            "shows": ["gap", "timeline"],
+            "sources": [],
+            "steps": [{"do": "agent", "agent": "gaps"}],
+            "see": [
+                "/people/{person:aron_supervisor}",
+                "/stories?investigation={case}",
+            ],
+        },
+        {
+            "title": "Who was at the depot that night",
+            "day": "2026-07-02",
+            "story": "The analyst checks the log lines for 14 March against the gate "
+            "book page and accepts them with the two last-seen accounts. Discovery "
+            "proposes the people placed at the coach station that day. The gate "
+            "times show the early drivers gone by 14:15, so she keeps Dana Kovar, "
+            "Aron Vesk and Leon Abbot, the late driver in the yard until 23:53, and "
+            "accepts it as an incident. The same set read as people together says "
+            "nothing more, and she rejects it.",
+            "shows": ["discovery", "map"],
+            "sources": [],
+            "steps": [
+                {
+                    "do": "accept",
+                    "claims": seen + [c["key"] for c in lines],
+                    "why": "checked against the gate book page for 14 March",
+                },
+                {
+                    "do": "discover",
+                    "month": night[:7],
+                    "incident": {
+                        "title": "Dana Kovar boards the 22:40 to Holt Cross at "
+                        "Wenmere coach station",
+                        "keep": seen + leon,
+                        "roles": {
+                            "dana_notice": "injured_party",
+                            "aron_supervisor": "participant",
+                            "leon_gate1": "witness",
+                        },
+                    },
+                    "reject": "Every driver on shift is at the depot each day; "
+                    "being there together says nothing more. The incident keeps "
+                    "who was there that evening.",
+                },
+            ],
+            "see": ["/incidents", "/case-map?investigation={case}"],
+        },
+        {
+            "title": "A colleague works the lead",
+            "day": "2026-07-03",
+            "story": "The analyst assigns the May and June gate log and the gate "
+            "book page to a colleague and asks her whether the driver named on 26 "
+            "May is the Aron Vesk of the 22:40. She answers on the line and marks "
+            "her work updated.",
+            "shows": ["assignment", "peer review"],
+            "sources": [],
+            "steps": [
+                {"do": "assign", "sources": ["gate3", "gatebook"], "days": 3},
+                {
+                    "do": "ask",
+                    "claim": back["key"],
+                    "why": "Is this the Aron Vesk who drove the 22:40 on 14 March?",
+                },
+                {
+                    "do": "reply",
+                    "claim": back["key"],
+                    "text": "Yes. Bus 14 on route 9 lates, his duty before the "
+                    "night, and the roster still lists him. His fuel card is used "
+                    "again from the same week.",
+                },
+                {"do": "mark", "sources": ["gate3", "gatebook"], "status": "done"},
+            ],
+            "see": ["/inbox", "/evidence/{source:gate3}"],
+        },
+        {
+            "title": "The conclusion",
+            "day": "2026-07-06",
+            "story": "The analyst writes what the case shows: a lead, not a finding "
+            "about what he did. She cites the two sightings and his last and next "
+            "log lines, sets aside leave and missed entries, names what is not "
+            "established, and signs; a reviewer agrees.",
+            "shows": ["conclusion", "peer review"],
+            "sources": [],
+            "steps": ["conclusion"],
+            "see": ["/cases/overview"],
+        },
+    ]
+
+
+def ordered(acts_, clusters):
+    """Each cluster's records in the order their papers arrive, so the analyst's
+    joins hang every later paper on the first one that named the person."""
+    when = {k: n for n, a in enumerate(acts_) for k in a["sources"]}
+    return [sorted(c, key=lambda r: (when[RECORDS[r]["source"]], r)) for c in clusters]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--no-scans", action="store_true", help="skip the two scans")
@@ -909,12 +1158,17 @@ def main():
     FILES.mkdir(exist_ok=True)
     worked = shifts()
     gate, fuel, dispatch = gate_rows(worked), fuel_rows(worked), dispatch_rows(worked)
-    write_csv(
-        "gate_log.csv", ["date", "bus", "route", "driver", "out", "in", "note"], gate
-    )
-    write_csv(
-        "fuel_receipts.csv", ["date", "time", "pump", "bus", "litres", "card"], fuel
-    )
+    for n, _, _, _, suffix in BATCHES:
+        write_csv(
+            f"gate_log_{suffix}.csv",
+            ["date", "bus", "route", "driver", "out", "in", "note"],
+            batch(gate, n),
+        )
+        write_csv(
+            f"fuel_receipts_{suffix}.csv",
+            ["date", "time", "pump", "bus", "litres", "card"],
+            batch(fuel, n),
+        )
     write_csv(
         "dispatch_march.csv",
         ["date", "route", "duty", "bus", "signed out by"],
@@ -934,6 +1188,7 @@ def main():
         sorted(r for r, v in RECORDS.items() if v["person"] == p)
         for p in sorted({v["person"] for v in RECORDS.values()})
     ]
+    plan = acts()
     case = {
         "about": "Planted case and truth for the case study 'The name nobody wrote "
         "down', by acceptance/cases/unwritten-name/make.py. All content is fictional.",
@@ -950,11 +1205,12 @@ def main():
             for k, (t, d, s, dt, f) in SOURCES.items()
         },
         "records": RECORDS,
-        "clusters": [c for c in clusters if len(c) > 1],
+        "clusters": ordered(plan, [c for c in clusters if len(c) > 1]),
         "claims": CLAIMS,
         "batch": BATCH,
         "truth": truth(),
         "conclusion": conclusion(),
+        "acts": plan,
     }
     (HERE / "case.json").write_text(
         json.dumps(case, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
