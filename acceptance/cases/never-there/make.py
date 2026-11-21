@@ -876,6 +876,32 @@ TRAP_CONTRADICTIONS = [
         "the market at 09:40 and home in Brindle Cross that evening",
     ),
 ]
+# What the two exhibit sheets support, once a person accepts them. Her own
+# statement's Brindle Cross claim is what they contradict, so it is not cited.
+CONCLUSION = {
+    "text": "Mara Quill was at the yard on Tanner's Row on the evening of 14 March "
+    "2026, not in Brindle Cross from six as her statement says.",
+    "standard": "reasonable_grounds",
+    "rests_on": ["mara_mq3.at", "mara_mq4.at"],
+    "alternatives": [
+        {
+            "text": "She was at her sister's house in Brindle Cross from about six",
+            "why": "Her sister says she arrived late, about half past eleven, and the "
+            "voice note sent from her phone at 22:07 says she is still at the yard.",
+        },
+        {
+            "text": "The photograph is the one she took of the forced gate early on "
+            "13 March, as she said",
+            "why": "Its embedded metadata dates it 14 March 2026 at 21:52 and places "
+            "it at the back gate.",
+        },
+    ],
+    "not_established": [
+        "Who started the fire.",
+        "Why she was at the yard that evening.",
+    ],
+    "peer_review": True,
+}
 BATCH = ["mq3", "mq4"]  # the phone exhibits arrive last; the brief reads them
 
 
@@ -923,6 +949,7 @@ def case() -> dict:
         "claims": CLAIMS,
         "batch": BATCH,
         "truth": truth(),
+        "conclusion": CONCLUSION,
         "media": {
             "IMG_4471.jpg": {
                 "exif_time": PHOTO_TIME,

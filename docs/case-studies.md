@@ -50,6 +50,14 @@ Keys the seeder reads beyond that shape, all optional:
   (2 km or more), a neighbourhood (1 km) or a site, and every located claim that
   names one is confirmed. A place without coordinates stays a name and is never
   drawn.
+- `conclusion`: `{"text", "standard", "rests_on", "alternatives": [{"text", "why"}],
+  "not_established": [...], "peer_review": true}`, the case's signed conclusion
+  (`sealbook/cases/conclusions.py`). `standard` is a key of
+  `sealbook/method/standards.csv`. Each `rests_on` item is a claim key, `"links"`
+  (every accepted same-person link), `"same_person"` (the linker's proposals that
+  join two records the truth plants as one person) or `"copies"` (the strong match
+  proposals inside the planted family of copies). Write an alternative without a
+  closing full stop: the page adds one.
 
 `truth` keys the case does not plant may be left out or empty. The scores that read
 them come out `null`, and so do their targets, instead of a failure. Same-person
@@ -68,8 +76,15 @@ and confirms the planted places. Then the agents the planted truth scores run on
 the fixed answer, so their proposals wait for a person: the linker for
 `same_person` or `twins`, the contradiction hunter for `contradictions`,
 `not_contradictions` or `trap_contradictions`, the gap finder for `gaps` or
-`not_gaps`, and the intake brief for a `batch`. In a worktree, set `BLOB_DIR` to the
-main checkout's `instance/blobs` so the main server can read the files.
+`not_gaps`, and the intake brief for a `batch`. Last, with a `conclusion`, the case
+analyst (Ines Halvorsen, an invented name) accepts exactly the items it rests on and
+nothing else, signs the conclusion, which marks the case concluded, and a second
+analyst (Tomas Reyes) signs agreement as peer reviewer. The surveyor's proposal in
+four-names and the weak matches in old-footage stay for a person. A match proposal
+cannot be cited by a conclusion, so `"copies"` is accepted but not cited, and
+old-footage's conclusion cites the two posts' words beside it. In a worktree, set
+`BLOB_DIR` to the main checkout's `instance/blobs` so the main server can read the
+files.
 
 What the pages read: Stories and the Case map show dated person claims of a
 located kind (`seen_at`, `last_seen`, `arrested_at`, `detained_at`,
@@ -81,7 +96,9 @@ Not handled yet: sheets are ingested as files, not through the sheet mapping ste
 (`sheets.confirm`), so no dataset version exists; PDF spans fail (`pages_required`,
 see `blobmeta.py`); audio and video `{"ms"}` pins are untried (claims quote the
 transcript instead); no incidents, findings, assignments or briefs beyond the
-intake brief are seeded. Invented places lie in open sea, so the maps draw dots on
+intake brief are seeded; a conclusion cannot cite a match proposal, nor cite a claim
+as the one it contradicts (never-there's conclusion leaves her own Brindle Cross
+claim out). Invented places lie in open sea, so the maps draw dots on
 an empty background. The old-footage case has no people, so its Stories and Case
 map stay empty.
 
@@ -139,7 +156,7 @@ What the numbers say:
 - A reader holding one desk's file sees nothing wrong. The rules build the five
   candidates from 422 claims with no model, and a person still decides each link.
 
-## The other three cases, seeded
+## The four cases, seeded
 
 Each case's own README holds its story, planted truth and score. What
 `stk demo-seed --case <slug>` puts on screen, checked 2026-11-21:
@@ -161,7 +178,20 @@ Each case's own README holds its story, planted truth and score. What
 - **The footage that was two years old** (`case-old-footage`): 36 clips and the 16
   posts that came with a caption, each clip fingerprinted as it arrives in posting
   order. The viral clip's Copies tab lists "Same recording, Video posted by Ostra
-  Valley Weather on 3 June 2024, strong". Every proposal waits for a person, the
-  weak single-landmark ones too. Each caption is the event its post reports,
-  unconfirmed; Lindmark has no coordinates and is not drawn. The case has no
-  people, so Stories and the Case map are empty.
+  Valley Weather on 3 June 2024, strong". The weak single-landmark proposals wait
+  for a person. Each caption is the event its post reports, unconfirmed but for the
+  two the conclusion cites; Lindmark has no coordinates and is not drawn. The case
+  has no people, so Stories and the Case map are empty.
+
+Each case's Overview opens on its conclusion, signed by Ines Halvorsen and agreed
+by Tomas Reyes, with the case marked concluded:
+
+| Case | Conclusion | Confidence | Rests on |
+| --- | --- | --- | --- |
+| One man, four names | The four desks' names are one man | Reasonable grounds to believe | 9 same-person links: the desks' 5 and the linker's 4 true proposals |
+| The witness who was never there | Mara Quill was at the yard on Tanner's Row that evening, not in Brindle Cross from six | Reasonable grounds to believe | The two exhibit sheets' claims, MQ/3 and MQ/4 |
+| The name nobody wrote down | Aron Vesk is named in no log for 73 days after the night Dana Kovar boarded his bus; a lead, not a finding about what he did | Reasonable suspicion | Both supervisor sightings and his last and next log lines |
+| The footage that was two years old | The clip shared as new is a copy of the 2024 video | Clear and convincing | The two posts' words; the strong matches are accepted but cannot be cited |
+
+The four-names conclusion cites the passport's link, so it stays hidden until a
+reader reveals that sensitive source, as the feature intends.

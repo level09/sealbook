@@ -747,6 +747,50 @@ def truth():
     }
 
 
+def conclusion():
+    """A lead, not a finding about what he did: the supervisor's two sightings and
+    Aron's last and next named log lines around the silence."""
+    aron = [
+        c
+        for c in CLAIMS
+        if c["prop"] == "seen_at" and RECORDS[c["record"]]["person"] == "aron"
+    ]
+    night = NIGHT.isoformat()
+    last = max((c for c in aron if c["from"] < night), key=lambda c: c["from"])
+    after = min((c for c in aron if c["from"] > night), key=lambda c: c["from"])
+    return {
+        "text": "Aron Vesk, who drove the 22:40 that Dana Kovar boarded on 14 March "
+        "2026, is named in no log for the next 73 days; this is a lead to follow, "
+        "not a finding about what he did.",
+        "standard": "reasonable_suspicion",
+        "rests_on": [
+            "aron_supervisor.last_seen",
+            "dana_supervisor.last_seen",
+            last["key"],
+            after["key"],
+        ],
+        "alternatives": [
+            {
+                "text": "He was on leave",
+                "why": "The roster keeps him on route 9, and the depot manager has "
+                "no record of anyone on route 9 being on leave in March.",
+            },
+            {
+                "text": "The logs missed him while he kept driving",
+                "why": "The gate log, the fuel receipts and the dispatch sheet are "
+                "kept apart; all three last name him on 12 March, and the gate log "
+                "and the fuel receipts name him again only from 26 May.",
+            },
+        ],
+        "not_established": [
+            "Where he was during those 73 days.",
+            "What happened to Dana Kovar.",
+            "Why the gate line for his last run was left blank.",
+        ],
+        "peer_review": True,
+    }
+
+
 def check():
     keys = {c["key"] for c in CLAIMS}
     assert len(keys) == len(CLAIMS), "claim keys repeat"
@@ -910,6 +954,7 @@ def main():
         "claims": CLAIMS,
         "batch": BATCH,
         "truth": truth(),
+        "conclusion": conclusion(),
     }
     (HERE / "case.json").write_text(
         json.dumps(case, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"

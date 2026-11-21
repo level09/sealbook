@@ -10020,5 +10020,31 @@
    "pair": [],
    "contradiction": []
   }
+ },
+ "conclusion": {
+  "text": "Aron Vesk, who drove the 22:40 that Dana Kovar boarded on 14 March 2026, is named in no log for the next 73 days; this is a lead to follow, not a finding about what he did.",
+  "standard": "reasonable_suspicion",
+  "rests_on": [
+   "aron_supervisor.last_seen",
+   "dana_supervisor.last_seen",
+   "aron_gate.2026-03-12",
+   "aron_gate.2026-05-26"
+  ],
+  "alternatives": [
+   {
+    "text": "He was on leave",
+    "why": "The roster keeps him on route 9, and the depot manager has no record of anyone on route 9 being on leave in March."
+   },
+   {
+    "text": "The logs missed him while he kept driving",
+    "why": "The gate log, the fuel receipts and the dispatch sheet are kept apart; all three last name him on 12 March, and the gate log and the fuel receipts name him again only from 26 May."
+   }
+  ],
+  "not_established": [
+   "Where he was during those 73 days.",
+   "What happened to Dana Kovar.",
+   "Why the gate line for his last run was left blank."
+  ],
+  "peer_review": true
  }
 }

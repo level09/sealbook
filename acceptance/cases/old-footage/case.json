@@ -744,5 +744,25 @@
    "copy_short_muted": "no proposal with any member of the family: the crop and mirror defeat the frame hash and there is no sound to align"
   },
   "note": "transformations are relative to the original. Every pair inside {original, copies} is the same recording; no other pair in this set is. known_misses are measured by eval.py, not hidden."
+ },
+ "conclusion": {
+  "text": "The clip shared as new on 2 June 2026 is a copy of the video Ostra Valley Weather posted on 3 June 2024.",
+  "standard": "clear_and_convincing",
+  "rests_on": [
+   "copies",
+   "original.caption",
+   "copy_viral.caption"
+  ],
+  "alternatives": [
+   {
+    "text": "Two recordings of the same flood from the same spot",
+    "why": "The sound of the two clips lines up point for point, and six other reposts match the 2024 video too."
+   }
+  ],
+  "not_established": [
+   "Who made the first altered copy.",
+   "One muted, cropped and mirrored copy matched nothing."
+  ],
+  "peer_review": true
  }
 }

@@ -696,6 +696,29 @@ CLUSTERS = [rs for _, rs in ROLES.values()]
 FACE = {role: rs[-1] for role, (_, rs) in ROLES.items()}
 
 
+# What the case shows once a person accepts the linker's true proposals. It
+# rests on the accepted same-person links, the desks' own and the new ones.
+CONCLUSION = {
+    "text": "The supplier Adrian Kassar, the consultant A. Qassar, the guarantor "
+    "Adrian Khassar and the ship agent أدريان قصار are one man.",
+    "standard": "reasonable_grounds",
+    "rests_on": ["same_person", "links"],
+    "alternatives": [
+        {
+            "text": "The marine surveyor Adrian Kasar is the same man",
+            "why": "The surveyors register gives him 19 August 1974 and Torvane; the "
+            "four desks give 2 March 1974, or the year 1974, and Velmora where they "
+            "name a place.",
+        }
+    ],
+    "not_established": [
+        "Who approved the payments to the supplier and the consultant.",
+        "Whether anyone at the four desks knew.",
+    ],
+    "peer_review": True,
+}
+
+
 def truth():
     same = [sorted(p) for p in combinations(FACE.values(), 2)]
     twins = [sorted((n, r)) for n in (N1, N2) for r in FACE.values()]
@@ -771,6 +794,7 @@ def main():
         "claims": CLAIMS,
         "batch": ["guarantee_deed", "passport"],
         "truth": truth(),
+        "conclusion": CONCLUSION,
     }
     (HERE / "case.json").write_text(
         json.dumps(case, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"

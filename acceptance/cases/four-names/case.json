@@ -7568,5 +7568,24 @@
     "traps": [],
     "hard_contradictions": [],
     "trap_contradictions": []
+  },
+  "conclusion": {
+    "text": "The supplier Adrian Kassar, the consultant A. Qassar, the guarantor Adrian Khassar and the ship agent أدريان قصار are one man.",
+    "standard": "reasonable_grounds",
+    "rests_on": [
+      "same_person",
+      "links"
+    ],
+    "alternatives": [
+      {
+        "text": "The marine surveyor Adrian Kasar is the same man",
+        "why": "The surveyors register gives him 19 August 1974 and Torvane; the four desks give 2 March 1974, or the year 1974, and Velmora where they name a place."
+      }
+    ],
+    "not_established": [
+      "Who approved the payments to the supplier and the consultant.",
+      "Whether anyone at the four desks knew."
+    ],
+    "peer_review": true
   }
 }

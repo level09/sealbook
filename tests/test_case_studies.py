@@ -22,6 +22,8 @@ from stk.user.models import Role, User
 from acceptance import eval_agents
 from sealbook import blobs
 from sealbook.agents import read
+from sealbook.cases import conclusions
+from sealbook.discovery.evidence import copy_reason
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import (
     Acquisition,
@@ -114,6 +116,21 @@ class Seeding(unittest.IsolatedAsyncioTestCase):
             q = q.where(Statement.prop == prop)
         return dict((await s.execute(q.group_by(StatementTier.tier))).all())
 
+    async def concluded(self, s, inv):
+        """The case is concluded by one standing, peer-agreed conclusion signed by
+        a person's name, and every item it cites still stands."""
+        got = await conclusions.listing(s, inv)
+        self.assertEqual(got["status"]["status"], "concluded")
+        [c] = got["conclusions"]
+        self.assertTrue(c["stands"], c["broken"])
+        self.assertEqual(c["broken"], [])
+        self.assertEqual(c["by"], "Ines Halvorsen")
+        self.assertEqual(
+            (c["peer"]["state"], c["peer"]["by"]), ("agreed", "Tomas Reyes")
+        )
+        self.assertEqual(c["peer"]["reviewer"], "Tomas Reyes")
+        return c
+
 
 @unittest.skipUnless(
     POSTGRES, "case seeding needs Postgres (set SQLALCHEMY_DATABASE_URI)"
@@ -132,16 +149,38 @@ class SeedStudyTest(Seeding):
             self.assertEqual(await verify_db(s), [])
             # Every pin held: no claim was refused for its span.
             self.assertNotIn(Tier.REJECTED, await self.tiers(s))
+            # The four true proposals are accepted for the conclusion; the
+            # surveyor's stays for a person.
             links = await self.tiers(s, Prop.SAME_AS)
-            self.assertEqual(links, {Tier.ACCEPTED: 5, Tier.UNCONFIRMED: 5})
-            case = await read.case(s, "case-four-names")
+            self.assertEqual(links, {Tier.ACCEPTED: 9, Tier.UNCONFIRMED: 1})
             inv = "case-four-names"
+            waiting, value = (
+                await s.execute(
+                    select(Statement.subject, Payload.value)
+                    .join(StatementTier, StatementTier.statement_id == Statement.id)
+                    .join(Payload, Payload.commitment == Statement.commitment)
+                    .where(
+                        Statement.prop == Prop.SAME_AS,
+                        StatementTier.tier == Tier.UNCONFIRMED,
+                    )
+                )
+            ).one()
+            self.assertIn(
+                person(inv, "surveyors/S009"), {waiting, f"person:{value['person']}"}
+            )
+            case = await read.case(s, inv)
             desks = {
                 case.groups.get(people.pid(person(inv, r)))
-                for r in ("vendor_form/owner", "agreement/consultant")
+                for r in (
+                    "vendor_form/owner",
+                    "agreement/consultant",
+                    "guarantee_deed/guarantor",
+                    "licence/holder",
+                )
             }
-            self.assertEqual(len(desks), 2)
-            self.assertEqual(len(case.links), 5)
+            self.assertEqual(len(desks), 1)
+            c = await self.concluded(s, inv)
+            self.assertEqual(len(c["rests_on"]), 9)
 
     async def test_stand_ins_events_and_places(self):
         """A case without files: text stand-ins, an event and a confirmed place."""
@@ -309,6 +348,14 @@ class SeedCasesTest(Seeding):
                 ),
                 "sensitive",
             )
+            c = await self.concluded(s, inv)
+            self.assertEqual(
+                set(c["rests_on"]),
+                {
+                    str(await self.said(s, inv, r, Prop.SEEN_AT, "2026-03-14"))
+                    for r in ("mara_mq3", "mara_mq4")
+                },
+            )
 
     async def test_unwritten_name_finds_the_driver_silence(self):
         inv = "case-unwritten-name"
@@ -333,6 +380,7 @@ class SeedCasesTest(Seeding):
                 [("2026-03-14", None), ("2026-03-14", "2026-05-26")],
                 found["items"],
             )
+            self.assertEqual(len((await self.concluded(s, inv))["rests_on"]), 4)
             # The scanned statement is read through OCR, and the claims quote it.
             scan = await self.blob_of(s, inv, spec["sources"]["supervisor"]["title"])
             self.assertTrue(
@@ -397,15 +445,30 @@ class SeedCasesTest(Seeding):
                     )
                 )
             )
-            self.assertEqual(tiers, [Tier.UNCONFIRMED])
-            # Every match proposal waits for a person.
-            self.assertEqual(set(await s.scalars(pair)), {Tier.UNCONFIRMED})
+            # The strong matches inside the family are accepted for the
+            # conclusion; the weak ones wait for a person.
+            self.assertEqual(tiers, [Tier.ACCEPTED])
+            weak = [
+                (tier, value)
+                for tier, value in (
+                    await s.execute(
+                        select(StatementTier.tier, Payload.value)
+                        .join(Statement, Statement.id == StatementTier.statement_id)
+                        .join(Payload, Payload.commitment == Statement.commitment)
+                        .where(Statement.prop == Prop.MEDIA_MATCH)
+                    )
+                ).all()
+                if copy_reason(value)[2] == "weak"
+            ]
+            self.assertTrue(weak)
+            self.assertEqual({tier for tier, _ in weak}, {Tier.UNCONFIRMED})
             # Lindmark has no coordinates, so nothing is placed.
             self.assertFalse(
                 await s.scalar(select(Place.id).where(Place.name_en == "Lindmark"))
             )
             captions = await self.tiers(s, Prop.REPORTS)
-            self.assertEqual(captions, {Tier.UNCONFIRMED: 16})
+            self.assertEqual(captions, {Tier.UNCONFIRMED: 14, Tier.ACCEPTED: 2})
+            await self.concluded(s, inv)
 
 
 if __name__ == "__main__":

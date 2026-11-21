@@ -29,20 +29,24 @@ import click
 import orjson
 import stk.extensions as ext
 from sqlalchemy import func, select
+from stk.user.models import User
 
 from sealbook import blobs
 from sealbook.agents import brief, contradictions, gaps, linker, read
+from sealbook.cases import conclusions
 from sealbook.cases.service import ensure as ensure_case
+from sealbook.discovery.evidence import copy_reason
 from sealbook.ingest.service import system_agent
 from sealbook.ledger import write
 from sealbook.ledger.contracts import EvidenceKind as E
-from sealbook.ledger.contracts import Prop
-from sealbook.ledger.models import Blob, Run, Statement
+from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.models import Blob, Payload, Run, Statement, StatementTier
 from sealbook.ledger.write import append, principal_for_user
 from sealbook.monitor import seed_flows as flows
 from sealbook.monitor.data import LOCATED
 from sealbook.monitor.seed import Seeder, seeded
 from sealbook.monitor.seed_full import LLM, intake, users
+from sealbook.people import data as people
 from sealbook.places import cli as places
 from sealbook.places import resolve
 from sealbook.places.models import Place
@@ -73,6 +77,12 @@ AGENTS = {
     "contradictions": ("contradictions", "not_contradictions", "trap_contradictions"),
     "gaps": ("gaps", "not_gaps"),
 }
+
+
+# The case's two people, invented: who accepts the planted items and signs the
+# conclusion, and the colleague who reviews it.
+ANALYST = ("ines.halvorsen", "Ines Halvorsen")
+REVIEWER = ("tomas.reyes", "Tomas Reyes")
 
 
 def path_of(slug: str) -> Path:
@@ -248,7 +258,7 @@ async def seed_study(session, app, path: Path) -> dict:
     s = Seeder(session)
     s.case = inv
     owner, *_ = await users(session, app, ())
-    analyst = await s.analyst("case-analyst", inv)
+    analyst = await colleague(s, inv, *ANALYST)
     extractor = await system_agent(session, "extractor")
     collector = await principal_for_user(session, owner.id, owner.name or owner.email)
     batch = str(uuid.uuid4()) if spec.get("batch") else None
@@ -441,4 +451,108 @@ async def seed_study(session, app, path: Path) -> dict:
         await session.commit()
         await process(ext.async_session_factory, run.id)
         out["briefs"] = 1
+    if spec.get("conclusion"):
+        await conclude(s, spec, inv, written, accepted, analyst)
+        out["signed conclusion"] = 1
     return out
+
+
+async def colleague(s: Seeder, inv: str, handle: str, name: str):
+    """A case analyst with a passkey on `s`, shown by a person's name."""
+    p = await s.analyst(handle, inv)
+    p.name = name
+    (await s.s.get(User, p.user_id)).name = name
+    await s.s.flush()
+    return p
+
+
+async def pending(db, prop: str, subjects: list[str]) -> list[tuple]:
+    """Unconfirmed statements of `prop` about `subjects`, with their values."""
+    return (
+        await db.execute(
+            select(Statement, Payload.value)
+            .join(Payload, Payload.commitment == Statement.commitment)
+            .join(StatementTier, StatementTier.statement_id == Statement.id)
+            .where(
+                Statement.prop == prop,
+                Statement.subject.in_(subjects),
+                StatementTier.tier == Tier.UNCONFIRMED,
+            )
+        )
+    ).all()
+
+
+async def same_person(s: Seeder, spec: dict, inv: str) -> list:
+    """The linker's proposals that join two records the truth plants as one
+    person, read before any is accepted. A proposal with a namesake is left."""
+    groups, _ = await people.identity(s.s)
+
+    def cluster(subject: str) -> str:
+        p = people.pid(subject)
+        return min(groups.get(p, {p}))
+
+    true = {
+        frozenset(cluster(person(inv, r)) for r in pair)
+        for pair in spec["truth"]["same_person"]
+    }
+    subjects = [person(inv, r) for r in spec["records"]]
+    return [
+        st
+        for st, v in await pending(s.s, Prop.SAME_AS, subjects)
+        if frozenset({cluster(st.subject), cluster(f"person:{v['person']}")}) in true
+    ]
+
+
+def copy_family(spec: dict) -> set[str]:
+    truth = spec["truth"]
+    return {truth["original"]} | {c["file"] for c in truth["copies"]}
+
+
+async def copies(s: Seeder, spec: dict) -> list:
+    """The strong match proposals inside the planted family of copies. Weak ones
+    and any outside the family stay for a person."""
+    family = {f"blob:{s.blobs[k]}" for k in copy_family(spec)}
+    return [
+        st
+        for st, v in await pending(s.s, Prop.MEDIA_MATCH, sorted(family))
+        if f"blob:{v['blob']}" in family and copy_reason(v)[2] == "strong"
+    ]
+
+
+async def conclude(s: Seeder, spec: dict, inv: str, written, accepted, analyst):
+    """The case's signed conclusion. The analyst first accepts exactly what it
+    rests on: claims by key, the linker's proposals for the planted same-person
+    pairs ("same_person"), the strong matches inside the planted copies
+    ("copies"). "links" cites every accepted same-person link. A match proposal
+    cannot be cited, so "copies" is accepted and not cited. With `peer_review` a
+    second analyst signs agreement."""
+    c = spec["conclusion"]
+    cite, accept = [], []
+    for item in c["rests_on"]:
+        if item == "links":
+            cite.append(item)
+        elif item == "same_person":
+            accept += await same_person(s, spec, inv)
+        elif item == "copies":
+            accept += await copies(s, spec)
+        else:
+            st = written[item]
+            cite.append(str(st.id))
+            if st not in accepted:
+                accept.append(st)
+    for st in accept:
+        await s.review(analyst, st, "accept", "what the case's conclusion rests on")
+    await s.s.commit()
+    form = {k: c[k] for k in ("text", "standard", "alternatives", "not_established")}
+    rows = await conclusions.seed(
+        s.s, inv, form | {"rests_on": cite}, analyst.id, s.assertion
+    )
+    if c.get("peer_review"):
+        # A second Seeder: each holds the passkey of the analyst it made.
+        other = Seeder(s.s)
+        reviewer = await colleague(other, inv, *REVIEWER)
+        await conclusions.seed_peer_review(
+            s.s, rows[0], analyst.id, reviewer.id, other.assertion
+        )
+    await s.s.commit()
+    return rows[0]
