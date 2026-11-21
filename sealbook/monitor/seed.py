@@ -670,7 +670,13 @@ async def seeded(session, case=CASE) -> bool:
     is_flag=True,
     help="Add the five family recordings to a case-demo-02 seeded before them.",
 )
-def demo_seed(full, more, scale, recordings):
+@click.option(
+    "--case",
+    "study",
+    metavar="SLUG",
+    help="Seed only the case study in acceptance/cases/SLUG (docs/case-studies.md).",
+)
+def demo_seed(full, more, scale, recordings, study):
     """Write a small synthetic case through the ledger write path (dev only)."""
     app = click.get_current_context().ensure_object(ScriptInfo).load_app()
     if app.config.get("STK_ENV") not in ("development", "testing"):
@@ -682,6 +688,17 @@ def demo_seed(full, more, scale, recordings):
         from sealbook.sources import scale as filler
 
         async with ext.async_session_factory() as session:
+            if study:
+                from sealbook.monitor.seed_study import path_of, seed_study
+
+                if not path_of(study).exists():
+                    raise click.ClickException(f"no case study {study}")
+                out = await seed_study(session, app, path_of(study))
+                console.print(
+                    f"Seeded {out.pop('investigation')}: "
+                    + ", ".join(f"{v} {k}" for k, v in out.items())
+                )
+                return
             if recordings:
                 from sealbook.monitor.seed_full import add_recordings
 
