@@ -247,17 +247,30 @@ def mix():
         str(voice_raw),
     )
     # A steady bed: one fixed level the whole way, no ducking, so nothing pumps
-    # behind the words.
+    # behind the words. A film longer than the score plays it again from the top,
+    # joined with the same crossfade the score's own parts use.
+    plays = int(total // (duration(SCORE) - FADE)) + 1
+    joins = (
+        "[0:a]anull[s0];"
+        + "".join(
+            f"[s{i - 1}][{i}:a]acrossfade=d={FADE}:c1=tri:c2=tri[s{i}];"
+            for i in range(1, plays)
+        )
+        if plays > 1
+        else "[0:a]anull[s0];"
+    )
     run(
         "ffmpeg",
         "-y",
         "-loglevel",
         "error",
-        "-i",
-        str(SCORE),
-        "-af",
-        f"aresample={rate},aformat=channel_layouts=stereo,apad,atrim=0:{total},"
-        f"volume={BED_DB}dB,afade=t=in:d=2,afade=t=out:st={total - 4}:d=4",
+        *[x for _ in range(plays) for x in ("-i", str(SCORE))],
+        "-filter_complex",
+        joins
+        + f"[s{plays - 1}]aresample={rate},aformat=channel_layouts=stereo,apad,atrim=0:{total},"
+        f"volume={BED_DB}dB,afade=t=in:d=2,afade=t=out:st={total - 4}:d=4[bed]",
+        "-map",
+        "[bed]",
         str(bed_raw),
     )
     run(

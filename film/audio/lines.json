@@ -30,9 +30,9 @@
   "seconds": 2.6
  },
  "07": {
-  "key": "604741e5e925aeb38eba888354587ebdf60343ad22a895caa7ce4e5d490c10b3",
-  "text": "One: a person under several names. Four desks at a freight company each keep a clean file: 14 sources and 1,445 sheet rows.",
-  "seconds": 9.75
+  "key": "dafbeda7a333b104e2206e763c3110acc3289fd5e6fbe065ea83bf001dc9f3c9",
+  "text": "One: a freight company pays a supplier, a consultant, a guarantor and a ship agent. Four desks, four clean files.",
+  "seconds": 8.03
  },
  "08": {
   "key": "f7ace691c2d7da186afbb1d74ae9803ad98adc377f4902d91821d53e0091c8ae",
@@ -45,9 +45,9 @@
   "seconds": 7.34
  },
  "10": {
-  "key": "1643080c335fde0149bdc67afe6ed565e261dfe026ec2cc59632664fd1745e24",
-  "text": "The app proposed these links. Here, fixed rules with no AI model found 4 of the 6 true links, enough to join all his records.",
-  "seconds": 8.64
+  "key": "6ee863697478221cd8b09e884c81877fd97a618735acf465536b4dbda617b590",
+  "text": "The app proposed these links, each with the passage behind it. Fixed rules with no AI model found 4 of the 6 true links, enough to join all his records.",
+  "seconds": 9.89
  },
  "11": {
   "key": "f371e7d7c4743835c458e28eede2e74324a123439f64401e560447867a87c186",
@@ -55,29 +55,29 @@
   "seconds": 5.94
  },
  "12": {
-  "key": "956c0bbc34eabfb104af85cc3d315e489be9e2d2aaadbf63f7e71731d3f29728",
-  "text": "The case closes on a signed conclusion, checked by a colleague, saying how sure it is and what is not established.",
-  "seconds": 6.41
+  "key": "cfd77d7f73a7198213d981e725fafddd4565f85daf3e307486e166e467b6e420",
+  "text": "The case closes on a conclusion, signed by a person and checked by a colleague: one man, on four desks, under four names.",
+  "seconds": 7.66
  },
  "13": {
-  "key": "88d2b1f5affbf4e23ec67acd32611acf8c9d4339a3c571d5adeef5cbc90f53aa",
-  "text": "Two: a statement that does not fit. A bookkeeper says she was 34 kilometres from a fire. Exhibit sheets from her phone put her at the yard.",
-  "seconds": 9.24
+  "key": "d51d1bffa49ee45c45d6c2412f960e1be8494fe5444866d03f267babb2a19ad4",
+  "text": "Two: a workshop burns down at night. The bookkeeper says she spent the evening at her sister's house, 34 kilometres away.",
+  "seconds": 8.17
  },
  "14": {
-  "key": "d7f58b3f24a8d99f225cad535701d6c4ee95cc32f6cea76076cfbbe86bbe42dd",
-  "text": "The app flags two places on one day. A person reads the times, and concludes she was there.",
-  "seconds": 5.57
+  "key": "0ef35b555911cdf8a0df575744aaff7dfdc1d4ade4f8cd0a0ba7e60d126a7f2b",
+  "text": "The app flags that two exhibit sheets made from her own phone place her at the workshop that same day.",
+  "seconds": 5.85
  },
  "15": {
-  "key": "df73c665492c0d74dc20e1d4f2400b5c0400274feb169d5b876fc399f89f7ade",
-  "text": "Three: an old clip shared as new. The app ties 8 of 9 reposts to a flood video from two years earlier, mostly by sound. One cropped, mirrored, muted copy is missed.",
-  "seconds": 11.33
+  "key": "d5e9f55a5a1f12ab84a15ee7e1659753f9cd7a07193bb1ab13ab6695d5bdf625",
+  "text": "Three: a flood video spreads as breaking news.",
+  "seconds": 3.16
  },
  "16": {
-  "key": "109666a1dc6b7317bc6dfccb2e441ae0779c9f4c194d9c9204f82b0aa0881399",
-  "text": "Four: a person who drops out of the record. A statement says when a bus driver was last seen. The app finds 73 days with no log naming him. A lead, not a finding.",
-  "seconds": 10.91
+  "key": "d1a4602541c40d59df9929877f0d44407637815653362a09f327c0301715d36e",
+  "text": "Four: a nurse boards a night bus and is never seen again.",
+  "seconds": 3.34
  },
  "17": {
   "key": "0db44827d48e52b022082bc155b00af344859c08477d5a12677992457e9bf25b",
@@ -88,5 +88,51 @@
   "key": "0126d852c7ea1946773e6988b02b13593f5402107ca4cad8111f8a37534b7e20",
   "text": "The machine reads more than a person can, and finds the links. A person approves every one.",
   "seconds": 5.57
+ },
+ "07b": {
+  "key": "5220cd7c71cc1e4a8c4e1c5324df904bd80d91c5d84a0a4bbca0dfdac01f4ed2",
+  "text": "Are these four people, or one man under four names?",
+  "seconds": 3.45,
+  "note": "cut from a longer take; the spoken figure 1,445 was misheard as 1,045, so the numbers stay on screen only"
+ },
+ "13b": {
+  "key": "28e91d66e3bb86f9086400d4a7381eae03a1729234e93a0dddc732f166a1f05a",
+  "text": "Was she? There are 41 statements to read.",
+  "seconds": 2.83
+ },
+ "14b": {
+  "key": "aa50d09035368e3fc9bb3b1e32ee76d2ad7c71355cbeabb4bd67bf1b023aa2b2",
+  "text": "A person reads the times, 21:52 and 22:07, and concludes she was there.",
+  "seconds": 5.85
+ },
+ "15b": {
+  "key": "45e22c9a5a5eb7c49d4cb3a52fdfc9c4dd75a2d6c91331f3e2e8383a34e019cb",
+  "text": "Is it new? The tip line holds 36 clips that look alike.",
+  "seconds": 3.72
+ },
+ "15c": {
+  "key": "d77d87554618c80d4d90154a7b8e0749907d71402e94ae9c69afc14e123b8891",
+  "text": "The app compares their sound and ties the viral clip to a video posted two years earlier. It had been cropped and mirrored, so the picture no longer matched.",
+  "seconds": 8.78
+ },
+ "15d": {
+  "key": "ea1521217b4353477e8c9f67a762971259f217471096d2349ae8033cee6a39d9",
+  "text": "8 of 9 reposts were tied this way. One muted copy is missed. A person signs that the clip is old.",
+  "seconds": 6.69
+ },
+ "16b": {
+  "key": "fb4493e31dcda84df9bd1bb7fdf46b19081580573061fe4e5690f642b533e99d",
+  "text": "Where do you look? The bus company's logs run to several hundred lines.",
+  "seconds": 4.5
+ },
+ "16c": {
+  "key": "42b4404ee0eaef9df39831b635497fe5ed4d64ec14f2f95241a57e6f21fffed0",
+  "text": "A supervisor's statement says when the driver was last seen. From that night, the app finds 73 days in which no log names him.",
+  "seconds": 7.76
+ },
+ "16d": {
+  "key": "44979b1721a05a88fcecc9344a0aa7a7ebacd979f3b0a30334565503a4662026",
+  "text": "A person records it as a lead to follow, not a finding.",
+  "seconds": 3.39
  }
 }

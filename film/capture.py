@@ -17,6 +17,7 @@ from __future__ import annotations
 import asyncio
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -52,7 +53,22 @@ FILES = {
     "old-footage/files/original.mp4": "footage_original.mp4",
     "old-footage/files/copy_viral.mp4": "footage_viral.mp4",
     "four-names/files/id_photo.jpg": "portrait.jpg",
+    "unwritten-name/files/wenmere_depot.jpg": "depot.jpg",
 }
+GRID = [
+    "flood_arches.mp4",
+    "copy_logo.mp4",
+    "flood_channel.mp4",
+    "pile_rain_trees.mp4",
+    "flood_footbridge.mp4",
+    "copy_trim.mp4",
+    "flood_ford.mp4",
+    "pile_weir_pool.mp4",
+    "flood_garden.mp4",
+    "copy_vertical.mp4",
+    "flood_promenade.mp4",
+    "pile_wide_river.mp4",
+]
 FONTS = [
     "IBMPlexSans-normal-400-latin.woff2",
     "IBMPlexSans-normal-500-latin.woff2",
@@ -68,6 +84,26 @@ FONTS = [
 def copy_files():
     for src, name in FILES.items():
         shutil.copyfile(CASES / src, OUT / name)
+    # One still from twelve of the 36 tip-line clips, for the old-footage question.
+    for i, clip in enumerate(GRID):
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-loglevel",
+                "error",
+                "-ss",
+                "2",
+                "-i",
+                str(CASES / "old-footage/files" / clip),
+                "-frames:v",
+                "1",
+                "-vf",
+                "scale=480:-2",
+                str(OUT / f"grid_{i:02d}.jpg"),
+            ],
+            check=True,
+        )
     fonts = OUT / "fonts"
     fonts.mkdir(exist_ok=True)
     for name in FONTS:
@@ -217,6 +253,7 @@ async def other_cases(browser, app):
     ctx, page = await person(browser, app, "case-never-there", "Mara Quill")
     fork = page.locator(".ppl-fork", has_text="Two places on one day").first
     await shoot(page, "nt_disagree", locator=fork.locator("xpath=.."), pad=12)
+    await shoot(page, "nt_fork", locator=fork, pad=10)
     await ctx.close()
 
     ctx, page = await session(browser, app, "case-old-footage")

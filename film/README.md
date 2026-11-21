@@ -1,13 +1,14 @@
 # The case film
 
-A 140 second narrated film for a newcomer: who has the problem, what Sealbook is in
-three steps, then four invented cases as four kinds of help, each ending on its signed
-conclusion, and the seal. The shot list with the narration is [script.md](script.md);
+A 185 second narrated film for a newcomer: who has the problem, what Sealbook is in
+three steps, then four invented cases, each told in the same four beats (the situation,
+the question, what the app surfaced, what the person concluded), and the seal. Story
+start times: 32.95, 92.9, 119.6 and 145.9 s. The shot list with the narration is [script.md](script.md);
 the look is [composition/SPEC.md](composition/SPEC.md); what was checked after the last
 render is [composition/REVIEW.md](composition/REVIEW.md).
 
 ```
-film/narration.json      the voice, the mix tempo and every line with its pause
+film/narration.json      the voice, the length and every line with its start time
 film/audio.py            voice lines, score, mix, timing and captions
 film/audio/              lines/*.mp3, lines.json, score.m4a (tracked, 5 MB)
 film/capture.py          records the app screens again
@@ -26,7 +27,10 @@ Not tracked: `film/composition/assets/captures/` (what `capture.py` writes),
   mix stretches or pitches it. Cut two sped `eleven_v4` lines up 1.16x with ffmpeg
   `atempo`, and that overlap-add stretching made the voice sound doubled. The lines are
   tracked (a new synthesis never sounds the same twice); `audio.py voice` re-synthesises
-  only a line whose words or voice settings changed.
+  only a line whose words or voice settings changed. Line 07b is cut from a longer take
+  that went on to say the row count: a transcription heard 1,445 as 1,045 twice, so the
+  numbers are on screen only. The account's ElevenLabs quota ran out on 2026-11-21, so a
+  changed line needs new credits.
 - **Score**: generated with Google Lyria 2 through fal (`fal-ai/lyria2`) on 2026-11-21:
   five 32.8 s parts, seeds 11 to 15, joined with 4 s crossfades into 147.8 s. Prompt:
   "sparse felt piano and soft sustained strings, calm documentary underscore, patient and
@@ -36,7 +40,8 @@ Not tracked: `film/composition/assets/captures/` (what `capture.py` writes),
   use are fal's and Google's for generated audio; regenerating gives different music.
 - **Mix**: each line starts at its `at` in `narration.json` (the time the picture is cut
   to), laid end to end by sample count; the mono line goes to both channels unchanged.
-  The score is a steady bed 16 dB down with no ducking, so nothing pumps behind the words.
+  The score is a steady bed 16 dB down with no ducking, so nothing pumps behind the words;
+  a film longer than the score plays it again from the top with the same 4 s crossfade.
   One gain brings the mix to -16 LUFS integrated, and a limiter holds peaks under
   -1.5 dBFS. `audio.py mix` also writes the two stems at their gain in the mix,
   `film/build/voice.wav` and `film/build/score.wav`, to check each on its own.
@@ -91,7 +96,7 @@ the main checkout's `instance/blobs`.
 
    ```sh
    ffmpeg -y -i film/build/master.mp4 -i film/build/mix.wav -map 0:v -map 1:a \
-     -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 27 -preset slow -tune stillimage \
+     -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 28 -preset slow -tune stillimage \
      -c:a aac -b:a 128k -ar 48000 -shortest -movflags +faststart site/media/case_film.mp4
    ffmpeg -y -ss 54 -i film/build/master.mp4 -frames:v 1 -q:v 3 site/media/case_film.jpg
    cp film/captions.vtt site/media/case_film.vtt
