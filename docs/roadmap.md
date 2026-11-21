@@ -3,7 +3,45 @@
 This is the one plan. [Status](status.md) says what exists; this file says what comes
 next, in order. Update both in the same change.
 
-## Now: Bayanat analysts at home (2026-11-01)
+## Now: case studies that prove the point (2026-11-21)
+
+Pending, nothing here is built. The owner set the direction on 2026-11-21: show what the
+app is for, to anyone, in any country and any kind of case. Two claims, kept apart. The
+machine handles more material and more mess than a person can, and finds links a reader
+would miss. A person approves every finding, and the seal proves it later.
+
+Each case study is a short fictional puzzle with a twist that rests on one capability.
+Each is a seed template with its planted truth in a file, so one thing serves as the
+demo, a starting template and a scored test, in the manner of
+[Agent evaluation](agent-eval.md). No region, language or partner is the frame.
+
+| Case | The twist | Rests on |
+| --- | --- | --- |
+| One man, four names (fraud) | Supplier, consultant, guarantor and port agent are one person across ledgers, scans and sheets in different spellings and scripts | Linker, sheet matching, OCR |
+| The witness who was never there (private crime scene) | One alibi among forty statements fails on a photo's location and a voice note's time | Contradictions, evidence location, speech to text |
+| The footage that was two years old (verification) | The new clip is a cropped, mirrored, re-encoded copy of an old one | Video fingerprints |
+| The name nobody wrote down (missing person) | Every log names the driver except the one where he must appear | Gap finder, timeline |
+
+Every case ends with a signed finding in a sealed package that a court can verify.
+
+1. **First case, end to end.** One man, four names: generator, seed template, planted
+   truth, score. It sets the pattern for the other three.
+2. **The other three cases.** Built in parallel worktrees on that pattern.
+3. **Pictures.** They must look real. A real, openly licensed photograph first, edited
+   with an image model where the story needs a detail; photoreal generated pictures are
+   allowed; drawings are not. People get generated faces, never an edited photo of a
+   real person. Each picture's origin (real, edited, generated) is recorded beside its
+   credit, and each case is marked fictional where it is shown.
+4. **Film.** One case told in full from real screens (the pile, the connection, the
+   signature, the package) and the other three as short beats. Sources live in a tracked
+   top-level `film/`: script, captions, HyperFrames composition and a capture script that
+   records again from the seeded case. Renders are not tracked; the output goes to
+   `site/media/`. The 2026-10-31 film was a scratch build and its sources were not kept.
+5. **Site.** A case studies section with one page per case: the puzzle, the twist, the
+   measured score and a link to open it in the demo. The opening is rewritten around
+   them. Bayanat and Arabic become one supported route among others.
+
+## Next: Bayanat analysts at home (2026-11-01)
 
 The team works in Bayanat today. The first hour in Sealbook should feel like their own
 workflow with the typing gone.
