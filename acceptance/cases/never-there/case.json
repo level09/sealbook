@@ -78,28 +78,36 @@
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Mara Quill, bookkeeper at Hollin Joinery, taken on 16 March 2026.\n\nMy name is Mara Quill. I was born in 1981. I keep the books for Hollin Joinery. On Friday 13 March 2026, early in the morning, I found the back gate on Tanner's Row forced and took a photograph of it on my phone, which I have handed over. On Saturday 14 March 2026 I drove to my sister Jo's house in Brindle Cross. I was there from about six in the evening until well past midnight and stayed the night. I heard about the fire on Sunday morning.\n"
+      "text": "Statement of Mara Quill, bookkeeper at Hollin Joinery, taken on 16 March 2026.\n\nMy name is Mara Quill. I was born in 1981. I keep the books for Hollin Joinery. On Friday 13 March 2026, early in the morning, I found the back gate on Tanner's Row forced and took a photograph of it on my phone, which I have handed over. On Saturday 14 March 2026 I drove to my sister Jo's house in Brindle Cross. I was there from about six in the evening until well past midnight and stayed the night. I heard about the fire on Sunday morning.\n",
+      "file": "mara_scan.jpg",
+      "read": true
     },
     "jo": {
       "title": "Statement of Jo Quill, sister of Mara Quill",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-17",
-      "text": "Statement of Jo Quill, taken on 17 March 2026.\n\nMy name is Jo Quill. I was born in 1978. On Saturday 14 March 2026 I was at home in Brindle Cross all evening. My sister Mara Quill came to dinner at my house in Brindle Cross that night. She got here late, about half past eleven; she said the traffic was bad. She stayed the night.\n"
+      "text": "Statement of Jo Quill, taken on 17 March 2026.\n\nMy name is Jo Quill. I was born in 1978. On Saturday 14 March 2026 I was at home in Brindle Cross all evening. My sister Mara Quill came to dinner at my house in Brindle Cross that night. She got here late, about half past eleven; she said the traffic was bad. She stayed the night.\n",
+      "file": "jo_scan.jpg",
+      "read": true
     },
     "mq3": {
       "title": "Exhibit MQ/3: photograph from Mara Quill's phone, taken 14 March 2026 at 21:52",
       "doc_type": "exhibit_sheet",
       "sensitivity": "ordinary",
       "date": "2026-03-20",
-      "text": "Exhibit MQ/3. Photograph IMG_4471.jpg, handed over by Mara Quill on 16 March 2026 from her phone. She said she took it early on 13 March.\n\nEmbedded metadata: taken 14 March 2026 at 21:52:07 (UTC-2); GPS position with a stated error of 8 metres at the back gate of Hollin Joinery. The metadata places the phone, and so Mara Quill, on Tanner's Row, Larkhaven on 14 March 2026. The picture shows the back gate at night, lit by the phone's flash.\n"
+      "text": "Exhibit MQ/3. Photograph IMG_4471.jpg, handed over by Mara Quill on 16 March 2026 from her phone. She said she took it early on 13 March.\n\nEmbedded metadata: taken 14 March 2026 at 21:52:07 (UTC-2); GPS position with a stated error of 8 metres at the back gate of Hollin Joinery. The metadata places the phone, and so Mara Quill, on Tanner's Row, Larkhaven on 14 March 2026. The picture shows the back gate at night, lit by the phone's flash.\n",
+      "file": "mq3_scan.jpg",
+      "read": true
     },
     "mq4": {
       "title": "Exhibit MQ/4: voice note from Mara Quill's phone, sent 14 March 2026 at 22:07",
       "doc_type": "exhibit_sheet",
       "sensitivity": "ordinary",
       "date": "2026-03-20",
-      "text": "Exhibit MQ/4. Voice note sent from Mara Quill's phone to Jo Quill on 14 March 2026 at 22:07 (UTC-2), 11 seconds, recovered from the message history.\n\nTranscript: \"Jo, it's me. Start without me, I'm still at the yard on Tanner's Row. Something's come up with the books. I'll be with you by half eleven.\"\n\nOn 14 March 2026 Mara Quill was at the yard on Tanner's Row when she sent it.\n"
+      "text": "Exhibit MQ/4. Voice note sent from Mara Quill's phone to Jo Quill on 14 March 2026 at 22:07 (UTC-2), 11 seconds, recovered from the message history.\n\nTranscript: \"Jo, it's me. Start without me, I'm still at the yard on Tanner's Row. Something's come up with the books. I'll be with you by half eleven.\"\n\nOn 14 March 2026 Mara Quill was at the yard on Tanner's Row when she sent it.\n",
+      "file": "mq4_scan.jpg",
+      "read": true
     },
     "photo": {
       "title": "IMG_4471.jpg, the back gate of Hollin Joinery",
@@ -107,7 +115,8 @@
       "sensitivity": "ordinary",
       "date": "2026-03-14",
       "text": null,
-      "file": "IMG_4471.jpg"
+      "file": "IMG_4471.jpg",
+      "read": true
     },
     "voice": {
       "title": "Voice note from Mara Quill to Jo Quill",
@@ -116,336 +125,384 @@
       "date": "2026-03-14",
       "text": null,
       "file": "voice_note.ogg",
-      "transcript": "voice_note.json"
+      "transcript": "voice_note.json",
+      "read": true
     },
     "market_log": {
       "title": "Larkhaven market stall 12 takings book, morning of 14 March 2026",
       "doc_type": "takings_book",
       "sensitivity": "ordinary",
       "date": "2026-03-14",
-      "text": "Larkhaven market, stall 12 (cut flowers). Takings book, Saturday 14 March 2026, morning.\n\n09:40 card sale, tulips, to Jo Quill, a regular. Seen at Larkhaven market on 14 March 2026.\n"
+      "text": "Larkhaven market, stall 12 (cut flowers). Takings book, Saturday 14 March 2026, morning.\n\n09:40 card sale, tulips, to Jo Quill, a regular. Seen at Larkhaven market on 14 March 2026.\n",
+      "read": true
     },
     "ivo": {
       "title": "Statement of Ivo Brandt, night watchman",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Ivo Brandt, taken on 15 March 2026.\n\nMy name is Ivo Brandt. I was born in 1958. I am the night watchman for Larkhaven Security. On 14 March 2026 I walked my rounds on Tanner's Row from ten at night. I saw nobody at the yard. At about four minutes past eleven I saw flames at the back of Hollin Joinery and called the fire service.\n"
+      "text": "Statement of Ivo Brandt, taken on 15 March 2026.\n\nMy name is Ivo Brandt. I was born in 1958. I am the night watchman for Larkhaven Security. On 14 March 2026 I walked my rounds on Tanner's Row from ten at night. I saw nobody at the yard. At about four minutes past eleven I saw flames at the back of Hollin Joinery and called the fire service.\n",
+      "read": true
     },
     "patrol_log": {
       "title": "Larkhaven Security night patrol log, 14 March 2026",
       "doc_type": "patrol_log",
       "sensitivity": "ordinary",
       "date": "2026-03-14",
-      "text": "Larkhaven Security. Night patrol log, 14 March 2026. Officer: Ivo Brandt.\n\n22:00 start, Tanners Row. 22:30 Mill Lane. 23:04 fire seen at Hollin Joinery, Tanners Row, fire service called. Ivo Brandt was on Tanners Row on 14 March 2026.\n"
+      "text": "Larkhaven Security. Night patrol log, 14 March 2026. Officer: Ivo Brandt.\n\n22:00 start, Tanners Row. 22:30 Mill Lane. 23:04 fire seen at Hollin Joinery, Tanners Row, fire service called. Ivo Brandt was on Tanners Row on 14 March 2026.\n",
+      "read": true
     },
     "staff_list": {
       "title": "Larkhaven Security staff list, January 2026",
       "doc_type": "staff_list",
       "sensitivity": "ordinary",
       "date": "2026-01-05",
-      "text": "Larkhaven Security. Staff list, January 2026.\n\nIvo Brandt, night officer, date of birth 1965-02-11.\nSana Whitlock, day officer, date of birth 1993-07-30.\n"
+      "text": "Larkhaven Security. Staff list, January 2026.\n\nIvo Brandt, night officer, date of birth 1965-02-11.\nSana Whitlock, day officer, date of birth 1993-07-30.\n",
+      "read": true
     },
     "kofi": {
       "title": "Statement of Kofi Mensah, apprentice joiner",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Kofi Mensah, taken on 16 March 2026.\n\nMy name is Kofi Mensah. I was born in Pellow Bridge in 2006. I am an apprentice at Hollin Joinery. On 14 March 2026 I was at the Crown and Anchor with friends from eight until closing.\n"
+      "text": "Statement of Kofi Mensah, taken on 16 March 2026.\n\nMy name is Kofi Mensah. I was born in Pellow Bridge in 2006. I am an apprentice at Hollin Joinery. On 14 March 2026 I was at the Crown and Anchor with friends from eight until closing.\n",
+      "read": true
     },
     "apprentice_record": {
       "title": "Apprenticeship record for Kofi Mensah",
       "doc_type": "apprenticeship_record",
       "sensitivity": "ordinary",
       "date": "2024-09-02",
-      "text": "Larkhaven College of Building. Apprenticeship record.\n\nApprentice: Kofi Mensah. Place of birth: Saltmarch. Employer: Hollin Joinery, Tanner's Row. Start: 2 September 2024.\n"
+      "text": "Larkhaven College of Building. Apprenticeship record.\n\nApprentice: Kofi Mensah. Place of birth: Saltmarch. Employer: Hollin Joinery, Tanner's Row. Start: 2 September 2024.\n",
+      "read": true
     },
     "ruth": {
       "title": "Statement of Ruth Hollin, owner of Hollin Joinery",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Ruth Hollin, taken on 15 March 2026.\n\nMy name is Ruth Hollin. I was born in 1962. I own Hollin Joinery. On 14 March 2026 I was at home on Larkhaven quay all evening. The fire service rang me at twenty past eleven. Our bookkeeper had told me last week that the accounts would be ready on Monday.\n"
+      "text": "Statement of Ruth Hollin, taken on 15 March 2026.\n\nMy name is Ruth Hollin. I was born in 1962. I own Hollin Joinery. On 14 March 2026 I was at home on Larkhaven quay all evening. The fire service rang me at twenty past eleven. Our bookkeeper had told me last week that the accounts would be ready on Monday.\n",
+      "read": true
     },
     "register": {
       "title": "Company register extract, Hollin Joinery Ltd",
       "doc_type": "company_register",
       "sensitivity": "ordinary",
       "date": "2026-03-18",
-      "text": "Company register extract. Hollin Joinery Ltd, Tanner's Row, Larkhaven.\n\nDirector: Ruth Hollin, date of birth 1962-08-19. Company secretary: none.\n"
+      "text": "Company register extract. Hollin Joinery Ltd, Tanner's Row, Larkhaven.\n\nDirector: Ruth Hollin, date of birth 1962-08-19. Company secretary: none.\n",
+      "read": true
     },
     "pia": {
       "title": "Statement of Pia Lund, neighbour",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Pia Lund, taken on 15 March 2026.\n\nMy name is Pia Lund. I was born in 1969. On 14 March 2026 I was at home in Larkhaven. I went out when I heard the sirens.\n"
+      "text": "Statement of Pia Lund, taken on 15 March 2026.\n\nMy name is Pia Lund. I was born in 1969. On 14 March 2026 I was at home in Larkhaven. I went out when I heard the sirens.\n",
+      "read": true
     },
     "arjun": {
       "title": "Statement of Arjun Pillai, neighbour",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Arjun Pillai, taken on 15 March 2026.\n\nMy name is Arjun Pillai. I was born in 1975. On 14 March 2026 I was at home on Tanner's Row and saw smoke at about eleven. My neighbour Pia Lund was standing on Tanner's Row, Larkhaven, watching the fire with me.\n"
+      "text": "Statement of Arjun Pillai, taken on 15 March 2026.\n\nMy name is Arjun Pillai. I was born in 1975. On 14 March 2026 I was at home on Tanner's Row and saw smoke at about eleven. My neighbour Pia Lund was standing on Tanner's Row, Larkhaven, watching the fire with me.\n",
+      "read": true
     },
     "tomas": {
       "title": "Statement of Tomas Ferreira, delivery driver",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-17",
-      "text": "Statement of Tomas Ferreira, taken on 17 March 2026.\n\nMy name is Tomas Ferreira. I was born in 1988. On 14 March 2026 I delivered oak boards to Hollin Joinery on Tanner's Row at about two in the afternoon. The back gate was shut and locked.\n"
+      "text": "Statement of Tomas Ferreira, taken on 17 March 2026.\n\nMy name is Tomas Ferreira. I was born in 1988. On 14 March 2026 I delivered oak boards to Hollin Joinery on Tanner's Row at about two in the afternoon. The back gate was shut and locked.\n",
+      "read": true
     },
     "letter": {
       "title": "Employer's letter for Tomas Ferreira",
       "doc_type": "employment_letter",
       "sensitivity": "ordinary",
       "date": "2026-03-19",
-      "text": "Saltmarch Timber, Brindle Cross depot.\n\nTo whom it may concern. Tomas Ferreira drives for us and was based at Brindle Cross throughout March 2026, with deliveries to Larkhaven on Saturdays.\n"
+      "text": "Saltmarch Timber, Brindle Cross depot.\n\nTo whom it may concern. Tomas Ferreira drives for us and was based at Brindle Cross throughout March 2026, with deliveries to Larkhaven on Saturdays.\n",
+      "read": true
     },
     "dale": {
       "title": "Interview of Dale Corrin, former employee",
       "doc_type": "interview_record",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Record of interview with Dale Corrin, 16 March 2026.\n\nMy name is Dale Corrin. I was born in 1990. I worked at Hollin Joinery until January, when Ruth Hollin let me go. On 14 March 2026 I was at the Crown and Anchor from eight until closing. I did not go near the yard.\n"
+      "text": "Record of interview with Dale Corrin, 16 March 2026.\n\nMy name is Dale Corrin. I was born in 1990. I worked at Hollin Joinery until January, when Ruth Hollin let me go. On 14 March 2026 I was at the Crown and Anchor from eight until closing. I did not go near the yard.\n",
+      "read": true
     },
     "nell": {
       "title": "Statement of Nell Achebe, bar manager at the Crown and Anchor",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Nell Achebe, taken on 16 March 2026.\n\nMy name is Nell Achebe. I was born in 1985. I manage the Crown and Anchor. On 14 March 2026 I worked behind the bar at the Crown and Anchor until closing. Dale Corrin drank at the Crown and Anchor on 14 March 2026 until closing. He was last seen at the Crown and Anchor at noon on 15 March 2026, when he left with a holdall.\n"
+      "text": "Statement of Nell Achebe, taken on 16 March 2026.\n\nMy name is Nell Achebe. I was born in 1985. I manage the Crown and Anchor. On 14 March 2026 I worked behind the bar at the Crown and Anchor until closing. Dale Corrin drank at the Crown and Anchor on 14 March 2026 until closing. He was last seen at the Crown and Anchor at noon on 15 March 2026, when he left with a holdall.\n",
+      "read": true
     },
     "custody": {
       "title": "Custody record for Dale Corrin, 15 March 2026",
       "doc_type": "custody_record",
       "sensitivity": "sensitive",
       "date": "2026-03-15",
-      "text": "Larkhaven police. Custody record.\n\nDale Corrin was arrested at Brindle Cross bus station on 15 March 2026 at 16:20 on suspicion of arson. Released without charge on 17 March 2026.\n"
+      "text": "Larkhaven police. Custody record.\n\nDale Corrin was arrested at Brindle Cross bus station on 15 March 2026 at 16:20 on suspicion of arson. Released without charge on 17 March 2026.\n",
+      "read": true
     },
     "fire_report": {
       "title": "Fire service incident report, Hollin Joinery, 14 March 2026",
       "doc_type": "incident_report",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Larkhaven fire service. Incident report.\n\nCall received 23:04 on 14 March 2026 from a night watchman. Fire in the timber store at the back of Hollin Joinery, Tanner's Row. Two crews. Fire out at 01:10. Rear gate found open, padlock missing. Seat of fire near the office. Cause under investigation.\n"
+      "text": "Larkhaven fire service. Incident report.\n\nCall received 23:04 on 14 March 2026 from a night watchman. Fire in the timber store at the back of Hollin Joinery, Tanner's Row. Two crews. Fire out at 01:10. Rear gate found open, padlock missing. Seat of fire near the office. Cause under investigation.\n",
+      "read": true
     },
     "amara": {
       "title": "Statement of Amara Osei",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Amara Osei, taken on 15 March 2026.\n\nMy name is Amara Osei. I was born in 1984. On 14 March 2026 I was at home on Tanner's Row and smelled smoke at about eleven.\n"
+      "text": "Statement of Amara Osei, taken on 15 March 2026.\n\nMy name is Amara Osei. I was born in 1984. On 14 March 2026 I was at home on Tanner's Row and smelled smoke at about eleven.\n",
+      "read": true
     },
     "bram": {
       "title": "Statement of Bram Kessler",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Bram Kessler, taken on 16 March 2026.\n\nMy name is Bram Kessler. I was born in 1971. On 14 March 2026 I waited for fares at the taxi rank by the Ferry Road bus depot until midnight.\n"
+      "text": "Statement of Bram Kessler, taken on 16 March 2026.\n\nMy name is Bram Kessler. I was born in 1971. On 14 March 2026 I waited for fares at the taxi rank by the Ferry Road bus depot until midnight.\n",
+      "read": true
     },
     "celia": {
       "title": "Statement of Celia Duarte",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-17",
-      "text": "Statement of Celia Duarte, taken on 17 March 2026.\n\nMy name is Celia Duarte. I was born in 1993. On 14 March 2026 I was at the Crown and Anchor for a birthday until half eleven.\n"
+      "text": "Statement of Celia Duarte, taken on 17 March 2026.\n\nMy name is Celia Duarte. I was born in 1993. On 14 March 2026 I was at the Crown and Anchor for a birthday until half eleven.\n",
+      "read": true
     },
     "dmitri": {
       "title": "Statement of Dmitri Volkov",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-18",
-      "text": "Statement of Dmitri Volkov, taken on 18 March 2026.\n\nMy name is Dmitri Volkov. I was born in 1966. On 14 March 2026 I walked my dog along Larkhaven quay at ten and saw nothing unusual.\n"
+      "text": "Statement of Dmitri Volkov, taken on 18 March 2026.\n\nMy name is Dmitri Volkov. I was born in 1966. On 14 March 2026 I walked my dog along Larkhaven quay at ten and saw nothing unusual.\n",
+      "read": true
     },
     "esme": {
       "title": "Statement of Esme Hartley",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Esme Hartley, taken on 15 March 2026.\n\nMy name is Esme Hartley. I was born in 2001. On 14 March 2026 I was at my flat in Larkhaven studying all evening.\n"
+      "text": "Statement of Esme Hartley, taken on 15 March 2026.\n\nMy name is Esme Hartley. I was born in 2001. On 14 March 2026 I was at my flat in Larkhaven studying all evening.\n",
+      "read": true
     },
     "farid": {
       "title": "Statement of Farid Haddad",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Farid Haddad, taken on 16 March 2026.\n\nMy name is Farid Haddad. I was born in 1979. On 14 March 2026 I closed my bakery on Tanner's Row at six and went upstairs to bed early.\n"
+      "text": "Statement of Farid Haddad, taken on 16 March 2026.\n\nMy name is Farid Haddad. I was born in 1979. On 14 March 2026 I closed my bakery on Tanner's Row at six and went upstairs to bed early.\n",
+      "read": true
     },
     "greta": {
       "title": "Statement of Greta Lindqvist",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-17",
-      "text": "Statement of Greta Lindqvist, taken on 17 March 2026.\n\nMy name is Greta Lindqvist. I was born in 1958. On 14 March 2026 I heard glass break on Tanner's Row at about a quarter to eleven.\n"
+      "text": "Statement of Greta Lindqvist, taken on 17 March 2026.\n\nMy name is Greta Lindqvist. I was born in 1958. On 14 March 2026 I heard glass break on Tanner's Row at about a quarter to eleven.\n",
+      "read": true
     },
     "hiro": {
       "title": "Statement of Hiro Tanaka",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-18",
-      "text": "Statement of Hiro Tanaka, taken on 18 March 2026.\n\nMy name is Hiro Tanaka. I was born in 1995. On 14 March 2026 I drove the last bus into the Ferry Road bus depot at 23:15.\n"
+      "text": "Statement of Hiro Tanaka, taken on 18 March 2026.\n\nMy name is Hiro Tanaka. I was born in 1995. On 14 March 2026 I drove the last bus into the Ferry Road bus depot at 23:15.\n",
+      "read": true
     },
     "ines": {
       "title": "Statement of Ines Moreau",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Ines Moreau, taken on 15 March 2026.\n\nMy name is Ines Moreau. I was born in 1987. On 14 March 2026 I packed up my stall at Larkhaven market at one in the afternoon.\n"
+      "text": "Statement of Ines Moreau, taken on 15 March 2026.\n\nMy name is Ines Moreau. I was born in 1987. On 14 March 2026 I packed up my stall at Larkhaven market at one in the afternoon.\n",
+      "read": true
     },
     "jonas": {
       "title": "Statement of Jonas Weber",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Jonas Weber, taken on 16 March 2026.\n\nMy name is Jonas Weber. I was born in 1973. On 14 March 2026 I played darts at the Crown and Anchor until about eleven.\n"
+      "text": "Statement of Jonas Weber, taken on 16 March 2026.\n\nMy name is Jonas Weber. I was born in 1973. On 14 March 2026 I played darts at the Crown and Anchor until about eleven.\n",
+      "read": true
     },
     "kezia": {
       "title": "Statement of Kezia Banda",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-17",
-      "text": "Statement of Kezia Banda, taken on 17 March 2026.\n\nMy name is Kezia Banda. I was born in 1999. On 14 March 2026 I was babysitting in Larkhaven and saw the glow from the window.\n"
+      "text": "Statement of Kezia Banda, taken on 17 March 2026.\n\nMy name is Kezia Banda. I was born in 1999. On 14 March 2026 I was babysitting in Larkhaven and saw the glow from the window.\n",
+      "read": true
     },
     "liam": {
       "title": "Statement of Liam Byrne",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-18",
-      "text": "Statement of Liam Byrne, taken on 18 March 2026.\n\nMy name is Liam Byrne. I was born in 1982. On 14 March 2026 I parked my van on Tanner's Row at nine and did not move it.\n"
+      "text": "Statement of Liam Byrne, taken on 18 March 2026.\n\nMy name is Liam Byrne. I was born in 1982. On 14 March 2026 I parked my van on Tanner's Row at nine and did not move it.\n",
+      "read": true
     },
     "marisol": {
       "title": "Statement of Marisol Vega",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Marisol Vega, taken on 15 March 2026.\n\nMy name is Marisol Vega. I was born in 1976. On 14 March 2026 I ran the late shift at the chip shop on Larkhaven quay.\n"
+      "text": "Statement of Marisol Vega, taken on 15 March 2026.\n\nMy name is Marisol Vega. I was born in 1976. On 14 March 2026 I ran the late shift at the chip shop on Larkhaven quay.\n",
+      "read": true
     },
     "nadim": {
       "title": "Statement of Nadim Rahman",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Nadim Rahman, taken on 16 March 2026.\n\nMy name is Nadim Rahman. I was born in 1968. On 14 March 2026 I was at evening prayers and then at home in Larkhaven.\n"
+      "text": "Statement of Nadim Rahman, taken on 16 March 2026.\n\nMy name is Nadim Rahman. I was born in 1968. On 14 March 2026 I was at evening prayers and then at home in Larkhaven.\n",
+      "read": true
     },
     "olu": {
       "title": "Statement of Olu Adeyemi",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-17",
-      "text": "Statement of Olu Adeyemi, taken on 17 March 2026.\n\nMy name is Olu Adeyemi. I was born in 1991. On 14 March 2026 I cycled home along Tanner's Row at about half ten and saw a light in the joinery office.\n"
+      "text": "Statement of Olu Adeyemi, taken on 17 March 2026.\n\nMy name is Olu Adeyemi. I was born in 1991. On 14 March 2026 I cycled home along Tanner's Row at about half ten and saw a light in the joinery office.\n",
+      "read": true
     },
     "petra": {
       "title": "Statement of Petra Novak",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-18",
-      "text": "Statement of Petra Novak, taken on 18 March 2026.\n\nMy name is Petra Novak. I was born in 1980. On 14 March 2026 I set up the Saturday craft table at Larkhaven market in the morning.\n"
+      "text": "Statement of Petra Novak, taken on 18 March 2026.\n\nMy name is Petra Novak. I was born in 1980. On 14 March 2026 I set up the Saturday craft table at Larkhaven market in the morning.\n",
+      "read": true
     },
     "quentin": {
       "title": "Statement of Quentin Ashby",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Quentin Ashby, taken on 15 March 2026.\n\nMy name is Quentin Ashby. I was born in 1963. On 14 March 2026 I ate supper at the Crown and Anchor and left at ten.\n"
+      "text": "Statement of Quentin Ashby, taken on 15 March 2026.\n\nMy name is Quentin Ashby. I was born in 1963. On 14 March 2026 I ate supper at the Crown and Anchor and left at ten.\n",
+      "read": true
     },
     "rosa": {
       "title": "Statement of Rosa Lemaire",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Rosa Lemaire, taken on 16 March 2026.\n\nMy name is Rosa Lemaire. I was born in 1994. On 14 March 2026 I was at a friend's flat in Larkhaven watching a film.\n"
+      "text": "Statement of Rosa Lemaire, taken on 16 March 2026.\n\nMy name is Rosa Lemaire. I was born in 1994. On 14 March 2026 I was at a friend's flat in Larkhaven watching a film.\n",
+      "read": true
     },
     "soren": {
       "title": "Statement of Soren Dahl",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-17",
-      "text": "Statement of Soren Dahl, taken on 17 March 2026.\n\nMy name is Soren Dahl. I was born in 1977. On 14 March 2026 I heard a car door slam on Tanner's Row shortly before ten.\n"
+      "text": "Statement of Soren Dahl, taken on 17 March 2026.\n\nMy name is Soren Dahl. I was born in 1977. On 14 March 2026 I heard a car door slam on Tanner's Row shortly before ten.\n",
+      "read": true
     },
     "tala": {
       "title": "Statement of Tala Fonoti",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-18",
-      "text": "Statement of Tala Fonoti, taken on 18 March 2026.\n\nMy name is Tala Fonoti. I was born in 2003. On 14 March 2026 I cleaned buses at the Ferry Road bus depot from eight until two.\n"
+      "text": "Statement of Tala Fonoti, taken on 18 March 2026.\n\nMy name is Tala Fonoti. I was born in 2003. On 14 March 2026 I cleaned buses at the Ferry Road bus depot from eight until two.\n",
+      "read": true
     },
     "ugo": {
       "title": "Statement of Ugo Bianchi",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Ugo Bianchi, taken on 15 March 2026.\n\nMy name is Ugo Bianchi. I was born in 1960. On 14 March 2026 I checked the moorings on Larkhaven quay at eleven.\n"
+      "text": "Statement of Ugo Bianchi, taken on 15 March 2026.\n\nMy name is Ugo Bianchi. I was born in 1960. On 14 March 2026 I checked the moorings on Larkhaven quay at eleven.\n",
+      "read": true
     },
     "vera": {
       "title": "Statement of Vera Sokolova",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Vera Sokolova, taken on 16 March 2026.\n\nMy name is Vera Sokolova. I was born in 1986. On 14 March 2026 I drove home through Larkhaven at about eleven and saw the fire engines.\n"
+      "text": "Statement of Vera Sokolova, taken on 16 March 2026.\n\nMy name is Vera Sokolova. I was born in 1986. On 14 March 2026 I drove home through Larkhaven at about eleven and saw the fire engines.\n",
+      "read": true
     },
     "wen": {
       "title": "Statement of Wen Li",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-17",
-      "text": "Statement of Wen Li, taken on 17 March 2026.\n\nMy name is Wen Li. I was born in 1992. On 14 March 2026 I closed the laundrette on Tanner's Row at nine.\n"
+      "text": "Statement of Wen Li, taken on 17 March 2026.\n\nMy name is Wen Li. I was born in 1992. On 14 March 2026 I closed the laundrette on Tanner's Row at nine.\n",
+      "read": true
     },
     "xavier": {
       "title": "Statement of Xavier Ortiz",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-18",
-      "text": "Statement of Xavier Ortiz, taken on 18 March 2026.\n\nMy name is Xavier Ortiz. I was born in 1985. On 14 March 2026 I played in the band at the Crown and Anchor from nine until midnight.\n"
+      "text": "Statement of Xavier Ortiz, taken on 18 March 2026.\n\nMy name is Xavier Ortiz. I was born in 1985. On 14 March 2026 I played in the band at the Crown and Anchor from nine until midnight.\n",
+      "read": true
     },
     "yasmin": {
       "title": "Statement of Yasmin Karimi",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Yasmin Karimi, taken on 15 March 2026.\n\nMy name is Yasmin Karimi. I was born in 1997. On 14 March 2026 I was at home in Larkhaven and heard the sirens at about ten past eleven.\n"
+      "text": "Statement of Yasmin Karimi, taken on 15 March 2026.\n\nMy name is Yasmin Karimi. I was born in 1997. On 14 March 2026 I was at home in Larkhaven and heard the sirens at about ten past eleven.\n",
+      "read": true
     },
     "zane": {
       "title": "Statement of Zane Whitaker",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Zane Whitaker, taken on 16 March 2026.\n\nMy name is Zane Whitaker. I was born in 1974. On 14 March 2026 I walked past Hollin Joinery on Tanner's Row at nine and the gate was shut.\n"
+      "text": "Statement of Zane Whitaker, taken on 16 March 2026.\n\nMy name is Zane Whitaker. I was born in 1974. On 14 March 2026 I walked past Hollin Joinery on Tanner's Row at nine and the gate was shut.\n",
+      "read": true
     },
     "abebe": {
       "title": "Statement of Abebe Tesfaye",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-17",
-      "text": "Statement of Abebe Tesfaye, taken on 17 March 2026.\n\nMy name is Abebe Tesfaye. I was born in 1983. On 14 March 2026 I delivered bread to Larkhaven market at seven in the morning.\n"
+      "text": "Statement of Abebe Tesfaye, taken on 17 March 2026.\n\nMy name is Abebe Tesfaye. I was born in 1983. On 14 March 2026 I delivered bread to Larkhaven market at seven in the morning.\n",
+      "read": true
     },
     "brigid": {
       "title": "Statement of Brigid Nolan",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-18",
-      "text": "Statement of Brigid Nolan, taken on 18 March 2026.\n\nMy name is Brigid Nolan. I was born in 1957. On 14 March 2026 I sat on my balcony over Larkhaven quay until late and saw smoke to the south.\n"
+      "text": "Statement of Brigid Nolan, taken on 18 March 2026.\n\nMy name is Brigid Nolan. I was born in 1957. On 14 March 2026 I sat on my balcony over Larkhaven quay until late and saw smoke to the south.\n",
+      "read": true
     },
     "caio": {
       "title": "Statement of Caio Mendes",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-15",
-      "text": "Statement of Caio Mendes, taken on 15 March 2026.\n\nMy name is Caio Mendes. I was born in 1989. On 14 March 2026 I collected glasses at the Crown and Anchor from seven.\n"
+      "text": "Statement of Caio Mendes, taken on 15 March 2026.\n\nMy name is Caio Mendes. I was born in 1989. On 14 March 2026 I collected glasses at the Crown and Anchor from seven.\n",
+      "read": true
     },
     "dina": {
       "title": "Statement of Dina Shapiro",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-16",
-      "text": "Statement of Dina Shapiro, taken on 16 March 2026.\n\nMy name is Dina Shapiro. I was born in 1972. On 14 March 2026 I was at home in Larkhaven and went to bed at ten.\n"
+      "text": "Statement of Dina Shapiro, taken on 16 March 2026.\n\nMy name is Dina Shapiro. I was born in 1972. On 14 March 2026 I was at home in Larkhaven and went to bed at ten.\n",
+      "read": true
     },
     "emeka": {
       "title": "Statement of Emeka Nwosu",
       "doc_type": "witness_statement",
       "sensitivity": "ordinary",
       "date": "2026-03-17",
-      "text": "Statement of Emeka Nwosu, taken on 17 March 2026.\n\nMy name is Emeka Nwosu. I was born in 1996. On 14 March 2026 I saw a small car parked by the joinery's back gate on Tanner's Row at about ten to ten.\n"
+      "text": "Statement of Emeka Nwosu, taken on 17 March 2026.\n\nMy name is Emeka Nwosu. I was born in 1996. On 14 March 2026 I saw a small car parked by the joinery's back gate on Tanner's Row at about ten to ten.\n",
+      "read": true
     }
   },
   "records": {
@@ -2366,6 +2423,251 @@
     ],
     "peer_review": true
   },
+  "acts": [
+    {
+      "title": "The fire and the first statements",
+      "day": "2026-03-15",
+      "story": "Hollin Joinery burns on the night of 14 March. The fire report, the first statements and the records the police already hold arrive; the app reads each one, proposes its people, places and dates and a first pass, and the analyst confirms the fire report's first pass.",
+      "shows": [
+        "reading",
+        "first pass"
+      ],
+      "sources": [
+        "amara",
+        "apprentice_record",
+        "arjun",
+        "caio",
+        "custody",
+        "esme",
+        "fire_report",
+        "ines",
+        "ivo",
+        "marisol",
+        "market_log",
+        "patrol_log",
+        "pia",
+        "quentin",
+        "ruth",
+        "staff_list",
+        "ugo",
+        "yasmin"
+      ],
+      "steps": [
+        "read",
+        "places",
+        {
+          "do": "first pass",
+          "sources": [
+            "fire_report"
+          ]
+        }
+      ],
+      "see": [
+        "/evidence/{source:fire_report}",
+        "/sources"
+      ]
+    },
+    {
+      "title": "Mara Quill's statement, on paper",
+      "day": "2026-03-16",
+      "story": "More statements come in, two of them as scanned pages: the bookkeeper Mara Quill says she was at her sister's in Brindle Cross from six, and her sister Jo says she came. The app reads the scans through OCR.",
+      "shows": [
+        "reading"
+      ],
+      "sources": [
+        "abebe",
+        "bram",
+        "brigid",
+        "celia",
+        "dale",
+        "dina",
+        "dmitri",
+        "emeka",
+        "farid",
+        "greta",
+        "hiro",
+        "jo",
+        "jonas",
+        "kezia",
+        "kofi",
+        "letter",
+        "liam",
+        "mara",
+        "nadim",
+        "nell",
+        "olu",
+        "petra",
+        "register",
+        "rosa",
+        "soren",
+        "tala",
+        "tomas",
+        "vera",
+        "wen",
+        "xavier",
+        "zane"
+      ],
+      "steps": [
+        "read",
+        "places"
+      ],
+      "see": [
+        "/evidence/{source:mara}",
+        "/evidence/{source:jo}"
+      ]
+    },
+    {
+      "title": "The photograph of the gate",
+      "day": "2026-03-16",
+      "story": "Mara hands over a photograph she says shows an earlier break-in. The app reads where and when the phone took it from the file itself, says what the picture shows, and makes it findable by that.",
+      "shows": [
+        "reading",
+        "search"
+      ],
+      "sources": [
+        "photo"
+      ],
+      "steps": [
+        "read"
+      ],
+      "see": [
+        "/evidence/{source:photo}",
+        "/search?q=gate"
+      ]
+    },
+    {
+      "title": "The phone exhibits and the voice note",
+      "day": "2026-03-20",
+      "story": "An examiner writes up the phone: exhibit sheets for the photograph and for a voice note Mara sent her sister. Speech to text transcribes the note, and extraction reads the dated places from the sheets' own words.",
+      "shows": [
+        "reading"
+      ],
+      "sources": [
+        "mq3",
+        "mq4",
+        "voice"
+      ],
+      "steps": [
+        "read",
+        "places",
+        "brief"
+      ],
+      "see": [
+        "/evidence/{source:voice}",
+        "/evidence/{source:mq3}"
+      ]
+    },
+    {
+      "title": "One woman in four papers",
+      "day": "2026-03-21",
+      "story": "The linker proposes that the Mara Quill of the two exhibit sheets is one person, and the analyst accepts it. Her own statement and her sister's name her with nothing else in common with the sheets, so no rule proposes them; the analyst joins the four papers herself, as the desk joins each witness's papers.",
+      "shows": [
+        "same person"
+      ],
+      "sources": [],
+      "steps": [
+        {
+          "do": "agent",
+          "agent": "linker"
+        },
+        "links",
+        {
+          "do": "join",
+          "clusters": "planted",
+          "why": "the same witness in her own statement and in the papers about her, joined by the desk that took them"
+        }
+      ],
+      "see": [
+        "/people/{person:mara_stmt}"
+      ]
+    },
+    {
+      "title": "Two places on one night",
+      "day": "2026-03-21",
+      "story": "Extraction read Mara's statement and her sister's without proposing where Mara was that evening, so the two Brindle Cross claims are planted from the case file and labelled so. The contradiction hunter then sets her places on 14 March side by side: Brindle Cross, and Tanner's Row in the exhibit sheets. It proposes; nothing is decided.",
+      "shows": [
+        "contradiction"
+      ],
+      "sources": [],
+      "steps": [
+        {
+          "do": "planted",
+          "claims": [
+            "mara_stmt.at",
+            "mara_jo.at"
+          ],
+          "why": "extraction did not propose where Mara was on 14 March from her statement or her sister's"
+        },
+        "places",
+        "accept",
+        {
+          "do": "agent",
+          "agent": "contradictions"
+        }
+      ],
+      "see": [
+        "/people/{person:mara_stmt}"
+      ]
+    },
+    {
+      "title": "A colleague checks the lead",
+      "day": "2026-03-23",
+      "story": "The analyst assigns the two exhibit sheets to a colleague and asks her to check the voice note's place against the sheet. She answers on the claim and marks her work updated.",
+      "shows": [
+        "assignment",
+        "peer review"
+      ],
+      "sources": [],
+      "steps": [
+        {
+          "do": "assign",
+          "sources": [
+            "mq3",
+            "mq4"
+          ],
+          "days": 2
+        },
+        {
+          "do": "ask",
+          "claim": "mara_mq4.at",
+          "why": "Does the recording say the yard on Tanner's Row, as the sheet has it?"
+        },
+        {
+          "do": "reply",
+          "claim": "mara_mq4.at",
+          "text": "Yes. The transcript reads 'I'm still at the yard on Tanner's Row', and the sheet gives 22:07 for the message."
+        },
+        {
+          "do": "mark",
+          "sources": [
+            "mq3",
+            "mq4"
+          ],
+          "status": "done"
+        }
+      ],
+      "see": [
+        "/todo",
+        "/evidence/{source:mq4}"
+      ]
+    },
+    {
+      "title": "The conclusion",
+      "day": "2026-03-25",
+      "story": "The analyst writes what the case shows, on what it rests, the alternatives set aside and what is not established, and signs it; a reviewer agrees.",
+      "shows": [
+        "conclusion",
+        "peer review"
+      ],
+      "sources": [],
+      "steps": [
+        "conclusion"
+      ],
+      "see": [
+        "/cases/overview"
+      ]
+    }
+  ],
   "media": {
     "IMG_4471.jpg": {
       "exif_time": "2026:03:14 21:52:07",

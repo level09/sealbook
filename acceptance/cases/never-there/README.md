@@ -14,9 +14,21 @@ the shape of `acceptance/agents/case.json` and the planted truth; `files/` holds
 photograph, the voice note and its sentence times, and `ATTRIBUTION.md`.
 
 ```sh
-uv run python acceptance/cases/never-there/make.py   # rewrite case.json
+uv run python acceptance/cases/never-there/make.py            # rewrite case.json
+uv run python acceptance/cases/never-there/make.py --scans    # render the four scans
+uv run python acceptance/cases/never-there/make.py --record   # read it on the live routes
 uv run python -m unittest tests.test_case_never_there
+uv run stk demo-seed --case never-there [--until N]           # into the app, act by act
 ```
+
+The case is told in eight acts and read by the app itself: four papers are scanned
+pages, the rest typed text, and the seeder replays the recorded answers of the
+models that read them (`recordings.json`, 110 calls on cloud-zdr and one local
+speech to text run, recorded 2026-11-21). Extraction recovered 118 of the 152
+planted claims and none of the 34 where a statement places its witness on a day,
+so act 6 plants Mara's and Jo's Brindle Cross claims, labelled; the hunter then
+flags all four planted contradictions. See docs/case-studies.md, "Worked example".
+The planted truth below stays what `acceptance/eval_agents.py` scores.
 
 ## What the code compares, and how the case reaches it
 

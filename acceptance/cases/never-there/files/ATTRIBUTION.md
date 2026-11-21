@@ -20,3 +20,8 @@ as a real place: the scene, Hollin Joinery on Tanner's Row in Larkhaven, is inve
 ## voice_note.ogg
 
 - Origin: generated. A synthetic voice (OpenAI gpt-audio, voice "shimmer", through OpenRouter) reading the four lines in `voice_note.json`. No real person's voice.
+
+## mara_scan.jpg, jo_scan.jpg, mq3_scan.jpg, mq4_scan.jpg
+
+- Origin: generated. Typed pages rendered by `make.py --scans` from the case's own
+  text, with a scan filter (`acceptance/make_case.scan_realism`). No real document.

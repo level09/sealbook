@@ -9,12 +9,23 @@ scene. The planted truth is scored by acceptance/eval_agents.py.
     uv run python acceptance/cases/never-there/make.py            # case.json
     uv run python acceptance/cases/never-there/make.py --photo P  # tag picture P
     uv run python acceptance/cases/never-there/make.py --voice    # speak the note
+    uv run python acceptance/cases/never-there/make.py --scans    # render the scans
+    uv run python acceptance/cases/never-there/make.py --record   # record the reading
 
 case.json is byte-stable. `--photo` copies an edited picture to files/IMG_4471.jpg
 and writes its EXIF time and GPS with exiftool. `--voice` speaks the voice note
 through `make_case.speak` (OpenAI gpt-audio on OpenRouter, OPENROUTER_API_KEY) into
 files/voice_note.ogg and its sentence times into files/voice_note.json. Both media
 steps run once; their outputs are committed.
+
+The case is read by the app, not planted: every source is marked `read`, so the
+seeder runs the worker's own OCR, speech to text, extraction and first pass on it,
+replaying each model answer from `recordings.json`. Four papers (Mara's and Jo's
+statements and the two exhibit sheets) are scanned pages rendered by `--scans`;
+the rest stay typed text. `--record` reads the case once on the configured routes
+(cloud-zdr, OPENROUTER_API_KEY, and the local speech model) in a throwaway
+database and writes `recordings.json`; never edit that file by hand. The planted
+claims stay the truth `acceptance/eval_agents.py` scores.
 """
 
 import argparse
@@ -923,6 +934,212 @@ def truth():
     }
 
 
+# ---- scanned pages ---------------------------------------------------------------
+# Four papers arrive as scans; the app reads them through OCR. The typed text stays
+# in case.json as the truth the scans were rendered from.
+
+SCANNED = ("mara", "jo", "mq3", "mq4")
+
+
+def scan_name(key: str) -> str:
+    return f"{key}_scan.jpg"
+
+
+def scan_html(key: str) -> str:
+    src = SOURCES[key]
+    head, *paras = src["text"].strip().split("\n\n")
+    body = "".join(f"<p>{p}</p>" for p in paras)
+    office = (
+        "LARKHAVEN POLICE - WITNESS STATEMENT"
+        if src["doc_type"] == "witness_statement"
+        else "LARKHAVEN POLICE - DIGITAL EXHIBIT SHEET"
+    )
+    return f"""<!doctype html><html lang="en"><meta charset="utf-8"><style>
+body{{margin:0;background:#fff;font-family:"Courier New",monospace;color:#222}}
+.page{{width:1240px;height:1754px;padding:110px;box-sizing:border-box;position:relative}}
+h1{{font-family:Arial;font-size:28px;letter-spacing:3px;border-bottom:3px solid #222;padding-bottom:10px}}
+.head{{font-size:24px;margin:28px 0 36px}}
+p{{font-size:25px;line-height:1.55;margin:0 0 24px}}
+.syn{{position:absolute;bottom:40px;left:0;right:0;text-align:center;font-size:16px;color:#888;font-family:Arial}}
+</style><body><div class="page"><h1>{office}</h1><div class="head">{head}</div>{body}
+<div class="syn">Fictional. Every name, business and place in this case is invented.</div>
+</div></body></html>"""
+
+
+def render_scans() -> None:
+    import random
+
+    sys.path.insert(0, str(HERE.parents[2]))
+    from PIL import Image
+    from playwright.sync_api import sync_playwright
+
+    from acceptance.make_case import scan_realism
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        for n, key in enumerate(SCANNED):
+            page = browser.new_page(viewport={"width": 1240, "height": 1754})
+            page.set_content(scan_html(key))
+            page.evaluate("document.fonts.ready")
+            raw = FILES / f"{key}.raw.png"
+            page.screenshot(path=raw)
+            page.close()
+            img, _, _ = scan_realism(Image.open(raw), {}, random.Random(1400 + n))
+            raw.unlink()
+            img.save(FILES / scan_name(key), quality=82)
+        browser.close()
+
+
+# ---- the investigation, act by act ----------------------------------------------
+# What happens, in order, and what each act shows (docs/case-studies.md). The app
+# reads every source itself; nothing below plants a claim.
+
+LATER = ("photo", "voice", "mq3", "mq4")
+
+
+def acts() -> list[dict]:
+    first = sorted(
+        k for k, s in SOURCES.items() if s["date"] <= "2026-03-15" and k not in LATER
+    )
+    rest = sorted(
+        k for k, s in SOURCES.items() if s["date"] > "2026-03-15" and k not in LATER
+    )
+    return [
+        {
+            "title": "The fire and the first statements",
+            "day": "2026-03-15",
+            "story": "Hollin Joinery burns on the night of 14 March. The fire report, "
+            "the first statements and the records the police already hold arrive; "
+            "the app reads each one, proposes its people, places and dates and a "
+            "first pass, and the analyst confirms the fire report's first pass.",
+            "shows": ["reading", "first pass"],
+            "sources": first,
+            "steps": [
+                "read",
+                "places",
+                {"do": "first pass", "sources": ["fire_report"]},
+            ],
+            "see": ["/evidence/{source:fire_report}", "/sources"],
+        },
+        {
+            "title": "Mara Quill's statement, on paper",
+            "day": "2026-03-16",
+            "story": "More statements come in, two of them as scanned pages: the "
+            "bookkeeper Mara Quill says she was at her sister's in Brindle Cross from "
+            "six, and her sister Jo says she came. The app reads the scans through OCR.",
+            "shows": ["reading"],
+            "sources": rest,
+            "steps": ["read", "places"],
+            "see": ["/evidence/{source:mara}", "/evidence/{source:jo}"],
+        },
+        {
+            "title": "The photograph of the gate",
+            "day": "2026-03-16",
+            "story": "Mara hands over a photograph she says shows an earlier "
+            "break-in. The app reads where and when the phone took it from the file "
+            "itself, says what the picture shows, and makes it findable by that.",
+            "shows": ["reading", "search"],
+            "sources": ["photo"],
+            "steps": ["read"],
+            "see": ["/evidence/{source:photo}", "/search?q=gate"],
+        },
+        {
+            "title": "The phone exhibits and the voice note",
+            "day": "2026-03-20",
+            "story": "An examiner writes up the phone: exhibit sheets for the "
+            "photograph and for a voice note Mara sent her sister. Speech to text "
+            "transcribes the note, and extraction reads the dated places from the "
+            "sheets' own words.",
+            "shows": ["reading"],
+            "sources": ["mq3", "mq4", "voice"],
+            "steps": ["read", "places", "brief"],
+            "see": ["/evidence/{source:voice}", "/evidence/{source:mq3}"],
+        },
+        {
+            "title": "One woman in four papers",
+            "day": "2026-03-21",
+            "story": "The linker proposes that the Mara Quill of the two exhibit "
+            "sheets is one person, and the analyst accepts it. Her own statement and "
+            "her sister's name her with nothing else in common with the sheets, so "
+            "no rule proposes them; the analyst joins the four papers herself, as "
+            "the desk joins each witness's papers.",
+            "shows": ["same person"],
+            "sources": [],
+            "steps": [
+                {"do": "agent", "agent": "linker"},
+                "links",
+                {
+                    "do": "join",
+                    "clusters": "planted",
+                    "why": "the same witness in her own statement and in the papers "
+                    "about her, joined by the desk that took them",
+                },
+            ],
+            "see": ["/people/{person:mara_stmt}"],
+        },
+        {
+            "title": "Two places on one night",
+            "day": "2026-03-21",
+            "story": "Extraction read Mara's statement and her sister's without "
+            "proposing where Mara was that evening, so the two Brindle Cross claims "
+            "are planted from the case file and labelled so. The contradiction "
+            "hunter then sets her places on 14 March side by side: Brindle Cross, "
+            "and Tanner's Row in the exhibit sheets. It proposes; nothing is decided.",
+            "shows": ["contradiction"],
+            "sources": [],
+            "steps": [
+                {
+                    "do": "planted",
+                    "claims": ["mara_stmt.at", "mara_jo.at"],
+                    "why": "extraction did not propose where Mara was on 14 March "
+                    "from her statement or her sister's",
+                },
+                "places",
+                "accept",
+                {"do": "agent", "agent": "contradictions"},
+            ],
+            "see": ["/people/{person:mara_stmt}"],
+        },
+        {
+            "title": "A colleague checks the lead",
+            "day": "2026-03-23",
+            "story": "The analyst assigns the two exhibit sheets to a colleague and "
+            "asks her to check the voice note's place against the sheet. She answers "
+            "on the claim and marks her work updated.",
+            "shows": ["assignment", "peer review"],
+            "sources": [],
+            "steps": [
+                {"do": "assign", "sources": ["mq3", "mq4"], "days": 2},
+                {
+                    "do": "ask",
+                    "claim": "mara_mq4.at",
+                    "why": "Does the recording say the yard on Tanner's Row, as the "
+                    "sheet has it?",
+                },
+                {
+                    "do": "reply",
+                    "claim": "mara_mq4.at",
+                    "text": "Yes. The transcript reads 'I'm still at the yard on "
+                    "Tanner's Row', and the sheet gives 22:07 for the message.",
+                },
+                {"do": "mark", "sources": ["mq3", "mq4"], "status": "done"},
+            ],
+            "see": ["/todo", "/evidence/{source:mq4}"],
+        },
+        {
+            "title": "The conclusion",
+            "day": "2026-03-25",
+            "story": "The analyst writes what the case shows, on what it rests, the "
+            "alternatives set aside and what is not established, and signs it; a "
+            "reviewer agrees.",
+            "shows": ["conclusion", "peer review"],
+            "sources": [],
+            "steps": ["conclusion"],
+            "see": ["/cases/overview"],
+        },
+    ]
+
+
 def case() -> dict:
     keys = {c["key"] for c in CLAIMS}
     assert len(keys) == len(CLAIMS), "claim keys repeat"
@@ -931,6 +1148,10 @@ def case() -> dict:
     for c in CLAIMS:
         text = SOURCES[RECORDS[c["record"]]["source"]]["text"]
         assert c["value"] in text, c["key"]
+    for key in SCANNED:
+        SOURCES[key]["file"] = scan_name(key)
+    for s in SOURCES.values():
+        s["read"] = True
     statements = [k for k, s in SOURCES.items() if s["doc_type"] == "witness_statement"]
     assert len(statements) == 40, len(statements)  # and one interview record
     return {
@@ -950,6 +1171,7 @@ def case() -> dict:
         "batch": BATCH,
         "truth": truth(),
         "conclusion": CONCLUSION,
+        "acts": acts(),
         "media": {
             "IMG_4471.jpg": {
                 "exif_time": PHOTO_TIME,
@@ -1047,8 +1269,14 @@ def main():
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--photo", type=Path, help="edited picture to tag as IMG_4471.jpg")
     p.add_argument("--voice", action="store_true", help="speak the voice note")
+    p.add_argument("--scans", action="store_true", help="render the four scans")
+    p.add_argument(
+        "--record", action="store_true", help="read the case on the live routes"
+    )
     args = p.parse_args()
     FILES.mkdir(exist_ok=True)
+    if args.scans:
+        render_scans()
     if args.photo:
         tag_photo(args.photo)
     if args.voice:
@@ -1056,6 +1284,44 @@ def main():
     (HERE / "case.json").write_text(
         json.dumps(case(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
+    if args.record:
+        record()
+
+
+def record() -> None:
+    """Read the case once on the live routes, in a throwaway database, and write
+    recordings.json: about 110 chat calls on cloud-zdr (OCR on the four scans, one
+    extraction and one first pass per text, the photo's first pass) and the local
+    speech model once. Needs OPENROUTER_API_KEY and the speech weights
+    (SPEECH_MODEL_DIR, `stk speech-model`)."""
+    import os
+    import secrets
+    import tempfile
+
+    sys.path.insert(0, str(HERE.parents[2]))
+    from alembic import command
+    from sqlalchemy.engine import make_url
+    from stk.migrations import build_alembic_config, throwaway_database_url
+
+    from sealbook.settings import Config
+
+    with (
+        throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True) as url,
+        tempfile.TemporaryDirectory() as blob_dir,
+    ):
+        command.upgrade(build_alembic_config("sealbook", url, quiet=True), "heads")
+        env = os.environ | {
+            "SQLALCHEMY_DATABASE_URI": make_url(url)
+            .set(drivername="postgresql+asyncpg")
+            .render_as_string(hide_password=False),
+            "BLOB_DIR": blob_dir,
+        }
+        stk = ["uv", "run", "stk"]
+        password = secrets.token_hex(16) + "Aa1!"
+        install = [*stk, "install", "-e", "owner@example.com", "-p", password]
+        subprocess.run(install, env=env, check=True)
+        seed = [*stk, "demo-seed", "--case", HERE.name, "--record"]
+        subprocess.run(seed, env=env, check=True)
 
 
 if __name__ == "__main__":
