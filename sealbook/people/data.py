@@ -3,6 +3,7 @@ what the ledger says about one, name search, and erasure."""
 
 from __future__ import annotations
 
+import re
 import uuid
 from collections import Counter
 from datetime import UTC, datetime
@@ -39,7 +40,7 @@ from sealbook.monitor.data import (
 from sealbook.monitor.filter import statement_clause
 from sealbook.packages.models import Package, Sentence
 from sealbook.places import normalise, resolve
-from sealbook.search.arabic import candidates
+from sealbook.search.arabic import candidates, natural
 
 # Silence between two dated points longer than this is shown as a gap.
 GAP_DAYS = 30
@@ -316,11 +317,23 @@ async def roster(
 NAME_ORDER = {Tier.ACCEPTED: 0, Tier.CORROBORATED: 1, Tier.UNCONFIRMED: 2}
 
 
+def label_rank(name: str) -> tuple:
+    """How well one spelling labels a person, best first: the most names longer
+    than an initial ("Aron Vesk" before "A. Vesk"), then written in natural order
+    ("Vesk, Aron" after), then the most words ("N. Harrow" before "Harrow"), then
+    not all capitals ("ARON VESK" after)."""
+    words = re.findall(r"[^\W\d_]+", name)
+    full = sum(len(w) > 1 for w in words)
+    return (-full, natural(name) != name, -len(words), name.isupper())
+
+
 async def names(session: AsyncSession, people, groups=None) -> dict[str, str]:
     """The label for each person id: the best name the reader may see from any source
-    of any linked record, accepted before corroborated before unconfirmed. Masked
-    (sensitive source) and erased names are never labels, so a person with only those
-    is absent and pages say "Unnamed person"."""
+    of any linked record. Across every member of the person, accepted before
+    corroborated before unconfirmed, then the fullest natural-order spelling
+    (`label_rank`), then the earliest recorded. Masked (sensitive source) and erased
+    names are never labels, so a person with only those is absent and pages say
+    "Unnamed person"."""
     if groups is None:
         groups, _ = await identity(session)
     members = {p: groups.get(p, frozenset({p})) for p in people}
@@ -335,17 +348,24 @@ async def names(session: AsyncSession, people, groups=None) -> dict[str, str]:
         current_clause(),
         limit=5000,
     )
-    best: dict[str, str] = {}
-    # Earliest recorded first, so a label does not change between rebuilds of the
-    # same evidence (ids are random).
-    order = lambda r: (NAME_ORDER.get(r["tier"], 3), r["recorded_at"], r["id"])  # noqa: E731
-    for r in sorted(rows, key=order):
+    # Earliest recorded breaks ties, so a label does not change between rebuilds of
+    # the same evidence (ids are random).
+    order = lambda r: (  # noqa: E731
+        NAME_ORDER.get(r["tier"], 3),
+        label_rank(r["display"]),
+        r["recorded_at"],
+        r["id"],
+    )
+    best: dict[str, tuple] = {}
+    for r in rows:
         if r["display"]:
-            best.setdefault(pid(r["subject"]), r["display"])
+            m = pid(r["subject"])
+            if m not in best or order(r) < best[m][0]:
+                best[m] = (order(r), r["display"])
     return {
-        p: name
+        p: min(found)[1]
         for p, ms in members.items()
-        if (name := next((best[m] for m in sorted(ms) if m in best), None))
+        if (found := [best[m] for m in ms if m in best])
     }
 
 

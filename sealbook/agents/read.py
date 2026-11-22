@@ -74,13 +74,21 @@ class Case:
         return out
 
     def name(self, person: str, among=None) -> str | None:
-        """The best name of a cluster: accepted first, then in reading order."""
+        """The best name of a cluster: accepted first, then from a source that is
+        not sensitive, then the fullest natural-order spelling (as `people.names`)."""
         names = [
             c
             for c in (among or self.claims)
             if c.person == person and c.prop == Prop.NAME
         ]
-        names.sort(key=lambda c: (c.tier != Tier.ACCEPTED, c.sensitive, str(c.id)))
+        names.sort(
+            key=lambda c: (
+                c.tier != Tier.ACCEPTED,
+                c.sensitive,
+                people.label_rank(c.text),
+                str(c.id),
+            )
+        )
         return names[0].text if names else None
 
 

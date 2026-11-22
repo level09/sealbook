@@ -37,6 +37,7 @@ from sealbook.ledger.models import (
 )
 from sealbook.monitor import filter as mfilter
 from sealbook.monitor.data import LOCATED, Context
+from sealbook.people.data import label_rank
 from sealbook.places import normalise, resolve
 from sealbook.research.service import blocked
 from sealbook.review.findings import month_label
@@ -293,7 +294,12 @@ def facts(g: dict) -> dict[str, list[dict]]:
     for person, claims in by_person.items():
         name_claims = [c for c in claims if c.prop == Prop.NAME]
         name_claims.sort(
-            key=lambda c: (c.sensitive, c.tier != Tier.ACCEPTED, str(c.id))
+            key=lambda c: (
+                c.sensitive,
+                c.tier != Tier.ACCEPTED,
+                label_rank(c.text),
+                str(c.id),
+            )
         )
         cite = name_claims[:1] or claims[:1]
         name = name_claims[0].text if name_claims else "A person without a name"

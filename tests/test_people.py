@@ -299,6 +299,52 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(masked, {f"person:{p}" for p in ids})
         self.assertEqual(labels, {self.root: "Yousef Khaled Al-Ali"})
 
+    async def test_a_joined_person_is_labelled_by_the_fullest_natural_name(self):
+        # The record that sorts first by id holds the poorest spelling.
+        first, rest = (f"person:{uuid.UUID(int=i)}" for i in (1, 2))
+        third = f"person:{uuid.UUID(int=3)}"
+        async with ext.async_session_factory() as s, s.begin():
+            # Names are labels only from a source the reader may see: quote one.
+            seen = await statement_rows(
+                s,
+                Statement.subject == f"person:{self.case['P1']}",
+                Statement.prop == Prop.NAME,
+            )
+            quoted = await s.get(
+                Statement, uuid.UUID(next(r["id"] for r in seen if r["display"]))
+            )
+            human, passkey = await attester(s, "labeller")
+            for subject, prop, value in (
+                (first, Prop.NAME, {"text": "VESK A"}),
+                (rest, Prop.NAME, {"text": "A. Vesk"}),
+                (rest, Prop.NAME, {"text": "Vesk, Aron"}),
+                (third, Prop.NAME, {"text": "Aron Vesk"}),
+                (rest, Prop.SAME_AS, {"person": data.pid(first)}),
+                (third, Prop.SAME_AS, {"person": data.pid(first)}),
+            ):
+                await append(
+                    s,
+                    StatementIn(
+                        subject=subject,
+                        prop=prop,
+                        value=value,
+                        author_id=human.id,
+                        span_blob=quoted.span_blob,
+                        span=quoted.span,
+                    ),
+                    sign=passkey.sig,
+                )
+        async with ext.async_session_factory() as s:
+            labels = await data.names(s, [data.pid(first), data.pid(third)])
+        self.assertEqual(set(labels.values()), {"Aron Vesk"})
+
+    def test_label_rank_prefers_full_natural_order(self):
+        names = ["Vesk", "VESK A", "A. Vesk", "Vesk, Aron", "ARON VESK", "Aron Vesk"]
+        self.assertEqual(
+            sorted(names, key=data.label_rank),
+            ["Aron Vesk", "ARON VESK", "Vesk, Aron", "A. Vesk", "VESK A", "Vesk"],
+        )
+
     async def login(self, client, email):
         async with self.app.app_context():
             token = create_agent_login_token(email, "/people")
@@ -334,7 +380,7 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
                     select(Payload.value)
                     .join(Statement, Statement.commitment == Payload.commitment)
                     .where(
-                        Statement.subject == f"person:{self.root}",
+                        Statement.subject == f"person:{self.case['P1']}",
                         Statement.prop == Prop.ACCESS,
                     )
                 )

@@ -870,3 +870,8 @@ covers in the text it was read from (`span_blob`).
   is now put in natural order (`search.arabic.natural`) before any name is keyed or
   compared. Read the separators a document uses before treating word order as
   meaning.
+
+- A driver joined from 86 log lines was labelled "A. Vesk" although
+  "Aron Vesk" was in the cluster: `people.names` took each member's best name and
+  then the member that sorted first by random id. Rank every member's spellings
+  together (`people.label_rank`), and give a tie-break a meaning before an id.
