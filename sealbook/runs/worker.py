@@ -64,6 +64,8 @@ from sealbook.watch import matcher
 log = logging.getLogger(__name__)
 POLL_SECONDS = 2
 DOCUMENT_PROPS = {Prop.DOCUMENT_TYPE, Prop.DOCUMENT_DATE, Prop.REPORTS}
+# Where a person was at a moment: these carry a time of day and in whose words.
+WHEREABOUTS = {Prop.SEEN_AT, Prop.LAST_SEEN, Prop.ARRESTED_AT, Prop.DETAINED_AT}
 
 
 class Events:
@@ -143,8 +145,18 @@ EXTRACT_SYSTEM = (
     "the text states one. "
     "arrested_at is the place of arrest, detained_at the place held, "
     "detention_branch the security branch holding the person, transferred_to where "
-    "they were moved, seen_at and last_seen where they were seen; each quotes the "
-    "place. A person's mother and father are facts about that person, not people of "
+    "they were moved, last_seen where they were last seen; each quotes the place. "
+    "seen_at is where a person was on a day: seen there, by their own account "
+    "('I was at home', 'I drove to my sister's house in X') or as another reports "
+    "it ('she came to my house'); give one seen_at for each place and day the text "
+    "puts a named person, quoting the place, under the person it is about. When "
+    "the writer speaks as I, the mention is the writer's name as the text gives "
+    "it. On every fact, time is the time of day it held in 24-hour digits, 21:52, "
+    "or a range 18:00-24:00 ('from six until past midnight'), when the text gives "
+    "one, otherwise JSON null; account is own when the person states it about "
+    "themself, other when the text reports it about someone else, null for a fact "
+    "that is not a place. "
+    "A person's mother and father are facts about that person, not people of "
     "their own. A person is a human being the text names: outlets, pages, channels, "
     "organisations, places, crossings, headlines, links, hashtags and unnamed people "
     "(a child, a witness) are not people and get no facts. List each fact once and "
@@ -160,6 +172,8 @@ EXTRACT_SYSTEM = (
     "with kind other unless the text names the cause. " + read.DATA_ONLY
 )
 VALID = r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+# A time of day or a range on one day, 24:00 for midnight at its end.
+CLOCK = r"^([01][0-9]|2[0-3]):[0-5][0-9](-(([01][0-9]|2[0-3]):[0-5][0-9]|24:00))?$"
 
 EXTRACT_SCHEMA = {
     "name": "statements",
@@ -202,6 +216,8 @@ EXTRACT_SCHEMA = {
                         "occurrence",
                         "evidence",
                         "valid",
+                        "time",
+                        "account",
                     ],
                     "properties": {
                         "mention": {"type": "string"},
@@ -224,6 +240,15 @@ EXTRACT_SCHEMA = {
                                 {"type": "string", "pattern": VALID},
                                 {"type": "null"},
                             ]
+                        },
+                        "time": {
+                            "anyOf": [
+                                {"type": "string", "pattern": CLOCK},
+                                {"type": "null"},
+                            ]
+                        },
+                        "account": {
+                            "anyOf": [{"enum": ["own", "other"]}, {"type": "null"}]
                         },
                         "evidence": {
                             "type": "array",
@@ -273,6 +298,20 @@ def facts(answer: dict, text: str) -> tuple[list[dict], int]:
         if prop not in DOCUMENT_PROPS and item["mention"] in unnamed:
             dropped += 1
             continue
+        # Where a person was carries when in the day and in whose words; a time
+        # the route let through out of clock form is left out, not guessed at.
+        when = {
+            k: item[k]
+            for k in ("time", "account")
+            if prop in WHEREABOUTS and item.get(k)
+        }
+        if "time" in when and not re.fullmatch(CLOCK, when["time"]):
+            del when["time"]
+        if "account" in when and when["account"] not in ("own", "other"):
+            del when["account"]
+        item = {k: v for k, v in item.items() if k not in ("time", "account")} | {
+            "value": item["value"] | when
+        }
         if prop == Prop.REPORTS:
             # Place words the text does not contain are the model's, not the source's.
             value = item["value"]

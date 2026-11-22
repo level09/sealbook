@@ -2584,20 +2584,12 @@
     {
       "title": "Two places on one night",
       "day": "2026-03-21",
-      "story": "Extraction read Mara's statement and her sister's without proposing where Mara was that evening, so the two Brindle Cross claims are planted from the case file and labelled so. The contradiction hunter then sets her places on 14 March side by side: Brindle Cross, and Tanner's Row in the exhibit sheets. It proposes; nothing is decided.",
+      "story": "Extraction read where Mara says she was that evening, in Brindle Cross from six until past midnight, and where her sister says she arrived, at about half past eleven. The contradiction hunter sets her places on 14 March side by side: Brindle Cross, and Tanner's Row in the exhibit sheets. It proposes; nothing is decided.",
       "shows": [
         "contradiction"
       ],
       "sources": [],
       "steps": [
-        {
-          "do": "planted",
-          "claims": [
-            "mara_stmt.at",
-            "mara_jo.at"
-          ],
-          "why": "extraction did not propose where Mara was on 14 March from her statement or her sister's"
-        },
         "places",
         "accept",
         {

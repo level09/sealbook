@@ -349,20 +349,24 @@ class SeedCasesTest(Seeding):
         """Every source is read by the worker's own tools, replaying recorded
         answers. The read-for-real figure is pinned beside the planted score: how
         many planted claims extraction recovered, and whether the planted
-        contradictions were flagged on what was written. Two claims extraction did
-        not propose are planted, labelled, as the act says."""
+        contradictions were flagged on what was written. Where Mara says she was
+        that evening, and where her sister says she arrived, now arrive by
+        reading, with their times; nothing is planted."""
         inv, spec = "case-never-there", json.loads(path_of("never-there").read_text())
         async with ext.async_session_factory() as s:
             out = await seed_study(s, self.app, path_of("never-there"))
         self.assertEqual(out["sources"], 53)
         self.assertEqual(
-            out["read"], {"planted": 152, "recovered": 118, "written": 129}
+            out["read"], {"planted": 152, "recovered": 148, "written": 163}
         )
-        self.assertEqual(len(out["missed"]), 34)
-        self.assertIn("mara_stmt.at", out["missed"])
-        self.assertNotIn("mara_mq3.at", out["missed"])
-        self.assertEqual(out["planted"], 2)
-        self.assertEqual(out["contradictions proposals"], 3)
+        # Three witnesses who heard or saw something on Tanner's Row without
+        # saying they stood there, and Mara's 13 March at the gate.
+        self.assertEqual(
+            sorted(out["missed"]),
+            ["emeka_stmt.at", "greta_stmt.at", "mara_stmt.gate", "soren_stmt.at"],
+        )
+        self.assertNotIn("planted", out)
+        self.assertEqual(out["contradictions proposals"], 4)
         self.assertEqual(out["planted contradictions flagged"], 4)
         self.assertEqual([len(a["see"]) for a in out["acts"]], [2, 2, 2, 2, 1, 1, 2, 1])
         async with ext.async_session_factory() as s:
@@ -418,6 +422,19 @@ class SeedCasesTest(Seeding):
                 for d in derived
             ]
             self.assertTrue(any("I'm still at the yard" in t for t in texts))
+            # The name it heard is a claim heard, not printed, and says so.
+            heard = (
+                await s.execute(
+                    select(Statement.evidence, Payload.value)
+                    .join(Payload, Payload.commitment == Statement.commitment)
+                    .where(
+                        Statement.prop == Prop.NAME,
+                        Payload.value["text"].astext == "Joe",
+                    )
+                )
+            ).one()
+            self.assertEqual(heard[0], ["spoken"])
+            self.assertTrue(heard[1]["heard"])
             c = await self.concluded(s, inv)
             self.assertEqual(len(c["rests_on"]), 2)
             # The colleague answered on the claim and marked the exhibits updated.

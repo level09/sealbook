@@ -872,3 +872,11 @@ covers in the text it was read from (`span_blob`).
   source (an audio or video acquisition), writes its claims as `spoken` and marks a
   name `heard`, so screens read "heard as" and a matcher can weigh it below a
   written name.
+- Extraction recovered none of the 34 places in never-there where a statement puts
+  a person somewhere on a day ("I was at my sister's house from six until past
+  midnight"), so the alibi had to be planted: the prompt defined `seen_at` as
+  "where they were seen", which a first-person or reported account never reads as,
+  and the schema had no field for a time of day. `seen_at` is now where a named
+  person was, by any account, with `time` and `account` on every fact; recovery
+  went from 118 to 148 of 152 with no invented person on the extraction check.
+  Re-record every case whose recordings hold an extraction when the prompt moves.

@@ -69,10 +69,12 @@ open, so a person or the film can decide them; act 7 is that decision.
 
 - Sheets: 9 datasets, 1,445 rows mapped and released, 225 rows naming someone,
   400 of 400 planted sheet claims written in their cells.
-- Scans: 16 of the 22 planted claims recovered from what the app read (18 written
-  about people). Every name, father, birth date and place of birth the links rest
-  on was read. Missed: the five "signed in person at" places (extraction wrote the
-  signing date as the document's date, not where the man was), and the passport's
+- Scans: 17 of the 22 planted claims recovered from what the app read (19 written
+  about people; 16 and 18 before extraction asked where a person was and its five
+  calls were recorded again, 2026-11-22). Every name, father, birth date and place
+  of birth the links rest on was read. Missed: four of the five "signed in person
+  at" places (extraction wrote the signing date as the document's date, not where
+  the man was; the vendor form's Ondrel Freight Lines now arrives), and the passport's
   sex, written as "M" without the male or female the property needs. So the man's
   trail across the three sites is not on the map in this telling; nothing is
   planted in its place, since the conclusion does not rest on it.

@@ -89,6 +89,72 @@ class LocateTest(unittest.TestCase):
                 valid_range(bad)
 
 
+class WhereaboutsTest(unittest.TestCase):
+    """Extraction proposes where a person says they or someone else were: who,
+    where, the day, the time of day or range when the text gives one, and in
+    whose words, quoted from the passage. The never-there case lost every alibi
+    because the prompt asked only where someone "was seen"."""
+
+    TEXT = (
+        "Statement of Mara Quill. On Saturday 14 March 2026 I drove to my sister "
+        "Jo's house in Brindle Cross. I was there from about six until past "
+        "midnight."
+    )
+
+    def answer(self, **seen):
+        return {
+            "statements": [
+                item("Mara Quill", mention="Mara Quill")
+                | {"time": None, "account": None},
+                item(
+                    "Brindle Cross",
+                    prop="seen_at",
+                    mention="Mara Quill",
+                    valid="2026-03-14",
+                )
+                | {"time": "18:00-24:00", "account": "own"}
+                | seen,
+            ],
+            "events": [],
+        }
+
+    def test_prompt_and_schema_ask_for_whereabouts_in_whose_words(self):
+        from sealbook.runs.worker import EXTRACT_SCHEMA, EXTRACT_SYSTEM
+
+        fields = EXTRACT_SCHEMA["schema"]["properties"]["statements"]["items"]
+        self.assertIn("time", fields["required"])
+        self.assertIn("account", fields["required"])
+        self.assertIn("own account", EXTRACT_SYSTEM)
+
+    def test_time_and_account_are_kept_on_a_place(self):
+        from sealbook.runs.worker import facts
+
+        [name, seen], _ = facts(self.answer(), self.TEXT)
+        self.assertEqual(
+            seen["value"],
+            {
+                "text": "Brindle Cross",
+                "lang": "en",
+                "time": "18:00-24:00",
+                "account": "own",
+            },
+        )
+        self.assertEqual(name["value"], {"text": "Mara Quill", "lang": "en"})
+
+    def test_a_time_not_in_clock_form_is_left_out(self):
+        from sealbook.runs.worker import facts
+
+        for bad in ("six", "25:00", "18:00-", "18:00-02:00-04:00"):
+            [_, seen], _ = facts(self.answer(time=bad), self.TEXT)
+            self.assertNotIn("time", seen["value"], bad)
+        # An answer recorded before the fields existed still reads.
+        old = self.answer()
+        for s in old["statements"]:
+            del s["time"], s["account"]
+        [_, seen], _ = facts(old, self.TEXT)
+        self.assertEqual(seen["value"], {"text": "Brindle Cross", "lang": "en"})
+
+
 @unittest.skipUnless(POSTGRES, "runs need Postgres (set SQLALCHEMY_DATABASE_URI)")
 class RunsTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
