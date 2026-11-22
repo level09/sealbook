@@ -349,14 +349,11 @@ class SeedCasesTest(Seeding):
             out = await seed_study(s, self.app, path_of("never-there"))
         self.assertEqual(out["sources"], 53)
         self.assertEqual(
-            out["read"], {"planted": 152, "recovered": 148, "written": 163}
+            out["read"], {"planted": 152, "recovered": 152, "written": 163}
         )
-        # Three witnesses who heard or saw something on Tanner's Row without
-        # saying they stood there, and Mara's 13 March at the gate.
-        self.assertEqual(
-            sorted(out["missed"]),
-            ["emeka_stmt.at", "greta_stmt.at", "mara_stmt.gate", "soren_stmt.at"],
-        )
+        # Every planted claim is read, the witnesses on Tanner's Row and Mara's
+        # 13 March at the gate among them.
+        self.assertEqual(sorted(out["missed"]), [])
         self.assertNotIn("planted", out)
         self.assertEqual(out["contradictions proposals"], 4)
         self.assertEqual(out["planted contradictions flagged"], 4)

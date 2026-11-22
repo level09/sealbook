@@ -1021,3 +1021,7 @@ covers in the text it was read from (`span_blob`).
   re-recorded and the live test failed. Read `GET /api/v1/key` (`limit_remaining`,
   which lags by minutes) before a comparison, run the cheap models first and the
   dear ones on a subset, and keep enough for the recordings the choice forces.
+- 2026-11-22: a new OCR model can move extraction without any extraction change.
+  GPT-6.2 Sol broke the never-there voice note sheet's lines differently from
+  Argon, and Claude Haiku 5.5 then gave "the yard on Tanner's Row" no time twice
+  in a row. Re-run the case tests after any OCR swap, not only after a prompt change.

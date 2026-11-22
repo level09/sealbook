@@ -140,7 +140,7 @@ class OldFootageActsTest(unittest.TestCase):
         # 36 first passes and 30 hosted transcriptions of the clips with sound;
         # no transcript has words, so nothing is extracted: 66 calls.
         self.assertEqual(len(calls), 66)
-        self.assertEqual(RECORDINGS["models"]["assess"], "google/gemini-3.8-flash")
+        self.assertEqual(RECORDINGS["models"]["assess"], "openai/gpt-6-luna")
 
     def test_speech_to_text_hears_no_words_in_running_water(self):
         """The local Whisper once wrote "subscribe to the channel" in Arabic on two
@@ -167,7 +167,7 @@ class OldFootageActsTest(unittest.TestCase):
             c["source"]: answer(c) for c in RECORDINGS["calls"] if c["tool"] == "assess"
         }
         viral = " ".join(x["line"] for x in passes["copy_viral"]["description"])
-        self.assertIn("submerged trees", viral)
+        self.assertIn("muddy water", viral)
         for words in (passes["copy_viral"]["title"], viral):
             self.assertNotIn("Lindmark", words)
             self.assertNotIn("Ostra", words)
@@ -257,7 +257,7 @@ class SeedOldFootageTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(out["copies confirmed"], 29)
         # A search for what the viral clip shows finds it and, once the archive is
         # in, the 2024 original first; one look-alike shares the words.
-        found = out["search"]["submerged trees"]
+        found = out["search"]["fast-moving muddy water"]
         self.assertEqual(found[0], "original")
         self.assertIn("copy_viral", found)
         self.assertEqual(
@@ -271,9 +271,8 @@ class SeedOldFootageTest(unittest.IsolatedAsyncioTestCase):
                     "copy_logo",
                     "copy_lowrate",
                     "copy_viral_muted",
-                    "copy_trim",
+                    "copy_vertical",
                     "copy_short_muted",
-                    "flood_ford",
                 ]
             ),
         )
@@ -282,10 +281,10 @@ class SeedOldFootageTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             out["search"]["bridge"],
             [
-                "flood_arches",
-                "flood_footbridge",
                 "copy_trim_post",
                 "flood_footbridge_post",
+                "flood_arches",
+                "flood_footbridge",
             ],
         )
         async with ext.async_session_factory() as s:

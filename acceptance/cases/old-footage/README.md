@@ -74,7 +74,7 @@ original, which arrives last, is compared with every repost.
 | --- | --- | --- | --- | --- |
 | 1 The clip that spread | 2 Jun | reading, first pass | the viral clip and its post arrive; `read`, `claims` | the viral clip's first pass |
 | 2 Reposts and other floods | 2 Jun | reading, copies | 20 clips dated up to 2 June; the reposts match each other by sound | copy_trim's Copies tab, the footbridge clip |
-| 3 Searching the pile by what it shows | 3 Jun | reading, search | 14 more clips; the desk searches "submerged trees" and "bridge" | `/search?q=submerged+trees`, `/search?q=bridge` |
+| 3 Searching the pile by what it shows | 3 Jun | reading, search | 14 more clips; the desk searches "fast-moving muddy water" and "bridge" | `/search?q=fast-moving+muddy+water`, `/search?q=bridge` |
 | 4 The archive from two years ago | 3 Jun | copies | the 2024 original; fingerprints tie it to seven reposts; the search again | the original's Copies tab, the search |
 | 5 Side by side | 3 Jun | copies | the analyst confirms each strong match in the family as the same recording, signed | the viral clip beside the original |
 | 6 The conclusion | 3 Jun | conclusion, peer review | the signed conclusion and the reviewer's agreement | Overview |
@@ -105,9 +105,9 @@ is extracted. Replay calls nothing.
   date: the frames show a river in flood, trees and buildings, which fits the real
   Commons footage (filmed in Linz) as well as the story. The description is never
   evidence of the fictional place, and the captions stay unconfirmed claims.
-- Search for "submerged trees", what the viral clip shows, finds 8 of the 9 copies
-  (copy_vertical's description says "around trees" and "submerges") and one
-  look-alike (the flooded ford) after act 3, and after act 4 the 2024 original
+- Search for "fast-moving muddy water", the viral clip's own description, finds 8
+  of the 9 copies (copy_trim's says "muddy water" without "fast-moving") and no
+  look-alike after act 3, and after act 4 the 2024 original
   first. Search for "bridge" finds the two look-alikes with a bridge the app saw
   and the posts that name one; the app saw no bridge in the viral clip or the
   original.

@@ -478,7 +478,7 @@ def posted(key, date, account, caption):
 
 # What the desk types into the search box in act 3: words for what the viral clip
 # shows, and the bridge the captions name. Act 4 runs the first search again.
-SEARCHES = ["submerged trees", "bridge"]
+SEARCHES = ["fast-moving muddy water", "bridge"]
 
 
 def acts(sources):
@@ -528,7 +528,7 @@ def acts(sources):
             "day": "2026-06-03",
             "story": "More clips arrive in a batch from the inbox. Instead of "
             "scrolling 35 videos, the desk searches for what the viral clip "
-            "shows, submerged trees, and finds the reposts and one other flood "
+            "shows, fast-moving muddy water, and finds eight reposts and no other flood "
             "by the app's own description of them. A search for the bridge the "
             "captions name finds two other people's bridges and one post; the "
             "app saw no bridge in the viral clip. A description says what the "
@@ -547,7 +547,7 @@ def acts(sources):
             "story": "A producer remembers a flood clip from June 2024 and the desk "
             "adds Ostra Valley Weather's video from the archive. Its fingerprints "
             "tie it to the viral clip and to six other reposts by their sound, and "
-            "two of those by picture too. The search for submerged trees now "
+            "two of those by picture too. The search for fast-moving muddy water now "
             "finds the 2024 video as well.",
             "shows": ["copies"],
             "sources": ["original"],

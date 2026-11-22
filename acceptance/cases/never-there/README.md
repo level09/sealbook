@@ -27,7 +27,7 @@ models that read them (`recordings.json`, 111 calls on cloud-zdr, one of them th
 voice note's hosted speech to text; the 52 extractions recorded again on
 2026-11-22, and the voice note's transcription, extraction and first pass that
 day too). Extraction
-recovered 148 of the 152 planted claims, Mara's own evening in Brindle Cross and
+recovered all 152 planted claims, Mara's own evening in Brindle Cross and
 her sister's account among them, each place with its time and in whose words, so
 nothing is planted; the hunter flags all four planted contradictions. See
 docs/case-studies.md, "Worked example". The planted truth below stays what

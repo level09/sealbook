@@ -865,7 +865,7 @@
   {
    "title": "Searching the pile by what it shows",
    "day": "2026-06-03",
-   "story": "More clips arrive in a batch from the inbox. Instead of scrolling 35 videos, the desk searches for what the viral clip shows, submerged trees, and finds the reposts and one other flood by the app's own description of them. A search for the bridge the captions name finds two other people's bridges and one post; the app saw no bridge in the viral clip. A description says what the frames show, never where or when they were filmed.",
+   "story": "More clips arrive in a batch from the inbox. Instead of scrolling 35 videos, the desk searches for what the viral clip shows, fast-moving muddy water, and finds eight reposts and no other flood by the app's own description of them. A search for the bridge the captions name finds two other people's bridges and one post; the app saw no bridge in the viral clip. A description says what the frames show, never where or when they were filmed.",
    "shows": [
     "reading",
     "search"
@@ -891,7 +891,7 @@
     "claims",
     {
      "do": "search",
-     "query": "submerged trees"
+     "query": "fast-moving muddy water"
     },
     {
      "do": "search",
@@ -899,14 +899,14 @@
     }
    ],
    "see": [
-    "/search?q=submerged+trees",
+    "/search?q=fast-moving+muddy+water",
     "/search?q=bridge"
    ]
   },
   {
    "title": "The archive from two years ago",
    "day": "2026-06-03",
-   "story": "A producer remembers a flood clip from June 2024 and the desk adds Ostra Valley Weather's video from the archive. Its fingerprints tie it to the viral clip and to six other reposts by their sound, and two of those by picture too. The search for submerged trees now finds the 2024 video as well.",
+   "story": "A producer remembers a flood clip from June 2024 and the desk adds Ostra Valley Weather's video from the archive. Its fingerprints tie it to the viral clip and to six other reposts by their sound, and two of those by picture too. The search for fast-moving muddy water now finds the 2024 video as well.",
    "shows": [
     "copies"
    ],
@@ -919,12 +919,12 @@
     "matches",
     {
      "do": "search",
-     "query": "submerged trees"
+     "query": "fast-moving muddy water"
     }
    ],
    "see": [
     "/evidence/{source:original}",
-    "/search?q=submerged+trees"
+    "/search?q=fast-moving+muddy+water"
    ]
   },
   {

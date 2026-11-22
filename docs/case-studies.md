@@ -264,10 +264,13 @@ prompt began asking for whereabouts, so only those 52 calls ran) and one hosted
 speech to text call (`elevenlabs/scribe-v2`, recorded on 2026-11-22 with the voice
 note's extraction and first pass, which read its new transcript; the counts did
 not move). Replay takes about 12 seconds and calls nothing. Replay pins the models
-recorded with it, so the cases still read with Argon and Gemini 3.8 Flash after the
-defaults moved to GPT-6.2 Sol and GPT-6 Luna on 2026-11-22, and their scores are
-unchanged. Recording them again on the new models is pending: the OpenRouter key
-reached its spending limit during the comparison.
+recorded with it. The three read cases were recorded again on 2026-11-22 with the
+strict zero-retention defaults (GPT-6.2 Sol for OCR, GPT-6 Luna for the first pass,
+Claude Haiku 5.5 for extraction, Scribe v2 for speech), for about USD 0.45 in all.
+On the first try the voice note's exhibit sheet came back with no time, because
+Sol's line breaks split "sent at 22:07" from "she was at the yard when she sent
+it"; the extraction prompt now says the time of an act at a place is a time the
+person was there, and the second recording reads 22:07.
 
 | Act | Day | Shows | Steps | See |
 | --- | --- | --- | --- | --- |
@@ -282,14 +285,17 @@ reached its spending limit during the comparison.
 
 What the app read, against the planted truth (`tests/test_case_studies.py` pins it):
 
-- Extraction wrote 163 claims about people. 148 of the 152 planted claims were
-  recovered (118 before 2026-11-22, when the prompt asked only where someone "was
+- Extraction wrote 163 claims about people. All 152 planted claims were recovered
+  (148 with the reading recorded earlier on 2026-11-22, 118 before that day, when the prompt asked only where someone "was
   seen" and every first-person place was missed). Each place now carries the day,
   the time of day or range when the text gives one and in whose words: Mara's own
   "Brindle Cross", 18:00 to 24:00; her sister's "my house in Brindle Cross", 23:30,
   about Mara; MQ/3's 21:52 and MQ/4's 22:07 on Tanner's Row; Jo at the market at
-  09:40. The four it missed: three witnesses who saw or heard something on
-  Tanner's Row without saying they stood there, and Mara at the gate on 13 March.
+  09:40. The four it used to miss (three witnesses who saw or heard something on
+  Tanner's Row without saying they stood there, and Mara at the gate on 13 March)
+  are read since the rule that the time of an act at a place is a time the person
+  was there. With the strict zero-retention models and without that rule, the
+  voice note's sheet was read with no time, so the alibi lost its 22:07.
 - Nothing is planted: act 6 has no fallback. The hunter flags all four planted
   contradictions in four proposals: the alibi by the clock (her own evening
   overlaps 21:52 and 22:07, so both pairs are one proposal, and her sister's 23:30
@@ -445,8 +451,8 @@ Each case's own README holds its story, planted truth and score. What
   The depot photograph has the real operator's van cut off its right edge.
 - **The footage that was two years old** (`case-old-footage`): read by the app in six
   acts (README). Each of the 36 clips gets speech to text and a first pass on eight
-  frames, so search finds clips by what they show: "submerged trees" finds 8 of the 9
-  copies, one look-alike and, once the archive is added, the 2024 original first. The
+  frames, so search finds clips by what they show: "fast-moving muddy water" finds 8 of
+  the 9 copies, no look-alike and, once the archive is added, the 2024 original first. The
   2024 original arrives in act 4 and ties to seven reposts; all 29 match proposals are
   strong and inside the family, and the analyst confirms each as the same recording,
   side by side. The muted, cropped, mirrored short matches nothing. Hosted speech
