@@ -57,7 +57,11 @@ async def sources(db, investigation: str) -> dict:
     for sha, found in steps.items():
         if w := _waits(found):
             waiting.append({"sha256": sha} | w)
-        elif batch.attention(found) or any(s["state"] in LIVE for s in found):
+        # Search indexing is a side step: a source read while its indexing waits
+        # is read, as its own page says.
+        elif batch.attention(found) or any(
+            s["state"] in LIVE and not s.get("side") for s in found
+        ):
             working += 1
     return {
         "total": len(shas),

@@ -35,6 +35,7 @@ from sealbook.ledger.models import (
     Payload,
     Principal,
     Run,
+    RunEvent,
     Statement,
     StatementTier,
 )
@@ -926,6 +927,43 @@ async def transcript_timeline(db, sha: str) -> list[list[int]]:
     return timeline
 
 
+async def speech_read(db, sha: str) -> dict | None:
+    """What speech to text made of a recording, so a page says it instead of
+    "nothing read": None before any run; otherwise its state (reading, failed,
+    no_audio, none for no speech found, done) and the model that read it."""
+    runs = (
+        await db.execute(
+            select(Run.id, Run.status, Run.route, Run.model_served, Run.model_requested)
+            .where(Run.tool == "transcribe", Run.inputs["blobs"][0].astext == sha)
+            .order_by(Run.created_at)
+        )
+    ).all()
+    if not runs:
+        return None
+    last = runs[-1]
+    said = {"model": last.model_served or last.model_requested, "route": last.route}
+    if any(r.status in ("queued", "running") for r in runs):
+        return said | {"state": "reading"}
+    if last.status != "done":
+        return said | {"state": "failed"}
+    dropped = set(
+        await db.scalars(
+            select(RunEvent.drop_reason).where(
+                RunEvent.run_id.in_([r.id for r in runs]),
+                RunEvent.drop_reason.in_(("no_audio_track", "no_speech")),
+            )
+        )
+    )
+    state = (
+        "no_audio"
+        if "no_audio_track" in dropped
+        else "none"
+        if "no_speech" in dropped
+        else "done"
+    )
+    return said | {"state": state}
+
+
 async def content_read(db, sha: str, blob: Blob) -> dict:
     """What the source says: its own text, text read from it (page text, any
     transcript with a time location) and claim values unmasked. Callers check the
@@ -984,6 +1022,9 @@ async def content_read(db, sha: str, blob: Blob) -> dict:
     )
     return {
         "timeline": await transcript_timeline(db, sha),
+        "speech": await speech_read(db, sha)
+        if blob.mime.startswith(("audio/", "video/"))
+        else None,
         "text": await asyncio.to_thread(read, blob)
         if blob.mime.startswith("text/")
         else None,
