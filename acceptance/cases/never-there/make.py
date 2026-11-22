@@ -1181,6 +1181,7 @@ def case() -> dict:
         "today": TODAY,
         "places": {
             k: {"name_en": n, "name_ar": None, "lon": lon, "lat": lat, "precision_m": m}
+            | {"fictional": True}
             for k, (n, lon, lat, m) in PLACES.items()
         },
         "sources": SOURCES,

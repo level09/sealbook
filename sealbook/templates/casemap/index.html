@@ -107,10 +107,11 @@
       </section>
 
       <section class="cm-panel" aria-labelledby="h-map"><header><h2 id="h-map">Movements</h2><span class="cm-muted text-body-small">circles sized by people there in the window; arrows are moves between known places, not routes</span></header>
-        <div ref="map" class="cm-map" role="region" aria-label="Map of places and moves"></div>
+        <div v-if="v.places.length" ref="map" class="cm-map" role="region" :aria-label="v.schematic ? 'Schematic of invented places and moves' : 'Map of places and moves'"></div>
+        <div v-else class="map-empty">${ NO_PLACES }</div>
         <div class="cm-unres"><strong>Not on the map</strong> <span class="cm-muted">until a person confirms the place:</span>
           <span v-for="u in v.unresolved" :key="u.place" class="ms-2"><bdi dir="auto">${ u.place }</bdi> <span class="cm-muted">(${ u.count })</span></span><span v-if="!v.unresolved.length" class="cm-muted ms-2">nothing</span>
-          <div class="text-body-small cm-muted mt-1">Approximate places are drawn as faint areas at least as wide as their uncertainty. Places from ${ v.attribution }; outlines from Natural Earth.</div></div>
+          <div class="text-body-small cm-muted mt-1">Approximate places are drawn as faint areas at least as wide as their uncertainty. ${ v.schematic ? 'The places are invented, so no real map is drawn under them.' : 'Places from ' + v.attribution + '; outlines from Natural Earth.' }</div></div>
       </section>
     </div>
 

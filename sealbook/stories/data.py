@@ -380,5 +380,6 @@ async def story(db, user, lens: str, ref: str | None, f: dict) -> dict:
         "suggestions": suggestions,
         "unresolved": layer["unresolved"],
         "attribution": layer["attribution"],
+        "schematic": layer["schematic"],
         "truncated": truncated,
     }

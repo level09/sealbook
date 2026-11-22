@@ -49,7 +49,14 @@ Keys the seeder reads beyond that shape, all optional:
   Places with coordinates are imported as sites a person recorded, as a town
   (2 km or more), a neighbourhood (1 km) or a site, and every located claim that
   names one is confirmed. A place without coordinates stays a name and is never
-  drawn.
+  drawn. `places.<key>.fictional: true` marks an invented place; the seeder sets
+  `place.fictional` from it, and the case map, Stories, a person's Track on the map
+  and the place page then draw a schematic: no coastline, tiles or region outline,
+  the places at their relative positions with a scale, labels moved apart with a
+  leader line when they would overlap, and the note "Invented places, drawn to
+  relative position, not a real map". The four cases mark every place. Invented
+  places lie in open sea so that no real town reads as the scene; the marker, not
+  the coordinates, says they are invented.
 - `conclusion`: `{"text", "standard", "rests_on", "alternatives": [{"text", "why"}],
   "not_established": [...], "peer_review": true}`, the case's signed conclusion
   (`sealbook/cases/conclusions.py`). `standard` is a key of
@@ -99,8 +106,7 @@ transcript instead); no incidents or findings are seeded, and assignments only
 where an act asks for them; an act's `day` is the story's, while the ledger records
 seed time; a conclusion cannot cite a match proposal, nor cite a claim
 as the one it contradicts (never-there's conclusion leaves her own Brindle Cross
-claim out). Invented places lie in open sea, so the maps draw dots on
-an empty background. The old-footage case has no people, so its Stories and Case
+claim out). The old-footage case has no people, so its Stories and Case
 map stay empty.
 
 ## Acts: a case told in time

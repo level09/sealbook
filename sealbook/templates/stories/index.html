@@ -95,7 +95,7 @@
         <v-slider v-model="t" :min="0" :max="span" :step="1" hide-details density="compact" color="primary" aria-label="Time" class="flex-grow-1"></v-slider><span class="mono text-no-wrap">${ fmtDay(cursor) }</span></div>
       <div class="st-unres"><strong>Unresolved names</strong> <span class="st-muted">not on the map until a person confirms a place:</span>
         <span v-for="u in s.unresolved" :key="u.place" class="ms-2"><bdi dir="auto">${ u.place }</bdi> <span class="st-muted">(${ u.count })</span></span><span v-if="!s.unresolved.length" class="st-muted ms-2">none</span>
-        <div class="text-body-small st-muted mt-1">Places from ${ s.attribution }; outlines from Natural Earth.</div></div>
+        <div class="text-body-small st-muted mt-1">${ s.schematic ? 'The places are invented, so no real map is drawn under them.' : 'Places from ' + s.attribution + '; outlines from Natural Earth.' }</div></div>
     </section>
   </div>
 

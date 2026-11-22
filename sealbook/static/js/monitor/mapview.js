@@ -9,6 +9,7 @@
 import * as maplibregl from '/static/maplibre/maplibre-gl.mjs';
 import {SOURCE, addClaimTiles, recolor, setClaimQuery} from '/static/js/maptiles.js';
 import {addBasemap, recolorBasemap} from '/static/js/basemap.js';
+import {fit as fitClose, mark, spread} from '/static/js/schematic.js';
 
 const TIERS = ['accepted', 'corroborated', 'unconfirmed', 'rejected'];
 
@@ -147,25 +148,28 @@ function trackLines(tracks, places, selected, forksOnly) {
   return {type: 'FeatureCollection', features};
 }
 
-export function createMap(el, theme, {onPoint, onCluster}) {
+/* `schematic`: every place is invented, so no outline, graticule or basemap is
+   drawn, only the places to relative position with the note (schematic.js). */
+export function createMap(el, theme, {onPoint, onCluster, schematic = false}) {
   const p = palette(theme);
   const map = new maplibregl.Map({
     container: el,
     style: {version: 8, sources: {}, layers: [{id: 'bg', type: 'background', paint: {'background-color': p.bg}}]},
     center: [37.2, 34.6],
     zoom: 5.4,
-    attributionControl: {compact: true, customAttribution: 'Natural Earth'},
+    attributionControl: {compact: true, customAttribution: schematic ? '' : 'Natural Earth'},
     dragRotate: false,
     pitchWithRotate: false,
   });
   map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'bottom-right');
   map.touchZoomRotate.disableRotation();
-  const state = {map, theme, clusters: new Map(), labels: [], fitted: false, ready: null, layer: null, tiled: false};
+  const state = {map, theme, clusters: new Map(), labels: [], fitted: false, ready: null, layer: null, tiled: false, schematic};
+  const none = {type: 'FeatureCollection', features: []};
 
   state.ready = new Promise(resolve => map.on('load', async () => {
-    const region = await (await fetch('/static/maplibre/region.geojson')).json();
+    const region = schematic ? none : await (await fetch('/static/maplibre/region.geojson')).json();
     map.addSource('region', {type: 'geojson', data: region});
-    map.addSource('graticule', {type: 'geojson', data: graticule()});
+    map.addSource('graticule', {type: 'geojson', data: schematic ? none : graticule()});
     map.addSource('points', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, cluster: true, clusterRadius: 34, clusterMaxZoom: 11});
     map.addSource('tracks', {type: 'geojson', data: {type: 'FeatureCollection', features: []}});
     map.addLayer({id: 'graticule', type: 'line', source: 'graticule', paint: {'line-width': 0.5}});
@@ -178,7 +182,13 @@ export function createMap(el, theme, {onPoint, onCluster}) {
     map.addLayer({id: 'points', type: 'symbol', source: 'points', filter: ['!', ['has', 'point_count']],
       layout: {'icon-image': ['concat', 'pt-', ['get', 'tier'], '-', ['case', ['get', 'agent'], 'agent', 'human']],
                'icon-allow-overlap': true, 'icon-ignore-placement': true}});
-    await addBasemap(map, basemapColors(p), 'borders', ['land', 'graticule']);
+    if (schematic) {
+      mark(map);
+      el.classList.add('labels-on');
+      state.spread = spread(map, () => state.labels);
+    } else {
+      await addBasemap(map, basemapColors(p), 'borders', ['land', 'graticule']);
+    }
     applyPalette(map, p);
     for (const id of ['points', 'tile-points']) {
       map.on('click', id, e => onPoint(e.features[0].properties.id));
@@ -186,7 +196,7 @@ export function createMap(el, theme, {onPoint, onCluster}) {
       map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; });
     }
     map.on('render', () => syncClusters(state, onCluster));
-    map.on('zoomend', () => el.classList.toggle('labels-on', map.getZoom() >= 7));
+    map.on('zoomend', () => el.classList.toggle('labels-on', schematic || map.getZoom() >= 7));
     resolve();
   }));
   return state;
@@ -279,12 +289,16 @@ export async function updateMap(state, layer, {showRejected, subject, query}) {
     // Clear of a cluster badge (28 px wide plus its 3 px halo) drawn on the same point.
     return new maplibregl.Marker({element: el, anchor: 'left', offset: [20, 0]}).setLngLat(layer.places[[...names][0]]).addTo(map);
   });
-  if (!state.fitted && points.length) {
+  if (!state.fitted && points.length && state.schematic) {
+    fitClose(map, points.map(pt => pt.lonlat));
+    state.fitted = true;
+  } else if (!state.fitted && points.length) {
     const bounds = new maplibregl.LngLatBounds();
     points.forEach(pt => bounds.extend(pt.lonlat));
     map.fitBounds(bounds, {padding: 60, maxZoom: 8, duration: 0});
     state.fitted = true;
   }
+  state.spread?.();
 }
 
 export async function retheme(state) {

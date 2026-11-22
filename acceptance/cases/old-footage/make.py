@@ -536,6 +536,7 @@ def case():
                 "lon": None,
                 "lat": None,
                 "precision_m": None,
+                "fictional": True,
             }
         },
         "sources": sources,

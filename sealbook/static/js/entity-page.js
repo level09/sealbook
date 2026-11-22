@@ -8,6 +8,7 @@ import {prepare, sign} from '/static/js/monitor/passkey.js';
 import {registerMediaViewers} from '/static/js/components/media.js';
 import {circle} from '/static/js/components/EvidenceLocation.js';
 import {addBasemap} from '/static/js/basemap.js';
+import {mark} from '/static/js/schematic.js';
 import {addClaimTiles} from '/static/js/maptiles.js';
 import {MAP, PROP, StoryTimeline, fmtDay, fmtSpan, timelineRows} from '/static/js/stories.js';
 
@@ -49,7 +50,7 @@ export const signing = {
 export const EntityMap = {
   name: 'EntityMap',
   props: {
-    shapes: {type: Array, default: () => []},  // [{geometry, precision_m}] in WGS 84
+    shapes: {type: Array, default: () => []},  // [{geometry, precision_m, fictional}] in WGS 84
     query: {type: Object, default: () => ({})},
     dark: Boolean,
     label: String,
@@ -71,16 +72,21 @@ export const EntityMap = {
     draw() {
       const c = MAP[this.dark ? 'dark' : 'light'], ink = this.color('--place') || '#397247';
       const features = this.features();
+      // Invented places get a schematic: no outline, tiles or basemap under them.
+      const invented = this.shapes.length > 0 && this.shapes.every(s => s.fictional);
       const map = new maplibregl.Map({container: this.$el, center: [37.2, 34.8], zoom: 5.6, dragRotate: false, pitchWithRotate: false, cooperativeGestures: true,
         style: {version: 8, sources: {}, layers: [{id: 'bg', type: 'background', paint: {'background-color': c.bg}}]}, attributionControl: {compact: true}});
       this.map = map;
       map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'bottom-right');
       map.on('load', async () => {
-        map.addSource('region', {type: 'geojson', data: '/static/maplibre/region.geojson'});
-        map.addLayer({id: 'land', type: 'fill', source: 'region', paint: {'fill-color': c.land}});
-        map.addLayer({id: 'borders', type: 'line', source: 'region', paint: {'line-color': c.border, 'line-width': .8}});
-        addClaimTiles(map, this.query, {border: c.border, ink: c.seq, muted: c.muted});
-        await addBasemap(map, {bg: c.bg, land: c.land, border: c.border, muted: c.muted}, 'borders', ['land']);
+        if (invented) mark(map);
+        else {
+          map.addSource('region', {type: 'geojson', data: '/static/maplibre/region.geojson'});
+          map.addLayer({id: 'land', type: 'fill', source: 'region', paint: {'fill-color': c.land}});
+          map.addLayer({id: 'borders', type: 'line', source: 'region', paint: {'line-color': c.border, 'line-width': .8}});
+          addClaimTiles(map, this.query, {border: c.border, ink: c.seq, muted: c.muted});
+          await addBasemap(map, {bg: c.bg, land: c.land, border: c.border, muted: c.muted}, 'borders', ['land']);
+        }
         if (this.map !== map) return;  // redrawn while the basemap loaded
         map.addSource('me', {type: 'geojson', data: {type: 'FeatureCollection', features}});
         map.addLayer({id: 'me-area', type: 'fill', source: 'me', filter: ['==', ['get', 'kind'], 'area'], paint: {'fill-color': ink, 'fill-opacity': .12, 'fill-outline-color': ink}});

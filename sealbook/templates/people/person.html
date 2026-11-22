@@ -55,7 +55,8 @@
         <div>
             <div class="ppl-card">
                 <h2>Track on the map</h2>
-                <div class="ppl-map"><div class="map-canvas" ref="map"></div></div>
+                <div v-if="!p || p.points.length" class="ppl-map"><div class="map-canvas" ref="map"></div></div>
+                <div v-else class="map-empty">${ NO_PLACES }</div>
             </div>
             <div class="ppl-card" v-if="p">
                 <h2>Facts by property</h2>
@@ -159,6 +160,7 @@
 <script type="application/json" id="people-boot">{{ boot|tojson|safe }}</script>
 <script type="module">
 import {createMap, updateMap, retheme} from '/static/js/monitor/mapview.js';
+import {NO_PLACES} from '/static/js/schematic.js';
 import {PROP, StoryTimeline, timelineRows} from '/static/js/stories.js';
 import {ResearchDrawer} from '/static/js/components/ResearchDrawer.js';
 import {FindLinks} from '/static/js/components/FindLinks.js';
@@ -224,6 +226,18 @@ const app = createApp({
         this.error = e.response && e.response.status === 404 ? 'Nothing is recorded about this person.' : 'Could not load this person.';
         return;
       }
+      // The map waits for the person: no located place, no map; invented places, a schematic.
+      if (this._map && (!this.p.points.length || this._map.schematic !== this.p.schematic)) {
+        this._map.map.remove();
+        this._map = null;
+      }
+      if (!this.p.points.length) return;
+      await this.$nextTick();
+      this._map ||= createMap(this.$refs.map, this.$refs.mon, {
+        onPoint: id => this.open(id),
+        onCluster: ids => this.open(ids[0]),
+        schematic: this.p.schematic,
+      });
       const subject = `person:${this.p.person}`;
       updateMap(this._map, {points: this.p.points, tracks: {[subject]: this.p.track}, places: this.p.places},
                 {showRejected: false, subject});
@@ -244,11 +258,7 @@ const app = createApp({
   mounted() {
     // The intake brief's "search the web" step opens the drawer here.
     if (new URLSearchParams(location.search).has('research')) this.$nextTick(() => { this.research = true; });
-    this._map = createMap(this.$refs.map, this.$refs.mon, {
-      onPoint: id => this.open(id),
-      onCluster: ids => this.open(ids[0]),
-    });
-    this.$watch(() => this.$vuetify.theme.global.name, () => this.$nextTick(() => retheme(this._map)));
+    this.$watch(() => this.$vuetify.theme.global.name, () => this.$nextTick(() => this._map && retheme(this._map)));
     window.addEventListener('keydown', e => { if (e.key === 'Escape') this.side = null; });
     this.load();
   },
@@ -260,6 +270,7 @@ app.component('find-links', FindLinks);
 app.component('contradiction-hunter', ContradictionHunter);
 app.component('gap-finder', GapFinder);
 app.config.globalProperties.PROP = PROP;
+app.config.globalProperties.NO_PLACES = NO_PLACES;
 registerStkComponents(app);
 app.use(vuetify).mount('#app');
 </script>

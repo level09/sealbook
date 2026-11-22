@@ -6,6 +6,7 @@
 import * as maplibregl from '/static/maplibre/maplibre-gl.mjs';
 import {addClaimTiles, recolor, setClaimQuery} from '/static/js/maptiles.js';
 import {addBasemap, recolorBasemap} from '/static/js/basemap.js';
+import {fit as fitClose, mark, spread} from '/static/js/schematic.js';
 
 const DAY = 864e5;
 const day = s => Date.parse(s + 'T00:00:00Z');
@@ -231,7 +232,11 @@ export const storyPage = boot => ({
         this.selId = this.ordered[0]?.id || null;
       } catch (err) { this.s = null; this.error = this.fail(err); }
       this.busy = false;
-      this.$nextTick(() => { this.initMap(); if (this.ready) setClaimQuery(this.map, this.query); this.drawMap(true); });
+      // Invented places get a schematic, real ones the basemap: never one map for both.
+      if (this.map && this.mapMode !== !!this.s?.schematic) {
+        this.map.remove(); this.map = null; this.ready = false; this.markers = [];
+      }
+      this.$nextTick(() => { this.initMap(); if (this.ready && !this.mapMode) setClaimQuery(this.map, this.query); this.drawMap(true); });
     },
     async loadPickers() {
       const inv = {params: {investigation: this.investigation || undefined}};
@@ -314,19 +319,25 @@ export const storyPage = boot => ({
       } catch (err) { this.say(this.fail(err)); this.pkg.busy = false; }
     },
     initMap() {
-      if (this.map || !this.$refs.map) return;
-      const c = MAP[this.isDark ? 'dark' : 'light'];
+      if (this.map || !this.$refs.map || !this.places.length) return;
+      const c = MAP[this.isDark ? 'dark' : 'light'], invented = !!this.s?.schematic;
+      this.mapMode = invented;
       this.map = new maplibregl.Map({container: this.$refs.map, style: {version: 8, sources: {}, layers: [{id: 'bg', type: 'background', paint: {'background-color': c.bg}}]},
-        center: [37.2, 34.8], zoom: 5.6, attributionControl: {compact: true, customAttribution: `Natural Earth, ${this.s?.attribution || 'GeoNames (CC BY 4.0)'}`}, dragRotate: false, pitchWithRotate: false});
+        center: this.places[0].lonlat, zoom: 8, attributionControl: {compact: true, customAttribution: invented ? '' : `Natural Earth, ${this.s?.attribution || 'GeoNames (CC BY 4.0)'}`}, dragRotate: false, pitchWithRotate: false});
       this.map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'bottom-right');
       this.map.touchZoomRotate.disableRotation();
       this.map.on('load', async () => {
-        const region = await (await fetch('/static/maplibre/region.geojson')).json();
-        this.map.addSource('region', {type: 'geojson', data: region});
-        this.map.addLayer({id: 'land', type: 'fill', source: 'region', paint: {'fill-color': c.land}});
-        this.map.addLayer({id: 'borders', type: 'line', source: 'region', paint: {'line-color': c.border, 'line-width': .8}});
-        addClaimTiles(this.map, this.query, tileColors(c));
-        await addBasemap(this.map, basemapColors(c), 'borders', ['land']);
+        if (invented) {
+          mark(this.map);
+          this.spreadLabels = spread(this.map, () => this.markers, '.l');
+        } else {
+          const region = await (await fetch('/static/maplibre/region.geojson')).json();
+          this.map.addSource('region', {type: 'geojson', data: region});
+          this.map.addLayer({id: 'land', type: 'fill', source: 'region', paint: {'fill-color': c.land}});
+          this.map.addLayer({id: 'borders', type: 'line', source: 'region', paint: {'line-color': c.border, 'line-width': .8}});
+          addClaimTiles(this.map, this.query, tileColors(c));
+          await addBasemap(this.map, basemapColors(c), 'borders', ['land']);
+        }
         this.map.addSource('seq', {type: 'geojson', data: {type: 'FeatureCollection', features: []}});
         this.map.addLayer({id: 'seq', type: 'line', source: 'seq', paint: {'line-color': c.seq, 'line-width': 1.2, 'line-dasharray': [2, 2], 'line-opacity': .6}});
         this.ready = true;
@@ -337,8 +348,10 @@ export const storyPage = boot => ({
       if (!this.ready) return;
       const c = MAP[this.isDark ? 'dark' : 'light'];
       this.map.setPaintProperty('bg', 'background-color', c.bg);
-      this.map.setPaintProperty('land', 'fill-color', c.land);
-      this.map.setPaintProperty('borders', 'line-color', c.border);
+      if (this.map.getLayer('land')) {
+        this.map.setPaintProperty('land', 'fill-color', c.land);
+        this.map.setPaintProperty('borders', 'line-color', c.border);
+      }
       this.map.setPaintProperty('seq', 'line-color', c.seq);
       recolor(this.map, tileColors(c));
       recolorBasemap(this.map, basemapColors(c));
@@ -358,7 +371,8 @@ export const storyPage = boot => ({
         el.setAttribute('aria-label', el.title);
         el.onclick = () => this.select(best);
         // Close places would print over each other: the second puts its label left, later ones step down.
-        const near = this.markers.filter(m => { const l = m.getLngLat(); return Math.abs(l.lng - pl.lonlat[0]) < .15 && Math.abs(l.lat - pl.lonlat[1]) < .15; }).length;
+        // On a schematic every label sits right of its place and spread() moves them apart.
+        const near = this.mapMode ? 0 : this.markers.filter(m => { const l = m.getLngLat(); return Math.abs(l.lng - pl.lonlat[0]) < .15 && Math.abs(l.lat - pl.lonlat[1]) < .15; }).length;
         if (near % 2) el.style.flexDirection = 'row-reverse';
         const marker = new maplibregl.Marker({element: el, anchor: near % 2 ? 'right' : 'left', offset: [near % 2 ? 9 : -9, Math.floor(near / 2) * 22]});
         this.markers.push(marker.setLngLat(pl.lonlat).addTo(map));
@@ -373,10 +387,12 @@ export const storyPage = boot => ({
         return out;
       }).filter(c => c.length > 1);
       map.getSource('seq').setData({type: 'FeatureCollection', features: lines.map(c => ({type: 'Feature', geometry: {type: 'LineString', coordinates: c}}))});
-      if (fit && this.places.length) {
+      if (fit && this.places.length && this.mapMode) fitClose(map, this.places.map(p => p.lonlat));
+      else if (fit && this.places.length) {
         const xs = this.places.map(p => p.lonlat[0]), ys = this.places.map(p => p.lonlat[1]);
         map.fitBounds([[Math.min(...xs) - .6, Math.min(...ys) - .5], [Math.max(...xs) + .6, Math.max(...ys) + .5]], {duration: 0, maxZoom: 9, padding: 30});
       }
+      this.spreadLabels?.();
     },
     key(e) {
       if (TYPING(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;

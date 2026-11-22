@@ -901,3 +901,9 @@ covers in the text it was read from (`span_blob`).
   accepted links: the panel counted only facts about people, while a conclusion
   cites claims of any subject, links and findings. Count a summary from the same
   rules as what it summarises (`conclusions.citeable`), not from a neighbouring page.
+
+- Maps of invented places were dots on blank grey and a case with no places drew
+  Syria: every map started at a hard-coded Syrian view and region outline, and a
+  place had no way to say it was invented. A map now starts from its places or says
+  in words that it has none, and an explicit `place.fictional` turns it into a
+  schematic. Never infer "invented" from coordinates.

@@ -531,6 +531,7 @@ async def place(db, user, place_id: uuid.UUID, f: dict) -> dict:
         "precision_m": p.precision_m,
         "geo_source": p.geo_source,
         "source": p.source,
+        "fictional": p.fictional,
         "lonlat": [float(p.lon), float(p.lat)],
         "geometry": orjson.loads(geom),
         "governorate": areas.get(p.admin1_id),

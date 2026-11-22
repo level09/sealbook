@@ -20,14 +20,16 @@
       "name_ar": null,
       "lon": -26.104,
       "lat": 44.302,
-      "precision_m": 100
+      "precision_m": 100,
+      "fictional": true
     },
     "harbour_house": {
       "name_en": "Harbour House, Port Ondrel",
       "name_ar": null,
       "lon": -26.092,
       "lat": 44.296,
-      "precision_m": 100
+      "precision_m": 100,
+      "fictional": true
     }
   },
   "sources": {

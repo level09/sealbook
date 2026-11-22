@@ -21,21 +21,24 @@
    "name_ar": "Wenmere",
    "lon": -24.5,
    "lat": 47.3,
-   "precision_m": 4000
+   "precision_m": 4000,
+   "fictional": true
   },
   "station": {
    "name_en": "Wenmere coach station and depot",
    "name_ar": "Wenmere coach station and depot",
    "lon": -24.505,
    "lat": 47.302,
-   "precision_m": 150
+   "precision_m": 150,
+   "fictional": true
   },
   "holt_cross": {
    "name_en": "Holt Cross depot",
    "name_ar": "Holt Cross depot",
    "lon": -24.29,
    "lat": 47.36,
-   "precision_m": 300
+   "precision_m": 300,
+   "fictional": true
   }
  },
  "sources": {

@@ -20,7 +20,8 @@
    "note": "Invented town on the invented river Ostra. The footage was filmed elsewhere; see files/ATTRIBUTION.md.",
    "lon": null,
    "lat": null,
-   "precision_m": null
+   "precision_m": null,
+   "fictional": true
   }
  },
  "sources": {

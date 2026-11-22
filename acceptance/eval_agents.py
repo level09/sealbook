@@ -91,7 +91,9 @@ def load(path=CASE):
         members = frozenset(str(_id(r)) for r in cluster)
         groups |= dict.fromkeys(members, members)
     places = {
-        k: SimpleNamespace(id=_id(f"place/{k}"), **p) for k, p in spec["places"].items()
+        # A place is real unless the case marks it invented, as the place table does.
+        k: SimpleNamespace(id=_id(f"place/{k}"), **({"fictional": False} | p))
+        for k, p in spec["places"].items()
     }
     claims, located, events = [], {}, {}
     for c in spec["claims"]:

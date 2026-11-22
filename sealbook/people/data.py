@@ -623,6 +623,7 @@ async def person(session: AsyncSession, ref, projection: str = "draft") -> dict 
         "track": track,
         "points": layer["points"],
         "places": layer["places"],
+        "schematic": layer["schematic"],
         "forks": disagreements(facts, steps, places, linked),
         "gaps": gaps,
         "gap_days": GAP_DAYS,

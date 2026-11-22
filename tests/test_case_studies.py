@@ -531,6 +531,8 @@ class SeedCasesTest(Seeding):
                 {p.name_en for p in case.places.values()},
                 {"Wenmere", "Wenmere coach station and depot", "Holt Cross depot"},
             )
+            # case.json marks them invented, so maps draw a schematic.
+            self.assertTrue(all(p.fictional for p in case.places.values()))
 
     async def test_old_footage_ties_the_viral_clip_to_the_original(self):
         inv = "case-old-footage"

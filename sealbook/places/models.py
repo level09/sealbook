@@ -9,6 +9,7 @@ import uuid
 from sqlalchemy import (
     JSON,
     BigInteger,
+    Boolean,
     CheckConstraint,
     Column,
     Computed,
@@ -137,6 +138,9 @@ class Place(Base):
     area = Column(JSON().with_variant(JSONB, "postgresql"))
     source = Column(String(20), nullable=False)
     created_by = Column(UUID(as_uuid=True), ForeignKey("principal.id"))
+    # An invented place (a fictional case study's): maps draw it as a schematic,
+    # never on a real basemap. Set explicitly when it is recorded, never inferred.
+    fictional = Column(Boolean, nullable=False, default=False, server_default="false")
 
     governorate = relationship("Place", remote_side=[id], foreign_keys=[governorate_id])
     admin1 = relationship("AdminArea", foreign_keys=[admin1_id])

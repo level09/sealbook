@@ -9,6 +9,7 @@
 import * as maplibregl from '/static/maplibre/maplibre-gl.mjs';
 import {addClaimTiles, recolor} from '/static/js/maptiles.js';
 import {addBasemap, recolorBasemap} from '/static/js/basemap.js';
+import {NO_PLACES, fit as fitClose, mark, spread} from '/static/js/schematic.js';
 import {MAP, PROP, fmtDay, fmtSpan} from '/static/js/stories.js';
 
 const DAY = 864e5;
@@ -186,7 +187,7 @@ export const caseMapPage = boot => ({
   delimiters: config.delimiters,
   data() {
     return {
-      boot, v: null, busy: false, error: '', news: [], newsBusy: false, live: false,
+      boot, v: null, busy: false, error: '', news: [], newsBusy: false, live: false, NO_PLACES,
       t: 0, span: 'all', playing: false, sort: 'first', placeFilter: null,
       selected: null,   // {kind: 'place', id} | {kind: 'band', id}
       ask: {from: null, to: null, busy: false, answer: null},
@@ -337,6 +338,10 @@ export const caseMapPage = boot => ({
       this.busy = false;
       this.loadNews();
       this.listen();
+      // A case without located places has no map; an invented one gets a schematic.
+      if (this.map && (!this.v?.places.length || this.mapMode !== !!this.v.schematic)) {
+        this.map.remove(); this.map = null; this.ready = false; this.labelMarks = [];
+      }
       this.$nextTick(() => { this.initMap(); this.drawMap(true); });
     },
     async loadNews() {
@@ -419,21 +424,27 @@ export const caseMapPage = boot => ({
     },
     askLabel(v) { return this.askItems.find(i => i.value === v)?.title || ''; },
     initMap() {
-      if (this.map || !this.$refs.map) return;
-      const c = MAP[this.isDark ? 'dark' : 'light'];
+      if (this.map || !this.$refs.map || !this.v?.places.length) return;
+      const c = MAP[this.isDark ? 'dark' : 'light'], invented = !!this.v.schematic;
+      this.mapMode = invented;
       this.map = new maplibregl.Map({container: this.$refs.map, style: {version: 8, sources: {}, layers: [{id: 'bg', type: 'background', paint: {'background-color': c.bg}}]},
-        center: [37.2, 34.8], zoom: 5.6, attributionControl: {compact: true, customAttribution: `Natural Earth, ${this.v?.attribution || 'GeoNames (CC BY 4.0)'}`}, dragRotate: false, pitchWithRotate: false});
+        center: this.v.places[0].lonlat, zoom: 8, attributionControl: {compact: true, customAttribution: invented ? '' : `Natural Earth, ${this.v?.attribution || 'GeoNames (CC BY 4.0)'}`}, dragRotate: false, pitchWithRotate: false});
       this.map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'bottom-right');
       this.map.touchZoomRotate.disableRotation();
       this.map.on('load', async () => {
-        const region = await (await fetch('/static/maplibre/region.geojson')).json();
         const empty = {type: 'FeatureCollection', features: []};
-        this.map.addSource('region', {type: 'geojson', data: region});
-        this.map.addLayer({id: 'land', type: 'fill', source: 'region', paint: {'fill-color': c.land}});
-        this.map.addLayer({id: 'borders', type: 'line', source: 'region', paint: {'line-color': c.border, 'line-width': .8}});
-        // Reference layers only: boundaries, uncertainty circles and footprints for what this reader may see.
-        addClaimTiles(this.map, {investigation: this.investigation}, {border: c.border, ink: c.seq, muted: c.muted});
-        await addBasemap(this.map, {bg: c.bg, land: c.land, border: c.border, muted: c.muted}, 'borders', ['land']);
+        if (invented) {
+          mark(this.map);
+          this.spreadLabels = spread(this.map, () => this.labelMarks);
+        } else {
+          const region = await (await fetch('/static/maplibre/region.geojson')).json();
+          this.map.addSource('region', {type: 'geojson', data: region});
+          this.map.addLayer({id: 'land', type: 'fill', source: 'region', paint: {'fill-color': c.land}});
+          this.map.addLayer({id: 'borders', type: 'line', source: 'region', paint: {'line-color': c.border, 'line-width': .8}});
+          // Reference layers only: boundaries, uncertainty circles and footprints for what this reader may see.
+          addClaimTiles(this.map, {investigation: this.investigation}, {border: c.border, ink: c.seq, muted: c.muted});
+          await addBasemap(this.map, {bg: c.bg, land: c.land, border: c.border, muted: c.muted}, 'borders', ['land']);
+        }
         this.map.addImage('head', this.arrowHead(c.seq));
         for (const id of ['moves', 'heads', 'places', 'dots']) this.map.addSource(id, {type: 'geojson', data: empty});
         this.map.addLayer({id: 'moves', type: 'line', source: 'moves', layout: {'line-cap': 'round'},
@@ -467,8 +478,10 @@ export const caseMapPage = boot => ({
       if (!this.ready) return;
       const c = MAP[this.isDark ? 'dark' : 'light'];
       this.map.setPaintProperty('bg', 'background-color', c.bg);
-      this.map.setPaintProperty('land', 'fill-color', c.land);
-      this.map.setPaintProperty('borders', 'line-color', c.border);
+      if (this.map.getLayer('land')) {
+        this.map.setPaintProperty('land', 'fill-color', c.land);
+        this.map.setPaintProperty('borders', 'line-color', c.border);
+      }
       this.map.setPaintProperty('dots', 'circle-color', c.seq);
       this.map.setPaintProperty('dots', 'circle-stroke-color', c.bg);
       this.map.setPaintProperty('moves', 'line-color', this.ink(c));
@@ -510,10 +523,12 @@ export const caseMapPage = boot => ({
       map.getSource('heads').setData({type: 'FeatureCollection', features: heads});
       this.drawLabels();
       this.drawDots();
-      if (fit && places.length) {
+      if (fit && places.length && this.mapMode) fitClose(map, places.map(p => p.geometry.coordinates));
+      else if (fit && places.length) {
         const xs = places.map(p => p.geometry.coordinates[0]), ys = places.map(p => p.geometry.coordinates[1]);
         map.fitBounds([[Math.min(...xs) - .5, Math.min(...ys) - .4], [Math.max(...xs) + .5, Math.max(...ys) + .4]], {duration: 0, maxZoom: 9, padding: 40});
       }
+      this.spreadLabels?.();
     },
     bearing(a, b) {
       const y = lat => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
@@ -532,7 +547,8 @@ export const caseMapPage = boot => ({
         el.title = `${placeBoth(p)}: ${plural(n, 'person', 'people')} ${this.win ? 'in ' + this.winLabel : 'over the whole case'}${p.approximate ? `, known only to within ${p.precision_m ? (p.precision_m >= 1000 ? p.precision_m / 1000 + ' km' : p.precision_m + ' m') : 'an area'}` : ''}`;
         el.setAttribute('aria-label', el.title);
         el.onclick = () => this.pickPlace(p.id);
-        const near = this.labelMarks.filter(m => { const l = m.getLngLat(); return Math.abs(l.lng - p.lonlat[0]) < .12 && Math.abs(l.lat - p.lonlat[1]) < .12; }).length;
+        // On a schematic every label sits right of its place and spread() moves them apart.
+        const near = this.mapMode ? 0 : this.labelMarks.filter(m => { const l = m.getLngLat(); return Math.abs(l.lng - p.lonlat[0]) < .12 && Math.abs(l.lat - p.lonlat[1]) < .12; }).length;
         this.labelMarks.push(new maplibregl.Marker({element: el, anchor: near % 2 ? 'right' : 'left', offset: [near % 2 ? -14 : 14, Math.floor(near / 2) * 20]}).setLngLat(p.lonlat).addTo(this.map));
       }
     },

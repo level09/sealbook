@@ -20,56 +20,64 @@
       "name_ar": null,
       "lon": -27.48,
       "lat": -31.62,
-      "precision_m": 3000
+      "precision_m": 3000,
+      "fictional": true
     },
     "tanners_row": {
       "name_en": "Tanner's Row, Larkhaven",
       "name_ar": null,
       "lon": -27.47652,
       "lat": -31.62154,
-      "precision_m": 150
+      "precision_m": 150,
+      "fictional": true
     },
     "market": {
       "name_en": "Larkhaven market",
       "name_ar": null,
       "lon": -27.48295,
       "lat": -31.61702,
-      "precision_m": 100
+      "precision_m": 100,
+      "fictional": true
     },
     "crown": {
       "name_en": "The Crown and Anchor, Larkhaven",
       "name_ar": null,
       "lon": -27.48,
       "lat": -31.62407,
-      "precision_m": 50
+      "precision_m": 50,
+      "fictional": true
     },
     "quay": {
       "name_en": "Larkhaven quay",
       "name_ar": null,
       "lon": -27.47367,
       "lat": -31.61548,
-      "precision_m": 200
+      "precision_m": 200,
+      "fictional": true
     },
     "depot": {
       "name_en": "Ferry Road bus depot, Larkhaven",
       "name_ar": null,
       "lon": -27.48738,
       "lat": -31.62271,
-      "precision_m": 100
+      "precision_m": 100,
+      "fictional": true
     },
     "brindle": {
       "name_en": "Brindle Cross",
       "name_ar": null,
       "lon": -27.12133,
       "lat": -31.62,
-      "precision_m": 2500
+      "precision_m": 2500,
+      "fictional": true
     },
     "brindle_bus": {
       "name_en": "Brindle Cross bus station",
       "name_ar": null,
       "lon": -27.11974,
       "lat": -31.61891,
-      "precision_m": 80
+      "precision_m": 80,
+      "fictional": true
     }
   },
   "sources": {

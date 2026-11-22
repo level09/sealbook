@@ -194,8 +194,12 @@ class TrackTest(unittest.TestCase):
                 "actor": {"agent": False},
             }
 
-        aleppo = SimpleNamespace(id=uuid.uuid4(), lon=37.16, lat=36.2, precision_m=None)
-        douma = SimpleNamespace(id=uuid.uuid4(), lon=36.4, lat=33.57, precision_m=None)
+        aleppo = SimpleNamespace(
+            id=uuid.uuid4(), lon=37.16, lat=36.2, precision_m=None, fictional=False
+        )
+        douma = SimpleNamespace(
+            id=uuid.uuid4(), lon=36.4, lat=33.57, precision_m=None, fictional=False
+        )
         en, ar, other = row("Aleppo"), row("حلب"), row("Douma")
         places = {uuid.UUID(en["id"]): aleppo, uuid.UUID(ar["id"]): aleppo}
         # The map's tracks and the Stories rows both come from track().
@@ -250,12 +254,55 @@ class TrackTest(unittest.TestCase):
             }
 
         a, b = row("2013-05-02"), row("2013-05-03")
-        near = SimpleNamespace(id=uuid.uuid4(), lon=36.3, lat=33.5, precision_m=None)
-        far = SimpleNamespace(id=uuid.uuid4(), lon=37.1, lat=36.2, precision_m=None)
+        near = SimpleNamespace(
+            id=uuid.uuid4(), lon=36.3, lat=33.5, precision_m=None, fictional=False
+        )
+        far = SimpleNamespace(
+            id=uuid.uuid4(), lon=37.1, lat=36.2, precision_m=None, fictional=False
+        )
         layer = map_layer([a, b], {uuid.UUID(a["id"]): near, uuid.UUID(b["id"]): far})
         labels = {p["place"] for p in layer["points"]}
         self.assertEqual(len(labels), 2)
         self.assertEqual({layer["places"][label][0] for label in labels}, {36.3, 37.1})
+
+    def test_a_map_of_invented_places_is_a_schematic_never_a_mix(self):
+        from types import SimpleNamespace
+
+        def row():
+            return {
+                "id": str(uuid.uuid4()),
+                "prop": "seen_at",
+                "masked": False,
+                "display": "Port Ondrel",
+                "from": "2026-03-14",
+                "when": "2026-03-14",
+                "inherited": False,
+                "tier": "accepted",
+                "subject": "person:x",
+                "subject_label": "x",
+                "actor": {"agent": False},
+            }
+
+        def place(fictional):
+            return SimpleNamespace(
+                id=uuid.uuid4(),
+                lon=-26.1,
+                lat=44.3,
+                precision_m=100,
+                fictional=fictional,
+            )
+
+        a, b = row(), row()
+        invented, real = place(True), place(False)
+
+        def at(*ps):
+            return dict(zip((uuid.UUID(a["id"]), uuid.UUID(b["id"])), ps, strict=True))
+
+        self.assertTrue(map_layer([a, b], at(invented, invented))["schematic"])
+        # One real place among invented ones keeps the real basemap.
+        self.assertFalse(map_layer([a, b], at(invented, real))["schematic"])
+        # Nothing located: no schematic, and no points to draw at all.
+        self.assertFalse(map_layer([a], {})["schematic"])
 
     def test_unresolved_names_are_listed_once_with_a_count(self):
         rows = [

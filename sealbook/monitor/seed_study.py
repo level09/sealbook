@@ -161,7 +161,11 @@ async def import_places(s: Seeder, spec: dict) -> dict:
         p.name_ar: p
         for p in await s.s.scalars(select(Place).where(Place.source == "person"))
     }
-    return {k: found[p.get("name_ar") or p["name_en"]] for k, p in located.items()}
+    sites = {k: found[p.get("name_ar") or p["name_en"]] for k, p in located.items()}
+    # The case says a place is invented; maps then draw it as a schematic.
+    for k, place in sites.items():
+        place.fictional = bool(located[k].get("fictional"))
+    return sites
 
 
 async def settle(s: Seeder, key: str) -> None:

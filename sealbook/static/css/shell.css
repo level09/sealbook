@@ -255,3 +255,12 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .case-tabs a.on { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
 .case-tabs a:focus-visible { outline: 2px solid var(--agent); outline-offset: -2px; }
 .case-tabs .n { margin-inline-start: 5px; color: var(--ink-3); font-weight: 400; font-variant-numeric: tabular-nums; }
+
+/* A map of invented places says so on its face (static/js/schematic.js). */
+.schematic-note { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 2; width: fit-content; max-width: calc(100% - 16px); padding: 4px 10px; border-radius: 6px; background: var(--panel); border: 1px dashed var(--line-strong); color: var(--ink-2); font-size: 12.5px; font-weight: 600; pointer-events: none; }
+/* A label moved off its place points back to it. */
+.schematic-lead { position: relative; overflow: visible; }
+.maplibregl-marker.schematic-lead { position: absolute; }
+.schematic-lead::before { content: ""; position: absolute; left: 0; top: 50%; width: var(--lead-len); height: 1px; background: var(--ink-3); transform-origin: 0 0; transform: rotate(var(--lead-angle)); pointer-events: none; }
+/* Words in place of a map when nothing has a location. */
+.map-empty { display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; min-height: 120px; color: var(--ink-3); background: var(--raise); border-radius: 8px; }

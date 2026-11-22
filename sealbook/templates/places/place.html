@@ -70,7 +70,7 @@ window.app = entityPage(boot, {
   mixin: {
     data: () => ({GEO}),
     computed: {
-      shapes() { return [{geometry: this.e.geometry, precision_m: this.e.precision_m}]; },
+      shapes() { return [{geometry: this.e.geometry, precision_m: this.e.precision_m, fictional: this.e.fictional}]; },
       relations() {
         const r = this.e.relations;
         return [

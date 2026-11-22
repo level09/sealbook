@@ -782,7 +782,7 @@ def tracks(points: list[dict], key: str = "subject") -> dict[str, dict]:
 def map_layer(rows: list[dict], places: dict) -> dict:
     """Located rows at their resolved places. `places` maps a statement id (UUID) to
     its Place or None; rows without a place are listed as unresolved, not dropped."""
-    points, unresolved, by_subject = [], {}, {}
+    points, unresolved, by_subject, invented = [], {}, {}, set()
     label_of: dict = {}  # (claim text, place id) -> unique label on this map
     for r in rows:
         if r["prop"] not in LOCATED or r["masked"] or not r["display"]:
@@ -822,6 +822,7 @@ def map_layer(rows: list[dict], places: dict) -> dict:
             "agent": r["actor"]["agent"],
         }
         points.append(point)
+        invented.add(place.fictional)
         if r["tier"] != Tier.REJECTED:
             by_subject.setdefault(r["subject"], []).append(point)
     tracks = {
@@ -832,6 +833,8 @@ def map_layer(rows: list[dict], places: dict) -> dict:
         "points": points,
         "tracks": tracks,
         "places": {p["place"]: p["lonlat"] for p in points},
+        # Every drawn place is invented: draw a schematic, not a real basemap.
+        "schematic": invented == {True},
         "unresolved": list(unresolved.values()),
         "attribution": "GeoNames (CC BY 4.0)",
     }

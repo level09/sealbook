@@ -161,6 +161,7 @@ async def places(db, ids) -> list[dict]:
             "precision_m": p.precision_m,
             # No precision means an area (a district, a governorate), never a point.
             "approximate": p.precision_m is None or p.precision_m > PRECISE_M,
+            "fictional": p.fictional,
         }
         for p in found
     ]
@@ -210,6 +211,7 @@ async def build(db, user, investigation: str) -> tuple[dict, read.Case]:
         "pairs": pairs,
         "unresolved": s["unresolved"],
         "attribution": s["attribution"],
+        "schematic": s["schematic"],
         "truncated": s["truncated"],
     }
     return view, case
