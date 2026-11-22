@@ -45,6 +45,7 @@ class DemoSeedTest(unittest.IsolatedAsyncioTestCase):
         self.enterContext(mock.patch.object(Config, "RUN_MODELS", {}))
         # Speech to text has its own tests; here it would need the downloaded model.
         self.enterContext(mock.patch.object(Config, "SPEECH_MODEL", ""))
+        self.enterContext(mock.patch.object(Config, "TRANSCRIBE_MODEL", ""))
         self.app = _app(self)
 
     async def asyncTearDown(self):
@@ -284,6 +285,7 @@ class MoreCasesTest(unittest.IsolatedAsyncioTestCase):
         self.enterContext(mock.patch.object(Config, "EMBEDDING_MODEL", None))
         self.enterContext(mock.patch.object(Config, "RUN_MODELS", {}))
         self.enterContext(mock.patch.object(Config, "SPEECH_MODEL", ""))
+        self.enterContext(mock.patch.object(Config, "TRANSCRIBE_MODEL", ""))
         # Intake batches queue the brief and linker; never on a developer's model.
         self.enterContext(mock.patch.object(Config, "AGENT_MODEL", read.FIXED))
         self.app = _app(self)
