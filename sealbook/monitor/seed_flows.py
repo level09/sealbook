@@ -139,7 +139,11 @@ async def _start(
     run.endpoint = "demo:fixed-output"
     run.inputs = {**run.inputs, "demo": note(what), "answer": "fixed"}
     if served:
-        run.inputs |= {"answer": "recorded", "recorded_at": served["recorded_at"]}
+        run.inputs = {
+            **run.inputs,
+            "answer": "recorded",
+            "recorded_at": served["recorded_at"],
+        }
         run.route, run.endpoint = served["route"], served["endpoint"]
         run.model_requested = served["model_requested"]
         run.model_served = served["model_served"]
@@ -252,6 +256,7 @@ async def transcript(
     duration_ms: int,
     lang: str = "ar",
     origin: str = "acceptance/data/expected.json",
+    recorded: dict | None = None,
 ) -> None:
     """A transcription of `key` from fixed lines (the script the synthetic clip was
     spoken from, in `origin`), written as the transcribe tool writes: one derived
@@ -274,6 +279,14 @@ async def transcript(
     # No extract_* inputs: the claims below are the demo's, not a model's.
     run.inputs = {"blobs": [blob.sha256], "acquisition": str(acq.id)}
     c = await _start(s, run, acq, f"transcript copied from {origin}")
+    if recorded:
+        # The speech model's own words from a recording: replayed, not a demo's.
+        run.model_served = recorded["model"]
+        run.inputs = {
+            **run.inputs,
+            "answer": "recorded",
+            "recorded_at": recorded["at"],
+        }
     segments = [
         {"ms": [x["start_ms"], x["end_ms"]], "text": x["text"]} for x in sentences
     ]

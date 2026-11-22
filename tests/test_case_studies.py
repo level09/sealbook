@@ -451,6 +451,14 @@ class SeedCasesTest(Seeding):
             ).one()
             self.assertEqual(heard[0], ["spoken"])
             self.assertTrue(heard[1]["heard"])
+            # The speech model's words were replayed, not a demo's fixed lines.
+            spoken = await s.scalar(
+                select(Run).where(
+                    Run.tool == "transcribe",
+                    Run.inputs["blobs"][0].astext == voice,
+                )
+            )
+            self.assertEqual(mdata.answered(spoken)["how"], "recorded")
             c = await self.concluded(s, inv)
             self.assertEqual(len(c["rests_on"]), 2)
             # The colleague answered on the claim and marked the exhibits updated.

@@ -97,6 +97,7 @@ async def _transcribe(st, run, key: str) -> None:
         said["duration_ms"],
         lang=said["language"]["language"],
         origin=f"the {said['model']['repo']} output recorded in recordings.json",
+        recorded={"model": said["model"]["repo"], "at": tape.data.get("recorded_at")},
     )
     # The transcribe tool queues extraction of its transcript when it finishes.
     acq = await flows._acq(s, key)

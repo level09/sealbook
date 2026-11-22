@@ -259,8 +259,8 @@ def answered(run) -> dict:
             "label": f"Replayed from a recording of {day}"
             if day
             else "Replayed from a recording",
-            "detail": f"the answer {run.model_served} gave on the {where} route when "
-            "recorded; no model ran here"
+            "detail": f"the answer {run.model_served} gave when recorded ({where}); "
+            "no model ran here"
             if run.route in WHERE
             else f"the answer {run.model_served} gave when recorded; no model ran here",
         }
