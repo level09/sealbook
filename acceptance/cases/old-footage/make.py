@@ -739,7 +739,7 @@ def main():
 
 def record():
     """Read the case once on the live routes, in a throwaway database, and write
-    recordings.json: local speech to text on each clip with sound, then one first
+    recordings.json: hosted speech to text on each clip with sound, then one first
     pass per clip (eight frames and the transcript) and one extraction per
     transcript with words in it. Needs OPENROUTER_API_KEY and the speech weights
     (SPEECH_MODEL_DIR, `stk speech-model`). Never edit recordings.json by hand."""

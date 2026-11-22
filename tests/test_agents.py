@@ -333,8 +333,9 @@ class ValidateTest(unittest.TestCase):
     def test_a_heard_name_is_a_weaker_basis_than_a_written_one(self):
         """never-there's voice note: speech to text wrote "Joe" for Jo Quill."""
         here = Path(__file__).parents[1] / "acceptance" / "cases" / "never-there"
-        [voice] = orjson.loads((here / "recordings.json").read_bytes())["speech"]
-        said = voice["segments"][0]["text"]
+        calls = orjson.loads((here / "recordings.json").read_bytes())["calls"]
+        [voice] = [c for c in calls if c["tool"] == "transcribe"]
+        said = orjson.loads(voice["response"])["text"]
         self.assertTrue(said.startswith("Joe, it's me"))
 
         def case(*claims):

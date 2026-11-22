@@ -217,15 +217,19 @@ own runs for it (OCR for a scan, speech to text for a recording, extraction and 
 first pass), and the `read` step processes them, and the runs they queue, until
 none is left. Each model answer comes from `recordings.json` beside `case.json`:
 
-- `route` and `models` (extract, ocr, assess, speech): the configuration it was
-  recorded with. Seeding pins these for the case, so intake queues the same runs on
-  any machine, and replay needs no route key.
+- `route` and `models` (extract, ocr, assess, speech, transcribe): the
+  configuration it was recorded with. Seeding pins these for the case, so intake
+  queues the same runs on any machine, and replay needs no route key. A recording
+  made before `transcribe` (the hosted speech to text model) existed replays every
+  recording on the local model, as it was read.
 - `calls`: one per chat request, keyed by the hash of its model, messages and
   schema (the prompt and the input): `source`, `tool`, `input_sha256`,
   `prompt_hash`, `route`, `model_requested`, `model_served`, `provider_served`,
-  `recorded_at`, `status`, `response` and `response_sha256`.
-- `speech`: the speech model's segments for each recording, replayed through the
-  transcript writer.
+  `recorded_at`, `status`, `response` and `response_sha256`. A hosted
+  transcription is a call too, keyed by its model, settings, source and window
+  (`cursor`) rather than the audio bytes, with OpenRouter's `generation` id.
+- `speech`: the local speech model's segments for each recording it read,
+  replayed through the transcript writer.
 
 Replay goes through the route code's own HTTP transport, so the tools, the route
 checks and the provenance they write are the real ones, and each replayed run says
@@ -236,7 +240,9 @@ too. With no `recordings.json`, seeding a case with read sources refuses instead
 of falling back to planted claims. `make.py --record` reads the case again on the
 live routes in a throwaway database (`stk demo-seed --case <slug> --record`); it
 needs OPENROUTER_API_KEY and the local speech weights (`SPEECH_MODEL_DIR`), resumes
-after an interruption, and keeps only the answers asked for. Never edit the file.
+after an interruption, and keeps only the answers asked for: a model added since
+the last recording (as `transcribe` was on 2026-11-22) keeps the other tools'
+answers, so only the calls whose input changed run again. Never edit the file.
 
 After reading, each planted claim of a read source is looked for among what
 extraction wrote: same source, same person (matched by the record's name), same
@@ -254,9 +260,10 @@ The recording holds 110 chat calls on cloud-zdr (5 OCR with
 `google/gemini-4-argon`, the four scans and the photograph, and 53 first passes
 with `google/gemini-3.8-flash`, both recorded on 2026-11-21; 52 extractions with
 `anthropic/claude-haiku-5.5`, recorded again on 2026-11-22 after the extraction
-prompt began asking for whereabouts, so only those 52 calls ran) and one local
-speech to text run (faster-whisper large-v3-turbo). Replay takes about 12 seconds
-and calls nothing.
+prompt began asking for whereabouts, so only those 52 calls ran) and one hosted
+speech to text call (`elevenlabs/scribe-v2`, recorded on 2026-11-22 with the voice
+note's extraction and first pass, which read its new transcript; the counts did
+not move). Replay takes about 12 seconds and calls nothing.
 
 | Act | Day | Shows | Steps | See |
 | --- | --- | --- | --- | --- |
@@ -294,7 +301,8 @@ What the app read, against the planted truth (`tests/test_case_studies.py` pins 
   that day two sightings in one place made them cellmates. Her statement and
   her sister's share only her name with the sheets, so no rule joins them; act 5
   has the analyst join the planted clusters herself, as her signed decision.
-- Speech to text heard "Joe, it's me" for "Jo". Extraction still writes "Joe" as
+- Speech to text heard "Joe, it's me" for "Jo", the hosted transcriber as the
+  local Whisper did before it. Extraction still writes "Joe" as
   a person named in the voice note, but the claim rests on spoken words, not
   printed text, and the name is marked heard, so the evidence page and Review read
   "heard as Joe". The proposer of every replayed claim reads "Extraction, replayed
@@ -437,8 +445,10 @@ Each case's own README holds its story, planted truth and score. What
   copies, one look-alike and, once the archive is added, the 2024 original first. The
   2024 original arrives in act 4 and ties to seven reposts; all 29 match proposals are
   strong and inside the family, and the analyst confirms each as the same recording,
-  side by side. The muted, cropped, mirrored short matches nothing. Whisper heard
-  "subscribe to the channel" in running water on two clips. Each caption is the event
+  side by side. The muted, cropped, mirrored short matches nothing. Hosted speech
+  to text hears no word on any clip and each clip says "No speech found"; the
+  local Whisper once heard "subscribe to the channel" in running water on two
+  clips. Each caption is the event
   its post reports, unconfirmed but for the two the conclusion cites; Lindmark is
   invented and drawn as a schematic. The case has no people, so Stories and the Case
   map are empty.

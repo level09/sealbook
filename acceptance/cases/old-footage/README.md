@@ -62,7 +62,7 @@ posting-date order, using the service's sampling and candidate limits.
 ## The case in acts
 
 `stk demo-seed --case old-footage [--until N]` plays six acts. Every clip is marked
-`read`: the app listens for speech locally (faster-whisper large-v3-turbo), then its
+`read`: the app listens for speech (ElevenLabs Scribe v2, hosted, zero retention), then its
 first pass looks at eight frames and the transcript and proposes a triage, a title
 in English and Arabic, description lines and labels, which are indexed so search
 finds the clip by what it shows. The posts stay typed captures, and each caption is
@@ -95,10 +95,11 @@ family to decline. The muted, cropped, mirrored short matched nothing.
 
 ### What the app read (recorded 2026-11-22)
 
-37 chat calls on cloud-zdr: 36 first passes with `google/gemini-3.8-flash` (eight
-frames each) and one extraction with `anthropic/claude-haiku-5.5`, about 466,000
-prompt and 42,000 completion tokens, USD 0.50 as the route billed. Speech to text
-ran locally on 30 clips with sound; six have none. Replay calls nothing.
+66 calls on cloud-zdr: 36 first passes with `google/gemini-3.8-flash` (eight
+frames each), about 466,000 prompt and 42,000 completion tokens, USD 0.50 as the
+route billed, and 30 speech to text calls with `elevenlabs/scribe-v2` on the clips
+with sound (six have none), about USD 0.02. No transcript has a word, so nothing
+is extracted. Replay calls nothing.
 
 - The app described all 36 clips. No description names Lindmark, the Ostra or a
   date: the frames show a river in flood, trees and buildings, which fits the real
@@ -114,11 +115,12 @@ ran locally on 30 clips with sound; six have none. Replay calls nothing.
   analyst confirms all 29. The original ties to the viral clip and six other
   reposts by sound (copy_lowrate and copy_trim by picture too), copy_viral_muted
   ties through copy_viral by picture, and copy_short_muted is not tied.
-- Whisper heard "اشتركوا في القناة" ("subscribe to the channel") in running water on
-  copy_trim and flood_promenade, a phrase it is known to invent on noise, and the
-  first pass then listed "a speaker requests viewers to subscribe to the channel"
-  as said. Both transcripts are the same text, so each clip's page also shows the
-  other clip's line.
+- Speech to text hears no word on any clip. It tags the sound instead ("[water
+  flowing]", "[rain]", "[background noise]"), which is not a word heard, so each
+  clip's Read tab says "No speech found" and the first pass sees "No speech." The
+  local Whisper, recorded before 2026-11-22, heard "اشتركوا في القناة" ("subscribe
+  to the channel") on copy_trim and flood_promenade and the first pass repeated it
+  as said; the first passes of those two clips were recorded again.
 - The first pass triages weather footage as a human-rights first pass would:
   non-incident, and "some evidence" on a few clips of rain or snow.
 
