@@ -43,6 +43,12 @@ class Config(stk.Config):
     PDQ_DISTANCE = int(os.environ.get("PDQ_DISTANCE", "31"))
     PDQ_QUALITY = int(os.environ.get("PDQ_QUALITY", "50"))
     MEDIA_CANDIDATES = int(os.environ.get("MEDIA_CANDIDATES", "20"))
+    # Sound points that must line up at one offset before two clips are proposed as
+    # the same recording. Measured on acceptance/cases/old-footage (2026-11-22):
+    # every true copy aligns 76 or more, unrelated clips 2 at most. About 6 to 8
+    # points a second of shared sound, so a shared excerpt under about a second
+    # is not proposed by sound.
+    SOUND_MIN_LANDMARKS = int(os.environ.get("SOUND_MIN_LANDMARKS", "4"))
     # Findings each discover run may leave open per kind and investigation.
     FINDINGS_PER_KIND = int(os.environ.get("FINDINGS_PER_KIND", "20"))
     FINGERPRINT_MAX_SECONDS = int(os.environ.get("FINGERPRINT_MAX_SECONDS", "3600"))

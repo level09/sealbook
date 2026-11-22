@@ -84,6 +84,7 @@ infer that running the web server schedules or validates those services.
 | `PDQ_DISTANCE` | Visual retrieval Hamming distance, default 31 |
 | `PDQ_QUALITY` | Minimum picture feature quality, default 50 |
 | `MEDIA_CANDIDATES` | Final candidate cap, default 20 |
+| `SOUND_MIN_LANDMARKS` | Sound points lined up at one offset before a sound match is proposed, default 4 |
 | `FINGERPRINT_MAX_SECONDS` | Decode duration limit, default 3600; longer media fail visibly |
 
 The embedding endpoint must return the model it served. Choose and evaluate a real

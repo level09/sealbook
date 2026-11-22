@@ -50,7 +50,10 @@ def landmarks(samples):
     return sorted(out, key=lambda row: (row["time"], row["hash"]))
 
 
-def align(query, reference):
+def align(query, reference, minimum=1):
+    """The offset where most shared landmarks line up, or None when fewer than
+    `minimum` do. A proposal asks for Config.SOUND_MIN_LANDMARKS: a point or two
+    shared by chance is not the same recording."""
     index = defaultdict(set)
     for mark in reference:
         index[mark["hash"]].add(mark["time"])
@@ -60,6 +63,8 @@ def align(query, reference):
     if not votes:
         return None
     offset, count = votes.most_common(1)[0]
+    if count < minimum:
+        return None
     return {
         "offset_ms": round(offset * HOP * 1000 / SAMPLE_RATE),
         "aligned_landmarks": count,

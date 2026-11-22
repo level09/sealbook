@@ -40,7 +40,11 @@ No suggestion is evidence that no relationship exists elsewhere in the archive.
 The proposal keeps the two measurements separate. PDQ distance 31 and quality 50
 are configurable retrieval parameters from the reference algorithm, not calibrated
 probabilities. Audio alignment reports agreeing landmarks, total shared landmarks
-and offset, without a fabricated confidence percentage.
+and offset, without a fabricated confidence percentage. A sound match is proposed
+only when `SOUND_MIN_LANDMARKS` (4) landmarks line up at one offset: on the
+old-footage case one or two shared by chance wrote 36 false proposals, while every
+true copy aligned 76 or more. Two clips sharing under about a second of sound are
+not proposed by sound.
 
 A reviewer chooses same recording, contains, contained in, or related event.
 Only a confirmed same-recording relationship collapses whole-source origin counts.

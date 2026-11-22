@@ -601,7 +601,10 @@ async def fingerprint(c):
             )
         ).all()
         sound = await asyncio.to_thread(
-            audio.align, marks, [{"hash": h, "time": t} for h, t in sound_rows]
+            audio.align,
+            marks,
+            [{"hash": h, "time": t} for h, t in sound_rows],
+            Config.SOUND_MIN_LANDMARKS,
         )
         if measured or sound:
             await write.append(

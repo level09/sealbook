@@ -7,9 +7,9 @@ and arrives in posting-date order, as the seeder ingests it. Against the clips a
 held, candidates are retrieved the way sealbook.discovery.service.fingerprint does
 (up to 32 sampled frames, the 8 nearest stored frames each within PDQ_DISTANCE; audio
 hashes ranked by distinct shared hashes; RRF; MEDIA_CANDIDATES). Exact search stands
-in for the HNSW index. A pair is proposed when compute.match_frames or audio.align
-measures something, as the app does, and banded strong or weak by
-evidence.copy_reason. Scores hold for this set only.
+in for the HNSW index. A pair is proposed when compute.match_frames measures something
+or audio.align lines up at least SOUND_MIN_LANDMARKS points, as the app does, and
+banded strong or weak by evidence.copy_reason. Scores hold for this set only.
 """
 
 import json
@@ -89,7 +89,11 @@ def proposals(case, prints):
                 Config.PDQ_DISTANCE,
                 Config.PDQ_QUALITY,
             )
-            sound = audio.align(prints[query]["audio"], prints[key]["audio"])
+            sound = audio.align(
+                prints[query]["audio"],
+                prints[key]["audio"],
+                Config.SOUND_MIN_LANDMARKS,
+            )
             if picture or sound:
                 value = {"picture": picture, "sound": sound}
                 kind, why, strength = copy_reason(value)
