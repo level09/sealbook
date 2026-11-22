@@ -24,7 +24,6 @@ from sealbook import blobs
 from sealbook.agents import read
 from sealbook.cases import conclusions
 from sealbook.collaboration.models import Assignment
-from sealbook.discovery.evidence import copy_reason
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import (
     Acquisition,
@@ -573,23 +572,10 @@ class SeedCasesTest(Seeding):
                     )
                 )
             )
-            # The strong matches inside the family are accepted for the
-            # conclusion; the weak ones wait for a person.
+            # A sound match needs four aligned landmarks, so no weak match is
+            # proposed: all 29 are strong, inside the family, and confirmed.
             self.assertEqual(tiers, [Tier.ACCEPTED])
-            weak = [
-                (tier, value)
-                for tier, value in (
-                    await s.execute(
-                        select(StatementTier.tier, Payload.value)
-                        .join(Statement, Statement.id == StatementTier.statement_id)
-                        .join(Payload, Payload.commitment == Statement.commitment)
-                        .where(Statement.prop == Prop.MEDIA_MATCH)
-                    )
-                ).all()
-                if copy_reason(value)[2] == "weak"
-            ]
-            self.assertTrue(weak)
-            self.assertEqual({tier for tier, _ in weak}, {Tier.UNCONFIRMED})
+            self.assertEqual(await self.tiers(s, Prop.MEDIA_MATCH), {Tier.ACCEPTED: 29})
             # Lindmark has no coordinates, so nothing is placed.
             self.assertFalse(
                 await s.scalar(select(Place.id).where(Place.name_en == "Lindmark"))

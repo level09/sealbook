@@ -90,9 +90,11 @@ analyst (Ines Halvorsen, an invented name) accepts exactly the items it rests on
 nothing else, signs the conclusion, which marks the case concluded, and a second
 analyst (Tomas Reyes) signs agreement as peer reviewer. In four-names the
 analyst declines the surveyor's proposal in act 7, with her reason; seed to
-`--until 6` to leave it open. The weak matches in old-footage stay for a person. A match proposal
-cannot be cited by a conclusion, so `"copies"` is accepted but not cited, and
-old-footage's conclusion cites the two posts' words beside it. In a worktree, set
+`--until 6` to leave it open. Old-footage has no weak matches left to
+wait: a sound match is proposed only when `SOUND_MIN_LANDMARKS` (4) landmarks line
+up, and its analyst confirms the strong matches inside the planted family as the same
+recording in act 5. A match proposal cannot be cited by a conclusion, so old-footage's
+conclusion cites the two posts' words beside them. In a worktree, set
 `BLOB_DIR` to the main checkout's `instance/blobs` so the main server can read the
 files.
 
@@ -183,6 +185,7 @@ unknown step or `shows` word, a source arriving twice or never.
 | `question` | `standing.py` | The owner asks the standing `question`, with no schedule (it wakes on evidence only); its first check reads what the case holds |
 | `wake` | `standing.py` | The extraction runs of the act's arrived claims wake the question (`tasks.evidence`) and the woken check runs now; nothing before a question exists |
 | `discover` | `discovery.py` | Runs discovery, then the analyst decides `month`'s findings in one gesture each: `incident` `{title, keep, roles}` accepts the candidate incident keeping the named claims, `reject` rejects the shared presence with that reason |
+| `matches`, `confirm copies`, `search` | `matches.py` | Count the match proposals; the analyst confirms, signed, each strong match inside the planted family as `relationship` (default same_recording) with `why`; the desk's keyword search for `query`, logged as the search page logs it, its hits in `out["search"]` |
 
 Adding a kind of step: write `sealbook/monitor/study/<name>.py` with
 
@@ -420,13 +423,17 @@ Each case's own README holds its story, planted truth and score. What
   (75 days), carried by the place the three gate log batches record; with the
   statement the watch from 14 March holds and the routine is not offered twice.
   The depot photograph has the real operator's van cut off its right edge.
-- **The footage that was two years old** (`case-old-footage`): 36 clips and the 16
-  posts that came with a caption, each clip fingerprinted as it arrives in posting
-  order. The viral clip's Copies tab lists "Same recording, Video posted by Ostra
-  Valley Weather on 3 June 2024, strong". The weak single-landmark proposals wait
-  for a person. Each caption is the event its post reports, unconfirmed but for the
-  two the conclusion cites; Lindmark has no coordinates and is not drawn. The case
-  has no people, so Stories and the Case map are empty.
+- **The footage that was two years old** (`case-old-footage`): read by the app in six
+  acts (README). Each of the 36 clips gets speech to text and a first pass on eight
+  frames, so search finds clips by what they show: "submerged trees" finds 8 of the 9
+  copies, one look-alike and, once the archive is added, the 2024 original first. The
+  2024 original arrives in act 4 and ties to seven reposts; all 29 match proposals are
+  strong and inside the family, and the analyst confirms each as the same recording,
+  side by side. The muted, cropped, mirrored short matches nothing. Whisper heard
+  "subscribe to the channel" in running water on two clips. Each caption is the event
+  its post reports, unconfirmed but for the two the conclusion cites; Lindmark is
+  invented and drawn as a schematic. The case has no people, so Stories and the Case
+  map are empty.
 
 Each case's Overview opens on its conclusion, signed by Ines Halvorsen and agreed
 by Tomas Reyes, with the case marked concluded:
@@ -436,7 +443,7 @@ by Tomas Reyes, with the case marked concluded:
 | One man, four names | The four desks' names are one man | Reasonable grounds to believe | 11 same-person links: the desks' 5 and the linker's 6 true proposals |
 | The witness who was never there | Mara Quill was at the yard on Tanner's Row that evening, not in Brindle Cross from six | Reasonable grounds to believe | The two exhibit sheets' claims, MQ/3 and MQ/4 |
 | The name nobody wrote down | Aron Vesk is named in no log for 73 days after the night Dana Kovar boarded his bus; a lead, not a finding about what he did | Reasonable suspicion | Both supervisor sightings and his last and next log lines |
-| The footage that was two years old | The clip shared as new is a copy of the 2024 video | Clear and convincing | The two posts' words; the strong matches are accepted but cannot be cited |
+| The footage that was two years old | The clip shared as new is a copy of the 2024 video | Clear and convincing | The two posts' words; the 29 confirmed matches cannot be cited |
 
 The four-names conclusion cites the passport's link, so it stays hidden until a
 reader reveals that sensitive source, as the feature intends.
