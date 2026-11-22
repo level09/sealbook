@@ -1,7 +1,7 @@
 """To do: everything waiting on this person in one list, biggest decisions first. Each
 row opens the screen where it is decided; nothing is decided here."""
 
-from sqlalchemy import Text, and_, func, or_, select
+from sqlalchemy import Text, and_, func, or_, select, true
 from sqlalchemy.orm import aliased
 
 from sealbook import method
@@ -25,10 +25,11 @@ from sealbook.sources import data as sources
 LIMIT = 50
 
 
-async def asked(db, user) -> list[dict]:
+async def asked(db, user, investigation: str | None) -> list[dict]:
     """Open review requests addressed to this person, oldest first: a pending
     proposal, or an accepted incident or conclusion whose peer review is not yet
-    signed."""
+    signed. In a case, only what belongs to it: a proposal by its source (as
+    Review's own list), a conclusion by its case and an incident by its support."""
     target = aliased(StatementTier)
     about = aliased(Statement)
     review = aliased(Statement)
@@ -43,6 +44,19 @@ async def asked(db, user) -> list[dict]:
         )
         .exists()
     )
+    case = true()
+    if investigation:
+        incidents = [i["id"] for i in await findings.incidents(db, investigation)]
+        case = or_(
+            about.subject == f"case:{investigation}",
+            about.subject.in_(incidents),
+            and_(
+                about.prop.not_in([Prop.INCIDENT, Prop.CONCLUSION]),
+                mfilter.statement_clause(
+                    {"investigation": investigation, "time": None}, about
+                ),
+            ),
+        )
     rows = (
         await db.execute(
             select(Statement, Payload.value, Principal.name, about.subject)
@@ -65,6 +79,7 @@ async def asked(db, user) -> list[dict]:
                         ~signed,
                     ),
                 ),
+                case,
             )
             .order_by(Statement.recorded_at)
             .limit(LIMIT)
@@ -208,7 +223,7 @@ async def todo(db, user, investigation: str | None) -> dict:
             shown |= {f["id"], *(g["id"] for g in f["also"])}
     groups = await events.groups(db, user, investigation)
     claims = len(await queue.ids(db, user, "open", investigation))
-    mine = await asked(db, user)
+    mine = await asked(db, user, investigation)
     work = await assigned(db, user, investigation)
     read = await triage(db, investigation)
     # An assigned item is its assignee's: listed above for them, not for everyone.

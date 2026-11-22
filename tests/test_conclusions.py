@@ -446,6 +446,10 @@ class ConclusionTest(unittest.IsolatedAsyncioTestCase):
         peer = await self.client("peer")
         todo = await (await peer.get("/api/todo")).get_json()
         self.assertEqual([a["conclusion"] for a in todo["asked"]], [c["id"]])
+        # Asked of them in this case, and in no other.
+        for case, want in ((CASE, [c["id"]]), ("case-nobody", [])):
+            todo = await (await peer.get(f"/api/todo?investigation={case}")).get_json()
+            self.assertEqual([a["conclusion"] for a in todo["asked"]], want, case)
         st, _ = await self.sign(
             peer,
             "/api/review/conclusions/peer/options",

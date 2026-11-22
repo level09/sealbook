@@ -2,17 +2,25 @@
 
 import asyncio
 import unittest
+import uuid
 from datetime import UTC, datetime, timedelta
 from unittest import mock
 
 import asyncpg
 import orjson
 import stk.extensions as ext
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from sqlalchemy import select, text, update
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import DBAPIError
+from stk.user.models import User
 
 from sealbook.collaboration.models import Assignment, AssignmentEvent, Notification
+from sealbook.collaboration.service import request_review
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Run
+from sealbook.ledger.write import append
 from sealbook.monitor.stream import CHANNEL
 from tests.collab_case import POSTGRES, CollabCase
 
@@ -254,6 +262,46 @@ class AssignmentTest(CollabCase):
             self.assertEqual((await stage())[0], want)
         todo = await (await bob.get("/api/todo?investigation=inv-a")).get_json()
         self.assertEqual(todo["assigned"][0]["status"], "returned")
+
+    async def test_todo_asks_only_what_belongs_to_the_case(self):
+        """A review request on another case's proposal stays out of this case's
+        To do and of its rail count, and both show with no case chosen."""
+        key = Ed25519PrivateKey.generate()
+        async with ext.async_session_factory() as s, s.begin():
+            run = Run(
+                principal_id=self.proposal.author_id,
+                tool="extract",
+                inputs={"blobs": [self.blobs["inv-b"][0]]},
+                pubkey=key.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw),
+            )
+            s.add(run)
+            await s.flush()
+            other = await append(
+                s,
+                StatementIn(
+                    subject=f"person:{uuid.uuid4()}",
+                    prop=Prop.NAME,
+                    value={"text": "synthetic", "lang": "en"},
+                    author_id=self.proposal.author_id,
+                    run_id=run.id,
+                    span_blob=self.blobs["inv-b"][0],
+                    span={"start": 0, "end": 9},
+                ),
+                sign=lambda h: {"kind": "ed25519", "sig": key.sign(h.encode()).hex()},
+            )
+            alice = await s.get(User, self.ids["alice"])
+            for st, why in ((self.proposal, "Check case A"), (other, "Check case B")):
+                await request_review(s, st, alice, self.ids["bob"], why)
+        bob = await self.client("bob")
+        for case, want in (
+            ("?investigation=inv-a", ["Check case A"]),
+            ("?investigation=inv-b", ["Check case B"]),
+            ("", ["Check case A", "Check case B"]),
+        ):
+            todo = await (await bob.get(f"/api/todo{case}")).get_json()
+            self.assertEqual([q["reason"] for q in todo["asked"]], want, case)
+            counts = await (await bob.get(f"/api/nav/counts{case}")).get_json()
+            self.assertEqual(counts["todo"], todo["total"], case)
 
     async def test_open_pages_hear_of_an_assignment_at_commit(self):
         """Every process hears it on the shared channel, by subject only."""

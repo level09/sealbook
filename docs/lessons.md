@@ -891,3 +891,8 @@ covers in the text it was read from (`span_blob`).
   or missing report, so a routine that stops needed a statement to be seen. It now
   measures each person against their own routine; a planted non-gap that only a
   plan recorded (leave on the roster) had to become a dated claim to stay closed.
+
+- A case's To do and Overview listed review requests from another case: `todo.asked`
+  was the one query on those pages that took no investigation, and every sibling
+  did. A function a case page calls takes the case; a test with two cases catches
+  the one that forgets.
