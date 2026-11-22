@@ -95,7 +95,13 @@ class CaseOverviewTest(unittest.IsolatedAsyncioTestCase):
                     {"id": agent, "kind": "agent", "name": "extractor"},
                 ],
             )
-            s.add_all([Case(slug=X, name="Case X"), Case(slug=Y, name="Case Y")])
+            s.add_all(
+                [
+                    Case(slug=X, name="Case X"),
+                    Case(slug=Y, name="Case Y"),
+                    Case(slug="case-never-there", name="Never there"),
+                ]
+            )
             self.x, self.y = hexs(), hexs()
             await s.execute(
                 insert(Blob),
@@ -223,6 +229,11 @@ class CaseOverviewTest(unittest.IsolatedAsyncioTestCase):
         body = await r.get_json()
         self.assertEqual(r.status_code, 200, body)
         stands = body["stands"]
+        self.assertIsNone(body["film"], "only the four case studies are in the film")
+        study = await me.get("/api/cases/overview?investigation=case-never-there")
+        film = (await study.get_json())["film"]
+        self.assertEqual(film["label"], "The witness who was never there")
+        self.assertGreater(film["length"], 0)
         # Everything the case holds by kind, as a conclusion may cite it: the
         # rejected claim and case Y left out, the accepted link counted.
         none = {"accepted": 0, "unconfirmed": 0}

@@ -101,14 +101,6 @@
 .gd-kv dt { color: var(--ink-3); }
 .gd-kv dd { margin: 0; font-family: var(--mono); overflow-wrap: anywhere; word-break: break-all; }
 .gd-kv dd.plain { font-family: inherit; word-break: normal; }
-.gd-gloss { font-size: 13px; gap: 6px 14px; }
-.gd-vs { display: grid; grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin: 0 0 18px; line-height: 1.45; }
-.gd-vs > div { padding: 8px 12px; border-top: 1px solid var(--line); }
-.gd-vs .hd { background: var(--ink); color: var(--panel); font-weight: 650; border-top: 0; }
-.gd-vs .k { font-weight: 600; }
-.gd-vs .b { color: var(--ink-2); }
-@media (max-width: 720px) { .gd-vs { grid-template-columns: 1fr; } .gd-vs .hd:not(:first-child) { display: none; } .gd-vs .k { background: var(--wash); } }
-.gd-gloss dt { color: var(--ink); font-weight: 600; }
 .gd-kv mark { background: var(--negative-wash); color: var(--negative); outline: 1px solid var(--negative-line); border-radius: 2px; }
 .gd-tree { max-width: 100%; height: auto; display: block; }
 .gd-tree rect { fill: var(--panel); stroke: var(--line-strong); }
@@ -119,8 +111,29 @@
 .gd-tree text { fill: var(--ink-2); font-size: 10px; font-family: inherit; }
 .gd-legend { font-size: 12px; color: var(--ink-3); margin: 6px 0 0; }
 .gd-empty { color: var(--ink-3); }
+/* The case film, from the app's own server. Captions are drawn from the WebVTT file,
+   not a <track>: an iPhone refuses to play this film inline with one (docs/lessons.md). */
+.gd-film { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 24px; align-items: start; margin-bottom: 20px; scroll-margin-top: 60px; }
+.gd-frame { position: relative; border-radius: 10px; overflow: hidden; background: #000; }
+.gd-frame video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; }
+.gd-play { position: absolute; left: 5%; bottom: 7%; display: inline-flex; align-items: center; gap: 10px; padding: 7px 16px 7px 7px; border: 0; border-radius: 999px; background: var(--ink); color: var(--panel); font: 500 14px/1 inherit; cursor: pointer; }
+.gd-play .ti { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--agent); color: #fff; font-size: 16px; }
+.gd-play:focus-visible, .gd-ch button:focus-visible, .gd-cc-btn:focus-visible { outline: 2px solid var(--agent); outline-offset: 3px; }
+.gd-cc { position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); width: max-content; max-width: 86%; margin: 0; padding: 3px 10px; border-radius: 6px; background: rgba(0, 0, 0, .72); color: #fff; font-size: clamp(12px, 1.4vw, 17px); line-height: 1.35; text-align: center; pointer-events: none; }
+.gd-film h2 { font-size: 16px; font-weight: 650; margin: 0 0 4px; }
+.gd-film .gd-lede { font-size: 14px; }
+.gd-ch { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 2px; }
+.gd-ch button { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; width: 100%; padding: 7px 8px; border: 0; border-radius: 6px; background: none; color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.gd-ch button:hover { background: var(--raise); }
+.gd-ch button[aria-current="true"] { background: var(--agent-wash); }
+.gd-ch .t { font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); padding-top: 1px; }
+.gd-cc-btn { padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; background: none; color: var(--ink-2); font: inherit; font-size: 12.5px; cursor: pointer; }
+.gd-cc-btn[aria-pressed="false"] { color: var(--ink-3); }
+.gd-fail { margin: 8px 0 0; color: var(--negative); }
+.gd-credit { margin: 8px 0 0; font-size: 12px; color: var(--ink-3); }
+@media (max-width: 600px) { .gd-play { left: 50%; top: 50%; bottom: auto; transform: translate(-50%, -50%); padding: 6px; } .gd-play > span { display: none; } .gd-play .ti { width: 44px; height: 44px; font-size: 22px; } .gd-cc { bottom: 18%; font-size: 12px; } }
 @media (max-width: 959px) {
-  .gd-start, .gd-body, .gd-check { grid-template-columns: 1fr; }
+  .gd-start, .gd-body, .gd-check, .gd-film { grid-template-columns: 1fr; }
   .gd-first { grid-template-columns: 1fr 1fr; }
   .gd-sum { grid-template-columns: minmax(0, 1fr) 20px; }
   .gd-sum span { display: none; }
@@ -131,6 +144,26 @@
 {% endblock %}
 {% block content %}
 <v-container fluid class="gd-page py-4">
+  <section id="film" class="gd-film" aria-labelledby="h-film">
+    <div>
+      <div class="gd-frame">
+        <video ref="film" :src="g.film.src.mp4" :poster="g.film.src.jpg" :controls="playing" playsinline preload="none" width="1920" height="1080" @timeupdate="tick" @error="filmError = 'The film could not play in this browser.'"></video>
+        <p v-show="cue" class="gd-cc" aria-hidden="true">${ cue }</p>
+        <button v-if="!playing" type="button" class="gd-play" :aria-label="start ? 'Play the film from ' + clock(start) : 'Play the film'" @click="play(start)"><i class="ti ti-player-play" aria-hidden="true"></i><span>${ start ? 'Play from ' + clock(start) : 'Watch the film' }</span></button>
+      </div>
+      <p v-if="filmError" class="gd-fail" role="alert">${ filmError }</p>
+    </div>
+    <div>
+      <h2 id="h-film">Four cases, start to finish</h2>
+      <p class="gd-lede">A narrated film of the four case studies: what the files held, what Sealbook proposed and what a person decided. Start at any case.</p>
+      <ol class="gd-ch" aria-label="Cases in the film">
+        <li v-for="c in g.film.chapters" :key="c.case"><button type="button" :aria-current="now === c.case ? 'true' : null" @click="play(c.at)"><span class="t">${ clock(c.at) }</span><span>${ c.label }</span></button></li>
+      </ol>
+      <button type="button" class="gd-cc-btn" :aria-pressed="String(ccOn)" @click="ccOn = !ccOn">${ ccOn ? 'Captions on' : 'Captions off' }</button>
+      <p class="gd-credit">The cases are invented. The narration is a synthetic voice and the score was generated.</p>
+    </div>
+  </section>
+
   <section v-show="!q && !area" class="gd-start" aria-labelledby="h-start">
     <div>
       <h1 id="h-start">Sealbook reads. You decide.</h1>
@@ -139,7 +172,6 @@
         <li><span class="gd-sw draft" aria-hidden="true"></span>Hatched and violet: proposed by AI, waiting for a person</li>
         <li><span class="gd-sw fact" aria-hidden="true"></span>Solid green: accepted by a named person with a passkey</li>
       </ul>
-      <v-btn class="mt-3" size="small" variant="outlined" prepend-icon="ti ti-arrows-exchange" @click="area = 'bayanat'">Coming from Bayanat? See what is different</v-btn>
     </div>
     <figure class="gd-flow" ref="flow" v-once><figcaption>One file's path through Sealbook.</figcaption></figure>
   </section>
@@ -166,24 +198,9 @@
     <v-text-field v-model="q" density="compact" hide-details clearable prepend-inner-icon="ti ti-filter" placeholder="Filter tasks, such as sheet or passkey" aria-label="Filter tasks"></v-text-field>
     <button type="button" class="gd-chip" :aria-pressed="!area" @click="area = null">All</button>
     <button v-for="a in g.areas" :key="a.id" type="button" class="gd-chip" :aria-pressed="area === a.id" @click="area = area === a.id ? null : a.id"><i :class="a.icon" aria-hidden="true"></i>${ a.title }</button>
-    <button type="button" class="gd-chip" :aria-pressed="area === 'bayanat'" @click="area = area === 'bayanat' ? null : 'bayanat'"><i class="ti ti-language" aria-hidden="true"></i>Bayanat's words</button>
   </div>
   <div class="gd-main">
-      <p v-if="!shown.length && !trustShown && area !== 'bayanat'" class="gd-empty">No task matches. Clear the filter to see them all.</p>
-      <section v-if="area === 'bayanat'" id="from-bayanat" class="en-panel gd-s" aria-labelledby="h-bayanat">
-        <header><h2 id="h-bayanat">Coming from Bayanat</h2></header>
-        <div class="en-body">
-          <h3 class="mb-1">The order is reversed</h3>
-          <p class="gd-who">In Bayanat you read the source and write the record. Here the source is read first, and you check the record.</p>
-          <div class="gd-vs" role="table" aria-label="The same step in Bayanat and in Sealbook">
-            <div class="hd" role="columnheader">Step</div><div class="hd" role="columnheader">In Bayanat</div><div class="hd" role="columnheader">In Sealbook</div>
-            <template v-for="[step, there, here] in g.bayanat_steps" :key="step"><div class="k" role="rowheader">${ step }</div><div class="b" role="cell">${ there }</div><div role="cell">${ here }</div></template>
-          </div>
-          <h3 class="mb-1">The words</h3>
-          <p class="gd-who">The same work under the words you know. Bayanat's word on the left, where it lives here on the right.</p>
-          <dl class="gd-kv gd-gloss"><template v-for="[b, here] in g.bayanat" :key="b"><dt>${ b }</dt><dd class="plain">${ here }</dd></template></dl>
-        </div>
-      </section>
+      <p v-if="!shown.length && !trustShown" class="gd-empty">No task matches. Clear the filter to see them all.</p>
       <div v-if="shown.length" class="en-panel">
         <template v-for="a in g.areas" :key="a.id">
           <template v-if="shownIn(a.id).length">
@@ -308,7 +325,7 @@ const app = Vue.createApp({
   data() {
     const g = JSON.parse(document.getElementById('guide-data').textContent);
     return {
-      g, q: '', area: null, openId: null, proof: null, proofError: '', tamper: false, level: 0, checks: [], tree: {nodes: [], h: 40}, POS: 9,
+      g, at: 0, q: '', area: null, openId: null, playing: false, start: Number(new URLSearchParams(location.search).get('t')) || 0, now: null, cues: null, ccOn: true, filmError: '', proof: null, proofError: '', tamper: false, level: 0, checks: [], tree: {nodes: [], h: 40}, POS: 9,
       LEVELS: ['Edit the row only', 'Also rewrite its row hash', 'Also rewrite its chain entry', 'Also rewrite every later entry'],
       STATE: {
         holds: {word: 'Holds', icon: 'ti-circle-check', cls: 'tier-accepted'},
@@ -320,6 +337,7 @@ const app = Vue.createApp({
     };
   },
   computed: {
+    cue() { return (this.ccOn && this.cues?.find(c => c.start <= this.at && this.at < c.end)?.text) || ''; },
     shown() {
       const q = (this.q || '').trim().toLowerCase();
       const order = this.g.areas.map(a => a.id);
@@ -334,6 +352,30 @@ const app = Vue.createApp({
   },
   watch: {tamper: 'verify', level: 'verify'},
   methods: {
+    clock(s) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`; },
+    // Playing starts only from a click. Phones play only inside the click itself, so
+    // play() is called now and the seek waits until the film's length is known.
+    play(t) {
+      const v = this.$refs.film;
+      this.playing = true;
+      if (v.readyState >= 1) v.currentTime = t;
+      else if (t) v.addEventListener('loadedmetadata', () => { v.currentTime = t; }, {once: true});
+      v.play().catch(e => { if (e.name !== 'AbortError') this.filmError = `The film could not play here (${e.name}).`; });
+      v.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest'});
+      this.loadCues();
+    },
+    async loadCues() {
+      if (this.cues) return;
+      this.cues = [];
+      const stamp = v => v.split(':').reduce((a, n) => a * 60 + Number(n), 0);
+      const text = await (await fetch(this.g.film.src.vtt)).text();
+      this.cues = text.split(/\r?\n\r?\n/).map(b => /([\d:.]+) --> ([\d:.]+)[^\n]*\n([\s\S]+)/.exec(b)).filter(Boolean)
+        .map(m => ({start: stamp(m[1]), end: stamp(m[2]), text: m[3].trim()}));
+    },
+    tick() {
+      this.at = this.$refs.film.currentTime;
+      this.now = this.g.film.chapters.filter(c => c.at <= this.at).at(-1)?.case || null;
+    },
     shownIn(id) { return this.shown.filter(s => s.area === id); },
     toggle(id) {
       this.openId = this.openId === id ? null : id;
@@ -420,7 +462,7 @@ const app = Vue.createApp({
     // Vue renders the sections after load, so the browser's own jump to #id missed them.
     guideFlow(this.$refs.flow);
     const id = location.hash.slice(1);
-    if (id === 'from-bayanat') this.area = 'bayanat';
+    if (this.start && !id) this.$nextTick(() => this.$refs.film.scrollIntoView({block: 'nearest'}));
     if (this.g.scenarios.some(s => s.id === id)) this.openId = id;
     if (id) this.$nextTick(() => document.getElementById(id)?.scrollIntoView());
   },

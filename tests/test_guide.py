@@ -54,8 +54,6 @@ def words():
         yield from (link["label"] for link in s["links"])
     for t in content.TRUST:
         yield from (t["title"], t["body"])
-    for pair in content.BAYANAT:
-        yield from pair
 
 
 class ContentTest(unittest.TestCase):
@@ -202,6 +200,28 @@ class GuideTest(unittest.IsolatedAsyncioTestCase):
             (await nobody.get(f"/api/guide/proof?investigation={CASE}")).status_code,
             403,
         )
+
+    async def test_the_film_is_served_here_and_seeks(self):
+        from sealbook.guide import film
+
+        me = await self.client()
+        html = await (await me.get("/guide")).get_data(as_text=True)
+        for c in film.chapters():
+            self.assertIn(c["label"], html)
+        self.assertNotIn("Coming from Bayanat", html)
+        self.assertNotIn("sealbook.org", html)
+        path = film.SITE / "media/case_film.mp4"
+        r = await me.get(film.urls()["mp4"], headers={"Range": "bytes=100-199"})
+        self.assertEqual(r.status_code, 206)
+        self.assertEqual(await r.get_data(), path.read_bytes()[100:200])
+        self.assertNotIn("no-store", r.headers["Cache-Control"])
+        self.assertEqual(r.headers["Accept-Ranges"], "bytes")
+        vtt = await me.get(film.urls()["vtt"])
+        self.assertEqual(vtt.status_code, 200)
+        self.assertEqual((await me.get("/film/film_board.tsv")).status_code, 404)
+        self.assertEqual((await me.get("/film/..%2Findex.html")).status_code, 404)
+        anon = self.app.test_client()
+        self.assertNotEqual((await anon.get("/film/case_film.jpg")).status_code, 200)
 
     async def test_a_starter_card_for_a_source_not_here_is_left_out(self):
         from sealbook.guide.views import first_cards

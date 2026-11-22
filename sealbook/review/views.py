@@ -20,7 +20,7 @@ from sealbook.discovery.models import FindingKey
 from sealbook.guide.views import first_cards
 from sealbook.ledger import attest, offline_sigs, write
 from sealbook.ledger.contracts import Event, Prop, Refused, StatementIn
-from sealbook.ledger.models import RunEvent, Statement, StatementTier
+from sealbook.ledger.models import Acquisition, RunEvent, Statement, StatementTier
 from sealbook.monitor import data
 from sealbook.review import events, findings, firstpass, queue, todo
 
@@ -467,7 +467,11 @@ async def todo_page():
     first = [f for f in await first_cards(g.db_session) if f["href"] != "/todo"]
     # Asked for here, not at the first Accept, where it would stop a decision midway.
     passkey = await attest.registered(g.db_session, current_user)
-    return await render_template("todo/index.html", first=first, passkey=passkey)
+    # A server with no evidence at all offers the case film beside Add evidence.
+    empty = not await g.db_session.scalar(select(Acquisition.id).limit(1))
+    return await render_template(
+        "todo/index.html", first=first, passkey=passkey, empty=empty
+    )
 
 
 @review.get("/api/todo")

@@ -15,6 +15,7 @@ from sealbook.cases import conclusions
 from sealbook.desk.data import since
 from sealbook.discovery.models import FindingKey
 from sealbook.discovery.service import available
+from sealbook.guide import film
 from sealbook.ingest import batch
 from sealbook.ledger import write
 from sealbook.ledger.contracts import Prop, Tier
@@ -178,4 +179,5 @@ async def overview(db, user, investigation: str) -> dict:
         "investigation": investigation,
         "stands": await stands(db, user, investigation),
         "away": await away(db, user, investigation),
+        "film": film.for_case(investigation),
     }

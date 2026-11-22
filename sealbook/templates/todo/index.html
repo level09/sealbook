@@ -68,7 +68,7 @@
     <section v-if="go" class="td-go" aria-labelledby="td-go">
       <i :class="go.icon" aria-hidden="true"></i>
       <div><span class="k">${ go.k || 'Start here' }</span><h2 id="td-go"><bdi dir="auto">${ go.title }</bdi></h2><p>${ go.why }</p></div>
-      <v-btn color="primary" :href="go.href" append-icon="ti ti-arrow-right">${ go.action }</v-btn>
+      <div class="d-flex flex-wrap ga-2"><v-btn v-if="empty" variant="outlined" href="/guide#film" prepend-icon="ti ti-player-play">Watch the case film</v-btn><v-btn color="primary" :href="go.href" append-icon="ti ti-arrow-right">${ go.action }</v-btn></div>
     </section>
     <section v-if="brief" class="td-brief" aria-labelledby="td-brief">
       <header><h2 id="td-brief"><i class="ti ti-sparkles" aria-hidden="true"></i> Read for you</h2><span>a batch you added finished, ${ ago(brief.at) }</span>
@@ -142,6 +142,7 @@
 {% block js %}
 <script type="application/json" id="td-first-data">{{ first|tojson }}</script>
 <script type="application/json" id="td-passkey-data">{{ passkey|tojson }}</script>
+<script type="application/json" id="td-empty-data">{{ empty|tojson }}</script>
 <script type="module">
 import {IntakeBrief} from '/static/js/components/IntakeBrief.js';
 import {verb, prep, where, changeHref, plural} from '/static/js/changes.js';
@@ -153,12 +154,13 @@ const day = s => { const [y, m, d] = s.split('-'); return `${+d} ${MON[m - 1]} $
 const KIND_ICON = {image: 'ti-photo', video: 'ti-video', audio: 'ti-volume', text: 'ti-file-text', application: 'ti-file'};
 const FIRST = JSON.parse(document.getElementById('td-first-data').textContent);
 const PASSKEY = JSON.parse(document.getElementById('td-passkey-data').textContent);
+const EMPTY = JSON.parse(document.getElementById('td-empty-data').textContent);
 // Per-viewer conveniences only: which starter cards were opened, and whether they are hidden.
 const kept = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } };
 
 window.app = Vue.createApp({
   mixins: [layoutMixin], delimiters: config.delimiters,
-  data: () => ({d: null, error: '', more: {triage: false, groups: false, findings: false}, brief: null, whole: false, did: [], since: null, basis: null,
+  data: () => ({empty: EMPTY, d: null, error: '', more: {triage: false, groups: false, findings: false}, brief: null, whole: false, did: [], since: null, basis: null,
     first: FIRST, tried: kept('sb-first-tried') || [], hideFirst: !!kept('sb-first-hide')}),
   computed: {
     total() { return this.d?.total || 0; },
@@ -177,6 +179,7 @@ window.app = Vue.createApp({
       if (g) return {icon: 'ti ti-stack-2', title: this.groupTitle(g).join(', '), why: `${plural(g.posts, 'post')} seem to report one event. One decision creates the incident.`, href: '/discover?f=' + g.id, action: 'Decide'};
       if (f) return {icon: 'ti ti-bulb', title: f.reason, why: `${f.label}. Sealbook noticed it across the case and waits for your decision.`, href: '/discover?f=' + f.id, action: 'Look at it'};
       if (d.claims) return {icon: 'ti ti-list-check', title: `${d.claims_more ? d.claims + ' or more claims' : plural(d.claims, 'claim')} waiting in Review`, why: 'Accept or reject each with the source beside it.', href: '/review?box=open', action: 'Open Review'};
+      if (EMPTY) return {icon: 'ti ti-upload', title: 'Add evidence', why: 'Sealbook reads what you add, then lists here what needs your decision. To see it work first, watch four cases worked from start to finish.', href: '/ingest', action: 'Add evidence'};
       return {icon: 'ti ti-upload', title: 'Add evidence', why: 'Sealbook reads what you add, then lists here what needs your decision.', href: '/ingest', action: 'Add evidence'};
     },
   },

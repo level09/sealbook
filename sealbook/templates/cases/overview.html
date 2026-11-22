@@ -56,6 +56,9 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
 .cc-actions { margin-left: -8px; }
 .cc-empty { margin: 0; max-width: 70ch; }
 .cc-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; border-top: 1px solid var(--line); padding-top: 14px; }
+.ov-film { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-weight: 550; }
+.ov-film:focus-visible { outline: 2px solid var(--agent); outline-offset: 3px; border-radius: 4px; }
+.ov-film .n { font-family: var(--mono); font-size: 12.5px; font-weight: 400; color: var(--ink-3); }
 @media (max-width: 599px) { .cc-facts > div { grid-template-columns: 1fr; gap: 0; } }
 </style>
 {% endblock %}
@@ -63,6 +66,7 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
 <v-container fluid class="ov-page py-4">
   <v-alert v-if="!caseSel" type="info" variant="tonal" density="compact">Pick a case in the sidebar to see where it stands.</v-alert>
   <v-alert v-if="error" type="error" density="compact">${ error }</v-alert>
+  <a v-if="film" class="ov-film" :href="'/guide?t=' + film.at + '#film'"><i class="ti ti-player-play" aria-hidden="true"></i>Watch this case in the film <span class="n">${ clock(film.length) }</span></a>
 
   <section v-if="cc" class="ov-panel cc-panel" aria-labelledby="ov-h-conclusion">
     <header class="cc-head">
@@ -188,7 +192,7 @@ const when = iso => new Date(iso).toLocaleString(undefined, {day: 'numeric', mon
 
 window.app = Vue.createApp({
   mixins: [layoutMixin, signing], delimiters: config.delimiters,
-  data: () => ({s: null, away: null, todo: null, cc: null, ask: null, error: '', reading: false, done: 0, TIERS, STATUS}),
+  data: () => ({film: null, s: null, away: null, todo: null, cc: null, ask: null, error: '', reading: false, done: 0, TIERS, STATUS}),
   computed: {
     itemTotal() { return this.s ? TIERS.reduce((n, t) => n + this.tierCount(t.k), 0) : 0; },
     // The standing conclusion whose citations the accepted count includes.
@@ -236,14 +240,15 @@ window.app = Vue.createApp({
       const parts = KINDS.filter(([k]) => this.s.items[k][tier]).map(([k, one, many]) => plural(this.s.items[k][tier], one, many));
       return parts.length ? listed(parts) : '';
     },
+    clock(s) { return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; },
     ago(at) { const h = Math.round((Date.now() - new Date(at)) / 36e5); return h < 1 ? 'Just now' : h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`; },
     useCase() { this.load(); },
     async load() {
-      if (!this.caseSel) { this.s = null; this.cc = null; return; }
+      if (!this.caseSel) { this.s = null; this.cc = null; this.film = null; return; }
       const params = {investigation: this.caseSel};
       try {
         const {data} = await axios.get('/api/cases/overview', {params});
-        this.s = data.stands; this.away = data.away; this.error = '';
+        this.s = data.stands; this.away = data.away; this.film = data.film; this.error = '';
       } catch (e) { this.error = err(e); }
       axios.get('/api/todo', {params}).then(r => { this.todo = r.data; }).catch(() => { this.todo = null; });
       axios.get('/api/cases/conclusions', {params}).then(r => { this.cc = r.data; }).catch(() => { this.cc = null; });

@@ -12,7 +12,7 @@ from sealbook.anchor.proof import statement_proof
 from sealbook.cases.models import Case
 from sealbook.discovery.evidence import view_session
 from sealbook.discovery.service import available
-from sealbook.guide import content
+from sealbook.guide import content, film
 from sealbook.ledger import write
 from sealbook.ledger.contracts import EXTRACTED_PROPS, Prop, StatementIn, Tier
 from sealbook.ledger.models import (
@@ -72,8 +72,7 @@ async def page():
             "first": await first_cards(g.db_session),
             "scenarios": content.SCENARIOS,
             "trust": content.TRUST,
-            "bayanat": content.BAYANAT,
-            "bayanat_steps": content.BAYANAT_STEPS,
+            "film": {"src": film.urls(), "chapters": film.chapters()},
         },
     )
 
