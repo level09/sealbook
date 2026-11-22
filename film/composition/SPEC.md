@@ -8,7 +8,8 @@ kinds of case get the same treatment.
 OUTPUT: HyperFrames, 1920 x 1080, 30 fps; narration and score are mixed by `film/audio.py` (captions come from `film/captions.vtt`,
 drawn by the site over the bottom 130 px, so nothing essential sits below y 950).
 
-TIME: 140.5 s x 30 = 4215 frames, timed to the narration (`film/audio.py timing`).
+TIME: 218.8 s x 30 = 6564 frames, every window named against the narration
+(`data-in`, `data-out`; `film/audio.py plan` resolves them).
 
 LOOK: the site's own medium, paper and ink.
 - Ground `#f6f3ec` (paper), panels `#ece8de`, rules `#d3cdbf`. Ink `#1b1a17`, second ink
@@ -34,5 +35,7 @@ screenshot, text that moves while read, everything centred, everything fading in
 small caps labels, corner brackets, a docked logo, a full app page shown small.
 
 QA: every headline readable at 360 px wide; every screen crop readable at 1080p;
-the numbers on screen match the case READMEs (14 sources, 1,445 rows, 417 claims,
-5 proposals, 4 of 6, 73 days, 8 of 9).
+`film/audio.py check` passes (lead, tail, gaps between parts, words a minute, text and
+screen holds); the numbers on screen match docs/case-studies.md and the case READMEs
+(14 sources, 1,445 rows, 6 of 6 true links, 34 km, 41 statements, 21:52 and 22:07,
+36 clips, 118 of 118 sound points, 8 of 9, 73 days, 10 checks ran and 4 not run).

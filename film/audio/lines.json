@@ -1,138 +1,176 @@
 {
  "01": {
-  "key": "0285e5ff9c33fa6e352e5262b49458163c5fd1b4677b1a1e160f08c4387d6b22",
-  "text": "Investigators, journalists, lawyers and researchers share one problem.",
-  "seconds": 4.27
- },
- "02": {
-  "key": "764ac09f3be50460d9da0c5cf34b64a7065562c83d4256edb92bd4cf497b7438",
-  "text": "Too much evidence to read, and a result nobody can later prove was not changed.",
-  "seconds": 4.83
+  "key": "ba25bbbba8a9fc69236030632d1d7e855f0a0f81353a498417f7256cc6b7f993",
+  "text": "Investigators, journalists and lawyers share one problem: too much evidence to read, and a result nobody can later prove was not changed.",
+  "start": 0.0,
+  "seconds": 8.702
  },
  "03": {
-  "key": "21574bf5aae2c9dd71f945d6e212957ceabadb7652f3e53da9993e7a0f5f8ca9",
-  "text": "Sealbook is an app for exactly that. It works in three steps.",
-  "seconds": 3.67
- },
- "04": {
-  "key": "506d572009b3adaf07f4a378202dd742ae2e1d71870f5baf77d27ff51d5c5ac1",
-  "text": "You bring the material in. The app reads all of it and proposes connections, each shown with the exact place it came from.",
-  "seconds": 7.57
+  "key": "89d89dddd4d536d7ea32e127c65fde39e1ee24baae9748317b346b8c9567b5ae",
+  "text": "Sealbook works in three steps.",
+  "start": 0.0,
+  "seconds": 1.786
  },
  "05": {
-  "key": "472912b89ffe40e1a8c58aea5e45d815d734f45cd158524c05d6a6697858fb67",
+  "key": "a48717d124b267c805de57b7cdf21a3c8250356ff1b86e74da844c4ca7273456",
   "text": "A person approves or declines each one with a signature, and the record is sealed, so anyone can check it later.",
-  "seconds": 6.32
+  "start": 0.0,
+  "seconds": 6.15
  },
  "06": {
-  "key": "7f900a0e668358ac12045067242ff72d1b713af153e075b77a71f1a31f2f1511",
+  "key": "129c1fe0ddf7ebe12ae8b17d42e65e71cfd49843752c25baf2e03af69bfa4bae",
   "text": "Four invented cases show how that helps.",
-  "seconds": 2.6
+  "start": 0.0,
+  "seconds": 2.432
  },
  "07": {
-  "key": "dafbeda7a333b104e2206e763c3110acc3289fd5e6fbe065ea83bf001dc9f3c9",
+  "key": "291cb6bf2874e9b8f66cf84598d6d16487df13242404d57bf44c4f63e5c040f2",
   "text": "One: a freight company pays a supplier, a consultant, a guarantor and a ship agent. Four desks, four clean files.",
-  "seconds": 8.03
+  "start": 0.0,
+  "seconds": 7.687
  },
  "08": {
-  "key": "f7ace691c2d7da186afbb1d74ae9803ad98adc377f4902d91821d53e0091c8ae",
+  "key": "c2721f7fa0ee349d8621eb7c376afbb44e72f3edeece9b35eb9d0e6f33d4c65e",
   "text": "Kassar. Qassar. Khassar. Kasar. And on one licence, the name in Arabic.",
-  "seconds": 4.74
+  "start": 0.057,
+  "seconds": 5.844
  },
  "09": {
-  "key": "b585f73c698f4b99f77d62358da2f1c3b9884c961c553dffe98d58b8cd399b6d",
+  "key": "1b82e85bc5d33cb388d4a598b247a3ac72fa1a45e01ab38160eb9c6aef76f488",
   "text": "Four spellings, two alphabets, one man. And one who is not him: a surveyor with the same name, born elsewhere.",
-  "seconds": 7.34
+  "start": 0.0,
+  "seconds": 7.101
  },
  "10": {
-  "key": "6ee863697478221cd8b09e884c81877fd97a618735acf465536b4dbda617b590",
-  "text": "The app proposed these links, each with the passage behind it. Fixed rules with no AI model found 4 of the 6 true links, enough to join all his records.",
-  "seconds": 9.89
+  "key": "29ddb2c74897464379cae30f6ac7434dd9fdb77a1db40f26f406369be241dced",
+  "text": "The app proposed each link with the passage behind it. Fixed rules, with no AI model, found six of the six true links, and offered the surveyor too.",
+  "start": 0.078,
+  "seconds": 8.864
  },
  "11": {
-  "key": "f371e7d7c4743835c458e28eede2e74324a123439f64401e560447867a87c186",
-  "text": "A person declines the surveyor, and signs each decision with a passkey, a key on their own device.",
-  "seconds": 5.94
+  "key": "2bd19b39bc4742e02befe5bbd5d51cb575d1dcebc47915d510db45a22f33e02e",
+  "text": "A person declines the surveyor, with a reason, and signs each decision with a passkey on their own device.",
+  "start": 0.0,
+  "seconds": 5.714
  },
  "12": {
-  "key": "cfd77d7f73a7198213d981e725fafddd4565f85daf3e307486e166e467b6e420",
-  "text": "The case closes on a conclusion, signed by a person and checked by a colleague: one man, on four desks, under four names.",
-  "seconds": 7.66
+  "key": "2c9c9c8b4fc5940308ee3e491d8f049ea619ddbd57230ec69455f2689a6b8d3c",
+  "text": "The case closes on a conclusion, signed by a person and checked by a colleague: one man, under four names.",
+  "start": 0.086,
+  "seconds": 6.148
  },
  "13": {
-  "key": "d51d1bffa49ee45c45d6c2412f960e1be8494fe5444866d03f267babb2a19ad4",
-  "text": "Two: a workshop burns down at night. The bookkeeper says she spent the evening at her sister's house, 34 kilometres away.",
-  "seconds": 8.17
- },
- "14": {
-  "key": "0ef35b555911cdf8a0df575744aaff7dfdc1d4ade4f8cd0a0ba7e60d126a7f2b",
-  "text": "The app flags that two exhibit sheets made from her own phone place her at the workshop that same day.",
-  "seconds": 5.85
+  "key": "e2a92aaac1be7f3d4eef1d544486b870ee3b38942cdc0538ab572743d145dc47",
+  "text": "Two: a workshop burns down at night. The bookkeeper says she spent the evening at her sister's, thirty-four kilometres away.",
+  "start": 0.068,
+  "seconds": 7.139
  },
  "15": {
-  "key": "d5e9f55a5a1f12ab84a15ee7e1659753f9cd7a07193bb1ab13ab6695d5bdf625",
+  "key": "98283a418e4120e1731f22c8c07b34f12e5c48a28fd9b34fca1464d28212a359",
   "text": "Three: a flood video spreads as breaking news.",
-  "seconds": 3.16
+  "start": 0.0,
+  "seconds": 2.891
  },
  "16": {
-  "key": "d1a4602541c40d59df9929877f0d44407637815653362a09f327c0301715d36e",
+  "key": "5fa8bcb3d54afa359960e43fb29e2d1b98a42995b9a50e167871fbb720dd2763",
   "text": "Four: a nurse boards a night bus and is never seen again.",
-  "seconds": 3.34
+  "start": 0.0,
+  "seconds": 3.022
  },
  "17": {
-  "key": "0db44827d48e52b022082bc155b00af344859c08477d5a12677992457e9bf25b",
-  "text": "Every decision is signed by a person. A court can check the sealed package offline; here, on a test package.",
-  "seconds": 6.73
+  "key": "c755c41355c513dd325b676df41b971b459ccc768d8fd0fbb99fabe6ef58902b",
+  "text": "Every decision is signed by a person, and the case is sealed. Here the first case's real package is checked in a browser, with nothing uploaded.",
+  "start": 0.0,
+  "seconds": 8.447
  },
  "18": {
-  "key": "0126d852c7ea1946773e6988b02b13593f5402107ca4cad8111f8a37534b7e20",
+  "key": "7da41402bbb6948e750a59f6877b8905c9ec9a998b5cebba6e35b21814daa124",
   "text": "The machine reads more than a person can, and finds the links. A person approves every one.",
-  "seconds": 5.57
+  "start": 0.082,
+  "seconds": 5.664
  },
  "07b": {
-  "key": "5220cd7c71cc1e4a8c4e1c5324df904bd80d91c5d84a0a4bbca0dfdac01f4ed2",
-  "text": "Are these four people, or one man under four names?",
-  "seconds": 3.45,
-  "note": "cut from a longer take; the spoken figure 1,445 was misheard as 1,045, so the numbers stay on screen only"
+  "key": "163e83fd963695641ceee9635a7c2b88d51785458761481a16debd37376bca21",
+  "text": "Are they four people, or one man under four names? The desks hold fourteen sources and one thousand, four hundred and forty-five rows.",
+  "start": 0.0,
+  "seconds": 8.649
  },
  "13b": {
-  "key": "28e91d66e3bb86f9086400d4a7381eae03a1729234e93a0dddc732f166a1f05a",
-  "text": "Was she? There are 41 statements to read.",
-  "seconds": 2.83
+  "key": "d93c254195bcb28425de005fe874d60836adc211275f97f2bffe9bf950b7bec0",
+  "text": "Was she? There are forty-one statements to read.",
+  "start": 0.0,
+  "seconds": 3.16
  },
  "14b": {
-  "key": "aa50d09035368e3fc9bb3b1e32ee76d2ad7c71355cbeabb4bd67bf1b023aa2b2",
-  "text": "A person reads the times, 21:52 and 22:07, and concludes she was there.",
-  "seconds": 5.85
+  "key": "1e18e5aae0a1d0a44f54bfebcc8622bea9d7f71399862a1e8f3ca63cd0a64180",
+  "text": "It describes the photograph from her phone, and writes down the voice note she sent.",
+  "start": 0.058,
+  "seconds": 4.192
  },
  "15b": {
-  "key": "45e22c9a5a5eb7c49d4cb3a52fdfc9c4dd75a2d6c91331f3e2e8383a34e019cb",
-  "text": "Is it new? The tip line holds 36 clips that look alike.",
-  "seconds": 3.72
+  "key": "2f152d093bf1132810ac8f61a68228fb8086ff33f3e31c910f7eed05868a1f8d",
+  "text": "Is it new? The tip line holds thirty-six clips that look alike.",
+  "start": 0.0,
+  "seconds": 3.673
  },
  "15c": {
-  "key": "d77d87554618c80d4d90154a7b8e0749907d71402e94ae9c69afc14e123b8891",
+  "key": "300c32ec63e08097f811cbc06a22576e0734a6c5aa77d4cfdb645f36782247de",
   "text": "The app compares their sound and ties the viral clip to a video posted two years earlier. It had been cropped and mirrored, so the picture no longer matched.",
-  "seconds": 8.78
+  "start": 0.082,
+  "seconds": 8.439
  },
  "15d": {
-  "key": "ea1521217b4353477e8c9f67a762971259f217471096d2349ae8033cee6a39d9",
-  "text": "8 of 9 reposts were tied this way. One muted copy is missed. A person signs that the clip is old.",
-  "seconds": 6.69
+  "key": "44070be4c833c879567de6d41369b2a13db3dd076b7fc86285f767a5f315f442",
+  "text": "Eight of nine reposts were tied this way; one muted copy is missed. A person signs that the clip is old.",
+  "start": 0.0,
+  "seconds": 6.671
  },
  "16b": {
-  "key": "fb4493e31dcda84df9bd1bb7fdf46b19081580573061fe4e5690f642b533e99d",
+  "key": "7d5bed479535959e76306fc30599440c7331ad4a609293f886d86b5edfa19cc7",
   "text": "Where do you look? The bus company's logs run to several hundred lines.",
-  "seconds": 4.5
+  "start": 0.0,
+  "seconds": 4.237
  },
  "16c": {
-  "key": "42b4404ee0eaef9df39831b635497fe5ed4d64ec14f2f95241a57e6f21fffed0",
-  "text": "A supervisor's statement says when the driver was last seen. From that night, the app finds 73 days in which no log names him.",
-  "seconds": 7.76
+  "key": "62a0426fc8d6dd6190dbbc653e7d4a1cfbc09b60e4197c16239c6735bde92163",
+  "text": "A supervisor's statement says when the driver was last seen. From that night, the app finds seventy-three days in which no log names him.",
+  "start": 0.0,
+  "seconds": 7.634
  },
  "16d": {
-  "key": "44979b1721a05a88fcecc9344a0aa7a7ebacd979f3b0a30334565503a4662026",
-  "text": "A person records it as a lead to follow, not a finding.",
-  "seconds": 3.39
+  "key": "7b2f98fc50266399e307a07dfbb8c40e2e61d15b9ca1145ca7efb6bd272dcdfb",
+  "text": "The conclusion, signed and checked by a colleague: Aron Vesk is named in no log for the next seventy-three days; this is a lead to follow, not a finding about what he did.",
+  "start": 0.0,
+  "seconds": 9.88
+ },
+ "14a": {
+  "key": "a0aee8cee4c5c72155123d392e2a0e09a10dac2d2d78d93e51505c52907de208",
+  "text": "The app reads every paper itself. On this scanned exhibit sheet, it reads the page, then pulls out who was where, boxed where it is written.",
+  "start": 0.07,
+  "seconds": 8.491
+ },
+ "14c": {
+  "key": "b824f558ea8a31bda14a8d4d8460efecf43a4f105a2ea54f04b60cf7edac9501",
+  "text": "Then it flags what does not fit: those two exhibits place her at the workshop at twenty-one fifty-two and twenty-two oh seven, while she says she was away from six.",
+  "start": 0.0,
+  "seconds": 9.843
+ },
+ "14d": {
+  "key": "b76853c7f114202bce7ab25bf88cd3b6f907560e7af95060168627e0e8a28f8f",
+  "text": "A person checks both against her statement and signs: she was at the yard on Tanner's Row that evening, not in Brindle Cross from six.",
+  "start": 0.0,
+  "seconds": 7.47
+ },
+ "04a": {
+  "key": "199f162a364195346aa4ce599a0ac952d84107c82502c42cab34afaf1027d609",
+  "text": "You bring the material in.",
+  "start": 0.0,
+  "seconds": 1.485
+ },
+ "04b": {
+  "key": "e644d69df9db4fb903819ff96fa6be5d1007c8a5302bcacead667ed4c4a6e232",
+  "text": "The app reads all of it and proposes connections, each with the exact place it came from.",
+  "start": 0.0,
+  "seconds": 5.009
  }
 }

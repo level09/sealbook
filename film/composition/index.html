@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <script src="assets/timing.js"></script>
     <style>
       @font-face { font-family: "Newsreader"; font-weight: 400; src: url("assets/captures/fonts/Newsreader-normal-400-latin.woff2") format("woff2"); }
       @font-face { font-family: "Newsreader"; font-weight: 500; src: url("assets/captures/fonts/Newsreader-normal-500-latin.woff2") format("woff2"); }
@@ -28,7 +29,7 @@
       .head { position: absolute; left: 120px; top: 92px; width: 1680px; font-family: var(--serif); font-weight: 400; font-size: 64px; line-height: 1.08; letter-spacing: -0.01em; }
       .sub { position: absolute; left: 120px; top: 184px; width: 1560px; font-size: 32px; line-height: 1.35; color: var(--ink-2); }
       .kicker { position: absolute; left: 120px; top: 44px; font-size: 30px; color: var(--violet); }
-      .label { position: absolute; font-size: 28px; color: var(--ink-3); }
+      .label { position: absolute; font-size: 28px; line-height: 1.3; color: var(--ink-3); }
       .frame { position: absolute; overflow: hidden; background: var(--paper-2); border: 1px solid var(--rule); border-radius: 16px; box-shadow: 0 30px 60px -30px rgba(27, 26, 23, 0.35); }
       .frame.white { background: #faf8f3; }
       .cam { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
@@ -40,7 +41,7 @@
       .chip { position: absolute; border: 3px solid var(--violet); border-radius: 10px; background-color: #f3eedd; background-repeat: no-repeat; box-shadow: 0 18px 36px -18px rgba(27, 26, 23, 0.5); opacity: 0; }
       .rowchip { position: absolute; border: 3px solid var(--violet); border-radius: 10px; background: #faf8f3; padding: 10px 16px; font-family: var(--mono); font-size: 30px; opacity: 0; box-shadow: 0 18px 36px -18px rgba(27, 26, 23, 0.5); }
       .rowchip small { display: block; font-family: var(--sans); font-size: 22px; color: var(--ink-3); margin-top: 4px; }
-      .step { position: absolute; inset: 0; opacity: 0; }
+      .step, .beat { position: absolute; inset: 0; opacity: 0; }
       .num { position: absolute; left: 120px; top: 300px; font-family: var(--serif); font-size: 220px; line-height: 1; color: var(--violet); }
       .steptext { position: absolute; left: 120px; top: 560px; width: 640px; font-family: var(--serif); font-size: 52px; line-height: 1.12; }
       .tile { position: absolute; border: 1px solid var(--rule); box-shadow: 0 24px 50px -24px rgba(27, 26, 23, 0.45); object-fit: cover; }
@@ -49,31 +50,26 @@
       .list p { font-family: var(--serif); font-size: 48px; line-height: 1.5; }
       .w { display: inline-block; }
       .big { font-size: 104px; }
-      .beat { position: absolute; inset: 0; opacity: 0; }
-      .concl { position: absolute; inset: 0; }
-      .cq { position: absolute; left: 120px; top: 250px; width: 1600px; font-family: var(--serif); font-size: 60px; line-height: 1.18; }
+      .cq { position: absolute; left: 120px; top: 230px; width: 1600px; font-family: var(--serif); font-size: 60px; line-height: 1.18; }
       .cq span[lang="ar"] { font-family: "IBM Plex Sans Arabic", var(--sans); }
-      .cs { position: relative; top: 640px; left: 120px; width: 1600px; font-size: 32px; color: var(--ink-2); }
-      .card { position: absolute; width: 1300px; background: #faf8f3; border: 1px solid var(--rule); border-radius: 14px; padding: 22px 30px; font-size: 36px; line-height: 1.4; box-shadow: 0 24px 50px -24px rgba(27, 26, 23, 0.35); }
-      .card b { font-weight: 600; padding: 0 8px; border-radius: 6px; }
+      .cs { position: absolute; left: 120px; top: 720px; width: 1600px; font-size: 32px; color: var(--ink-2); }
       .grid { position: absolute; left: 760px; top: 130px; display: grid; grid-template-columns: repeat(4, 250px); gap: 12px; }
       .grid img { width: 250px; height: 141px; object-fit: cover; border-radius: 8px; border: 1px solid var(--rule); }
-      .timeline { position: absolute; left: 120px; top: 420px; width: 1680px; height: 160px; border-bottom: 2px solid var(--ink-3); }
-      .timeline .tick { position: absolute; bottom: 0; width: 6px; height: 120px; background: var(--ink-2); transform-origin: 50% 100%; }
-      .timeline .gap { position: absolute; bottom: 0; height: 150px; background: rgba(163, 34, 26, 0.12); border: 3px dashed var(--broken); }
-      .timeline .seen { position: absolute; bottom: 0; width: 6px; height: 160px; background: var(--violet); }
-      .timeline .seen b { position: absolute; bottom: 168px; left: -10px; white-space: nowrap; font-weight: 500; font-size: 28px; color: var(--violet); }
-      .gaplabel { top: 470px; font-family: var(--serif); font-size: 56px; color: var(--broken); }
+      .timeline { position: absolute; left: 120px; top: 730px; width: 1680px; height: 150px; border-bottom: 2px solid var(--ink-3); }
+      .timeline .tick { position: absolute; bottom: 0; width: 6px; height: 100px; background: var(--ink-2); transform-origin: 50% 100%; }
+      .timeline .gap { position: absolute; bottom: 0; height: 140px; background: rgba(163, 34, 26, 0.12); border: 3px dashed var(--broken); }
+      .timeline .seen { position: absolute; bottom: 0; width: 6px; height: 150px; background: var(--violet); }
+      .gaplabel { font-family: var(--serif); font-size: 52px; color: var(--broken); }
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="185.1" data-width="1920" data-height="1080">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="218.8" data-width="1920" data-height="1080">
 
-      <!-- 1. Who has the problem, and what it is -->
-      <div id="s1" class="scene clip" data-start="0" data-duration="10.6" data-track-index="1">
+      <!-- Opening: who has the problem -->
+      <div id="s1" class="scene clip" data-in="0" data-out="@03-0.2" data-start="0" data-duration="10.6" data-track-index="1">
         <div class="inner">
-          <h1 id="s1-a" class="head" style="top: 120px; width: 820px; font-size: 76px;">Investigators, journalists, lawyers, researchers.</h1>
-          <p id="s1-b" class="head" style="top: 470px; width: 760px; font-size: 52px; color: var(--ink-2);">Too much evidence to read. No way to prove later that the result was not changed.</p>
+          <h1 id="s1-a" class="head" data-in="@01-0.2" style="top: 120px; width: 820px; font-size: 76px;">Investigators, journalists, lawyers.</h1>
+          <p id="s1-b" class="head" data-in="@01+2.8" style="top: 420px; width: 760px; font-size: 52px; color: var(--ink-2);">Too much evidence to read. No way to prove later that the result was not changed.</p>
           <img class="tile s1-t" src="assets/captures/scan_vendor.jpg" style="left: 1000px; top: 90px; width: 280px; height: 396px;" />
           <img class="tile s1-t" src="assets/captures/never_photo.jpg" style="left: 1330px; top: 120px; width: 460px; height: 345px;" />
           <div class="sheet s1-t" style="left: 960px; top: 520px;">Payment,Date,Payee,Amount
@@ -82,43 +78,43 @@ PAY-00002,2023-01-01,Portside Coatings Ltd,18250.00
 PAY-00003,2023-01-02,Kassar Marine Supply,15000.00
 PAY-00004,2023-01-03,Riverbend Coatings Ltd,46500.00</div>
           <img class="tile s1-t" src="assets/captures/gate_book.jpg" style="left: 1560px; top: 500px; width: 260px; height: 368px;" />
-          <img class="tile s1-t" src="assets/captures/scan_licence.jpg" style="left: 1180px; top: 700px; width: 240px; height: 340px;" />
+          <img class="tile s1-t" src="assets/captures/scan_licence.jpg" style="left: 1180px; top: 690px; width: 240px; height: 240px; object-position: top;" />
         </div>
       </div>
 
-      <!-- 2. What Sealbook is, in three steps -->
-      <div id="s2" class="scene clip" data-start="10.6" data-duration="18.4" data-track-index="1">
+      <!-- Sealbook in three steps -->
+      <div id="s2" class="scene clip" data-in="@03-0.2" data-out="@06-0.2" data-start="10.3" data-duration="18.93" data-track-index="1">
         <div class="inner">
-          <div id="s2-title" class="step" style="opacity: 1;">
+          <div id="s2-title" class="step" data-in="@03-0.2" data-out="@04a-0.2">
             <h1 class="head" style="top: 330px; font-size: 150px;">Sealbook</h1>
-            <p class="sub" style="top: 520px; font-size: 40px; width: 1300px;">An app for a pile of evidence too large to read, and for proving the result later.</p>
+            <p class="sub" style="top: 520px; font-size: 40px; width: 1300px;">works in three steps.</p>
           </div>
-          <div id="s2-1" class="step">
+          <div id="s2-1" class="step" data-in="@04a-0.2" data-out="@04b-0.2">
             <p class="num">1</p><p class="steptext">You bring the material in.</p>
-            <div class="frame" style="left: 820px; top: 140px; width: 980px; height: 780px;">
+            <div class="frame" data-screen="sources" style="left: 820px; top: 140px; width: 980px; height: 780px;">
               <div class="cam" style="width: 1200px; height: 781px; left: -10px;"><img src="assets/captures/fn_sources.png" /></div>
             </div>
           </div>
-          <div id="s2-2" class="step">
-            <p class="num">2</p><p class="steptext">The app reads all of it and proposes connections, each with the exact place it came from.</p>
-            <div class="frame white" style="left: 820px; top: 170px; width: 980px; height: 645px;">
+          <div id="s2-2" class="step" data-in="@04b-0.2" data-out="@05-0.2">
+            <p class="num">2</p><p class="steptext">The app reads it and proposes connections, each with its source.</p>
+            <div class="frame white" data-screen="agreement scan" style="left: 820px; top: 170px; width: 980px; height: 645px;">
               <div class="cam" style="width: 980px; height: 645px;"><img src="assets/captures/fn_scan.png" /></div>
             </div>
           </div>
-          <div id="s2-3" class="step">
+          <div id="s2-3" class="step" data-in="@05-0.2" data-out="@06-0.2">
             <p class="num">3</p><p class="steptext">A person approves or declines each one with a signature. The record is sealed.</p>
-            <div id="s2-3a" class="frame white" style="left: 860px; top: 200px; width: 940px; height: 330px;">
-              <div class="cam" style="width: 940px; height: 323px;"><img src="assets/captures/fn_reject.png" /></div>
+            <div id="s2-3a" class="frame white" data-screen="a declined link" style="left: 860px; top: 140px; width: 940px; height: 400px;">
+              <div class="cam" style="width: 940px; height: 688px;"><img src="assets/captures/fn_surveyor.png" /></div>
             </div>
-            <div id="s2-3b" class="frame white" style="left: 860px; top: 570px; width: 940px; height: 330px;">
-              <div class="cam" style="width: 940px; height: 1869px; top: -170px;"><img src="assets/captures/seal_verify.png" /></div>
+            <div id="s2-3b" class="frame" data-screen="the checker" data-in="@05+2.6" style="left: 860px; top: 580px; width: 940px; height: 330px; background: var(--paper);">
+              <div class="cam" style="width: 940px; height: 2088px; top: -330px;"><img src="assets/captures/seal_verify.png" /></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 3. Four kinds of help -->
-      <div id="s3" class="scene clip" data-start="29" data-duration="3.95" data-track-index="1">
+      <!-- Four kinds of help -->
+      <div id="s3" class="scene clip" data-in="@06-0.2" data-out="@07-0.3" data-start="28.93" data-duration="4.03" data-track-index="1">
         <div class="inner">
           <h2 class="head" style="top: 150px;">Four invented cases</h2>
           <div class="list" style="position: absolute; left: 120px; top: 330px;">
@@ -130,15 +126,15 @@ PAY-00004,2023-01-03,Riverbend Coatings Ltd,46500.00</div>
         </div>
       </div>
 
-      <!-- 4. Story one: the situation, the question, the names, the one man, the man who is not him -->
-      <div id="s4" class="scene clip" data-start="32.95" data-duration="32.95" data-track-index="1">
+      <!-- Story one: the situation, the question, the names, one man, the man who is not him -->
+      <div id="s4" class="scene clip" data-in="@07-0.2" data-out="@10-0.2" data-start="32.76" data-duration="33.08" data-track-index="1">
         <div class="inner">
           <p class="kicker">Story one</p>
-          <h2 id="s4-h1" class="head">A freight company. Four desks, four clean files.</h2>
-          <h2 id="s4-h2" class="head" style="opacity: 0; font-size: 80px;">Four people, or one man under four names?</h2>
-          <p id="s4-h2s" class="sub" style="top: 210px; opacity: 0;">14 sources and 1,445 rows, more than anyone reads side by side.</p>
-          <h2 id="s4-h3" class="head" style="opacity: 0;">Four spellings. Two alphabets. One man.</h2>
-          <div id="s4-pile" class="frame white" style="left: 120px; top: 300px; width: 1680px; height: 620px; opacity: 0; z-index: 3;">
+          <h2 id="s4-h1" class="head" data-in="@07-0.2" data-out="@07b-0.2">A freight company. Four desks, four clean files.</h2>
+          <h2 id="s4-h2" class="head" data-in="@07b-0.2" data-out="@08-0.2" style="font-size: 80px;">Four people, or one man under four names?</h2>
+          <p id="s4-h2s" class="sub" data-in="@07b+3.0" data-out="@08-0.2" style="top: 210px;">14 sources and 1,445 rows, more than anyone reads side by side.</p>
+          <h2 id="s4-h3" class="head" data-in="@09-0.1">Four spellings. Two alphabets. One man.</h2>
+          <div id="s4-pile" class="frame white" data-screen="sources" data-in="@07b+3.4" data-out="@08-0.2" style="left: 120px; top: 300px; width: 1680px; height: 620px; z-index: 3;">
             <div class="cam" style="width: 1680px; height: 1094px; top: -120px;"><img src="assets/captures/fn_sources.png" /></div>
           </div>
           <div id="s4-docs">
@@ -157,20 +153,20 @@ PAY-00004,2023-01-03,Riverbend Coatings Ltd,46500.00</div>
           <div id="c4" class="rowchip" style="left: 1400px; top: 196px;">Adrian Kasar<small>Licensed ship agents, row 28</small></div>
           <div id="c5" class="chip" style="left: 1460px; top: 520px; width: 180px; height: 72px; background-image: url(assets/captures/scan_licence.jpg); background-size: 1240px 1754px; background-position: -518px -641px;"></div>
           <img id="s4-man" src="assets/captures/portrait.jpg" style="position: absolute; left: 810px; top: 290px; width: 300px; height: 400px; object-fit: cover; border: 1px solid var(--rule); box-shadow: 0 24px 50px -24px rgba(27, 26, 23, 0.45); opacity: 0;" />
-          <p id="s4-who" class="label" style="left: 810px; top: 706px; width: 320px; color: var(--ink); opacity: 0;">One man. Born 2 March 1974, Velmora.</p>
+          <p id="s4-who" class="label" data-in="@09+1.5" style="left: 810px; top: 706px; width: 320px; color: var(--ink);">One man. Born 2 March 1974, Velmora.</p>
           <div id="s4-not" class="rowchip" style="left: 1125px; top: 380px; font-size: 25px; border-color: var(--broken); border-style: dashed;">Adrian Kasar, 1974-08-19, Torvane<small>Marine surveyors register, row 10</small></div>
-          <p id="s4-notl" class="label" style="left: 1290px; top: 570px; width: 500px; color: var(--broken); opacity: 0;">Not him: a surveyor born on 19 August 1974 in Torvane.</p>
-          <p class="label" id="s4-gen" style="left: 120px; top: 900px; font-size: 24px; opacity: 0;">Portrait generated for the case; the man does not exist.</p>
+          <p id="s4-notl" class="label" data-in="@09+3.2" style="left: 1290px; top: 570px; width: 500px; color: var(--broken);">Not him: a surveyor born on 19 August 1974 in Torvane.</p>
+          <p id="s4-gen" class="label" data-in="@09+1.5" style="left: 120px; top: 900px; font-size: 24px;">Portrait generated for the case; the man does not exist.</p>
         </div>
       </div>
 
-      <!-- 5. Story one: the app's proposal -->
-      <div id="s5" class="scene clip" data-start="65.9" data-duration="10.5" data-track-index="1">
+      <!-- Story one: what the app surfaced -->
+      <div id="s5" class="scene clip" data-in="@10-0.2" data-out="@11-0.2" data-start="65.54" data-duration="10.36" data-track-index="1">
         <div class="inner">
           <p class="kicker">Story one</p>
-          <h2 class="head">The app proposes the link, with the passage behind it.</h2>
-          <p class="sub">Fixed rules, no AI model: 4 of the 6 true links found.</p>
-          <div class="frame white" style="left: 120px; top: 290px; width: 1680px; height: 650px;">
+          <h2 id="s5-h" class="head">The app proposes each link, with the passage behind it.</h2>
+          <p id="s5-s" class="sub">Fixed rules, no AI model: 6 of the 6 true links found, and the surveyor offered too.</p>
+          <div class="frame white" data-screen="proposed link" style="left: 120px; top: 290px; width: 1680px; height: 650px;">
             <div id="s5-cam" class="cam" style="width: 1680px; height: 818px;">
               <img src="assets/captures/fn_link.png" />
               <div id="s5-m1" class="mark" style="left: 500px; top: 404px; width: 474px; height: 192px;"></div>
@@ -179,37 +175,37 @@ PAY-00004,2023-01-03,Riverbend Coatings Ltd,46500.00</div>
         </div>
       </div>
 
-      <!-- 6. Story one: a person declines the surveyor -->
-      <div id="s6" class="scene clip" data-start="76.4" data-duration="6.4" data-track-index="1">
+      <!-- Story one: a person declines the surveyor -->
+      <div id="s6" class="scene clip" data-in="@11-0.2" data-out="@12-0.2" data-start="75.6" data-duration="7.21" data-track-index="1">
         <div class="inner">
           <p class="kicker">Story one</p>
-          <h2 class="head">A person declines the surveyor.</h2>
-          <div class="frame white" style="left: 384px; top: 300px; width: 1152px; height: 396px;">
-            <div class="cam" style="width: 1152px; height: 396px;"><img src="assets/captures/fn_reject.png" /></div>
+          <h2 id="s6-h" class="head">A person declines the surveyor.</h2>
+          <div class="frame white" data-screen="rejected link" style="left: 120px; top: 210px; width: 952px; height: 697px;">
+            <div class="cam" style="width: 952px; height: 697px;">
+              <img src="assets/captures/fn_surveyor.png" />
+              <div id="s6-m1" class="mark" style="left: 4px; top: 318px; width: 944px; height: 124px;"></div>
+              <div id="s6-m2" class="mark" style="left: 4px; top: 532px; width: 944px; height: 96px;"></div>
+            </div>
           </div>
-          <p class="label" style="left: 384px; top: 716px; width: 1152px;">The reason is kept with the decision. Signing needs the person's own passkey; the film stops here.</p>
+          <p id="s6-l" class="label" style="left: 1130px; top: 300px; width: 660px; font-size: 34px; color: var(--ink-2);">The table shows why: another birth date, another birthplace.</p>
+          <p id="s6-l2" class="label" style="left: 1130px; top: 470px; width: 660px;">The decision and its reason are signed with the person's passkey.</p>
         </div>
       </div>
 
-      <!-- 7. Story one: the conclusion, in the app and then in words -->
-      <div id="s7" class="scene clip" data-start="82.8" data-duration="10.1" data-track-index="1">
+      <!-- Story one: the conclusion -->
+      <div id="s7" class="scene clip" data-in="@12-0.2" data-out="@13-0.3" data-start="82.51" data-duration="8.35" data-track-index="1">
         <div class="inner">
           <p class="kicker">Story one</p>
-          <div id="s7-panel" class="frame white" style="left: 120px; top: 150px; width: 1680px; height: 780px;">
-            <div class="cam" style="width: 1680px; height: 845px;"><img src="assets/captures/fn_conclusion.png" /></div>
-          </div>
-          <div id="s7-words" class="concl" style="opacity: 0;">
-            <p class="cq">The supplier Adrian Kassar, the consultant A. Qassar, the guarantor Adrian Khassar and the ship agent <span lang="ar">أدريان قصار</span> are one man.</p>
-            <p class="cs">Reasonable grounds to believe. Signed by a person, checked by a colleague.</p>
-          </div>
+          <p id="s7-q" class="cq">The supplier Adrian Kassar, the consultant A. Qassar, the guarantor Adrian Khassar and the ship agent <span lang="ar">أدريان قصار</span> are one man.</p>
+          <p id="s7-s" class="cs">Reasonable grounds to believe. Signed by a person, checked by a colleague.</p>
         </div>
       </div>
 
-      <!-- 8. Story two -->
-      <div id="s8" class="scene clip" data-start="92.9" data-duration="26.7" data-track-index="1">
+      <!-- Story two: the situation, the question, the app reading, the flag, the conclusion -->
+      <div id="s8" class="scene clip" data-in="@13-0.2" data-out="@15-0.3" data-start="90.66" data-duration="48.29" data-track-index="1">
         <div class="inner">
           <p class="kicker">Story two</p>
-          <div id="s8-a" class="beat" style="opacity: 1;">
+          <div id="s8-a" class="beat" data-in="@13-0.2" data-out="@13b-0.2">
             <h2 class="head" style="width: 720px;">A workshop burns down at night.</h2>
             <p class="sub" style="top: 270px; width: 700px; font-size: 38px;">The bookkeeper says she spent the evening at her sister's house, 34 km away.</p>
             <div class="frame" style="left: 900px; top: 120px; width: 900px; height: 675px;">
@@ -217,34 +213,69 @@ PAY-00004,2023-01-03,Riverbend Coatings Ltd,46500.00</div>
             </div>
             <p class="label" style="left: 900px; top: 810px;">The workshop gate, in a photograph from her phone</p>
           </div>
-          <div id="s8-b" class="beat">
+          <div id="s8-b" class="beat" data-in="@13b-0.2" data-out="@14a-0.2">
             <h2 class="head big" style="top: 300px;">Was she?</h2>
             <p class="sub" style="top: 470px; font-size: 40px;">41 statements to read.</p>
           </div>
-          <div id="s8-c" class="beat">
-            <h2 class="head">The app flags two places on one day.</h2>
-            <div class="frame white" style="left: 120px; top: 240px; width: 1300px; height: 120px;">
-              <div class="cam" style="width: 1300px; height: 92px; top: 14px;"><img src="assets/captures/nt_fork.png" /></div>
+          <div id="s8-c" class="beat" data-in="@14a-0.2" data-out="@14b-0.2">
+            <h2 class="head">The app reads every paper itself.</h2>
+            <div class="frame white" data-screen="exhibit scan" style="left: 120px; top: 200px; width: 600px; height: 686px;">
+              <div id="s8-scan" class="cam" style="width: 600px; height: 686px;"><img src="assets/captures/nt_scan.png" /></div>
             </div>
-            <p class="label" style="left: 1450px; top: 280px;">In the app</p>
-            <div class="card" style="left: 120px; top: 420px;">Exhibit MQ/3, a photograph from her phone<br />taken 14 March 2026 at <b id="t1">21:52</b>, at the back gate</div>
-            <div class="card" style="left: 120px; top: 600px;">Exhibit MQ/4, a voice note from her phone<br />sent at <b id="t2">22:07</b>: "I'm still at the yard on Tanner's Row."</div>
+            <p class="label" style="left: 120px; top: 896px; font-size: 24px;">Exhibit MQ/3, a scanned sheet: each claim boxed where it is written</p>
+            <div id="s8-text" class="frame white" data-screen="text read" data-in="@14a+3.9" style="left: 780px; top: 200px; width: 592px; height: 384px;">
+              <div class="cam" style="width: 592px; height: 384px;"><img src="assets/captures/nt_text.png" /></div>
+            </div>
+            <p class="label" data-in="@14a+3.9" style="left: 1400px; top: 220px; width: 400px;">The text the app read from the page</p>
+            <div id="s8-claim" class="frame white" data-screen="claim pulled" data-in="@14a+5.0" style="left: 780px; top: 630px; width: 592px; height: 230px;">
+              <div class="cam" style="width: 592px; height: 456px; top: -228px;"><img src="assets/captures/nt_claim.png" /></div>
+            </div>
+            <p class="label" data-in="@14a+5.0" style="left: 1400px; top: 650px; width: 400px;">The claim it pulled: Mara Quill, seen at Tanner's Row</p>
           </div>
-          <div id="s8-d" class="beat concl">
+          <div id="s8-d" class="beat" data-in="@14b-0.2" data-out="@14c-0.2">
+            <h2 class="head">The photograph and the voice note, read too.</h2>
+            <div class="frame white" data-screen="photo read" style="left: 120px; top: 220px; width: 830px; height: 542px;">
+              <div class="cam" style="width: 830px; height: 542px;">
+                <img src="assets/captures/nt_photo.png" />
+                <div id="s8-m1" class="mark" style="left: 503px; top: 94px; width: 214px; height: 34px; border-width: 3px;"></div>
+              </div>
+            </div>
+            <div class="frame white" data-screen="voice note read" style="left: 970px; top: 220px; width: 830px; height: 477px;">
+              <div class="cam" style="width: 830px; height: 477px;">
+                <img src="assets/captures/nt_voice.png" />
+                <div id="s8-m2" class="mark" style="left: 56px; top: 182px; width: 410px; height: 54px; border-width: 3px;"></div>
+              </div>
+            </div>
+            <p class="label" style="left: 120px; top: 780px; width: 830px;">What the app says the photograph shows</p>
+            <p class="label" style="left: 970px; top: 715px; width: 830px;">What the app heard in the voice note</p>
+          </div>
+          <div id="s8-e" class="beat" data-in="@14c-0.2" data-out="@14d-0.2">
+            <h2 class="head">The app flags what does not fit.</h2>
+            <div class="frame white" data-screen="sources disagree" style="left: 120px; top: 230px; width: 1300px; height: 500px;">
+              <div class="cam" style="width: 1300px; height: 500px;">
+                <img src="assets/captures/nt_disagree.png" />
+                <div id="t2" class="mark" style="left: 200px; top: 128px; width: 104px; height: 46px;"></div>
+                <div id="t1" class="mark" style="left: 296px; top: 338px; width: 108px; height: 48px;"></div>
+                <div id="t0" class="mark no" style="left: 126px; top: 192px; width: 240px; height: 86px;"></div>
+              </div>
+            </div>
+            <p class="label" style="left: 1460px; top: 260px; width: 340px;">On her page in the app: her own account against the two exhibits</p>
+          </div>
+          <div id="s8-f" class="beat" data-in="@14d-0.2" data-out="@15-0.3">
             <p class="cq">Mara Quill was at the yard on Tanner's Row on the evening of 14 March 2026, not in Brindle Cross from six as her statement says.</p>
             <p class="cs">Reasonable grounds to believe. Signed by a person, checked by a colleague.</p>
           </div>
         </div>
       </div>
 
-      <!-- 9. Story three -->
-      <div id="s9" class="scene clip" data-start="119.6" data-duration="26.3" data-track-index="1">
+      <!-- Story three -->
+      <div id="s9" class="scene clip" data-in="@15-0.2" data-out="@16-0.3" data-start="138.75" data-duration="28.57" data-track-index="1">
         <div class="inner">
           <p class="kicker">Story three</p>
-          <div id="s9-a" class="beat" style="opacity: 1;">
+          <div id="s9-a" class="beat" data-in="@15-0.2" data-out="@15b-0.2">
             <h2 class="head">A flood video spreads as breaking news.</h2>
           </div>
-          <div id="s9-b" class="beat">
+          <div id="s9-b" class="beat" data-in="@15b-0.2" data-out="@15c-0.2">
             <h2 class="head big" style="width: 600px;">Is it new?</h2>
             <p class="sub" style="top: 250px; width: 600px; font-size: 38px;">The tip line holds 36 clips that look alike.</p>
             <div class="grid">
@@ -254,39 +285,39 @@ PAY-00004,2023-01-03,Riverbend Coatings Ltd,46500.00</div>
             </div>
             <p class="label" style="left: 760px; top: 870px;">12 of the 36 clips</p>
           </div>
-          <div id="s9-c" class="beat">
-            <h2 class="head">The app ties it to a video from two years earlier, by sound.</h2>
-            <p class="label" style="left: 120px; top: 715px;">Shared as new, 2 June 2026</p>
-            <p id="s9-l2" class="label" style="left: 1000px; top: 715px;">Posted 3 June 2024</p>
-            <p id="s9-flip" class="label" style="left: 1000px; top: 752px; color: var(--violet); opacity: 0;">The 2024 video, flipped: now the two line up</p>
-            <div class="frame white" style="left: 120px; top: 790px; width: 640px; height: 165px;">
-              <div class="cam" style="width: 640px; height: 165px;"><img src="assets/captures/of_copy.png" /></div>
+          <div id="s9-c" class="beat" data-in="@15c-0.2" data-out="@15d-0.2">
+            <h2 class="head" style="font-size: 56px;">The app ties it to a video from two years earlier, by sound.</h2>
+            <p class="label" style="left: 120px; top: 696px;">Shared as new, 2 June 2026</p>
+            <p id="s9-l2" class="label" style="left: 1000px; top: 696px;">Posted 3 June 2024</p>
+            <p id="s9-flip" class="label" data-in="@15c+6.3" style="left: 1300px; top: 696px; color: var(--violet);">flipped back: now they line up</p>
+            <div class="frame white" data-screen="copies row" data-in="@15c+1.6" style="left: 120px; top: 750px; width: 727px; height: 187px;">
+              <div class="cam" style="width: 727px; height: 187px;"><img src="assets/captures/of_copy.png" /></div>
             </div>
-            <p class="label" style="left: 790px; top: 850px;">In the app: the same sound, 118 of 118 points, strong</p>
+            <p class="label" data-in="@15c+1.6" style="left: 880px; top: 790px; width: 900px;">In the app: the same sound, 118 of 118 points, a strong match</p>
           </div>
-          <div id="s9-d" class="beat concl">
+          <div id="s9-d" class="beat" data-in="@15d-0.2" data-out="@16-0.3">
             <p class="cq">The clip shared as new on 2 June 2026 is a copy of the video Ostra Valley Weather posted on 3 June 2024.</p>
             <p class="cs">Clear and convincing. Signed by a person, checked by a colleague.</p>
-            <p class="cs" style="margin-top: 10px;">8 of 9 reposts tied, mostly by sound. One muted copy was missed.</p>
+            <p class="cs" style="top: 780px;">8 of 9 reposts tied, mostly by sound. One muted copy was missed.</p>
           </div>
         </div>
       </div>
-      <video id="s9-viral0" class="film-video clip" muted playsinline data-start="119.6" data-duration="3.9" data-media-start="0" data-track-index="2" src="assets/captures/footage_viral.mp4" style="left: 360px; top: 230px; width: 1200px; height: 675px; z-index: 5;"></video>
-      <video id="s9-viral" class="film-video clip" muted playsinline data-start="127.5" data-duration="9.5" data-media-start="2" data-track-index="2" src="assets/captures/footage_viral.mp4" style="left: 120px; top: 250px; width: 800px; height: 450px; z-index: 5;"></video>
-      <video id="s9-orig" class="film-video clip" muted playsinline data-start="127.5" data-duration="9.5" data-media-start="3" data-track-index="3" src="assets/captures/footage_original.mp4" style="left: 1000px; top: 250px; width: 800px; height: 450px; z-index: 5;"></video>
+      <video id="s9-viral0" class="film-video clip" muted playsinline data-in="@15-0.1" data-out="@15b-0.2" data-start="138.85" data-duration="4.09" data-media-start="0" data-track-index="2" src="assets/captures/footage_viral.mp4" style="left: 360px; top: 230px; width: 1200px; height: 675px; z-index: 5;"></video>
+      <video id="s9-viral" class="film-video clip" muted playsinline data-in="@15c+0.1" data-out="@15d-0.2" data-start="148.01" data-duration="9.94" data-media-start="2" data-track-index="2" src="assets/captures/footage_viral.mp4" style="left: 120px; top: 240px; width: 800px; height: 450px; z-index: 5;"></video>
+      <video id="s9-orig" class="film-video clip" muted playsinline data-in="@15c+0.3" data-out="@15d-0.2" data-start="148.21" data-duration="9.74" data-media-start="3" data-track-index="3" src="assets/captures/footage_original.mp4" style="left: 1000px; top: 240px; width: 800px; height: 450px; z-index: 5;"></video>
 
-      <!-- 10. Story four -->
-      <div id="s10" class="scene clip" data-start="145.9" data-duration="23" data-track-index="1">
+      <!-- Story four -->
+      <div id="s10" class="scene clip" data-in="@16-0.2" data-out="@17-0.3" data-start="167.12" data-duration="33.77" data-track-index="1">
         <div class="inner">
           <p class="kicker">Story four</p>
-          <div id="s10-a" class="beat" style="opacity: 1;">
-            <h2 class="head" style="width: 760px;">A nurse boards a night bus and is never seen again.</h2>
+          <div id="s10-a" class="beat" data-in="@16-0.2" data-out="@16b-0.2">
+            <h2 class="head" style="width: 760px;">A nurse boards a night bus and vanishes.</h2>
             <div class="frame" style="left: 960px; top: 160px; width: 840px; height: 556px;">
               <div id="s10-photo" class="cam" style="width: 840px; height: 556px;"><img src="assets/captures/depot.jpg" /></div>
             </div>
             <p class="label" style="left: 960px; top: 730px;">The bus depot (an edited Commons photograph)</p>
           </div>
-          <div id="s10-b" class="beat">
+          <div id="s10-b" class="beat" data-in="@16b-0.2" data-out="@16c-0.2">
             <h2 class="head big" style="width: 840px; font-size: 88px;">Where do you look?</h2>
             <p class="sub" style="top: 250px; width: 760px; font-size: 38px;">The bus company's logs run to several hundred lines.</p>
             <div class="frame" style="left: 960px; top: 120px; width: 840px; height: 780px; background: #f2eddf;">
@@ -295,35 +326,38 @@ PAY-00004,2023-01-03,Riverbend Coatings Ltd,46500.00</div>
                 <div id="s10-m1" class="mark no" style="left: 370px; top: 634px; width: 262px; height: 60px;"></div>
               </div>
             </div>
-            <p id="s10-bl" class="label" style="left: 120px; top: 470px; width: 760px; opacity: 0;">The gate book, 14 March: the 22:40 left with no driver written down.</p>
+            <p id="s10-bl" class="label" style="left: 120px; top: 470px; width: 760px;">Gate book, 14 March: the 22:40 left with no driver.</p>
           </div>
-          <div id="s10-c" class="beat">
-            <h2 class="head">The app finds no log naming him from the night he was last seen.</h2>
+          <div id="s10-c" class="beat" data-in="@16c-0.2" data-out="@16d-0.2">
+            <h2 class="head" style="font-size: 56px;">From the night he was last seen, no log names him for 73 days.</h2>
+            <div class="frame white" data-screen="silence on his page" style="left: 120px; top: 250px; width: 1040px; height: 440px;">
+              <div class="cam" style="width: 1040px; height: 440px;"><img src="assets/captures/un_silence.png" /></div>
+            </div>
+            <p class="label" style="left: 1200px; top: 270px; width: 600px;">In the app: the driver's page, Aron Vesk, as the app found it</p>
             <div id="tl" class="timeline"></div>
-            <p class="label" style="left: 120px; top: 640px;">Found by the app in the gate log, fuel receipts and dispatch sheet. Each mark is a day the gate log names the driver, February to June 2026.</p>
-            <p id="tl-gap" class="label gaplabel" style="opacity: 0;">73 days</p>
+            <p id="tl-gap" class="label gaplabel" data-in="@16c+5.6" style="top: 770px;">73 days</p>
+            <p class="label" data-in="@16c+2.0" style="left: 120px; top: 892px; font-size: 24px;">Each mark is a day the gate log names him, February to June 2026.</p>
           </div>
-          <div id="s10-d" class="beat concl">
-            <p class="cq" style="font-size: 50px;">Aron Vesk, who drove the 22:40 that Dana Kovar boarded on 14 March 2026, is named in no log for the next 73 days; this is a lead to follow, not a finding about what he did.</p>
-            <p class="cs">Reasonable suspicion. Signed by a person, checked by a colleague.</p>
+          <div id="s10-d" class="beat" data-in="@16d-0.2" data-out="@17-0.3">
+            <p class="cq" style="font-size: 54px;">Aron Vesk, who drove the 22:40 that Dana Kovar boarded on 14 March 2026, is named in no log for the next 73 days; this is a lead to follow, not a finding about what he did.</p>
+            <p class="cs" style="top: 760px;">Reasonable suspicion. Signed by a person, checked by a colleague.</p>
           </div>
         </div>
       </div>
 
-      <!-- 11. What stays human, and the seal -->
-      <div id="s11" class="scene clip" data-start="168.9" data-duration="7.7" data-track-index="1">
+      <!-- The seal, on the first case's real package -->
+      <div id="s11" class="scene clip" data-in="@17-0.2" data-out="@18-0.2" data-start="200.69" data-duration="10.35" data-track-index="1">
         <div class="inner">
-          <h2 class="head">Every decision is signed by a person.</h2>
-          <p class="sub">A court, or anyone else, can check the sealed package offline.</p>
-          <div class="frame" style="left: 120px; top: 290px; width: 1680px; height: 560px; background: var(--paper);">
-            <div id="s11-cam" class="cam" style="width: 1680px; height: 3341px; top: -560px;"><img src="assets/captures/seal_verify.png" /></div>
+          <h2 class="head">Every decision is signed by a person, and the case is sealed.</h2>
+          <div class="frame" data-screen="the checker" style="left: 120px; top: 240px; width: 1680px; height: 560px; background: var(--paper);">
+            <div id="s11-cam" class="cam" style="width: 1680px; height: 3732px; top: -600px;"><img src="assets/captures/seal_verify.png" /></div>
           </div>
-          <p class="label" style="left: 120px; top: 866px;">Checker shown on a test package. Signed packages are in preview.</p>
+          <p class="label" style="left: 120px; top: 820px; width: 1680px;">The first case's own package, checked in the site's checker: 10 checks ran and passed, 4 were not run on this page.</p>
         </div>
       </div>
 
-      <!-- 12. Close: the two claims -->
-      <div id="s12" class="scene clip" data-start="176.6" data-duration="8.5" data-track-index="1">
+      <!-- Close: the two claims -->
+      <div id="s12" class="scene clip" data-in="@18-0.2" data-out="END" data-start="210.74" data-duration="8.06" data-track-index="1">
         <div class="inner">
           <h2 id="s12-a" class="head" style="top: 250px; font-size: 72px; width: 1500px;">The machine reads more than a person can, and finds the links.</h2>
           <h2 id="s12-b" class="head" style="top: 470px; font-size: 72px; width: 1500px; color: var(--violet);">A person approves every one, and the seal proves it later.</h2>
@@ -335,6 +369,17 @@ PAY-00004,2023-01-03,Riverbend Coatings Ltd,46500.00</div>
     <script>
       const tl = gsap.timeline({ paused: true });
       const IN = "expo.out", MOVE = "power2.inOut", OUT = "power2.in";
+      const LEN = window.FILM.length;
+
+      // A time from a window bound: @<line> its start, @<line>$ its end, 0 or END,
+      // with an optional +s or -s (film/audio.py resolves the same way).
+      const R = (b) => {
+        const m = /^(?:@(\w+)(\$)?|(0|END))([+-][\d.]+)?$/.exec(b.trim());
+        if (!m) throw new Error("bad bound " + b);
+        const base = m[1] ? window.FILM.lines[m[1]][m[2] ? 1 : 0] : m[3] === "END" ? LEN : 0;
+        return base + parseFloat(m[4] || 0);
+      };
+
       const words = (sel) => document.querySelectorAll(sel).forEach((el) => {
         el.innerHTML = el.textContent.trim().split(/\s+/).map((w) => `<span class="w">${w}</span>`).join(" ");
       });
@@ -349,144 +394,104 @@ PAY-00004,2023-01-03,Riverbend Coatings Ltd,46500.00</div>
         y = H < fh ? y : Math.min(0, Math.max(fh - H, y));
         return { x, y, scale: s };
       };
-      const enter = (sel, t, from = { opacity: 0, filter: "blur(8px)" }) =>
-        tl.fromTo(sel, from, { opacity: 1, x: 0, y: 0, scale: 1, filter: "blur(0px)", duration: 0.45, ease: IN }, t);
-      const leave = (sel, t) => tl.to(sel, { opacity: 0, filter: "blur(8px)", duration: 0.25, ease: OUT }, t);
-      const scene = (id, start, dur) => { enter(`#${id} .inner`, start); leave(`#${id} .inner`, start + dur - 0.3); };
       const mark = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: 1.04 }, { opacity: 1, scale: 1, duration: 0.35, ease: IN }, t);
-      const swap = (out, inn, t) => { leave(out, t); enter(inn, t + 0.2, { opacity: 0, y: 30, filter: "blur(8px)" }); };
 
-      // 1. The problem. The pile builds as the people are named.
+      // Every element that names a window arrives at its start and leaves at its end;
+      // a scene's inner layer carries its scene's window. Text never moves while shown.
+      document.querySelectorAll("[data-in]").forEach((el) => {
+        const target = el.classList.contains("scene") ? el.querySelector(".inner") : el;
+        const t0 = R(el.dataset.in);
+        const from = el.classList.contains("scene") || el.tagName === "VIDEO"
+          ? { opacity: 0, filter: "blur(8px)" }
+          : { opacity: 0, y: 24, filter: "blur(8px)" };
+        tl.fromTo(target, from, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: IN }, Math.max(t0, 0));
+        if (el.dataset.out && R(el.dataset.out) < LEN - 0.01) {
+          tl.to(target, { opacity: 0, filter: "blur(8px)", duration: 0.25, ease: OUT }, R(el.dataset.out));
+        }
+      });
+
+      // Opening: the pile builds as the people are named.
       tl.fromTo(".s1-t", { opacity: (i) => (i === 0 ? 1 : 0), y: (i) => (i === 0 ? 0 : -40), rotation: (i) => [-4, 3, -2, 5, -3][i] * (i === 0 ? 1 : 2) },
         { opacity: 1, y: 0, rotation: (i) => [-4, 3, -2, 5, -3][i], duration: 0.8, ease: IN, stagger: 0.35 }, 0);
-      tl.fromTo("#s1-a", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: IN }, 0.8);
-      tl.fromTo("#s1-b", { opacity: 0, color: "#b9b3a6" }, { opacity: 1, color: "#45423b", duration: 0.6, ease: IN }, 5.8);
-      tl.to(".s1-t", { x: -30, duration: 10, ease: "none" }, 0);
-      leave("#s1 .inner", 10.3);
+      tl.to(".s1-t", { x: -30, duration: R("@03-0.2"), ease: "none" }, 0);
 
-      // 2. Sealbook, then the three steps, each on the stage in turn.
-      scene("s2", 10.6, 18.4);
-      tl.fromTo("#s2-title .head", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: IN }, 10.9);
-      tl.fromTo("#s2-title .sub", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: IN }, 11.6);
-      swap("#s2-title", "#s2-1", 14.6);
-      tl.fromTo("#s2-1 .cam", { y: 0 }, { y: -40, duration: 2, ease: MOVE }, 15.0);
-      swap("#s2-1", "#s2-2", 16.6);
-      tl.fromTo("#s2-2 .cam", { scale: 1, x: 0, y: 0 }, { ...at("#s2-2 .cam", [60, 50, 900, 300], 1.3), duration: 2.4, ease: MOVE }, 18.0);
-      swap("#s2-2", "#s2-3", 22.4);
-      tl.fromTo("#s2-3a", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: IN }, 22.9);
-      tl.fromTo("#s2-3b", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: IN }, 25.6);
+      // Three steps.
+      tl.fromTo("#s2-1 .cam", { y: 0 }, { y: -40, duration: 2.2, ease: MOVE }, R("@04a+0.3"));
+      tl.fromTo("#s2-2 .cam", { scale: 1, x: 0, y: 0 }, { ...at("#s2-2 .cam", [60, 50, 900, 300], 1.3), duration: 2.4, ease: MOVE }, R("@04b+1.0"));
 
-      // 3. The four kinds of help.
-      scene("s3", 29, 3.95);
-      tl.fromTo(".s3-l", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.4, ease: IN, stagger: 0.45 }, 29.4);
+      // Four kinds of help.
+      tl.fromTo(".s3-l", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.4, ease: IN, stagger: 0.3 }, R("@06+0.1"));
 
-      // The timeline of story four: one tick per day the gate log names the driver
-      // (acceptance/cases/unwritten-name/files/gate_log.csv), February to June 2026.
+      // Story one: desks, the question over the pile, each name as it is spoken, one man.
+      tl.fromTo("#s4-docs .doc", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: IN, stagger: 0.12 }, R("@07+0.2"));
+      tl.fromTo(".s4-l", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.12 }, R("@07+0.8"));
+      tl.to("#s4-docs", { opacity: 0.25, duration: 0.5, ease: MOVE }, R("@07b-0.2"));
+      tl.fromTo("#s4-pile .cam", { y: -120 }, { y: -474, duration: 5, ease: MOVE }, R("@07b+3.8"));
+      tl.to("#s4-docs", { opacity: 1, duration: 0.5, ease: MOVE }, R("@08-0.2"));
+      [["#m1", "#c1", 0.0], ["#m2", "#c2", 0.76], ["#m3", "#c3", 1.6]].forEach(([m, c, d]) => {
+        mark(m, R("@08") + d);
+        tl.fromTo(c, { opacity: 0, y: 70, scale: 0.6 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: IN }, R("@08") + d + 0.05);
+      });
+      tl.fromTo("#c4", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: IN }, R("@08+2.7"));
+      mark("#m5", R("@08+4.0"));
+      tl.fromTo("#c5", { opacity: 0, y: -40, scale: 0.6 }, { opacity: 1, y: 0, scale: 1.25, duration: 0.6, ease: IN }, R("@08+4.8"));
+      tl.to("#s4-docs", { opacity: 0.12, duration: 0.6, ease: MOVE }, R("@09-0.1"));
+      [["#c1", 330], ["#c2", 425], ["#c3", 520], ["#c4", 615], ["#c5", 740]].forEach(([c, y], i) => {
+        const el = document.querySelector(c);
+        tl.to(c, { x: 760 - el.offsetLeft - el.offsetWidth, y: y - el.offsetTop, scale: c === "#c4" ? 0.8 : 0.9, transformOrigin: "100% 0%", duration: 0.9, ease: MOVE }, R("@09+0.1") + i * 0.12);
+      });
+      tl.fromTo("#s4-man", { opacity: 0, scale: 0.92, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.8, ease: IN }, R("@09+0.9"));
+      tl.fromTo("#s4-not", { opacity: 0, x: 200 }, { opacity: 1, x: 0, duration: 0.6, ease: IN }, R("@09+3.4"));
+      tl.to("#s4-not", { x: 150, y: 60, rotation: 3, duration: 0.9, ease: "back.out(1.2)" }, R("@09+4.6"));
+
+      // The proposal, pushed in until the licence card reads.
+      tl.set("#s5-cam", at("#s5-cam", [0, 0, 1680, 818], 0.79), R("@10-0.2"));
+      tl.to("#s5-cam", { ...at("#s5-cam", [500, 404, 474, 192], 1.7), duration: 1.8, ease: MOVE }, R("@10+1.2"));
+      mark("#s5-m1", R("@10+3.0"));
+
+      // The surveyor's rejected link: why, row by row.
+      mark("#s6-m1", R("@11+1.0"));
+      mark("#s6-m2", R("@11+1.4"));
+
+      // Story two: the times light up as they are spoken; her own account is struck.
+      tl.fromTo("#s8-photo", { scale: 1, x: 0, y: 0 }, { scale: 1.08, x: -30, y: -20, duration: 8, ease: "none" }, R("@13"));
+      tl.to("#s8-scan", { ...at("#s8-scan", [108, 100, 372, 136], 1.55), duration: 1.6, ease: MOVE }, R("@14a+2.2"));
+      mark("#s8-m1", R("@14b+0.6"));
+      mark("#s8-m2", R("@14b+2.6"));
+      mark("#t1", R("@14c+4.5"));
+      mark("#t2", R("@14c+6.2"));
+      mark("#t0", R("@14c+8.8"));
+
+      // Story three: the 2024 video flips back as "mirrored" is spoken.
+      tl.to("#s9-orig", { scaleX: -1, duration: 0.7, ease: MOVE }, R("@15c+6.3"));
+      tl.fromTo(".grid img", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: IN, stagger: 0.06 }, R("@15b+0.2"));
+
+      // Story four.
+      tl.fromTo("#s10-photo", { scale: 1, x: 0, y: 0 }, { scale: 1.08, x: -30, y: -20, duration: 4, ease: "none" }, R("@16"));
+      tl.set("#s10-cam", at("#s10-cam", [40, 40, 1260, 1700], 0.43), R("@16b-0.2"));
+      tl.to("#s10-cam", { ...at("#s10-cam", [360, 262, 870, 440], 0.9), duration: 1.6, ease: MOVE }, R("@16b+0.8"));
+      mark("#s10-m1", R("@16b+2.4"));
+
+      // The timeline: one tick per day the gate log names the driver
+      // (acceptance/cases/unwritten-name/files/gate_log_*.csv), February to June 2026.
       const DAYS = "2026-02-02 2026-02-03 2026-02-04 2026-02-05 2026-02-07 2026-02-09 2026-02-10 2026-02-11 2026-02-12 2026-02-14 2026-02-16 2026-02-17 2026-02-18 2026-02-19 2026-02-21 2026-02-23 2026-02-24 2026-02-25 2026-02-28 2026-03-02 2026-03-03 2026-03-05 2026-03-07 2026-03-09 2026-03-10 2026-03-11 2026-03-12 2026-05-26 2026-05-27 2026-05-28 2026-05-30 2026-06-01 2026-06-02 2026-06-03 2026-06-04 2026-06-06 2026-06-08 2026-06-09 2026-06-10 2026-06-11 2026-06-13 2026-06-15 2026-06-16 2026-06-17 2026-06-18 2026-06-22 2026-06-23 2026-06-24 2026-06-25 2026-06-27 2026-06-29 2026-06-30".split(" ");
       const day = (d) => Math.round((Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) - Date.UTC(2026, 1, 1)) / 86400000);
       const PX = 1680 / 150, tlEl = document.getElementById("tl");
       tlEl.innerHTML = DAYS.map((d) => `<i class="tick" style="left:${day(d) * PX}px"></i>`).join("") +
         `<i class="gap" style="left:${day("2026-03-14") * PX}px;width:${73 * PX}px"></i>` +
-        `<i class="seen" style="left:${day("2026-03-14") * PX}px"><b>Last seen, 14 March</b></i>`;
-      document.getElementById("tl-gap").style.left = 120 + (day("2026-03-14") + 36.5) * PX - 60 + "px";
+        `<i class="seen" style="left:${day("2026-03-14") * PX}px"></i>`;
+      document.getElementById("tl-gap").style.left = 120 + (day("2026-03-14") + 36.5) * PX - 90 + "px";
+      tl.fromTo("#tl .tick", { opacity: 0, scaleY: 0 }, { opacity: 1, scaleY: 1, duration: 0.3, ease: IN, stagger: 0.03 }, R("@16c+1.8"));
+      tl.fromTo("#tl .seen", { opacity: 0 }, { opacity: 1, duration: 0.4 }, R("@16c+3.2"));
+      tl.fromTo("#tl .gap", { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, transformOrigin: "0% 50%", duration: 1.0, ease: MOVE }, R("@16c+4.6"));
 
-      // Each story is four beats on one stage: the situation, the question, what the
-      // app surfaced, what the person concluded.
-      const beat = (out, inn, t) => { leave(out, t); enter(inn, t + 0.2, { opacity: 0, y: 24, filter: "blur(8px)" }); };
+      // The seal: down the checks.
+      tl.fromTo("#s11-cam", { y: 0 }, { y: -700, duration: 5.0, ease: MOVE }, R("@17+3.0"));
 
-      // 4. Story one. The desks, the question, each name as it is spoken, one man.
-      scene("s4", 32.95, 32.95);
-      tl.fromTo("#s4-docs .doc", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: IN, stagger: 0.12 }, 33.4);
-      tl.fromTo(".s4-l", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.12 }, 34.0);
-      leave("#s4-h1", 41.3);
-      tl.to("#s4-docs", { opacity: 0.3, duration: 0.5, ease: MOVE }, 41.3);
-      enter("#s4-h2", 41.55);
-      enter("#s4-h2s", 44.6);
-      tl.fromTo("#s4-pile", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: IN }, 45.2);
-      tl.fromTo("#s4-pile .cam", { y: -120 }, { y: -474, duration: 6, ease: MOVE }, 45.8);
-      leave("#s4-pile", 52.2);
-      leave("#s4-h2, #s4-h2s", 52.4);
-      tl.to("#s4-docs", { opacity: 1, duration: 0.5, ease: MOVE }, 52.4);
-      [["#m1", "#c1", 52.95], ["#m2", "#c2", 53.48], ["#m3", "#c3", 54.02]].forEach(([m, c, t]) => {
-        mark(m, t);
-        tl.fromTo(c, { opacity: 0, y: 70, scale: 0.6 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: IN }, t + 0.05);
-      });
-      tl.fromTo("#c4", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: IN }, 54.5);
-      mark("#m5", 55.22);
-      tl.fromTo("#c5", { opacity: 0, y: -40, scale: 0.6 }, { opacity: 1, y: 0, scale: 1.25, duration: 0.6, ease: IN }, 56.35);
-      tl.to("#s4-docs", { opacity: 0.12, duration: 0.6, ease: MOVE }, 58.0);
-      enter("#s4-h3", 58.2);
-      [["#c1", 330], ["#c2", 425], ["#c3", 520], ["#c4", 615], ["#c5", 740]].forEach(([c, y], i) => {
-        const el = document.querySelector(c);
-        tl.to(c, { x: 760 - el.offsetLeft - el.offsetWidth, y: y - el.offsetTop, scale: c === "#c4" ? 0.8 : 0.9, transformOrigin: "100% 0%", duration: 0.9, ease: MOVE }, 58.4 + i * 0.12);
-      });
-      tl.fromTo("#s4-man", { opacity: 0, scale: 0.92, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.8, ease: IN }, 59.3);
-      tl.fromTo("#s4-who", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: IN }, 60.2);
-      tl.fromTo("#s4-gen", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 60.4);
-      tl.fromTo("#s4-not", { opacity: 0, x: 200 }, { opacity: 1, x: 0, duration: 0.6, ease: IN }, 61.2);
-      tl.to("#s4-not", { x: 150, y: 60, rotation: 3, duration: 0.9, ease: "back.out(1.2)" }, 62.7);
-      tl.fromTo("#s4-notl", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: IN }, 63.1);
-
-      // 5. The proposal, pushed in until the licence card reads.
-      scene("s5", 65.9, 10.5);
-      tl.set("#s5-cam", at("#s5-cam", [0, 0, 1680, 818], 0.79), 65.9);
-      tl.to("#s5-cam", { ...at("#s5-cam", [500, 404, 474, 192], 1.7), duration: 1.8, ease: MOVE }, 67.6);
-      mark("#s5-m1", 69.4);
-
-      // 6. The surveyor declined, with a reason.
-      scene("s6", 76.4, 6.4);
-
-      // 7. The conclusion as the app shows it, then in words.
-      scene("s7", 82.8, 10.1);
-      leave("#s7-panel", 86.8);
-      enter("#s7-words", 87.0, { opacity: 0, y: 24, filter: "blur(8px)" });
-
-      // 8. Story two.
-      scene("s8", 92.9, 26.7);
-      tl.fromTo("#s8-photo", { scale: 1, x: 0, y: 0 }, { scale: 1.08, x: -30, y: -20, duration: 8.4, ease: "none" }, 93.2);
-      beat("#s8-a", "#s8-b", 101.5);
-      beat("#s8-b", "#s8-c", 104.9);
-      tl.fromTo("#t1", { backgroundColor: "rgba(87, 50, 194, 0)", color: "#1b1a17" }, { backgroundColor: "rgba(87, 50, 194, 1)", color: "#ffffff", duration: 0.3 }, 113.0);
-      tl.fromTo("#t2", { backgroundColor: "rgba(87, 50, 194, 0)", color: "#1b1a17" }, { backgroundColor: "rgba(87, 50, 194, 1)", color: "#ffffff", duration: 0.3 }, 114.1);
-      beat("#s8-c", "#s8-d", 115.0);
-
-      // 9. Story three.
-      scene("s9", 119.6, 26.3);
-      tl.fromTo("#s9-viral0", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: IN }, 119.8);
-      tl.to("#s9-viral0", { opacity: 0, duration: 0.25, ease: OUT }, 123.2);
-      beat("#s9-a", "#s9-b", 123.2);
-      tl.fromTo(".grid img", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: IN, stagger: 0.06 }, 123.6);
-      beat("#s9-b", "#s9-c", 127.4);
-      tl.fromTo("#s9-viral, #s9-orig", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: IN, stagger: 0.2 }, 127.7);
-      tl.to("#s9-orig", { scaleX: -1, duration: 0.7, ease: MOVE }, 133.0);
-      tl.fromTo("#s9-flip", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 133.5);
-      tl.to("#s9-viral, #s9-orig", { opacity: 0, duration: 0.25, ease: OUT }, 136.8);
-      beat("#s9-c", "#s9-d", 136.8);
-
-      // 10. Story four.
-      scene("s10", 145.9, 23);
-      tl.fromTo("#s10-photo", { scale: 1, x: 0, y: 0 }, { scale: 1.08, x: -30, y: -20, duration: 4, ease: "none" }, 146.2);
-      beat("#s10-a", "#s10-b", 149.8);
-      tl.set("#s10-cam", at("#s10-cam", [40, 40, 1260, 1700], 0.43), 149.8);
-      tl.to("#s10-cam", { ...at("#s10-cam", [360, 262, 870, 440], 0.9), duration: 1.6, ease: MOVE }, 151.0);
-      mark("#s10-m1", 152.6);
-      tl.fromTo("#s10-bl", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 152.8);
-      beat("#s10-b", "#s10-c", 154.9);
-      tl.fromTo("#tl .tick", { opacity: 0, scaleY: 0 }, { opacity: 1, scaleY: 1, duration: 0.3, ease: IN, stagger: 0.035 }, 155.4);
-      tl.fromTo("#tl .seen", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 157.2);
-      tl.fromTo("#tl .gap", { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, transformOrigin: "0% 50%", duration: 1.0, ease: MOVE }, 159.2);
-      tl.fromTo("#tl-gap", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 159.9);
-      beat("#s10-c", "#s10-d", 163.2);
-
-      // 11. The seal.
-      scene("s11", 168.9, 7.7);
-      tl.fromTo("#s11-cam", { y: -560 }, { y: -900, duration: 4.0, ease: MOVE }, 171.4);
-
-      // 12. Close.
-      tl.fromTo("#s12 .inner", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 176.6);
-      tl.fromTo("#s12-a .w", { opacity: 0.12 }, { opacity: 1, duration: 0.1, stagger: 0.07, ease: IN }, 176.9);
-      tl.fromTo("#s12-b .w", { opacity: 0.12 }, { opacity: 1, duration: 0.1, stagger: 0.07, ease: IN }, 179.8);
-      tl.fromTo("#s12-c", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: IN }, 181.8);
+      // Close.
+      tl.fromTo("#s12-a .w", { opacity: 0.12 }, { opacity: 1, duration: 0.1, stagger: 0.07, ease: IN }, R("@18"));
+      tl.fromTo("#s12-b .w", { opacity: 0.12 }, { opacity: 1, duration: 0.1, stagger: 0.07, ease: IN }, R("@18+2.9"));
+      tl.fromTo("#s12-c", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: IN }, R("@18$+0.2"));
 
       window.__timelines["main"] = tl;
       tl.seek(0);

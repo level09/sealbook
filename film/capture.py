@@ -5,10 +5,11 @@ Run against a local development server with agent login on (see film/README.md):
     uv run python film/capture.py
 
 Writes PNG crops of real app screens, the cases' own pictures and clips, the site
-fonts and a verified test package screen into film/composition/assets/captures/,
-which is not tracked. Viewport and scale are fixed so every run frames the same.
-Nothing here signs, accepts or rejects: the reject form is filled and cancelled.
-The one write is the page's own logged reveal of the passport copy, which the
+fonts and the checker's verdict on the four-names package the seeded case built
+(instance/packages/case-four-names.zip, or FILM_PACKAGE) into
+film/composition/assets/captures/, which is not tracked. Viewport and scale are
+fixed so every run frames the same. Nothing here signs, accepts or rejects: the
+decisions shown were made by the seeder. The one write is the page's own logged reveal of the passport copy, which the
 four-names conclusion rests on.
 """
 
@@ -19,7 +20,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 from urllib.parse import quote
 
@@ -37,10 +37,16 @@ QUIET = ".sb-hints { display: none !important; }"
 VIEW = {"width": 1600, "height": 1000}
 NARROW = {"width": 1000, "height": 1400}
 SCALE = 2
-REASON = "Born 19 August 1974 in Torvane: a namesake, not the same man."
+PACKAGE = Path(
+    os.environ.get("FILM_PACKAGE", ROOT / "instance/packages/case-four-names.zip")
+)
 # consultancy_agreement_qassar.jpg and copy_viral.mp4, by SHA-256
 AGREEMENT = "3c4f5e86f27957086f031173c7d3eac00b277491ff80bf78fcb3304241d4429c"
 VIRAL = "349903b81faad0bd067b3bb8e02a9e28a8c7fbb58175250f51b3ac09566fed51"
+# never-there: exhibit MQ/3 (a scan), the gate photograph and the voice note
+MQ3 = "8a5e3a0fc48a31da96a2d6fab71ed8843bb4d1ffc116bc710660dd6627b312ef"
+PHOTO = "8e82f20ba8ea8564f271831f84e9ed14d5fc821fefa7d59f374eb83790282918"
+VOICE = "737d0745ca19fca09369468fbe7ea084635ab50f78628253355b1605b99c41ad"
 
 FILES = {
     "four-names/files/vendor_form_kassar.jpg": "scan_vendor.jpg",
@@ -125,22 +131,6 @@ async def proposals(app):
         return [str(r[0]) for r in rows]
 
 
-def test_package(target: Path) -> Path:
-    """A valid package from the offline verifier's own test fixture."""
-    from tests.passkey import SoftPasskey
-    from tests.test_site_verify import pack
-    from tests.test_verify_package import PackageTests
-
-    case = PackageTests("test_valid_package_and_canonical_round_trip")
-    case.setUp()
-    result = case.run_verifier()
-    case.attest(SoftPasskey(), SoftPasskey())
-    assert result.returncode == 0, result.stdout
-    pack(case.directory, target)
-    case.doCleanups()
-    return target
-
-
 def card(page, heading):
     return page.locator(".ppl-card").filter(
         has=page.get_by_role("heading", name=heading, exact=True)
@@ -209,19 +199,12 @@ async def four_names(browser, app):
     await go(page, f"/review?statement={true_link}", wait=2000)
     await shoot(page, "fn_link", clip={"x": 640, "y": 120, "width": 945, "height": 460})
 
-    # The surveyor: a person rejects him. Stop at the signature prompt, then cancel.
+    # The surveyor's proposal, as the seeded case's analyst left it: rejected,
+    # signed in act 7. The table shows why: another birth date and birthplace.
     await go(page, f"/review?statement={surveyor}", wait=2000)
     await shoot(
-        page, "fn_surveyor", clip={"x": 640, "y": 120, "width": 945, "height": 460}
+        page, "fn_surveyor", clip={"x": 640, "y": 120, "width": 560, "height": 410}
     )
-    await page.get_by_role("button", name="Reject").first.click()
-    await page.locator("#rv-reason").fill(REASON)
-    await page.wait_for_timeout(600)
-    form = page.locator(".rv-form").first
-    await shoot(page, "fn_reject", locator=form, pad=16)
-    # The film stops before "Reject and sign": signing needs the analyst's own
-    # passkey, and the capture account has none.
-    await form.get_by_role("button", name="Cancel").click()
     await ctx.close()
 
 
@@ -278,17 +261,44 @@ async def other_cases(browser, app):
     await ctx.close()
 
 
+async def reading(browser, app):
+    """What the app read in never-there: a scanned exhibit sheet with its claims
+    boxed, the text it read and the claim it pulled; the gate photograph with its
+    first pass; the voice note with its transcript."""
+    ctx, page = await session(browser, app, "case-never-there")
+    await go(page, f"/evidence/{MQ3}", wait=2500)
+    await shoot(page, "nt_scan", clip={"x": 208, "y": 205, "width": 516, "height": 590})
+    await shoot(
+        page, "nt_text", clip={"x": 1125, "y": 375, "width": 455, "height": 295}
+    )
+    claim = page.locator("main").get_by_text("Seen at", exact=True).first
+    box = await claim.bounding_box()
+    await shoot(
+        page,
+        "nt_claim",
+        clip={"x": 736, "y": box["y"] - 160, "width": 376, "height": 290},
+    )
+    await go(page, f"/evidence/{PHOTO}", wait=2500)
+    await shoot(
+        page, "nt_photo", clip={"x": 208, "y": 205, "width": 904, "height": 590}
+    )
+    await go(page, f"/evidence/{VOICE}", wait=2500)
+    await shoot(
+        page, "nt_voice", clip={"x": 208, "y": 205, "width": 904, "height": 520}
+    )
+    await ctx.close()
+
+
 async def verifier(browser):
-    with tempfile.TemporaryDirectory() as tmp:
-        package = test_package(Path(tmp) / "package.zip")
-        ctx = await browser.new_context(viewport=VIEW, device_scale_factor=SCALE)
-        page = await ctx.new_page()
-        await page.goto((ROOT / "site/verify.html").as_uri(), wait_until="load")
-        await page.set_input_files("#package", str(package))
-        await page.locator("#result").wait_for(state="visible")
-        await page.wait_for_timeout(1500)
-        await shoot(page, "seal_verify", locator=page.locator("main"), pad=0)
-        await ctx.close()
+    """The site's checker on the real four-names package, read in the browser."""
+    ctx = await browser.new_context(viewport=VIEW, device_scale_factor=SCALE)
+    page = await ctx.new_page()
+    await page.goto((ROOT / "site/verify.html").as_uri(), wait_until="load")
+    await page.set_input_files("#package", str(PACKAGE))
+    await page.locator("#result").wait_for(state="visible")
+    await page.wait_for_timeout(1500)
+    await shoot(page, "seal_verify", locator=page.locator("main"), pad=0)
+    await ctx.close()
 
 
 async def main():
@@ -304,6 +314,7 @@ async def main():
         await conclusion(browser, app, "case-old-footage", "of_conclusion")
         await conclusion(browser, app, "case-unwritten-name", "un_conclusion")
         await other_cases(browser, app)
+        await reading(browser, app)
         await verifier(browser)
         await browser.close()
 
