@@ -86,6 +86,7 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
         <dl class="cc-facts">
           <div><dt>Confidence</dt><dd><b>${ c.standard.label }</b><span class="ov-muted">. ${ c.standard.meaning }</span></dd></div>
           <div><dt>Rests on</dt><dd>${ plural(c.rests_on.length, 'accepted item') }, signed by ${ c.by } on ${ day(c.at) }. ${ peerLine(c.peer) }</dd></div>
+          <div v-if="(c.against || []).length"><dt>Contradicts</dt><dd><span v-for="a in c.against" :key="a.id" class="d-block">${ a.about ? a.about + ': ' : '' }${ a.field } <bdi>${ a.value }</bdi>${ a.when ? ', ' + a.when : '' }<span class="ov-muted">${ a.source ? '. ' + a.source : '' }${ a.state === 'stands' ? '' : '. ' + a.words }</span></span></dd></div>
           <div v-if="c.alternatives.length"><dt>Alternatives set aside</dt><dd><span v-for="(a, i) in c.alternatives" :key="i" class="d-block"><bdi>${ a.text }</bdi>. <span class="ov-muted">Why not: <bdi>${ a.why }</bdi></span></span></dd></div>
           <div><dt>Not established</dt><dd><span v-for="(n, i) in c.not_established" :key="i" class="d-block" dir="auto">${ n }</span><span v-if="!c.not_established.length" class="ov-muted">Nothing was recorded as not established.</span></dd></div>
         </dl>

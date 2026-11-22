@@ -715,10 +715,13 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
             what = REVIEWED.get(props.get(_about(s.subject)), "the claim")
             return f"{v['verdict']} {what}{why_}"
         if s.prop == Prop.CONCLUSION:
-            n = len(v["rests_on"])
+            n, k = len(v["rests_on"]), len(v.get("contradicts") or [])
+            against = (
+                f" and contradicting {k} claim{'s' if k != 1 else ''}" if k else ""
+            )
             return (
                 f"\u201c{v['text']}\u201d, {v['standard_label'].lower()}, resting on "
-                f"{n} accepted item{'s' if n != 1 else ''}"
+                f"{n} accepted item{'s' if n != 1 else ''}{against}"
             )
         if s.prop == Prop.ACCESS and v.get("action") == "disclose":
             return (

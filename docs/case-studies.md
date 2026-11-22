@@ -59,8 +59,8 @@ Keys the seeder reads beyond that shape, all optional:
   places lie in open sea so that no real town reads as the scene; the marker, not
   the coordinates, says they are invented. Sources arrive from the channel "Case
   study: <title>".
-- `conclusion`: `{"text", "standard", "rests_on", "alternatives": [{"text", "why"}],
-  "not_established": [...], "peer_review": true}`, the case's signed conclusion
+- `conclusion`: `{"text", "standard", "rests_on", "contradicts", "alternatives":
+  [{"text", "why"}], "not_established": [...], "peer_review": true}`, the case's signed conclusion
   (`sealbook/cases/conclusions.py`). `standard` is a key of
   `sealbook/method/standards.csv`. Each `rests_on` item is a claim key, `"links"`
   (every accepted same-person link), `"same_person"` (the linker's proposals that
@@ -68,7 +68,12 @@ Keys the seeder reads beyond that shape, all optional:
   proposals inside the planted family of copies, accepted and then cited, so the
   conclusion rests on the match itself; `"copies:<key>"` keeps those joining that
   source to another file and `"copies:<key>,<key>"` the match between two
-  sources). Write an alternative without a closing full stop: the page adds one.
+  sources). `contradicts` (optional) lists claim keys the conclusion finds
+  against, such as a statement it shows to be wrong: cited as what was said, not
+  accepted, never counted toward what it rests on, and resolved like a
+  `rests_on` claim key, so on a read source the claim extraction wrote stands
+  for its key. Write an alternative without a closing full stop: the page adds
+  one.
 
 `truth` keys the case does not plant may be left out or empty. The scores that read
 them come out `null`, and so do their targets, instead of a failure. Same-person
@@ -111,9 +116,7 @@ see `blobmeta.py`); audio and video `{"ms"}` pins are untried (claims quote the
 transcript instead); incidents, findings and assignments are seeded only where an
 act asks for them (unwritten-name seeds one accepted incident and one rejected
 finding); an act's `day` is the story's, while the ledger records
-seed time; a conclusion cannot cite a claim
-as the one it contradicts (never-there's conclusion leaves her own Brindle Cross
-claim out). The old-footage case has no people, so its Stories and Case
+seed time. The old-footage case has no people, so its Stories and Case
 map stay empty.
 
 ## Acts: a case told in time
@@ -436,7 +439,7 @@ by Tomas Reyes, with the case marked concluded:
 | Case | Conclusion | Confidence | Rests on |
 | --- | --- | --- | --- |
 | One man, four names | The four desks' names are one man | Reasonable grounds to believe | 11 same-person links: the desks' 5 and the linker's 6 true proposals |
-| The witness who was never there | Mara Quill was at the yard on Tanner's Row that evening, not in Brindle Cross from six | Reasonable grounds to believe | The two exhibit sheets' claims, MQ/3 and MQ/4 |
+| The witness who was never there | Mara Quill was at the yard on Tanner's Row that evening, not in Brindle Cross from six | Reasonable grounds to believe | The two exhibit sheets' claims, MQ/3 and MQ/4; it contradicts her own Brindle Cross claim, as extraction read it from her statement |
 | The name nobody wrote down | Aron Vesk is named in no log for 73 days after the night Dana Kovar boarded his bus; a lead, not a finding about what he did | Reasonable suspicion | Both supervisor sightings and his last and next log lines |
 | The footage that was two years old | The clip shared as new is a copy of the 2024 video | Clear and convincing | The strong matches between the clip and the 2024 video, and the two posts' words |
 

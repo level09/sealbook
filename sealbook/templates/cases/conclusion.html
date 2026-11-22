@@ -72,6 +72,20 @@
       </div>
     </section>
 
+    <section v-if="d.against.length" class="cd-panel" aria-labelledby="cd-h-against">
+      <h2 id="cd-h-against" class="text-title-large">The account this conclusion contradicts</h2>
+      <p class="cd-muted mt-n1">Cited as what was said, not as true. It does not count toward what the conclusion rests on.</p>
+      <div v-for="i in d.against" :key="i.id" class="cd-item">
+        <i class="ti ti-message-x" aria-hidden="true"></i>
+        <div>
+          <a v-if="i.href" :href="i.href">${ i.text || 'A claim no longer on record' }</a>
+          <span v-else>${ i.text || 'A claim no longer on record' }</span>
+          <div v-if="i.about || i.source" class="s">${ [i.about, i.when, i.source].filter(Boolean).join('. ') }</div>
+        </div>
+        <span class="cd-state" :class="{gone: i.state !== 'stands'}">${ i.state === 'stands' ? (i.tier === 'accepted' ? 'accepted as said' : 'as said') : i.words }</span>
+      </div>
+    </section>
+
     <section v-if="c.text" class="cd-panel" aria-labelledby="cd-h-alt">
       <h2 id="cd-h-alt" class="text-title-large">Alternatives set aside</h2>
       <ul class="cd-list"><li v-for="(a, i) in c.alternatives" :key="i"><bdi>${ a.text }</bdi>. <span class="cd-muted">Why not: <bdi>${ a.why }</bdi></span></li></ul>

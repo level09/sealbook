@@ -954,3 +954,9 @@ covers in the text it was read from (`span_blob`).
   `media_match` as never citable, so the seeder accepted the copies and cited two
   captions instead. When a new decision type rests on evidence, list every kind of
   accepted statement a person can sign and check the citer reaches each.
+
+- never-there's conclusion finds against Mara's own Brindle Cross claim but could
+  not name it: a citation had one meaning, "rests on", so citing the claim it
+  disproves would have read as resting on it, and the claim was left out. A
+  citation that can mean more than one thing needs its role stored with it
+  (`contradicts` beside `rests_on`), with each role's own standing rule.

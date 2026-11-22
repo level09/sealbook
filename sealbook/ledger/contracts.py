@@ -157,7 +157,8 @@ class Prop(enum.StrEnum):
     RELATION = "relation"
     # A person's conclusion on a case (subject "case:<slug>"), value {"text": one
     # sentence, "lang", "standard": a key of method.standards(), "standard_label",
-    # "rests_on": [accepted statement ids], "people": ["person:<uuid>" the cited
+    # "rests_on": [accepted statement ids], optional "contradicts": [ids of claims,
+    # accepted or not, it finds against], "people": ["person:<uuid>" the cited
     # statements are about], "alternatives": [{"text", "why"}], "not_established":
     # [text], "gesture"}. Human authored and passkey signed, never by an agent; a
     # revision supersedes it, a withdrawal retracts it.

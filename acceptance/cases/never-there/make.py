@@ -912,12 +912,13 @@ TRAP_CONTRADICTIONS = [
     ),
 ]
 # What the two exhibit sheets support, once a person accepts them. Her own
-# statement's Brindle Cross claim is what they contradict, so it is not cited.
+# statement's Brindle Cross claim is what they contradict: cited as what she said.
 CONCLUSION = {
     "text": "Mara Quill was at the yard on Tanner's Row on the evening of 14 March "
     "2026, not in Brindle Cross from six as her statement says.",
     "standard": "reasonable_grounds",
     "rests_on": ["mara_mq3.at", "mara_mq4.at"],
+    "contradicts": ["mara_stmt.at"],
     "alternatives": [
         {
             "text": "She was at her sister's house in Brindle Cross from about six",

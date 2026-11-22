@@ -77,6 +77,20 @@
       </div>
 
       <div class="cf-step">
+        <h2 class="text-title-medium">The account it contradicts <span class="cf-muted text-body-medium">(optional)</span></h2>
+        <p class="cf-muted text-body-medium">A claim of this case the conclusion finds against, such as a statement it shows to be wrong. It is cited as what was said, accepted or not, and never counts toward what it rests on. ${ f.contradicts.length ? plural(f.contradicts.length, 'claim') + ' chosen.' : '' }</p>
+        <v-text-field v-model="qSaid" density="compact" prepend-inner-icon="ti ti-search" label="Find a claim" hide-details class="mb-2"></v-text-field>
+        <div class="cf-pick">
+          <label v-for="i in said" :key="i.id" class="cf-item">
+            <input type="checkbox" :value="i.id" v-model="f.contradicts" :disabled="f.rests_on.includes(i.id)">
+            <span>${ i.text }</span>
+            <span v-if="i.about || i.source" class="s">${ [i.about, i.when, i.source].filter(Boolean).join('. ') }</span>
+          </label>
+          <p v-if="!said.length" class="cf-muted pa-3 mb-0">${ qSaid ? 'No claim matches.' : 'Type a name, place or source to find the claim.' }</p>
+        </div>
+      </div>
+
+      <div class="cf-step">
         <h2 class="text-title-medium">Alternatives considered</h2>
         <p class="cf-muted text-body-medium">Each other explanation you weighed, and why it was set aside.</p>
         <div v-for="(a, i) in f.alternatives" :key="i" class="cf-row mb-2">
@@ -147,8 +161,8 @@ const pause = ms => new Promise(r => setTimeout(r, ms));
 window.app = Vue.createApp({
   mixins: [layoutMixin, signing], delimiters: config.delimiters,
   data: () => ({
-    scale: boot.scale, revises: params.get('revises'), found: null, loaded: false, q: '', status: null,
-    f: {text: '', standard: null, rests_on: [], alternatives: [{text: '', why: ''}], not_established: [''], conclude: true},
+    scale: boot.scale, revises: params.get('revises'), found: null, loaded: false, q: '', qSaid: '', status: null,
+    f: {text: '', standard: null, rests_on: [], contradicts: [], alternatives: [{text: '', why: ''}], not_established: [''], conclude: true},
     drafts: null, drafting: false, error: '',
   }),
   computed: {
@@ -164,6 +178,13 @@ window.app = Vue.createApp({
       ];
     },
     total() { return this.groups.reduce((n, g) => n + g.items.length, 0); },
+    said() {
+      // Chosen ones first, then matches for the search; the case may hold thousands.
+      const all = this.found?.said || [], q = this.qSaid.toLowerCase();
+      const chosen = all.filter(i => this.f.contradicts.includes(i.id));
+      const hits = q ? all.filter(i => !this.f.contradicts.includes(i.id) && `${i.text} ${i.about || ''} ${i.source || ''}`.toLowerCase().includes(q)).slice(0, 40) : [];
+      return [...chosen, ...hits];
+    },
     alternatives() { return this.f.alternatives.filter(a => a.text.trim() || a.why.trim()); },
     missing() {
       if (!this.f.text.trim()) return 'Write the conclusion.';
@@ -187,7 +208,8 @@ window.app = Vue.createApp({
         if (this.revises) {
           const {data} = await axios.get(`/api/cases/conclusions/${this.revises}`);
           const c = data.conclusion;
-          Object.assign(this.f, {text: c.text, standard: c.standard.key, rests_on: c.rests_on.filter(i => this.known(i)), alternatives: c.alternatives.map(a => ({...a})), not_established: [...c.not_established, '']});
+          const said = new Set((this.found.said || []).map(i => i.id));
+          Object.assign(this.f, {text: c.text, standard: c.standard.key, rests_on: c.rests_on.filter(i => this.known(i)), contradicts: (c.contradicts || []).filter(i => said.has(i)), alternatives: c.alternatives.map(a => ({...a})), not_established: [...c.not_established, '']});
         }
       } catch (e) { this.error = err(e); }
       this.loadDrafts();
@@ -222,6 +244,7 @@ window.app = Vue.createApp({
     submit() {
       const item = {
         investigation: this.slug, text: this.f.text.trim(), standard: this.f.standard, rests_on: this.f.rests_on,
+        contradicts: this.f.contradicts.filter(i => !this.f.rests_on.includes(i)),
         alternatives: this.alternatives, not_established: this.f.not_established.filter(n => n.trim()),
         conclude: this.f.conclude, revises: this.revises || undefined,
       };

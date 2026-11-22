@@ -101,7 +101,7 @@ async def conclusion_list():
         i
         for c in out["conclusions"]
         if c.get("text")
-        for i in [c["id"], *c["rests_on"]]
+        for i in [c["id"], *c["rests_on"], *c["contradicts"]]
     ]
     await conclusions.log_view(db, current_user, slug, shown)
     await db.commit()
@@ -123,7 +123,10 @@ async def conclusion_detail(cid):
     c = out["conclusion"]
     if c.get("text"):
         await conclusions.log_view(
-            db, current_user, out["investigation"], [c["id"], *c["rests_on"]]
+            db,
+            current_user,
+            out["investigation"],
+            [c["id"], *c["rests_on"], *c["contradicts"]],
         )
         await db.commit()
     return _json(out)

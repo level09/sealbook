@@ -20,7 +20,7 @@ export function statusLine(s) {
 
 /* Why a conclusion no longer stands, in one sentence. */
 export function brokenLine(c) {
-  const n = c.broken.length, total = c.rests_on.length;
+  const n = c.broken.length, total = c.rests_on.length + (c.contradicts || []).length;
   const words = [...new Set(c.broken.map(b => b.words))].join(' or ');
   return `No longer stands on what it cited: ${n} of ${plural(total, 'item')} ${n === 1 ? 'was' : 'were'} ${words}. Revise or withdraw it.`;
 }

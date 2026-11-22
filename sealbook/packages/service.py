@@ -207,8 +207,9 @@ async def case_conclusions(db: AsyncSession, brief: Brief, user=None) -> list[di
 
 def _sealed(found: list[dict]) -> tuple[list[uuid.UUID], list[uuid.UUID]]:
     """The statements a package carries for its cases' conclusions: each conclusion
-    and the status it left the case in, then what the conclusions rest on. One that
-    no longer stands is refused: it is revised or withdrawn before it is sealed."""
+    and the status it left the case in, and the claims it contradicts (what was
+    said, accepted or not), then what the conclusions rest on. One that no longer
+    stands is refused: it is revised or withdrawn before it is sealed."""
     own, rests = [], []
     for case in found:
         for c in case["conclusions"]:
@@ -218,6 +219,7 @@ def _sealed(found: list[dict]) -> tuple[list[uuid.UUID], list[uuid.UUID]]:
                     "revise or withdraw it before building"
                 )
             own.append(uuid.UUID(c["id"]))
+            own += [uuid.UUID(i) for i in c.get("contradicts") or []]
             rests += [uuid.UUID(i) for i in c["rests_on"]]
         if case["conclusions"] and case["status"].get("id"):
             own.append(uuid.UUID(case["status"]["id"]))
@@ -709,6 +711,7 @@ async def build(db: AsyncSession, brief: Brief, user, config) -> Package:
                                         "text",
                                         "standard",
                                         "rests_on",
+                                        "contradicts",
                                         "alternatives",
                                         "not_established",
                                         "by",

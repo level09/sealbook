@@ -157,21 +157,55 @@ async def _finding_text(db, value: dict) -> str:
     )
 
 
-async def citeable(db, slug: str) -> dict:
-    """What a conclusion on the case may rest on: accepted, current claims from its
-    available sources; accepted same-person links between its person records; its
-    accepted findings. Each item carries its id, kind and the words a person reads."""
-    accepted = (StatementTier.tier == Tier.ACCEPTED, write.current_clause())
-    claims = await data.statement_rows(
+async def _claims(db, *where, rejected: bool = False) -> list[dict]:
+    """Current claims (CLAIMS) from available sources, as items; rejected ones
+    only with `rejected`."""
+    rows = await data.statement_rows(
         db,
-        *accepted,
+        *where,
+        true() if rejected else StatementTier.tier != Tier.REJECTED,
+        write.current_clause(),
         Payload.value.is_not(None),
         Statement.prop.in_([str(p) for p in CLAIMS]),
-        mfilter.statement_clause({"investigation": slug, "time": None}),
         available(mfilter.source(mfilter.statement_blob())),
         limit=CITEABLE_MAX,
         order=Statement.recorded_at,
     )
+    recs = await records(
+        db, {r["subject"] for r in rows if r["subject"].startswith("person:")}
+    )
+    return [
+        {
+            "id": r["id"],
+            "kind": "claim",
+            "tier": r["tier"],
+            "about": _record(recs.get(r["subject"]))
+            if r["subject"].startswith("person:")
+            else r["subject_label"],
+            "field": _field(r["prop"]),
+            "value": r["display"],
+            "text": f"{_field(r['prop'])}: "
+            + (r["display"] or "hidden until its sensitive source is revealed"),
+            "masked": r["masked"],
+            "when": r["when"],
+            "source": (r["doc"] or {}).get("title"),
+            "href": f"/evidence/{r['doc']['source_sha256']}" if r.get("doc") else None,
+            "people": [r["subject"]] if r["subject"].startswith("person:") else [],
+        }
+        for r in rows
+    ]
+
+
+async def citeable(db, slug: str) -> dict:
+    """What a conclusion on the case may rest on: accepted, current claims from its
+    available sources; accepted same-person links between its person records; its
+    accepted findings and matches. "said" is every current claim not rejected, the
+    accounts a conclusion may name as the ones it contradicts, accepted or not.
+    Each item carries its id, kind and the words a person reads."""
+    accepted = (StatementTier.tier == Tier.ACCEPTED, write.current_clause())
+    case_ = mfilter.statement_clause({"investigation": slug, "time": None})
+    said = await _claims(db, case_)
+    claims = await _claims(db, case_, StatementTier.tier == Tier.ACCEPTED)
     links = (
         await db.execute(
             select(Statement, Payload.value)
@@ -199,30 +233,10 @@ async def citeable(db, slug: str) -> dict:
     persons = {st.subject for st, _ in links} | {
         f"person:{v['person']}" for _, v in links
     }
-    persons |= {r["subject"] for r in claims if r["subject"].startswith("person:")}
     recs = await records(db, persons)
     return {
-        "claims": [
-            {
-                "id": r["id"],
-                "kind": "claim",
-                "about": _record(recs.get(r["subject"]))
-                if r["subject"].startswith("person:")
-                else r["subject_label"],
-                "field": _field(r["prop"]),
-                "value": r["display"],
-                "text": f"{_field(r['prop'])}: "
-                + (r["display"] or "hidden until its sensitive source is revealed"),
-                "masked": r["masked"],
-                "when": r["when"],
-                "source": (r["doc"] or {}).get("title"),
-                "href": f"/evidence/{r['doc']['source_sha256']}"
-                if r.get("doc")
-                else None,
-                "people": [r["subject"]] if r["subject"].startswith("person:") else [],
-            }
-            for r in claims
-        ],
+        "claims": claims,
+        "said": said,
         "links": [
             {
                 "id": str(st.id),
@@ -330,10 +344,12 @@ def _flat(found: dict) -> dict[str, dict]:
 # --- whether what it cited still stands ---------------------------------------------
 
 
-async def cited(db, ids: list[str]) -> dict[str, str]:
+async def cited(db, ids: list[str], said: bool = False) -> dict[str, str]:
     """Each cited statement's state: "stands", or why it no longer does (a key of
     GONE). A statement may be retracted, rejected, erased (its value or its source),
-    replaced by an accepted correction, or no longer accepted after an undo."""
+    replaced by an accepted correction, or no longer accepted after an undo. A claim
+    cited as what was said (`said`, the account a conclusion contradicts) stands
+    while it is current and not rejected, accepted or not."""
     uids = [uuid.UUID(i) for i in ids]
     blob = mfilter.statement_blob()
     rows = (
@@ -370,7 +386,7 @@ async def cited(db, ids: list[str]) -> dict[str, str]:
             else "replaced"
             if not current
             else "stands"
-            if tier == Tier.ACCEPTED
+            if tier == Tier.ACCEPTED or said
             else "unconfirmed"
         )
     return out
@@ -528,6 +544,7 @@ def _shape(st, tier, reason, value, name, current) -> dict:
             "meaning": scale.get("meaning", ""),
         },
         "rests_on": list(value.get("rests_on") or []),
+        "contradicts": list(value.get("contradicts") or []),
         "alternatives": list(value.get("alternatives") or []),
         "not_established": list(value.get("not_established") or []),
         "gesture": value.get("gesture"),
@@ -557,7 +574,9 @@ async def _rows(db, slug: str, sid: uuid.UUID | None = None):
 async def _checked(db, c: dict, user=None) -> dict:
     if c["state"] == "erased":
         return c | {"stands": False, "broken": [], "peer": {"state": "none"}}
-    states = await cited(db, c["rests_on"])
+    states = await cited(db, c["rests_on"]) | await cited(
+        db, c["contradicts"], said=True
+    )
     broken = [
         {"id": i, "state": s, "words": GONE[s]}
         for i, s in states.items()
@@ -569,7 +588,7 @@ async def _checked(db, c: dict, user=None) -> dict:
         "peer": await _peer(db, uuid.UUID(c["id"])),
     }
     if user is not None:
-        locked = await hidden(db, c["rests_on"])
+        locked = await hidden(db, [*c["rests_on"], *c["contradicts"]])
         if locked:
             out |= {
                 "locked": locked,
@@ -577,6 +596,8 @@ async def _checked(db, c: dict, user=None) -> dict:
                 "alternatives": [],
                 "not_established": [],
             }
+        else:
+            out["against"] = await against(db, c["contradicts"])
         out["mine"] = await _mine(db, user, c["author"])
         out["reviewing"] = (
             out["peer"].get("reviewer_id") == user.id
@@ -628,6 +649,7 @@ async def detail(db, sid: uuid.UUID, user=None) -> dict | None:
         "investigation": slug,
         "conclusion": c,
         "items": items,
+        "against": c.get("against", []),
         "versions": [
             {k: v.get(k) for k in ("id", "state", "by", "at", "text", "revises")}
             for v in chain_
@@ -635,6 +657,25 @@ async def detail(db, sid: uuid.UUID, user=None) -> dict | None:
         ],
         "status": await status(db, slug),
     }
+
+
+async def against(db, ids: list[str]) -> list[dict]:
+    """The claims a conclusion contradicts, each as what was said and its state;
+    one rejected since stays listed as gone."""
+    if not ids:
+        return []
+    found = {
+        i["id"]: i
+        for i in await _claims(
+            db, Statement.id.in_([uuid.UUID(x) for x in ids]), rejected=True
+        )
+    }
+    states = await cited(db, ids, said=True)
+    return [
+        (found.get(i) or {"id": i, "kind": "gone"})
+        | {"state": states[i], "words": GONE.get(states[i])}
+        for i in ids
+    ]
 
 
 def _lineage(rows: list[dict], sid: str) -> set[str]:
@@ -724,6 +765,26 @@ def _resolve(rests_on, known: dict[str, dict]) -> list[str]:
     return out
 
 
+def _contradicts(raw, found: dict, rests_on: list[str]) -> list[str]:
+    """The claims of the case the conclusion finds against: cited as what was said,
+    accepted or not, never among what it rests on."""
+    if not isinstance(raw, list):
+        raise ValueError("what it contradicts must be a list")
+    out = list(dict.fromkeys(map(str, raw)))
+    said = {i["id"] for i in found["said"]}
+    if len(out) > RESTS_MAX:
+        raise ValueError(f"a conclusion contradicts at most {RESTS_MAX} claims")
+    if [i for i in out if i not in said]:
+        raise ValueError(
+            "a conclusion contradicts only claims of this case that are not rejected"
+        )
+    if set(out) & set(rests_on):
+        raise ValueError(
+            "a claim cannot be both what it rests on and what it contradicts"
+        )
+    return out
+
+
 def _alternatives(raw) -> list[dict]:
     if not isinstance(raw, list):
         raise ValueError("alternatives must be a list")
@@ -773,8 +834,10 @@ async def plan(db, item: dict, author) -> tuple[str, list[StatementIn]]:
     standard = item.get("standard")
     if standard not in scale:
         raise ValueError("choose a confidence level from the scale")
-    known = _flat(await citeable(db, case_.slug))
+    found = await citeable(db, case_.slug)
+    known = _flat(found)
     rests_on = _resolve(item.get("rests_on"), known)
+    contradicts = _contradicts(item.get("contradicts") or [], found, rests_on)
     alternatives = _alternatives(item.get("alternatives") or [])
     open_points = _open_points(item.get("not_established") or [])
     supersedes = None
@@ -790,7 +853,11 @@ async def plan(db, item: dict, author) -> tuple[str, list[StatementIn]]:
         }
         if str(supersedes) not in standing:
             raise ValueError("only a standing conclusion of this case can be revised")
-    people = sorted({p for i in rests_on for p in known[i].get("people") or []})
+    said = {i["id"]: i for i in found["said"]}
+    people = sorted(
+        {p for i in rests_on for p in known[i].get("people") or []}
+        | {p for i in contradicts for p in said[i]["people"]}
+    )
     gesture = str(uuid.uuid4())
     out = [
         StatementIn(
@@ -802,6 +869,7 @@ async def plan(db, item: dict, author) -> tuple[str, list[StatementIn]]:
                 "standard": standard,
                 "standard_label": scale[standard]["label"],
                 "rests_on": rests_on,
+                "contradicts": contradicts,
                 "people": people,
                 "alternatives": alternatives,
                 "not_established": open_points,
@@ -919,9 +987,10 @@ async def plan_agree(db, user, item: dict, author) -> tuple[str, list[StatementI
 
 async def seed(db, investigation: str, spec: dict, author, sign) -> list[Statement]:
     """Plant a signed conclusion, for seeders. `spec` is the form's item: "text",
-    "standard", "rests_on" (statement ids, or "links", "findings", "claims" for all
-    accepted ones of that kind), "alternatives" [{"text", "why"}] and
-    "not_established" [text]. `author` is a human principal and `sign(hash)` its
+    "standard", "rests_on" (statement ids, or "links", "findings", "claims",
+    "matches" for all accepted ones of that kind), optional "contradicts"
+    (statement ids of claims it finds against), "alternatives" [{"text", "why"}]
+    and "not_established" [text]. `author` is a human principal and `sign(hash)` its
     passkey assertion (Seeder.assertion), so the rows verify like a browser's."""
     _, statements = await plan(db, spec | {"investigation": investigation}, author)
     return [await write.append(db, s, sign=sign) for s in statements]

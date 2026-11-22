@@ -16,7 +16,7 @@
             <article v-for="c in cs.conclusions" :key="c.id" class="pk-conclusion">
                 <p v-if="c.text" class="text-title-medium mb-1" dir="auto">${ c.text }</p>
                 <p v-else class="text-medium-emphasis mb-1">${ c.state === 'erased' ? 'Erased with a person it named.' : 'Rests on a sensitive source you have not revealed.' }</p>
-                <p v-if="c.text" class="text-body-medium mb-1">${ c.standard.label }. Rests on ${ c.rests_on.length } accepted item${ c.rests_on.length === 1 ? '' : 's' }, signed by ${ c.by }.${ c.peer.state === 'agreed' ? ' Peer reviewed by ' + c.peer.by + '.' : '' }</p>
+                <p v-if="c.text" class="text-body-medium mb-1">${ c.standard.label }. Rests on ${ c.rests_on.length } accepted item${ c.rests_on.length === 1 ? '' : 's' }${ (c.contradicts || []).length ? ' and contradicts ' + c.contradicts.length + ' claim' + (c.contradicts.length === 1 ? '' : 's') : '' }, signed by ${ c.by }.${ c.peer.state === 'agreed' ? ' Peer reviewed by ' + c.peer.by + '.' : '' }</p>
                 <p v-if="c.text && c.not_established.length" class="text-body-medium mb-1">Not established: ${ c.not_established.join('; ') }.</p>
                 <p v-if="!c.stands && c.state === 'standing'" class="pk-stale mb-1">No longer stands on what it cited. Revise or withdraw it before building.</p>
                 <a :href="'/cases/conclusions/' + c.id" class="text-body-small">What it rests on</a>

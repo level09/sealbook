@@ -2,8 +2,11 @@
 accepts exactly what it rests on: claims by key, the linker's proposals for the
 planted same-person pairs ("same_person"), the strong matches inside the planted
 copies ("copies"; "copies:<key>" for those joining that source to another file,
-"copies:<key>,<key>" for the match between two sources), each then cited; "links" cites every accepted same-person link.
-With `peer_review` a second analyst signs agreement."""
+"copies:<key>,<key>" for the match between two sources), each then cited; "links"
+cites every accepted same-person link. `contradicts` names claims by key that the
+conclusion finds against: cited as what was said and not accepted, resolved like
+any claim key, so a claim the app read stands for its planted key. With
+`peer_review` a second analyst signs agreement."""
 
 from __future__ import annotations
 
@@ -55,6 +58,15 @@ async def conclusion(st, act, args) -> None:
             cite.append(str(found.id))
             if found not in st.accepted:
                 accept.append(found)
+    # The account it finds against: cited as what was said, never accepted here.
+    against = []
+    for item in c.get("contradicts") or []:
+        found = st.written.get(item)
+        if found is None:
+            raise ValueError(
+                f"the conclusion contradicts {item!r}, which no source has given"
+            )
+        against.append(str(found.id))
     for found in accept:
         await st.s.review(
             st.analyst, found, "accept", "what the case's conclusion rests on"
@@ -63,7 +75,11 @@ async def conclusion(st, act, args) -> None:
     await st.session.commit()
     form = {k: c[k] for k in ("text", "standard", "alternatives", "not_established")}
     rows = await conclusions.seed(
-        st.session, st.inv, form | {"rests_on": cite}, st.analyst.id, st.s.assertion
+        st.session,
+        st.inv,
+        form | {"rests_on": cite, "contradicts": against},
+        st.analyst.id,
+        st.s.assertion,
     )
     if c.get("peer_review"):
         # A second Seeder: each holds the passkey of the analyst it made.

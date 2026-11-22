@@ -851,6 +851,7 @@ async def erase(session: AsyncSession, ref, by, reason: str) -> dict:
                 Payload.value["members"].has_any(ids),
                 Payload.value["people"].has_any(refs),
                 Payload.value["rests_on"].has_any(ids),
+                Payload.value["contradicts"].has_any(ids),
             ),
         )
         .cte("linked", recursive=True)

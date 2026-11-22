@@ -604,6 +604,100 @@ class ConclusionTest(unittest.IsolatedAsyncioTestCase):
                 await packages.collect(s, brief, opening)
             await s.rollback()
 
+    # --- the account a conclusion contradicts --------------------------------------
+
+    async def test_a_conclusion_names_the_account_it_contradicts(self):
+        """A contradicted claim is cited as what was said: it need not be accepted,
+        never counts toward what the conclusion rests on, and falls like any
+        citation when it is rejected."""
+        said = self.claims[("surveyors", Prop.BIRTH_DATE)]  # unconfirmed
+        client = await self.client()
+        got = await (
+            await client.get(f"/api/cases/conclusions/citeable?investigation={CASE}")
+        ).get_json()
+        self.assertIn(str(said.id), [i["id"] for i in got["said"]])
+        self.assertNotIn(str(said.id), [i["id"] for i in got["claims"]])
+        for wrong in ([str(self.link.id)], [str(uuid.uuid4())]):
+            status, body = await self.post(
+                client,
+                "/api/review/conclusions/options",
+                self.form(contradicts=wrong),
+            )
+            self.assertEqual(status, 400, body)
+
+        out = await self.write(client, contradicts=[str(said.id)])
+        self.assertEqual(len(out["statements"]), 2)
+        [c] = (await self.listing(client))["conclusions"]
+        self.assertEqual(c["rests_on"], [str(self.link.id)])
+        self.assertEqual(c["contradicts"], [str(said.id)])
+        self.assertTrue(c["stands"], c["broken"])
+        [against] = c["against"]
+        self.assertEqual(against["id"], str(said.id))
+        self.assertIn("1991", against["text"])
+        detail = await (
+            await client.get(f"/api/cases/conclusions/{c['id']}")
+        ).get_json()
+        self.assertEqual([i["kind"] for i in detail["items"]], ["link"])
+        [shown] = detail["against"]
+        self.assertEqual((shown["id"], shown["state"]), (str(said.id), "stands"))
+        self.assertEqual(shown["source"], "Surveyors")
+
+        # The package carries the contradicted claim beside what it rests on.
+        async with ext.async_session_factory() as s:
+            brief = Brief(
+                title="Brief", audience="court", author_id=self.users["author"]
+            )
+            s.add(brief)
+            await s.flush()
+            bid = brief.id
+            s.add(
+                Sentence(
+                    brief_id=bid,
+                    ord=1,
+                    text="The vendor is named Ari Example.",
+                    statement_ids=[self.claims[("vendors", Prop.NAME)].id],
+                )
+            )
+            await s.commit()
+        async with ext.async_session_factory() as s:
+            brief = await s.get(Brief, bid)
+            opening = await packages.case_conclusions(s, brief)
+            self.assertEqual(
+                opening[0]["conclusions"][0]["contradicts"], [str(said.id)]
+            )
+            rows = await packages.collect(s, brief, opening)
+            self.assertIn(said.id, rows["cited"])
+
+        # Rejected in review, it no longer stands and the package refuses it.
+        async with ext.async_session_factory() as s:
+            seed = Seeder(s)
+            seed.passkey, seed.credential_id, seed.cose = (
+                self.seed.passkey,
+                self.seed.credential_id,
+                self.seed.cose,
+            )
+            await seed.review(self.human, said, "reject", "misread")
+            await s.commit()
+            brief = await s.get(Brief, bid)
+            with self.assertRaisesRegex(Exception, "no longer stands"):
+                await packages.collect(
+                    s, brief, await packages.case_conclusions(s, brief)
+                )
+        [c] = (await self.listing(client))["conclusions"]
+        self.assertFalse(c["stands"])
+        self.assertEqual(
+            [(b["id"], b["state"]) for b in c["broken"]], [(str(said.id), "rejected")]
+        )
+
+    async def test_erasing_the_contradicted_person_erases_the_conclusion(self):
+        said = self.claims[("surveyors", Prop.BIRTH_DATE)]
+        await self.write(contradicts=[str(said.id)])
+        async with ext.async_session_factory() as s:
+            await erase(s, self.person["surveyors"], self.author, "subject asked")
+            await s.commit()
+        [c] = (await self.listing())["conclusions"]
+        self.assertEqual(c["state"], "erased")
+
     # --- a match between two files ------------------------------------------------
 
     async def matched(self, verdict="accept"):

@@ -120,7 +120,7 @@ async def _opening(db, b: Brief) -> list[dict]:
             i
             for c in case["conclusions"]
             if c.get("text")
-            for i in [c["id"], *c["rests_on"]]
+            for i in [c["id"], *c["rests_on"], *c["contradicts"]]
         ]
         await conclusions.log_view(db, current_user, case["case"], shown)
     await db.commit()
