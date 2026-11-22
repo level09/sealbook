@@ -24,6 +24,7 @@ from unittest import mock
 
 import httpx2
 
+from sealbook import speech
 from sealbook.ledger import chain
 from sealbook.settings import Config
 
@@ -31,8 +32,17 @@ FILE = "recordings.json"
 ROUTE = "cloud-zdr"
 
 
-def key(body: dict) -> str:
-    """What makes two requests the same question: model, messages, schema."""
+def key(body: dict, label: dict | None = None) -> str:
+    """What makes two requests the same question: model, messages, schema. A
+    recording sent to speech to text is named by its source and window rather than
+    its encoded bytes, which another ffmpeg may write differently."""
+    if "input_audio" in body:
+        return chain.sha256(
+            chain.canon(
+                {k: body.get(k) for k in ("model", *speech.HOSTED)}
+                | {"source": label["input_sha256"], "cursor": label.get("cursor", 0)}
+            )
+        )
     return chain.sha256(
         chain.canon(
             {
@@ -57,6 +67,7 @@ class Tape:
         self.speech = {s["input_sha256"]: s for s in data.get("speech", [])}
         self.used = 0
         self.seen: set[str] = set()  # requests asked in this run
+        self.heard: set[str] = set()  # recordings the local model read in this run
 
     @classmethod
     def open(cls, root: Path, recording: bool) -> Tape:
@@ -67,13 +78,16 @@ class Tape:
                 "ocr": Config.OCR_MODEL,
                 "assess": Config.ASSESS_MODEL,
                 "speech": Config.SPEECH_MODEL,
+                "transcribe": Config.TRANSCRIBE_MODEL,
             }
             if not all(models.values()):
                 raise Missing(f"recording needs a model for each tool on {ROUTE}")
             # An interrupted recording resumes: answers already recorded for the
-            # same models are kept, and only those asked again are saved.
+            # same models are kept, and only those asked again are saved. A tool
+            # the old recording did not have keeps the answers of the others.
             old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-            keep = old if old.get("models") == models else {}
+            same = all(old.get("models", {}).get(k, v) == v for k, v in models.items())
+            keep = old if old and same else {}
             return cls(
                 path,
                 {"route": ROUTE, "models": models}
@@ -109,6 +123,11 @@ class Tape:
             stack.enter_context(mock.patch.object(Config, "OCR_MODEL", m["ocr"]))
             stack.enter_context(mock.patch.object(Config, "ASSESS_MODEL", m["assess"]))
             stack.enter_context(mock.patch.object(Config, "SPEECH_MODEL", m["speech"]))
+            # A recording made before hosted speech to text read every recording
+            # on the local model, and replays so.
+            stack.enter_context(
+                mock.patch.object(Config, "TRANSCRIBE_MODEL", m.get("transcribe", ""))
+            )
             if not self.recording and not os.environ.get("OPENROUTER_API_KEY"):
                 # The route code names its key before it sends; replay sends nothing.
                 stack.enter_context(
@@ -117,7 +136,7 @@ class Tape:
             yield
 
     def transport(self, label: dict) -> httpx2.AsyncBaseTransport:
-        return _Recorder(self, label) if self.recording else _Replayer(self)
+        return _Recorder(self, label) if self.recording else _Replayer(self, label)
 
     def note(self, run) -> str:
         if self.recording:
@@ -135,20 +154,29 @@ class Tape:
             (c for c in self.calls.values() if c["request"] in self.seen),
             key=lambda c: (c["source"], c["tool"], c["request"]),
         )
-        self.data["speech"] = sorted(self.speech.values(), key=lambda s: s["source"])
+        self.data["speech"] = sorted(
+            (s for sha, s in self.speech.items() if sha in self.heard),
+            key=lambda s: s["source"],
+        )
         self.path.write_text(
             json.dumps(self.data, ensure_ascii=False, indent=1) + "\n",
             encoding="utf-8",
         )
 
 
+def _headers(call: dict) -> dict:
+    # OpenRouter's generation id of a speech to text answer travels in a header.
+    gen = {"x-generation-id": call["generation"]} if call.get("generation") else {}
+    return {"content-type": "application/json"} | gen
+
+
 class _Replayer(httpx2.AsyncBaseTransport):
-    def __init__(self, tape: Tape):
-        self.tape = tape
+    def __init__(self, tape: Tape, label: dict):
+        self.tape, self.label = tape, label
 
     async def handle_async_request(self, request):
         body = json.loads(request.content)
-        found = self.tape.calls.get(key(body))
+        found = self.tape.calls.get(key(body, self.label))
         if found is None:
             raise Missing(
                 "no recorded answer for this request: the prompt, the input or the "
@@ -157,9 +185,7 @@ class _Replayer(httpx2.AsyncBaseTransport):
             )
         self.tape.used += 1
         return httpx2.Response(
-            found["status"],
-            content=found["response"].encode(),
-            headers={"content-type": "application/json"},
+            found["status"], content=found["response"].encode(), headers=_headers(found)
         )
 
 
@@ -170,26 +196,28 @@ class _Recorder(httpx2.AsyncBaseTransport):
 
     async def handle_async_request(self, request):
         body = json.loads(request.content)
-        self.tape.seen.add(key(body))
-        if (known := self.tape.calls.get(key(body))) and known["status"] == 200:
+        asked = key(body, self.label)
+        self.tape.seen.add(asked)
+        if (known := self.tape.calls.get(asked)) and known["status"] == 200:
             return httpx2.Response(
-                200,
-                content=known["response"].encode(),
-                headers={"content-type": "application/json"},
+                200, content=known["response"].encode(), headers=_headers(known)
             )
         resp = await self.inner.handle_async_request(request)
         raw = await resp.aread()
-        self.tape.calls[key(body)] = self.label | {
-            "request": key(body),
-            "model_requested": body.get("model"),
-            "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
-            "status": resp.status_code,
-            "response": raw.decode(),
-            "response_sha256": hashlib.sha256(raw).hexdigest(),
-        }
+        gen = resp.headers.get("x-generation-id")
+        self.tape.calls[asked] = (
+            self.label
+            | {
+                "request": asked,
+                "model_requested": body.get("model"),
+                "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
+                "status": resp.status_code,
+                "response": raw.decode(),
+                "response_sha256": hashlib.sha256(raw).hexdigest(),
+            }
+            | ({"generation": gen} if gen else {})
+        )
         # The body is already decoded: hand it back without its transfer encoding.
         return httpx2.Response(
-            resp.status_code,
-            content=raw,
-            headers={"content-type": "application/json"},
+            resp.status_code, content=raw, headers=_headers(self.tape.calls[asked])
         )

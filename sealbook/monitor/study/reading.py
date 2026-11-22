@@ -85,6 +85,7 @@ async def _transcribe(st, run, key: str) -> None:
                 )
             )
             segments += out["segments"]
+        tape.heard.add(sha)
         tape.speech[sha] = {
             "source": key,
             "input_sha256": sha,
@@ -145,16 +146,19 @@ async def read(st, act, args) -> None:
             await st.session.commit()
             done.add(run.id)
             key = acqs[run.inputs["acquisition"]]
-            if run.tool == "transcribe":
+            # Hosted speech to text is a model call like the others; the local
+            # model's segments are replayed through the transcript writer.
+            hosted = run.tool == "transcribe" and run.route != "local"
+            if run.tool == "transcribe" and not hosted:
                 await _transcribe(st, run, key)
                 continue
             transport = None
-            if run.tool in MODEL:
+            if run.tool in MODEL or hosted:
                 label = {
                     "source": key,
                     "tool": run.tool,
                     "input_sha256": run.inputs["blobs"][0],
-                }
+                } | ({"cursor": run.inputs.get("cursor", 0)} if hosted else {})
                 transport = st.tape.transport(label)
                 if note := st.tape.note(run):
                     run.inputs = {
@@ -168,7 +172,7 @@ async def read(st, act, args) -> None:
             await st.session.refresh(run)
             if run.status != "done":
                 raise RuntimeError(f"{run.tool} on {key} failed: {run.error}")
-            if st.tape.recording and run.tool in MODEL:
+            if st.tape.recording and (run.tool in MODEL or hosted):
                 for c in st.tape.calls.values():
                     if (
                         c["source"] == key

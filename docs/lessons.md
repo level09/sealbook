@@ -284,6 +284,30 @@ Do not turn this file into a second task list.
 - Whisper writes Damascene suffixes in MSA spelling (إنّو as انه, بحرستا as بحرسته).
   Score word error after folding, and expect exact place-name search to miss
   dialect spellings.
+- Whisper wrote "اشتركوا في القناة" ("subscribe to the channel") and "Thank you."
+  over running water, and the old rule read any recording below 0.5 language
+  confidence as Arabic, which made the boilerplate Arabic. faster-whisper's
+  no_speech_prob was 0.000 on every segment with VAD and word timestamps, spoken
+  or not, so it cannot tell noise; avg_logprob and mean word probability can
+  (spoken -0.10 to -0.19 and 0.83 up, invented -0.63 down and 0.58 down, 2026-11-22).
+  Not when the language is forced: with Arabic forced, the Arabic boilerplate came
+  back confident (-0.22, words 0.82 to 1.0), so no confidence threshold drops it.
+  Reading the detected language did: on the same clips Whisper then wrote unsure
+  English, which the threshold drops. A recording detected as Arabic over noise can
+  still get the confident line; hosted transcription is the default for that reason.
+- Hosted transcribers invent too: on the same water clips Whisper large-v3 on
+  OpenRouter wrote Japanese train names and Portuguese sentences, Voxtral "I'm going
+  to go to the toilet", Gemini "¿Qué pasó?". Score a candidate on clips with no
+  speech, not only on speech. Scribe v2 tags the sound ("[background noise]") as an
+  audio event instead, which the transcript leaves out.
+- Score numbers as the script spells them: hosted models write "999" and "2014"
+  where the Arabic script says them in words, and plain word error then ranks the
+  better model last.
+- OpenRouter's speech to text answer names no served model or provider, and its
+  generation record appears 6 to 12 s after the call. Record the generation id.
+- A recorded hosted transcription is keyed by the source and window, not by the
+  FLAC sent: the encoder may write other bytes on another machine's ffmpeg, and
+  the demo server replays recordings made on a laptop.
 - Browsers keep static files. After a deploy a returning browser ran an old
   `components/index.js` that referenced a deleted component and every page stayed
   on the boot frame until a hard reload. Static URLs now carry `?v=<content hash>`

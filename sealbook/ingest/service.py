@@ -373,14 +373,38 @@ async def extract_target(session: AsyncSession, acq: Acquisition) -> dict:
     return {"extract_route": str(route), "extract_model": Config.RUN_MODELS[route]}
 
 
+def speech_models() -> dict[Route, str]:
+    """The speech to text model each route serves: the hosted one on OpenRouter's
+    routes, the worker's own Whisper on local."""
+    hosted = Config.TRANSCRIBE_MODEL
+    return {
+        r: m
+        for r, m in (
+            (Route.CLOUD_ZDR, hosted),
+            (Route.CLOUD, hosted),
+            (Route.LOCAL, Config.SPEECH_MODEL),
+        )
+        if m
+    }
+
+
+def speech_route(routes) -> Route | None:
+    """The first route in the policy row's order that has a speech model."""
+    models = speech_models()
+    return next((Route(r) for r in routes if Route(r) in models), None)
+
+
 async def queue_transcribe(session: AsyncSession, acq: Acquisition) -> dict:
-    """Speech to text runs in the worker process, so it is always the local route and
-    sensitive recordings qualify. Claims are then read from the transcript on the
-    route extraction is allowed, if any. One transcription per recording."""
-    if not Config.SPEECH_MODEL:
+    """Speech to text on the first route the policy row allows that has a model:
+    the hosted transcriber for ordinary recordings, the worker's own Whisper for
+    sensitive ones or when no hosted model is set. Claims are then read from the
+    transcript on the route extraction is allowed, if any. One transcription per
+    recording."""
+    if not speech_models():
         return {
             "queued": None,
-            "reason": "Speech to text is off. Set SPEECH_MODEL in settings.",
+            "reason": "Speech to text is off. Set TRANSCRIBE_MODEL or SPEECH_MODEL "
+            "in settings.",
         }
     known = await session.scalar(
         select(Run.id)
@@ -395,22 +419,23 @@ async def queue_transcribe(session: AsyncSession, acq: Acquisition) -> dict:
     policy = resolve(
         await write.policies(session), "transcribe", acq.doc_type, acq.sensitivity
     )
-    if Route.LOCAL not in policy.routes:
+    route = speech_route(policy.routes)
+    if route is None:
         return {
             "queued": None,
-            "reason": "The policy does not allow local speech to text for this source.",
+            "reason": "The policy allows no configured speech to text for this source.",
         }
     run = Run(
         principal_id=(await system_agent(session, "transcriber")).id,
         tool="transcribe",
-        route=str(Route.LOCAL),
-        model_requested=Config.SPEECH_MODEL,
+        route=str(route),
+        model_requested=speech_models()[route],
         inputs={"blobs": [acq.blob_sha256], "acquisition": str(acq.id)}
         | await extract_target(session, acq),
     )
     session.add(run)
     await session.flush()
-    return {"queued": "transcribe", "run": str(run.id), "route": str(Route.LOCAL)}
+    return {"queued": "transcribe", "run": str(run.id), "route": str(route)}
 
 
 async def queue_read(
