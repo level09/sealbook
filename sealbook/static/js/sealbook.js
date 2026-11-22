@@ -60,6 +60,16 @@ const PROP_WORDS = {
 function propWord(p) {
   return PROP_WORDS[p] || (p || '').replaceAll('_', ' ');
 }
+/* What a claim rests on, in words. Spoken words reached the text through speech to
+   text, so they read as heard, never as printed. */
+const EVIDENCE_WORDS = {
+  printed_text: 'printed text', handwritten_entry: 'handwriting', signature_block: 'a signature', registry_stamp: 'a registry stamp',
+  letterhead: 'a letterhead', spoken: 'heard in a recording, through speech to text', photo_content: 'what the picture shows',
+  c2pa_manifest: 'content credentials', byte_equality: 'identical bytes', corroborating_field: 'a corroborating field',
+};
+function evidenceWords(list) {
+  return (list || []).map(e => EVIDENCE_WORDS[e] || e.replaceAll('_', ' ')).join(', ');
+}
 function propTitle(p) {
   const w = propWord(p);
   return w.charAt(0).toUpperCase() + w.slice(1);

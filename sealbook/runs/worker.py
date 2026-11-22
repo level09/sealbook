@@ -334,6 +334,15 @@ async def extract(c: Ctx) -> str | None:
     items, unnamed = facts(orjson.loads(routes.content(served)), text)
     for _ in range(unnamed):
         await c.emit("dropped", drop_reason="not_a_person")
+    # A transcript's words were heard, not printed: the model cannot tell, the
+    # app can. A name heard in speech says so ("heard as"), a weaker basis for a
+    # person than a written one, and is kept.
+    source = await c.s.get(Blob, c.acq.blob_sha256) if c.acq else None
+    heard = bool(
+        source
+        and source.sha256 != blob.sha256
+        and source.mime.startswith(("audio/", "video/"))
+    )
     subjects: dict[str, str] = {}
     names = []
     written = undated = 0
@@ -353,6 +362,11 @@ async def extract(c: Ctx) -> str | None:
             undated += 1
             await c.emit("undated", drop_reason="bad_valid_date")
         value = item["value"]
+        evidence = tuple(EvidenceKind(e) for e in item["evidence"])
+        if heard:
+            evidence = (EvidenceKind.SPOKEN,)
+            if prop == Prop.NAME:
+                value = value | {"heard": True}
         st = StatementIn(
             subject=subject,
             prop=prop,
@@ -364,7 +378,7 @@ async def extract(c: Ctx) -> str | None:
             span=span,
             valid_from=valid_from,
             valid_to=valid_to,
-            evidence=tuple(EvidenceKind(e) for e in item["evidence"]),
+            evidence=evidence,
         )
         try:
             st_row = await write.append(c.s, st, sign=c.sign)
@@ -396,7 +410,6 @@ async def extract(c: Ctx) -> str | None:
     # A photo gets the first pass that looks at the picture (queued by ocr) and a
     # video one on its frames and transcript (queued by transcribe) instead. A
     # bulletin its Bayanat analysts worked already carries their pass as proposals.
-    source = await c.s.get(Blob, c.acq.blob_sha256) if c.acq else None
     worked = source and (c.acq.context or {}).get("bayanat", {}).get("worked")
     if source and not source.mime.startswith(("image/", "video/")) and not worked:
         await queue_read(c.s, c.acq, "assess", blob.sha256)

@@ -354,7 +354,7 @@
                 <dt>Proposed by</dt><dd><actor-chip :actor="claim.proposer"></actor-chip></dd>
                 <template v-if="claim.run"><dt>Run</dt><dd><a v-if="isAdmin" :href="'/monitor/runs?run=' + claim.run.id" class="mono">${ claim.run.tool }</a><span v-else class="mono">${ claim.run.tool }</span><span v-if="claim.run.model_served" class="rv-muted">, ${ claim.run.model_served }</span></dd>
                   <dt v-if="claim.run.route">Route</dt><dd v-if="claim.run.route">${ claim.run.route }<span v-if="claim.run.provider_served" class="rv-muted">, ${ claim.run.provider_served }</span></dd></template>
-                <template v-if="claim.evidence.length"><dt>Evidence</dt><dd>${ claim.evidence.map(e => e.replaceAll('_', ' ')).join(', ') }</dd></template>
+                <template v-if="claim.evidence.length"><dt>Evidence</dt><dd>${ evidenceWords(claim.evidence) }</dd></template>
                 <template v-if="claim.source"><dt>Source</dt><dd><bdi>${ claim.source.file }</bdi>, ${ claim.where.label }</dd></template>
                 <template v-if="claim.corrects"><dt>Corrects</dt><dd dir="auto"><span v-if="claim.corrects.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ claim.corrects.value.text }</bdi>, by <actor-chip :actor="claim.corrects.proposer" size="sm"></actor-chip></dd></template>
               </dl>

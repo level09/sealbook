@@ -866,3 +866,9 @@ covers in the text it was read from (`span_blob`).
   marks how a run was answered in its inputs (`answer`: `recorded`, `fixed`, `case
   file`) and `monitor.data.answered` reads that, never the model id, for the
   evidence page, Review, the Inbox and the Guide's proof.
+- A voice note's "Jo" heard as "Joe" became a person "Joe" whose name rested on
+  "printed text": extraction took the evidence kind from the model, which only ever
+  sees text and cannot know it was spoken. The worker now knows a transcript by its
+  source (an audio or video acquisition), writes its claims as `spoken` and marks a
+  name `heard`, so screens read "heard as" and a matcher can weigh it below a
+  written name.

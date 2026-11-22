@@ -155,7 +155,7 @@ export function mount(boot) {
       hl() {const s = this.boot.segment; return s?.span && ['text', 'web'].includes(this.it?.kind) && s.kind === 'text' ? s.span : null;},
     },
     methods: {
-      ms, prop, short, spanLabel, plural,
+      ms, prop, short, spanLabel, plural, evidenceWords,
       say(text) {this.snack = {show: true, text};},
       // Where a claim came from in plain words; the model or importer is the tooltip.
       byLabel(c) {
