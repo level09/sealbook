@@ -258,6 +258,19 @@ async def source_read(sha):
     return output(await evidence.content_read(g.db_session, sha, blob))
 
 
+def _read(run, where_ran) -> dict:
+    """The run behind a claim in plain words: what it did and where, or, when no
+    model ran, how its answer came about (replayed, fixed, planted)."""
+    how = data.answered(run)
+    if how["how"] in ("model", "tool"):
+        where = where_ran(
+            run.route, run.endpoint, run.model_served or run.model_requested
+        )
+    else:
+        where = how["detail"]
+    return {"tool": data.run_label(run), "where": where, "how": how["how"]}
+
+
 @bp.get("/api/evidence/statement/<uuid:sid>/proof")
 async def statement_proof(sid):
     """The Guide's proof for one claim on this page, under the source's own rule:
@@ -294,13 +307,7 @@ async def statement_proof(sid):
     return output(
         out
         | {
-            "read": run
-            and {
-                "tool": data.TOOL_WORDS.get(run.tool, run.tool.replace("_", " ")),
-                "where": where_ran(
-                    run.route, run.endpoint, run.model_served or run.model_requested
-                ),
-            },
+            "read": run and _read(run, where_ran),
             "proposed_at": st.recorded_at.isoformat(),
             "anchored_at": batch.at.isoformat() if batch else None,
             "witnesses": [

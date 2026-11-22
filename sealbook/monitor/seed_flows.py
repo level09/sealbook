@@ -137,8 +137,9 @@ async def _start(
     run.status, run.model_requested = "running", FIXED
     run.model_served, run.provider_served = FIXED, "demo"
     run.endpoint = "demo:fixed-output"
-    run.inputs = {**run.inputs, "demo": note(what)}
+    run.inputs = {**run.inputs, "demo": note(what), "answer": "fixed"}
     if served:
+        run.inputs |= {"answer": "recorded", "recorded_at": served["recorded_at"]}
         run.route, run.endpoint = served["route"], served["endpoint"]
         run.model_requested = served["model_requested"]
         run.model_served = served["model_served"]

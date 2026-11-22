@@ -281,7 +281,9 @@ class GuideTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(r.status_code, 200, p)
         self.assertNotIn("محمد", await r.get_data(as_text=True))
         self.assertEqual({k: p[k] for k in guide}, guide)
-        self.assertEqual(p["read"], {"tool": "AI extraction", "where": "this server"})
+        self.assertEqual(
+            p["read"], {"tool": "AI extraction", "where": "this server", "how": "tool"}
+        )
         self.assertIsNone(p["anchored_at"])
         self.assertEqual(p["witnesses"], [])
 

@@ -857,3 +857,12 @@ covers in the text it was read from (`span_blob`).
   and the extractor and the first pass matched quotes with an exact `str.find`. Every
   quote now goes through `ledger.span.locate`, where any whitespace run matches any
   other. Match model quotes against OCR and transcript text through that one helper.
+
+## Reading sources and comparing them (2026-11-22)
+
+- Claims no model read showed as "AI sheet extraction" or under a seed's model id
+  ("qwen3-vl-4b-sy-demo"): the proposer label was the tool's name and the detail the
+  run's `model_served`, which a seed or a replay fills like a live run. A seeder now
+  marks how a run was answered in its inputs (`answer`: `recorded`, `fixed`, `case
+  file`) and `monitor.data.answered` reads that, never the model id, for the
+  evidence page, Review, the Inbox and the Guide's proof.

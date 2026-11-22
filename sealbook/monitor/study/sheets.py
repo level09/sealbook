@@ -104,6 +104,7 @@ async def _one(st, key: str, plan: dict) -> None:
     c = await flows._start(
         s, run, acq, what, cls=flows.Fixed, answer=lambda r: facts.get(r["row"], [])
     )
+    run.inputs = {**run.inputs, "answer": "case file"}
     version.run_id = run.id
     await write.seal_run(db, run, await extract_sheet(c))
     await db.commit()

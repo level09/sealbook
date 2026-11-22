@@ -141,7 +141,12 @@ async def read(st, act, args) -> None:
                 }
                 transport = st.tape.transport(label)
                 if note := st.tape.note(run):
-                    run.inputs = {**run.inputs, "demo": note}
+                    run.inputs = {
+                        **run.inputs,
+                        "demo": note,
+                        "answer": "recorded",
+                        "recorded_at": st.tape.data.get("recorded_at"),
+                    }
                     await st.session.commit()
             await process(ext.async_session_factory, run.id, transport)
             await st.session.refresh(run)

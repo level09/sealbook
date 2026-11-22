@@ -222,6 +222,85 @@ def work(tool: str | None) -> str:
     return TOOL_WORDS.get(tool) or (tool or "unknown work").replace("_", " ")
 
 
+# How a run's answer came about. A seeder marks it in the run's inputs ("answer":
+# "recorded", "fixed" or "case file"); the two fixed model names below are older
+# marks. A model id never decides it: a seed can carry any name it likes.
+FIXED = "sealbook-demo-fixed-output"  # agents.read.FIXED, which imports this module
+PLANTED = "planted-from-case.json"
+WHERE = {
+    "cloud-zdr": "hosted model on the zero-retention route",
+    "cloud": "hosted model",
+    "anthropic": "hosted model",
+    "vision": "hosted text recognition",
+}
+
+
+def answered(run) -> dict:
+    """What produced a run's output, from its own provenance: `how` is "model" (a
+    model read it here), "recorded" (a model's answer recorded once, replayed with
+    no model running), "fixed" (a demo's fixed answer), "planted" (copied from a
+    case file) or "tool" (this server's own code). `label` says it in words a
+    person reads first; `detail` keeps the model id and where it ran."""
+    inputs = run.inputs or {}
+    mark = inputs.get("answer")
+    if mark == "case file" or run.model_requested == PLANTED:
+        return {
+            "how": "planted",
+            "label": "Planted from the case file",
+            "detail": "copied from the case file, no model ran",
+        }
+    if mark == "recorded":
+        at = inputs.get("recorded_at")
+        d = date.fromisoformat(at[:10]) if at else None
+        day = f"{d.day} {d:%B %Y}" if d else None
+        where = WHERE.get(run.route, run.route or "a model")
+        return {
+            "how": "recorded",
+            "label": f"Replayed from a recording of {day}"
+            if day
+            else "Replayed from a recording",
+            "detail": f"the answer {run.model_served} gave on the {where} route when "
+            "recorded; no model ran here"
+            if run.route in WHERE
+            else f"the answer {run.model_served} gave when recorded; no model ran here",
+        }
+    if mark == "fixed" or FIXED in (run.model_requested, run.model_served):
+        return {"how": "fixed", "label": "Fixed demo answer", "detail": "no model ran"}
+    if run.model_served and run.route in WHERE:
+        return {
+            "how": "model",
+            "label": "Read by a model",
+            "detail": f"{run.model_served}, {WHERE[run.route]}",
+        }
+    if run.model_served and run.route == "local" and run.tool in MODEL_TOOLS:
+        own = run.endpoint and not run.endpoint.startswith("local:")
+        where = "your own model server" if own else "this server"
+        return {
+            "how": "model",
+            "label": "Read by a model",
+            "detail": f"{run.model_served}, {where}",
+        }
+    return {"how": "tool", "label": work(run.tool), "detail": None}
+
+
+def run_label(run) -> str:
+    """A run's work and, when no model ran, how it was answered: "AI extraction",
+    "Extraction, replayed from a recording of 21 November 2026", "Sheet
+    extraction, planted from the case file"."""
+    how, label = answered(run), work(run.tool)
+    if how["how"] in ("model", "tool"):
+        return label
+    plain = label.removeprefix("AI ")
+    said = how["label"]
+    return f"{plain[:1].upper()}{plain[1:]}, {said[:1].lower()}{said[1:]}"
+
+
+# Tools whose output a model writes when one is configured.
+MODEL_TOOLS = frozenset(
+    {"extract", "extract_sheet", "assess", "ocr", "transcribe", "asr", "propose"}
+)
+
+
 def event_words(token: str | None) -> str | None:
     return token and EVENT_WORDS.get(token, token.replace("_", " "))
 
@@ -361,12 +440,16 @@ class Context:
                 "label": f"{author.name} for {boss.name}",
                 "for": boss.name,
             }
-        # The work in plain words; the model is secondary detail, never the label.
-        tool = run.tool if run else None
+        # The work and how it was answered in plain words; the model is secondary
+        # detail, never the label.
+        if run is None:
+            return base | {"kind": "extractor", "label": work(None), "detail": None}
+        how = answered(run)
         return base | {
             "kind": "extractor",
-            "label": work(tool),
-            "detail": run.model_served if run else None,
+            "label": run_label(run),
+            "detail": how["detail"],
+            "how": how["how"],
         }
 
     @staticmethod

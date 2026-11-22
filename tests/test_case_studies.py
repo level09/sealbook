@@ -35,6 +35,7 @@ from sealbook.ledger.models import (
     StatementTier,
 )
 from sealbook.ledger.write import verify_db
+from sealbook.monitor import data as mdata
 from sealbook.monitor.seed_study import path_of, person, seed_study
 from sealbook.people import data as people
 from sealbook.places.models import Place
@@ -373,6 +374,21 @@ class SeedCasesTest(Seeding):
                 )
             )
             self.assertIn("recorded once", note)
+            # A person reads how each claim came about, not a model id.
+            rows = await mdata.statement_rows(
+                s,
+                Statement.run_id.in_(select(Run.id).where(Run.tool == "extract")),
+                limit=2000,
+            )
+            labels = {r["actor"]["label"] for r in rows}
+            self.assertTrue(
+                any(
+                    x.startswith("Extraction, replayed from a recording of")
+                    for x in labels
+                ),
+                labels,
+            )
+            self.assertFalse(any("/" in x or "AI " in x for x in labels), labels)
             # The photograph went through intake: geotag read its EXIF position.
             photo = await self.blob_of(s, inv, spec["sources"]["photo"]["title"])
             where = await s.scalar(
