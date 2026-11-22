@@ -3,11 +3,12 @@ pages, the landing redirect, the passkey return path and the missing-file 404.""
 
 
 def init_app(app):
-    from quart import redirect, render_template, request
+    from quart import g, redirect, render_template, request
     from quart_security import current_user
 
     from sealbook.assets import register_assets
     from sealbook.blobs import MissingBytes
+    from sealbook.ledger import attest
     from sealbook.shell.views import bp_account, register_passkey_return
 
     register_assets(app)
@@ -15,10 +16,14 @@ def init_app(app):
     register_passkey_return(app)
 
     async def index():
-        # No marketing page: analysts land on To do, everyone else signs in.
-        return redirect(
-            "/todo?investigation=" if current_user.is_authenticated else "/login"
-        )
+        # No marketing page: analysts land on the case overview, everyone else
+        # signs in. To do is one click away in the rail, and is where a person
+        # with no passkey is asked to set one up first.
+        if not current_user.is_authenticated:
+            return redirect("/login")
+        if not await attest.registered(g.db_session, current_user):
+            return redirect("/todo?investigation=")
+        return redirect("/cases/overview")
 
     app.add_url_rule("/", "index", index)
 

@@ -5,6 +5,7 @@ import random
 import unittest
 import uuid
 from datetime import UTC, datetime, timedelta
+from unittest import mock
 
 import stk
 import stk.extensions as ext
@@ -304,9 +305,14 @@ class DeskTest(unittest.IsolatedAsyncioTestCase):
         for path in ("/desk", "/api/desk/changes", "/api/desk/recent"):
             self.assertEqual((await nobody.get(path)).status_code, 403, path)
         me = await self.client()
+        # No passkey yet: To do, where setting one up comes first. Then the overview.
         self.assertTrue(
             (await me.get("/")).headers["Location"].endswith("/todo?investigation=")
         )
+        with mock.patch("sealbook.ledger.attest.registered", return_value=True):
+            self.assertTrue(
+                (await me.get("/")).headers["Location"].endswith("/cases/overview")
+            )
         self.assertEqual((await me.get("/desk")).status_code, 200)
         bad = await me.get("/api/desk/needs", query_string={"per_page": 500})
         self.assertEqual(bad.status_code, 400)
