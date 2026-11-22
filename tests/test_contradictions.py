@@ -153,10 +153,22 @@ class CandidateTest(unittest.TestCase):
         )
         b = replace(claim(Prop.SEEN_AT, "Town", source="s2"), lo=a.lo, hi=a.hi)
         place = SimpleNamespace(
-            id=uuid.uuid4(), lon=35, lat=34, name_en="Town", name_ar="", precision_m=100
+            id=uuid.uuid4(),
+            lon=35,
+            lat=34,
+            name_en="Town",
+            name_ar="",
+            precision_m=100,
+            fictional=False,
         )
         other = SimpleNamespace(
-            id=uuid.uuid4(), lon=36, lat=34, name_en="Town", name_ar="", precision_m=100
+            id=uuid.uuid4(),
+            lon=36,
+            lat=34,
+            name_en="Town",
+            name_ar="",
+            precision_m=100,
+            fictional=False,
         )
         case = self.case([a, b], {a.id: place, b.id: other})
         self.assertEqual(len(contradictions.candidates(case)), 1)
@@ -193,6 +205,7 @@ class CandidateTest(unittest.TestCase):
                 name_en="Town",
                 name_ar="",
                 precision_m=2000,
+                fictional=False,
             )
 
         yard, sister, market_place = place(-27.4764), place(-27.1192), place(-27.47)
@@ -256,6 +269,7 @@ class CandidateTest(unittest.TestCase):
                 name_en="Town",
                 name_ar="",
                 precision_m=100,
+                fictional=False,
             )
 
         p = place(35)
