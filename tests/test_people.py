@@ -13,15 +13,11 @@ from unittest import mock
 import orjson
 import stk
 import stk.extensions as ext
-from alembic import command
 from quart_security import hash_password
 from sqlalchemy import select
 from sqlalchemy.engine import make_url
 from stk.agent_login import create_agent_login_token
-from stk.migrations import (
-    build_alembic_config,
-    throwaway_database_url,
-)
+from stk.migrations import migrated_database_url
 from stk.user.models import Role, User
 
 from sealbook.app import create_app
@@ -44,10 +40,8 @@ SECRETS = ("يوسف", "Yusuf", "Yousef", "حرستا", "فاطمة", "حمص")
 
 def _app(test):
     url = test.enterContext(
-        throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
+        migrated_database_url("sealbook", Config.SQLALCHEMY_DATABASE_URI)
     )
-    config = build_alembic_config("sealbook", url, quiet=True)
-    command.upgrade(config, "heads")
     test.enterContext(
         mock.patch.object(
             Config, "BLOB_DIR", test.enterContext(tempfile.TemporaryDirectory())
@@ -55,14 +49,9 @@ def _app(test):
     )
     # A developer's .env may send agents to a cloud route; tests run on the default.
     test.enterContext(mock.patch.object(Config, "AGENT_ROUTE", "local"))
-    db_url = (
-        make_url(url)
-        .set(drivername="postgresql+asyncpg")
-        .render_as_string(hide_password=False)
-    )
 
     class TestConfig(stk.TestingConfig, Config):
-        SQLALCHEMY_DATABASE_URI = db_url
+        SQLALCHEMY_DATABASE_URI = url
         TESTING = True
         SESSION_TYPE = None
         STK_ENV = "testing"
