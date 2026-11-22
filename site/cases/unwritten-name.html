@@ -21,7 +21,7 @@
 <script>try{const t=localStorage.getItem("sealbook-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{}</script>
 <link rel="stylesheet" href="../css/site.css?v=07334741">
 <link rel="stylesheet" href="../css/invite.css?v=8cd32b9f">
-<link rel="stylesheet" href="../css/cases.css?v=df87898d">
+<link rel="stylesheet" href="../css/cases.css?v=55eb56d9">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -69,6 +69,20 @@
 </section>
 
 <section class="beat">
+  <h2>What it shows</h2>
+  <div>
+    <ul class="shows">
+      <li>One person across papers and log lines</li>
+      <li>A standing question that wakes on new evidence</li>
+      <li>Gaps in a record</li>
+      <li>Who was where, and seen together</li>
+      <li>A colleague works the lead</li>
+      <li>A conclusion signed as a lead, not a finding</li>
+    </ul>
+  </div>
+</section>
+
+<section class="beat">
   <h2>The pile</h2>
   <div>
     <p>About 675 lines over five months: 417 gate log lines, 150 fuel receipts and 108 dispatch rows, beside a roster, statements, a missing notice, a charge sheet and a bail record. 608 of the lines name a driver.</p>
@@ -76,17 +90,41 @@
 </section>
 
 <section class="beat">
-  <h2>What the machine found</h2>
+  <h2>Day by day</h2>
   <div>
-    <p>The gap finder starts watching a person after a last sighting, an arrest, a detention or a missing report, and flags a silence longer than 60 days. The supervisor's statement is the last sighting of Aron. He is in no log for the next 73 days, so the gap finder flags him and sets his silence beside the night Dana was last seen. Dana's own silence, open since that night, is flagged too.</p>
-    <p>It flagged none of the four look-alikes: a driver arrested and back on the logs 59 days later, one released on bail first, one with a record dated only by its year, and one on 70 days of recorded leave.</p>
-  </div>
-</section>
-
-<section class="beat">
-  <h2>What the person decided</h2>
-  <div>
-    <p>A person reads the two silences side by side and decides what they mean and where to look next. The app points at the gap. It accuses no one.</p>
+    <ol class="acts">
+      <li class="signed"><time datetime="2026-03-16">16 March 2026</time><h3>A nurse does not reach her night shift</h3><dl>
+        <div><dt>Arrives</dt><dd>Her flatmate's statement, the missing person notice and her photograph.</dd></div>
+        <div><dt class="person">A person</dt><dd>Joins the three papers about Dana as one person.</dd></div></dl></li>
+      <li><time datetime="2026-03-16">16 March</time><h3>The night supervisor saw her board</h3><dl>
+        <div><dt>Arrives</dt><dd>The night supervisor's signed statement, as a scanned page: she showed Dana to stand 3 and saw her board the 22:40, driven by Aron Vesk. With it, the gate book page for that night and a photograph of the depot yard.</dd></div>
+        <div><dt class="app">The app</dt><dd>Reads the scan, in this demo from a fixed text. On the gate book page, the line for bus 14 at 22:41 has no driver.</dd></div></dl></li>
+      <li><time datetime="2026-03-18">18 March</time><h3>Who drives route 9</h3><dl>
+        <div><dt>Arrives</dt><dd>The depot manager's note that the route 9 lates are Aron Vesk's duty on bus 14, the roster and a staff list.</dd></div>
+        <div><dt class="app">The app</dt><dd>Reads the first three papers together and sums them up in a short brief.</dd></div></dl></li>
+      <li><time datetime="2026-04-01">1 April</time><h3>The depot's logs to the end of March</h3><dl>
+        <div><dt>Arrives</dt><dd>The gate log and fuel receipts for February and March and the March dispatch sheet: several hundred lines, each driver named by initial and surname or by fuel card.</dd></div>
+        <div><dt class="app">The app</dt><dd>Treats each line as its own mention and joins it to its driver. Aron Vesk's last named line is 12 March.</dd></div></dl></li>
+      <li><time datetime="2026-04-02">2 April</time><h3>A standing question on the driver</h3><dl>
+        <div><dt class="person">A person</dt><dd>Asks the case: "Tell me when Aron Vesk is named in a new record."</dd></div>
+        <div><dt class="app">The app</dt><dd>Its first check finds the five papers that already name him.</dd></div></dl></li>
+      <li><time datetime="2026-05-04">4 May</time><h3>April's logs, and nothing on him</h3><dl>
+        <div><dt>Arrives</dt><dd>April's gate log and fuel receipts, with a police charge sheet and a bail record about two other drivers.</dd></div>
+        <div><dt class="app">The app</dt><dd>The question wakes on the new lines and finds no record naming him. His late duty goes out every working day under relief.</dd></div></dl></li>
+      <li><time datetime="2026-07-01">1 July</time><h3>May and June: his name is back</h3><dl>
+        <div><dt>Arrives</dt><dd>The logs for May and June.</dd></div>
+        <div><dt class="app">The app</dt><dd>The question wakes again and reports "A. Vesk" in the gate log and "VESK A" in the fuel receipts, from 26 May.</dd></div></dl></li>
+      <li><time datetime="2026-07-01">1 July</time><h3>Seventy-three days with no name</h3><dl>
+        <div><dt class="app">The app</dt><dd>The gap finder sets the supervisor's last sight of Aron on 14 March beside his next named log line on 26 May: no record of him for 73 days. It also flags that nothing places Dana after that night. It proposes; a person decides what the silence means.</dd></div></dl></li>
+      <li class="signed"><time datetime="2026-07-02">2 July</time><h3>Who was at the depot that night</h3><dl>
+        <div><dt class="person">A person</dt><dd>Checks the 11 log lines for 14 March against the gate book page and accepts them with the three last-seen accounts.</dd></div>
+        <div><dt class="app">The app</dt><dd>Proposes a possible incident: six people placed at the coach station that day, and the same group as people seen together.</dd></div>
+        <div><dt class="person">A person</dt><dd>The gate times show the early drivers gone by 14:15. She keeps Dana Kovar, Aron Vesk and Leon Abbot, the late driver in the yard until 23:53, and accepts that as an incident. The group seen together says nothing more, and she rejects it with her reason.</dd></div></dl></li>
+      <li class="signed"><time datetime="2026-07-03">3 July</time><h3>A colleague works the lead</h3><dl>
+        <div><dt class="person">A person</dt><dd>Assigns the May and June gate log and the gate book page to a colleague and asks whether the driver named on 26 May is the Aron Vesk of the 22:40. The colleague answers on the line and marks her work updated.</dd></div></dl></li>
+      <li class="signed"><time datetime="2026-07-06">6 July</time><h3>The conclusion</h3><dl>
+        <div><dt class="person">A person</dt><dd>Writes what the case shows: a lead, not a finding about what he did. She sets aside leave and missed entries, names what is not established and signs; a second analyst agrees.</dd></div></dl></li>
+    </ol>
   </div>
 </section>
 
@@ -98,6 +136,7 @@
       <blockquote>Aron Vesk, who drove the 22:40 that Dana Kovar boarded on 14 March 2026, is named in no log for the next 73 days; this is a lead to follow, not a finding about what he did.</blockquote>
       <dl class="concl">
         <div><dt>Confidence</dt><dd><b>Reasonable suspicion.</b> Reliable information points this way, enough to keep looking, not enough to rely on.</dd></div>
+        <div><dt>Rests on</dt><dd>The supervisor's two sightings, of Dana and of Aron, and his last and next log lines, on 12 March and 26 May.</dd></div>
         <div><dt>Set aside</dt><dd><ul><li><b>He was on leave.</b> The roster keeps him on route 9, and the depot manager has no record of anyone on route 9 being on leave in March.</li><li><b>The logs missed him while he kept driving.</b> The gate log, the fuel receipts and the dispatch sheet are kept apart; all three last name him on 12 March, and the gate log and the fuel receipts name him again only from 26 May.</li></ul></dd></div>
         <div><dt>Not established</dt><dd><ul><li>Where he was during those 73 days.</li><li>What happened to Dana Kovar.</li><li>Why the gate line for his last run was left blank.</li></ul></dd></div>
         <div><dt>Peer review</dt><dd>Signed by one analyst and agreed by a second.</dd></div>
@@ -110,15 +149,16 @@
   <h2>The score</h2>
   <div>
     <p class="big">Both planted gaps found. None of the 4 look-alikes flagged.</p>
-    <p>The gap finder runs on rules, so the result is the same with or without a model.</p>
-    <p class="fine">Measured on 21 November 2026 on this synthetic case. A test in the source pins the result.</p>
+    <p>The gap finder flagged none of the look-alikes: a driver arrested and back on the logs 59 days later, one released on bail first, one with a record dated only by its year, and one on 70 days of recorded leave. It runs on rules, so the result is the same with or without a model.</p>
+    <p>It also notices a regular presence that stops. Take away the supervisor's statement and the logs alone still give Aron's silence: named at the depot gate about five days a week, then in no record for 75 days from 12 March, while the gate went on recording others.</p>
+    <p class="fine">Measured on 21 November 2026 on this synthetic case, and again on 22 November with the rule for a presence that stops. A test in the source pins the result.</p>
   </div>
 </section>
 
 <section class="beat limit">
   <h2>The limit</h2>
   <div>
-    <p>The gap finder watches Aron only because the supervisor's statement records the last time she saw him. A name that stops appearing in routine logs starts no watch on its own. Without that statement, his 73 days off the logs would not be flagged.</p>
+    <p>No model reads the papers in this case. Every claim is written into the case file and pinned to its cell or its words, and the standing question runs on a fixed demo answer that matches names only. With six drivers at one depot every day, the app also finds many groups of people seen together, and a person has to set most of them aside.</p>
   </div>
 </section>
 

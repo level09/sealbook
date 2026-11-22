@@ -21,7 +21,7 @@
 <script>try{const t=localStorage.getItem("sealbook-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{}</script>
 <link rel="stylesheet" href="../css/site.css?v=07334741">
 <link rel="stylesheet" href="../css/invite.css?v=8cd32b9f">
-<link rel="stylesheet" href="../css/cases.css?v=df87898d">
+<link rel="stylesheet" href="../css/cases.css?v=55eb56d9">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -75,24 +75,53 @@
 </section>
 
 <section class="beat">
+  <h2>What it shows</h2>
+  <div>
+    <ul class="shows">
+      <li>Reading scans, a photograph and a voice note</li>
+      <li>Search by what a picture shows</li>
+      <li>The linker, and people seen together</li>
+      <li>The contradiction finder, by the clock</li>
+      <li>A colleague checks the lead</li>
+      <li>A conclusion that names the account it contradicts</li>
+    </ul>
+  </div>
+</section>
+
+<section class="beat">
   <h2>The pile</h2>
   <div>
-    <p>53 sources: 40 witness statements, one interview and twelve other items, among them the photograph, the voice note and the examiner's two sheets. Together they hold 152 claims about 54 records.</p>
+    <p>53 sources: 40 witness statements, one interview and twelve other items, among them the photograph, the voice note and the examiner's two sheets. Four of the papers are scanned pages. The app reads all of it itself.</p>
   </div>
 </section>
 
 <section class="beat">
-  <h2>What the machine found</h2>
+  <h2>Day by day</h2>
   <div>
-    <p>The contradiction hunter put Mara's four claims for 14 March side by side: two in Brindle Cross and two on Tanner's Row. It also found a witness whose two birth years disagree, 1958 against 1965, and another whose two places of birth disagree.</p>
-    <p>It left alone the five planted look-alikes, such as Tanner's Row written without its apostrophe, or a last sighting at noon and an arrest that afternoon. It did raise one false alarm: a woman at the market in the morning and at home that evening.</p>
-  </div>
-</section>
-
-<section class="beat">
-  <h2>What the person decided</h2>
-  <div>
-    <p>A person opens the two exhibit sheets and reads the times: the photograph at 21:52, the voice note at 22:07, against an alibi that starts at six. The person checks each sheet against the picture and the recording, and decides the alibi does not hold. The market sighting is set aside, because morning and evening fit in one day.</p>
+    <ol class="acts">
+      <li class="signed"><time datetime="2026-03-15">15 March 2026</time><h3>The fire and the first statements</h3><dl>
+        <div><dt>Arrives</dt><dd>18 sources: the fire report, the first statements and the records the police already hold.</dd></div>
+        <div><dt class="app">The app</dt><dd>Reads each one and proposes its people, places and dates, with a first pass: what the item is, a title and a short description.</dd></div>
+        <div><dt class="person">A person</dt><dd>Confirms the fire report's first pass.</dd></div></dl></li>
+      <li><time datetime="2026-03-16">16 March</time><h3>Mara Quill's statement, on paper</h3><dl>
+        <div><dt>Arrives</dt><dd>31 more sources, two of them scanned pages. Mara says she was at her sister's in Brindle Cross from six; her sister Jo says she came.</dd></div>
+        <div><dt class="app">The app</dt><dd>Reads the scans and writes each place with its time and in whose words.</dd></div></dl></li>
+      <li><time datetime="2026-03-16">16 March</time><h3>The photograph of the gate</h3><dl>
+        <div><dt>Arrives</dt><dd>The photograph Mara says shows an earlier break-in.</dd></div>
+        <div><dt class="app">The app</dt><dd>Reads where and when the phone took it from the file itself and says what the picture shows, so a search for "gate" finds it.</dd></div></dl></li>
+      <li><time datetime="2026-03-20">20 March</time><h3>The phone exhibits and the voice note</h3><dl>
+        <div><dt>Arrives</dt><dd>An examiner's two exhibit sheets from Mara's phone, one for the photograph and one for a voice note she sent her sister, and the voice note itself.</dd></div>
+        <div><dt class="app">The app</dt><dd>Transcribes the voice note on its own server and reads the dated places in the sheets: Tanner's Row at 21:52 and at 22:07. It heard "Joe" for "Jo" and marks that name as heard, not written.</dd></div></dl></li>
+      <li class="signed"><time datetime="2026-03-21">21 March</time><h3>One woman in four papers</h3><dl>
+        <div><dt class="app">The app</dt><dd>Proposes that the Mara Quill of the two exhibit sheets is one person. It also notes people placed at one spot as seen together, such as the two Quill sisters.</dd></div>
+        <div><dt class="person">A person</dt><dd>Accepts the link. Her statement and her sister's share only her name with the sheets, so no rule proposes them; the analyst joins the four papers herself.</dd></div></dl></li>
+      <li><time datetime="2026-03-21">21 March</time><h3>Two places on one night</h3><dl>
+        <div><dt class="app">The app</dt><dd>Sets Mara's places on 14 March side by side by the clock. Her own evening in Brindle Cross, from six to midnight, overlaps 21:52 and 22:07 on Tanner's Row, 34 km away. Her sister's "about half past eleven" leaves time for the drive after 22:07, so it does not count against her. The app proposes; nothing is decided.</dd></div></dl></li>
+      <li class="signed"><time datetime="2026-03-23">23 March</time><h3>A colleague checks the lead</h3><dl>
+        <div><dt class="person">A person</dt><dd>Assigns the two exhibit sheets to a colleague and asks her to check the voice note's place against the sheet. The colleague answers on the claim and marks her work updated.</dd></div></dl></li>
+      <li class="signed"><time datetime="2026-03-25">25 March</time><h3>The conclusion</h3><dl>
+        <div><dt class="person">A person</dt><dd>Reads the times, checks each sheet against the picture and the recording, and decides the alibi does not hold. She writes the conclusion and signs it; a second analyst agrees.</dd></div></dl></li>
+    </ol>
   </div>
 </section>
 
@@ -104,7 +133,9 @@
       <blockquote>Mara Quill was at the yard on Tanner's Row on the evening of 14 March 2026, not in Brindle Cross from six as her statement says.</blockquote>
       <dl class="concl">
         <div><dt>Confidence</dt><dd><b>Reasonable grounds to believe.</b> Enough consistent, reliable information that an ordinary careful person would believe it.</dd></div>
-        <div><dt>Set aside</dt><dd><ul><li><b>She was at her sister's house in Brindle Cross from about six.</b> Her sister says she arrived late, about half past eleven, and the voice note sent from her phone at 22:07 says she is still at the yard.</li><li><b>The photograph is the one she took of the forced gate early on 13 March, as she said.</b> The examiner's exhibit sheet for the photograph gives its time as 21:52 on 14 March 2026 and places it at the back gate.</li></ul></dd></div>
+        <div><dt>Rests on</dt><dd>The two exhibit sheets: the photograph taken at the back gate at 21:52, and the voice note sent from the yard at 22:07.</dd></div>
+        <div><dt>Contradicts</dt><dd>Her own statement that she was in Brindle Cross from six, as the app read it from the scan. It is cited as what she said, not accepted.</dd></div>
+        <div><dt>Set aside</dt><dd><ul><li><b>She was at her sister's house in Brindle Cross from about six.</b> Her sister says she arrived late, about half past eleven, and the voice note sent from her phone at 22:07 says she is still at the yard.</li><li><b>The photograph is the one she took of the forced gate early on 13 March, as she said.</b> Its embedded metadata dates it 14 March 2026 at 21:52 and places it at the back gate.</li></ul></dd></div>
         <div><dt>Not established</dt><dd><ul><li>Who started the fire.</li><li>Why she was at the yard that evening.</li></ul></dd></div>
         <div><dt>Peer review</dt><dd>Signed by one analyst and agreed by a second.</dd></div>
       </dl>
@@ -116,15 +147,15 @@
   <h2>The score</h2>
   <div>
     <p class="big">All 4 planted contradictions found.</p>
-    <p>With the rules alone, and with a model in three live trials, every planted contradiction was found and none of the planted look-alikes was raised. Both also raised the market false alarm, which a person has to dismiss.</p>
-    <p class="fine">Measured on 21 November 2026 on this synthetic case. A test in the source pins the rules' result.</p>
+    <p>The alibi fails twice, against the photograph and against the voice note, and the app puts both in one proposal. It also found a witness whose two birth years disagree, 1958 against 1965, and another whose two places of birth disagree. It raised none of the five planted look-alikes, such as Tanner's Row written without its apostrophe, or a last sighting at noon and an arrest that afternoon. With the rules alone and in one live trial, it left alone Jo at the market at 09:40 and at home that evening, because it compares times.</p>
+    <p class="fine">Measured on 22 November 2026 on this synthetic case, with the rules alone and in one live trial on a zero-retention model route. Reading the papers, the app recovered 148 of the 152 planted claims. A test in the source pins the result.</p>
   </div>
 </section>
 
 <section class="beat limit">
   <h2>The limit</h2>
   <div>
-    <p>The app compares days, not hours. It sees two places on one day, and a person reads the times to decide. Those times come from the examiner's two written sheets. The app does not read the time stored in the photograph's file or in the recording, so without the sheets it would have nothing that ties Mara to the clock.</p>
+    <p>On what the app read itself, the market still comes up. It read Jo's "all evening" at home without a time, so it raises the market with "same day, times not stated", and a person has to dismiss it. The app also reads the time stored in the photograph, but treats it as a fact about the phone, not about Mara, and it does not read the time of the voice note's file. The times that place her come from the examiner's two sheets, which a person checks against the picture and the recording.</p>
   </div>
 </section>
 

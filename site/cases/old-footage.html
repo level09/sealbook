@@ -21,7 +21,7 @@
 <script>try{const t=localStorage.getItem("sealbook-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{}</script>
 <link rel="stylesheet" href="../css/site.css?v=07334741">
 <link rel="stylesheet" href="../css/invite.css?v=8cd32b9f">
-<link rel="stylesheet" href="../css/cases.css?v=df87898d">
+<link rel="stylesheet" href="../css/cases.css?v=55eb56d9">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -67,24 +67,46 @@
 </section>
 
 <section class="beat">
+  <h2>What it shows</h2>
+  <div>
+    <ul class="shows">
+      <li>Listening to and looking at every clip</li>
+      <li>Search by what a clip shows</li>
+      <li>Sound and picture fingerprints</li>
+      <li>Two clips side by side</li>
+      <li>A conclusion that cites a confirmed match</li>
+    </ul>
+  </div>
+</section>
+
+<section class="beat">
   <h2>The pile</h2>
   <div>
-    <p>36 clips of real footage: one 21 second original, nine copies made from it, six other real recordings of rivers in flood posted on the same days with similar captions, and twenty unrelated clips of clouds, rain, snow, waterfalls, a rail line and a fountain.</p>
+    <p>36 clips of real footage: one 21 second original, nine copies of it, six other real recordings of rivers in flood posted on the same days with similar captions, and twenty unrelated clips of clouds, rain, snow, waterfalls, a rail line and a fountain.</p>
   </div>
 </section>
 
 <section class="beat">
-  <h2>What the machine found</h2>
+  <h2>Day by day</h2>
   <div>
-    <p>Each clip gets a picture fingerprint and a sound fingerprint. A low-rate copy and a trimmed copy kept both. The logo, the crop, the mirror and an upright cut defeated the picture fingerprint, and the sound carried the match. A muted copy of the viral clip matched it by picture, and through it the original.</p>
-    <p>The tool also listed 36 weak matches outside the family, each resting on one or two shared moments of sound. They are marked weak.</p>
-  </div>
-</section>
-
-<section class="beat">
-  <h2>What the person decided</h2>
-  <div>
-    <p>A person plays the two clips side by side, hears the same water and sees the same bush mirrored, and confirms the match. The finding says the clip is two years old and cites both files. The weak matches are declined.</p>
+    <ol class="acts">
+      <li><time datetime="2026-06-02">2 June 2026</time><h3>The clip that spread</h3><dl>
+        <div><dt>Arrives</dt><dd>The viral clip, with the post it came in.</dd></div>
+        <div><dt class="app">The app</dt><dd>Listens for speech, looks at eight frames and proposes a title, a description and labels for what the clip shows. The caption stays what the post reports, unconfirmed.</dd></div></dl></li>
+      <li><time datetime="2026-06-02">2 June</time><h3>Reposts and other floods</h3><dl>
+        <div><dt>Arrives</dt><dd>20 more clips over the day: reposts, other people's flood videos and clips that only look like weather.</dd></div>
+        <div><dt class="app">The app</dt><dd>Reads each one and fingerprints its picture and its sound. Several reposts match each other by sound, so one recording is spreading. Nothing yet says where it began.</dd></div></dl></li>
+      <li><time datetime="2026-06-03">3 June</time><h3>Searching the pile by what it shows</h3><dl>
+        <div><dt>Arrives</dt><dd>14 more clips in one batch.</dd></div>
+        <div><dt class="person">A person</dt><dd>Searches for what the viral clip shows, submerged trees, instead of scrolling 35 videos. The app's own descriptions find 8 of the 9 copies and one other flood. A description says what the frames show, never where or when they were filmed.</dd></div></dl></li>
+      <li><time datetime="2026-06-03">3 June</time><h3>The archive from two years ago</h3><dl>
+        <div><dt>Arrives</dt><dd>A producer remembers a flood clip from June 2024, and the desk adds Ostra Valley Weather's video from the archive.</dd></div>
+        <div><dt class="app">The app</dt><dd>Its fingerprints tie the 2024 video to the viral clip and six other reposts by sound, two of them by picture too. The search for submerged trees now finds it first.</dd></div></dl></li>
+      <li class="signed"><time datetime="2026-06-03">3 June</time><h3>Side by side</h3><dl>
+        <div><dt class="person">A person</dt><dd>Plays the viral clip beside the 2024 video, hears the same water and sees the same bush mirrored. She confirms each of the 29 matches as the same recording, with her reason and her passkey. The app proposed nothing between clips that are not the same footage, so there is nothing to decline.</dd></div></dl></li>
+      <li class="signed"><time datetime="2026-06-03">3 June</time><h3>The conclusion</h3><dl>
+        <div><dt class="person">A person</dt><dd>Writes that the clip shared as new is the 2024 video and cites the confirmed matches beside the two posts' words. She signs it; a second analyst agrees.</dd></div></dl></li>
+    </ol>
   </div>
 </section>
 
@@ -96,6 +118,7 @@
       <blockquote>The clip shared as new on 2 June 2026 is a copy of the video Ostra Valley Weather posted on 3 June 2024.</blockquote>
       <dl class="concl">
         <div><dt>Confidence</dt><dd><b>Clear and convincing.</b> Highly probable; the alternatives considered are set aside on the evidence.</dd></div>
+        <div><dt>Rests on</dt><dd>The matches between the clip and the 2024 video that a person confirmed, and the words of the two posts.</dd></div>
         <div><dt>Set aside</dt><dd><ul><li><b>Two recordings of the same flood from the same spot.</b> The sound of the two clips lines up point for point, and six other reposts match the 2024 video too.</li></ul></dd></div>
         <div><dt>Not established</dt><dd><ul><li>Who made the first altered copy.</li><li>One muted, cropped and mirrored copy matched nothing.</li></ul></dd></div>
         <div><dt>Peer review</dt><dd>Signed by one analyst and agreed by a second.</dd></div>
@@ -108,15 +131,15 @@
   <h2>The score</h2>
   <div>
     <p class="big">8 of 9 planted copies tied to the original.</p>
-    <p>All eight are banded strong, and no strong match falls outside the planted family. Sound did most of the work: five of the eight were found by sound alone.</p>
-    <p class="fine">Measured on 21 November 2026 on this synthetic case by a scoring script that runs the app's fingerprint code over the 36 clips, with exact search in place of the database. A test in the source pins the result.</p>
+    <p>All eight are banded strong, and no match of any strength falls outside the planted family. Sound did most of the work: the logo, the crop, the mirror and an upright cut defeat the picture fingerprint, so five of the eight were found by sound alone. A muted copy of the viral clip matched it by picture, and through it the original.</p>
+    <p class="fine">Measured on 22 November 2026 on this synthetic case by a scoring script that runs the app's fingerprint code over the 36 clips, with exact search in place of the database. A test in the source pins the result.</p>
   </div>
 </section>
 
 <section class="beat limit">
   <h2>The limit</h2>
   <div>
-    <p>A copy cut upright, mirrored and with its sound removed is not found. The picture fingerprint does not survive a crop or a mirror, and with no sound left there is nothing to match.</p>
+    <p>A copy cut upright, mirrored and with its sound removed is not found. The picture fingerprint does not survive a crop or a mirror, and with no sound left there is nothing to match. A sound match needs four points lined up, so two clips that share less than about a second of sound are not proposed by sound. And the speech model heard "subscribe to the channel" in running water on two clips; the first pass then listed it as said, and a person has to catch that.</p>
   </div>
 </section>
 
