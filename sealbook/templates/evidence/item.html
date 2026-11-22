@@ -122,7 +122,7 @@
             <p v-else-if="it.kind === 'sheet'" class="ev-note">Each claim is marked on the cell it was read from. Rows and columns are numbered as the file shows them.</p>
             <p v-else class="ev-note">The text is shown in the preview with claim spans marked.</p>
             <div v-if="pins.length" class="d-flex flex-wrap ga-1 mt-2" aria-label="Detected people, places and dates">
-              <v-chip v-for="c in pins" :key="c.id" color="agent" variant="tonal" size="small" :title="spanLabel(c.span)" @click="openSpan(c)">${ prop(c.prop) }:&nbsp;<bdi dir="auto">${ c.value }</bdi></v-chip>
+              <v-chip v-for="c in pins" :key="c.id" color="agent" variant="tonal" size="small" :title="spanLabel(c.span)" @click="openSpan(c)">${ prop(c.prop) }<template v-if="c.prop === 'name' && c.evidence?.includes('spoken')">, heard as</template>:&nbsp;<bdi dir="auto">${ c.value }</bdi></v-chip>
             </div>
           </div></v-tabs-window-item>
           <v-tabs-window-item value="dups">
