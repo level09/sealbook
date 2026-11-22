@@ -33,7 +33,7 @@ open, so a person or the film can decide them; act 7 is that decision.
 | --- | --- | --- | --- | --- | --- |
 | 1 Procurement's files | 3 Jun 2024 | sheet matching, reading | vendor master, purchase ledger, payments, vendor form (scan) | `sheets`, `read`, `places`, `join` | the vendor master, the vendor form |
 | 2 Finance's files | 5 Jun | sheet matching, reading | consultants register, invoices, agreement (scan) | the same | the register, the agreement |
-| 3 The credit desk's files | 7 Jun | sheet matching, reading | guarantees register, guarantee deed and passport (scans) | the same, `recognise` the passport holder, `brief` | the register, the deed |
+| 3 The credit desk's files | 7 Jun | sheet matching, reading | guarantees register, guarantee deed and passport (scans) | the same, `brief` | the register, the deed |
 | 4 The port's lists | 10 Jun | sheet matching, reading | ship agents, licence (scan, Arabic), crew list, surveyors register | the same | the agents list, the licence |
 | 5 One name in two alphabets | 11 Jun | search | none | none | `/search?q=Kassar`, `/search?q=قصار` |
 | 6 The linker proposes | 12 Jun | same person | none | `agent` linker | `/review` |
@@ -60,10 +60,11 @@ open, so a person or the film can decide them; act 7 is that decision.
   2026-11-21 (5 OCR with `google/gemini-4-argon`, 5 extractions with
   `anthropic/claude-haiku-5.5`, 5 first passes with `google/gemini-3.8-flash`).
   Replay of the whole case takes about 15 seconds and calls no model.
-- **The passport** (`recognise`). Extraction wrote the holder as the page prints him,
-  "KASSAR / ADRIAN", and reading matches a record by the exact name, so the case
-  names that written form. The step writes nothing to the ledger; it tells the
-  seeder which written person is the passport holder.
+- **The passport**. Extraction writes the holder as the page prints him,
+  "KASSAR / ADRIAN". A name written surname first with a slash or comma is read in
+  natural order (`search.arabic.natural`) by reading, the linker and every name
+  match, so the holder is matched to his record as any other name is. Until
+  2026-11-22 a `recognise` step named that written form by hand.
 
 ### What was measured, 2026-11-21
 
@@ -98,6 +99,5 @@ open, so a person or the film can decide them; act 7 is that decision.
 | Step | Module | Arguments | What it does |
 | --- | --- | --- | --- |
 | `sheets` | `sheets.py` | none; each source's `sheet` | Confirms the column mapping, then `extract_sheet` on the released rows with fixed per-row answers from the case file; matches each planted sheet claim to its cell |
-| `recognise` | `decide.py` | `record`, `as` | Names the written person who stands for a record whose name extraction wrote in another form |
 | `decline` | `decide.py` | `why` | The analyst declines, signed with `why`, each open same-person proposal that joins records the truth plants as different people (`twins`) |
 | `package` | `package.py` | `title`, `audience`, `sentences: [{text, cite}]`, `save` | Writes the brief, runs `stk anchor` once, builds and signs the package, both analysts attest, finalizes, saves the export and checks it offline. Without a certificate or receipts it stops and says what the build waits for |

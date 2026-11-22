@@ -38,6 +38,7 @@ from sealbook.ledger.queue import LEASE
 from sealbook.monitor.data import LOCATED
 from sealbook.places import normalise, phrases, resolve
 from sealbook.search.arabic import candidates as name_match
+from sealbook.search.arabic import natural
 from sealbook.settings import Config
 from sealbook.sheets import dates
 
@@ -255,7 +256,7 @@ def candidates(
     holders: dict[str, set[str]] = {}
     for p, ns in names.items():
         for n in ns:
-            if len((key := normalise(n.text)).split()) >= 2:
+            if len((key := normalise(natural(n.text))).split()) >= 2:
                 holders.setdefault(key, set()).add(p)
     named = []
     for key, ps in holders.items():
@@ -265,8 +266,8 @@ def candidates(
         bare = [p for p in (a, b) if all(c.prop == Prop.NAME for c in people[p])]
         if not bare or not touches(people[a] + people[b]):
             continue
-        x = next(c for c in names[a] if normalise(c.text) == key)
-        y = next(c for c in names[b] if normalise(c.text) == key)
+        x = next(c for c in names[a] if normalise(natural(c.text)) == key)
+        y = next(c for c in names[b] if normalise(natural(c.text)) == key)
         named.append(
             (
                 -len(key.split()),
@@ -373,7 +374,9 @@ def candidates(
             basis += [x, y]
         else:
             last = lambda cs: {  # noqa: E731
-                normalise(c.text).split(" ")[-1] for c in cs if c.prop == Prop.NAME
+                normalise(natural(c.text)).split(" ")[-1]
+                for c in cs
+                if c.prop == Prop.NAME
             }
             parent = [
                 (x, y)

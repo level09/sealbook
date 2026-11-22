@@ -31,6 +31,7 @@ from sealbook.monitor import seed_flows as flows
 from sealbook.monitor.data import LOCATED
 from sealbook.monitor.study import step
 from sealbook.runs.worker import process
+from sealbook.search.arabic import natural
 from sealbook.settings import Config
 
 MODEL = ("ocr", "extract", "assess")
@@ -198,7 +199,10 @@ def _norm(text) -> str:
 
 def same_value(prop: str, got: str, planted: str) -> bool:
     """The same words; for a place, one naming inside the other ("Tanner's Row"
-    and "Tanner's Row, Larkhaven")."""
+    and "Tanner's Row, Larkhaven"); for a name, in natural order ("KASSAR /
+    ADRIAN" is Adrian Kassar)."""
+    if prop == Prop.NAME:
+        got, planted = natural(str(got or "")), natural(str(planted or ""))
     a, b = _norm(got), _norm(planted)
     if prop in LOCATED:
         return bool(a and b) and (a in b or b in a)
@@ -252,7 +256,7 @@ async def recover(st, keys) -> None:
             for f, v, _, k in usable
             if k == source
             and f.prop == Prop.NAME
-            and _norm(_shown(v)) == _norm(c["value"])
+            and same_value(Prop.NAME, _shown(v), c["value"])
         ]
         if same:
             st.subjects[c["record"]] = same[0].subject

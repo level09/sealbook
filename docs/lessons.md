@@ -863,3 +863,10 @@ covers in the text it was read from (`span_blob`).
   article. The article is written with a bare alif, so a hamza is read before
   normalising, and a bare ال now tries both readings. Read orthographic signals
   before the normaliser folds them away.
+
+- The passport's "KASSAR / ADRIAN" matched nobody, and four-names needed a
+  hand-written `recognise` step: the name match is ordered (Ali Hasan is not Hasan
+  Ali), and nothing read the slash or comma that marks surname first. Such a name
+  is now put in natural order (`search.arabic.natural`) before any name is keyed or
+  compared. Read the separators a document uses before treating word order as
+  meaning.

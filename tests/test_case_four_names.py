@@ -128,7 +128,7 @@ class FourNamesSeedTest(Seeding):
         # The scans, read by the app: 16 of the 22 planted claims. Missed: the five
         # "signed in person at" places and the passport's "M" (written, no norm).
         self.assertEqual(out["read"], {"planted": 22, "recovered": 16, "written": 18})
-        self.assertEqual(out["recognised"], 1)
+        self.assertNotIn("recognised", out)  # read in natural order, no step
         self.assertEqual(
             sorted(out["missed"]),
             sorted(

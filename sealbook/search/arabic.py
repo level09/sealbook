@@ -83,9 +83,25 @@ _HAMZA_AL = re.compile(
 )
 
 
+# Surname first with a separator, as passports and registers print it: "KASSAR /
+# ADRIAN", "Kassar, Adrian", "العلي، يوسف". Each side is one to three words.
+_SURNAME_FIRST = re.compile(
+    r"\s*([^\W\d_]+(?:[\s'’-]+[^\W\d_]+){0,2})\s*[/,،]\s*"
+    r"([^\W\d_]+(?:[\s'’.-]+[^\W\d_]+){0,2})\.?\s*"
+)
+
+
+def natural(name: str) -> str:
+    """A name written surname first with a slash or comma, in natural order
+    ("ADRIAN KASSAR"); any other name as written. Without a separator the written
+    order is the name's own (Ali Hasan is not Hasan Ali)."""
+    found = _SURNAME_FIRST.fullmatch(name)
+    return f"{found[2]} {found[1]}" if found else name
+
+
 def _options(name: str) -> tuple[tuple[str, ...], ...]:
     """Per name in `name`, the keys it may stand for, the likelier reading first."""
-    text = normalize(_HAMZA_AL.sub("ل", name)).lower()
+    text = normalize(_HAMZA_AL.sub("ل", natural(name))).lower()
     text = re.sub(r"\babd[oue]l", "abd al ", text)
     tokens = re.findall(r"[a-zء-غف-يʿʾʻʼ‘’']+", text)
     out: list[tuple[str, ...]] = []

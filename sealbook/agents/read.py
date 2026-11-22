@@ -29,7 +29,7 @@ from sealbook.monitor.data import LOCATED, PERSONAL, Context, display
 from sealbook.people import data as people
 from sealbook.places import normalise, resolve
 from sealbook.runs import routes
-from sealbook.search.arabic import same_keys
+from sealbook.search.arabic import natural, same_keys
 from sealbook.settings import Config
 
 FIXED = "sealbook-demo-fixed-output"
@@ -185,6 +185,8 @@ def same_value(prop: str, a: str, b: str) -> bool:
         # script the text decides, so Hasan and Husayn stay different names.
         # ponytail: keys drop vowels, so حسن and Husayn match; needs a vowelled key.
         return same_keys(a, b)
+    if prop in NAMES:
+        a, b = natural(a), natural(b)
     a, b = normalise(a), normalise(b)
     if a == b:
         return True

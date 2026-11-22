@@ -272,6 +272,24 @@ class ValidateTest(unittest.TestCase):
             linker.candidates(case(full, born, short), [], None, Handles()), []
         )
 
+    def test_linker_reads_a_surname_first_name_in_natural_order(self):
+        def case(*claims):
+            docs = {c.source: {"title": c.source, "doc_type": ""} for c in claims}
+            return read.Case("c", list(claims), docs, {}, {})
+
+        passport = claim(Prop.NAME, "KASSAR / ADRIAN", person="person:a")
+        born = claim(Prop.BIRTH_DATE, "1974-03-02", person="person:a")
+        other = claim(Prop.NAME, "Adrian Kassar", person="person:b", source="s2")
+        year = claim(Prop.BIRTH_DATE, "1974", person="person:b", source="s2")
+        # A name match with an agreeing field: a proposal, as for any spelling.
+        cands = linker.candidates(
+            case(passport, born, other, year), [], None, Handles()
+        )
+        self.assertEqual([c["h"][0] for c in cands], ["m"])
+        # A bare mention holding the same full name in the other order.
+        cands = linker.candidates(case(passport, born, other), [], None, Handles())
+        self.assertEqual([c["h"][0] for c in cands], ["n"])
+
     def test_linker_needs_cited_non_name_basis(self):
         other = claim(Prop.NAME, "يوسف خالد العلي", person="person:b", source="s2")
         held = claim(Prop.DETAINED_AT, "Branch 999", person="person:b", source="s2")

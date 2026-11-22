@@ -9,6 +9,7 @@ from sealbook.search.arabic import (
     NORMALIZE_SQL,
     candidates,
     name_keys,
+    natural,
     normalize,
     same_keys,
 )
@@ -113,6 +114,22 @@ class NameTests(unittest.TestCase):
         self.assertEqual(name_keys("آل سعود"), name_keys("Al Saud"))
         self.assertFalse(same_keys("إلياس", "ياس"))
         self.assertFalse(same_keys("الياس", "Kassar"))
+
+    def test_surname_first_with_a_separator_is_read_in_natural_order(self):
+        for name in ("KASSAR / ADRIAN", "Kassar, Adrian", "Kassar,Adrian"):
+            with self.subTest(name=name):
+                self.assertTrue(same_keys(name, "Adrian Kassar"))
+                self.assertTrue(same_keys(name, "أدريان قصار"))
+                self.assertTrue(candidates(name, "Adrian Elias Kassar"))
+        self.assertEqual(natural("KASSAR / ADRIAN"), "ADRIAN KASSAR")
+        self.assertTrue(same_keys("العلي، يوسف خالد", "Yusuf Khalid al-Ali"))
+        # Without a separator the written order is the name: Ali Hasan is Ali son
+        # of Hasan, not Hasan Ali.
+        self.assertFalse(candidates("Kassar Adrian", "Adrian Kassar"))
+        # A note or a list is left as written.
+        for name in ("Faten (no surname given), nurse", "Ali, Hasan, Omar", "Ali /"):
+            with self.subTest(name=name):
+                self.assertEqual(natural(name), name)
 
     def test_different_person(self):
         self.assertFalse(candidates("يوسف خالد العلي", "يوسف محمد العلي"))
