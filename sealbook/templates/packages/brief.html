@@ -78,12 +78,11 @@
                     </v-card-title>
                     <v-list v-if="brief.packages.length">
                         <v-list-item v-for="p in brief.packages" :key="p.id">
-                            <v-list-item-title class="font-monospace">${ p.manifest_sha256.slice(0, 16) }</v-list-item-title>
-                            <v-list-item-subtitle>
-                                ${ p.statements } statements . attested by ${ p.attesters.map(a => a.name).join(', ') || 'nobody yet' }
-                                ${ p.finalized_at ? '. finalized' : '' }${ p.revoked_at ? '. revoked by an erasure' : '' }
+                            <v-list-item-title class="text-wrap">Package of ${ brief.title }</v-list-item-title>
+                            <v-list-item-subtitle :title="'Manifest SHA-256 ' + p.manifest_sha256">
+                                For ${ p.audience }, built ${ day(p.created_at) }, ${ p.statements } ${ p.statements === 1 ? 'statement' : 'statements' }, ${ state(p) }
                             </v-list-item-subtitle>
-                            <div v-if="p.withheld && p.withheld.length" class="text-body-small mt-1">Withholds ${ p.withheld.length === 1 ? 'one source file' : p.withheld.length + ' source files' }: ${ p.withheld.map(w => w.title).join(', ') }. Its hash still verifies.</div>
+                            <div v-if="p.withheld && p.withheld.length" class="text-body-small mt-1">Withholds ${ p.withheld.length === 1 ? 'one source file' : p.withheld.length + ' source files' }: ${ p.withheld.map(w => w.title).join(', ') }. ${ p.withheld.length === 1 ? 'Its hash' : 'Each hash' } still verifies.</div>
                             <template #append>
                                 <div class="d-flex" style="gap: 8px;">
                                     <v-btn v-if="!p.finalized_at && !p.revoked_at" size="small" prepend-icon="ti ti-fingerprint" @click="attest(p)">Attest</v-btn>
@@ -202,6 +201,12 @@
                         await axios.post(`/api/packages/briefs/${this.brief.id}/build`, {});
                         window.location.reload();
                     } catch (e) { this.fail(e); } finally { this.building = false; }
+                },
+                state(p) {
+                    if (p.revoked_at) return 'revoked by an erasure';
+                    if (p.finalized_at) return 'attested, ready to download';
+                    const by = p.attesters.map(a => a.name).join(' and ');
+                    return by ? `attested by ${by}, waiting for ${p.attesters.length === 1 ? 'a second person' : 'finalizing'}` : 'waiting for two people to attest';
                 },
                 day(iso) { return new Date(iso).toLocaleDateString(undefined, {day: 'numeric', month: 'long', year: 'numeric'}); },
                 async passkey(options) {
