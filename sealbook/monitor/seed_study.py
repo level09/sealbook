@@ -311,7 +311,8 @@ async def _play(session, app, spec, root, acts, until, tape) -> dict:
             session, owner.id, owner.name or owner.email
         ),
         batch=str(uuid.uuid4()) if spec.get("batch") else None,
-        channel=f"channel:case-study/{root.name}",
+        # Where the files came from, named as a reader would say it.
+        channel=f"channel:Case study: {story['title']}",
         claims=claims,
         tape=tape,
     )

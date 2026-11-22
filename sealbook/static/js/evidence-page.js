@@ -339,7 +339,17 @@ export function mount(boot) {
       },
       // After an action in the steps panel the panel itself shows the new state.
       async changed() {await this.refresh(); this.follow();},
-      aboutLabel(id) {const c = this.claims.find(x => x.id === id); return c ? `${prop(c.prop)}${c.value ? ': ' + c.value : ''}` : `proposal ${short(id)}`;},
+      // What a decision was about, in words: a claim by its field and value, a link by
+      // the records it joins, a copy by the other source; the id stays on hover.
+      aboutLabel(id) {
+        const c = this.claims.find(x => x.id === id);
+        if (c) return `${prop(c.prop)}${c.value ? ': ' + c.value : ''}`;
+        const r = (this.it?.relations || []).find(x => x.statement === id);
+        if (r && r.kind === 'Same person?') return `same-person link between ${r.here_name || 'an unnamed record'} and ${r.their_name || 'an unnamed record'}`;
+        const m = (this.it?.copies || []).find(x => x.statement === id);
+        if (m) return `${(m.kind || 'copy').toLowerCase()} match with ${this.doc(m.other).title}`;
+        return 'a proposal on this source';
+      },
       key(e) {
         const tag = e.target.tagName;
         if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || e.target.isContentEditable || this.ask.open || this.relate.open) return;

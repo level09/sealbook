@@ -364,6 +364,13 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
             )
             bid = (await r.get_json())["id"]
             sentences = f"/api/packages/briefs/{bid}/sentences"
+            # The brief's statement list names the person, never an id slice.
+            rows = (await (await amal.get("/api/packages/factual")).get_json())["items"]
+            labels = {
+                r["subject_label"] for r in rows if r["subject"] == self.fact.subject
+            }
+            self.assertTrue(labels)
+            self.assertFalse(any(x.startswith("person ") for x in labels), labels)
 
             # (19) uncited, and citing a draft, are both refused server side
             for ids in ([], [str(self.draft.id)]):
@@ -418,6 +425,13 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(r.status_code, 200, await r.get_data(as_text=True))
             built = await r.get_json()
             pid, sha = built["id"], built["manifest_sha256"]
+            # The Packages list shows the build under its brief, by state not hash.
+            listed = await (await amal.get("/api/packages/briefs")).get_json()
+            [row] = [b for b in listed["items"] if b["id"] == bid]
+            self.assertEqual(
+                [(p["id"], p["audience"], p["state"]) for p in row["packages"]],
+                [(pid, "court", "attesting")],
+            )
 
             # (19) no download before finalizing; one person twice is refused
             self.assertEqual(

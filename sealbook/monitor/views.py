@@ -132,22 +132,7 @@ async def panels():
 
 
 async def _named(db, rows: list[dict]) -> list[dict]:
-    """Person subjects labelled by the one label rule (`people.names`), numbered
-    "Unnamed person N" when every name is masked: never an id slice."""
-    from sealbook.people import data as people  # people builds on monitor.data
-
-    ids = sorted(
-        {r["subject"][7:] for r in rows if r.get("subject", "").startswith("person:")}
-    )
-    names = await people.names(db, ids) if ids else {}
-    unnamed: dict[str, str] = {}
-    for r in rows:
-        if r.get("subject", "").startswith("person:"):
-            p = r["subject"][7:]
-            r["subject_label"] = names.get(p) or unnamed.setdefault(
-                p, f"Unnamed person {len(unnamed) + 1}"
-            )
-    return rows
+    return await data.name_subjects(db, rows)
 
 
 async def _page(page):

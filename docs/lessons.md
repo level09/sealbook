@@ -907,3 +907,7 @@ covers in the text it was read from (`span_blob`).
   place had no way to say it was invented. A map now starts from its places or says
   in words that it has none, and an explicit `place.fictional` turns it into a
   schematic. Never infer "invented" from coordinates.
+- Pages showed "person 922a53", slugs and hash fragments where names exist: each
+  page labelled rows itself and only the monitor ran the shared naming
+  (`people.names`). `statement_rows` now names person subjects for every caller,
+  and a page reads a case by its name (`caseName`, `Case.name`).

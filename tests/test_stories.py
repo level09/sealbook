@@ -25,6 +25,7 @@ from stk.user.models import Role, User
 
 from sealbook import blobs
 from sealbook.app import create_app
+from sealbook.cases.service import ensure as ensure_case
 from sealbook.ledger.contracts import Prop, StatementIn
 from sealbook.ledger.models import Payload, Principal, Run, Statement
 from sealbook.ledger.write import append, record_acquisition
@@ -248,6 +249,11 @@ class StoryTest(unittest.IsolatedAsyncioTestCase):
     async def test_filter_lens_scopes_to_investigation(self):
         s = await self.story("filter", None, {"investigation": "case-s", "time": None})
         assert len(s["rows"]) == 3
+        # A whole-case story is titled by the case's name, never its slug.
+        async with ext.async_session_factory() as db, db.begin():
+            await ensure_case(db, "case-s", name="The sheltered list")
+        s = await self.story("filter", None, {"investigation": "case-s", "time": None})
+        assert s["title"] == "The sheltered list", s["title"]
         s = await self.story("filter", None, {"investigation": "other", "time": None})
         assert s["rows"] == []
 

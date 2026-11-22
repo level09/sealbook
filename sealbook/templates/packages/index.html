@@ -13,10 +13,16 @@
         <v-card>
             <v-card-title class="pa-4 pb-1">Briefs in ${ caseSel ? caseName(caseSel) : 'all investigations' }</v-card-title>
             <v-list v-if="briefs.length">
-                <v-list-item v-for="b in briefs" :key="b.id" :href="'/packages/brief/' + b.id">
-                    <v-list-item-title>${ b.title }</v-list-item-title>
-                    <v-list-item-subtitle>For ${ b.audience }, ${ b.sentences } ${ b.sentences === 1 ? 'sentence' : 'sentences' }, created ${ b.created_at.slice(0, 10) }</v-list-item-subtitle>
-                </v-list-item>
+                <template v-for="b in briefs" :key="b.id">
+                    <v-list-item :href="'/packages/brief/' + b.id" prepend-icon="ti ti-file-text">
+                        <v-list-item-title>${ b.title }</v-list-item-title>
+                        <v-list-item-subtitle>Brief for ${ b.audience }, ${ b.sentences } ${ b.sentences === 1 ? 'sentence' : 'sentences' }, created ${ day(b.created_at) }</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-for="p in b.packages" :key="p.id" :href="'/packages/brief/' + b.id" prepend-icon="ti ti-package" class="ps-10">
+                        <v-list-item-title>Package of ${ b.title }</v-list-item-title>
+                        <v-list-item-subtitle :title="'Manifest SHA-256 ' + p.manifest_sha256">For ${ p.audience }, built ${ day(p.created_at) }, ${ p.statements } ${ p.statements === 1 ? 'statement' : 'statements' }, ${ STATE[p.state] }</v-list-item-subtitle>
+                    </v-list-item>
+                </template>
             </v-list>
             <v-card-text v-else class="pa-4 text-medium-emphasis">${ loaded ? 'No briefs in ' + (caseSel ? caseName(caseSel) : 'any case') + ' yet.' : 'Loading' }</v-card-text>
         </v-card>
@@ -44,11 +50,13 @@
             data() {
                 return {
                     boot: JSON.parse(document.getElementById('boot').textContent),
+                    STATE: {attesting: 'waiting for two people to attest', finalized: 'attested, ready to download', revoked: 'revoked'},
                     briefs: [], loaded: false, title: '', audience: 'family', busy: false, error: {show: false, text: ''},
                 };
             },
             mounted() { this.load(); },
             methods: {
+                day: iso => new Date(iso).toLocaleDateString(undefined, {day: 'numeric', month: 'long', year: 'numeric'}),
                 // Shell contract: follow the top bar's investigation switcher.
                 useCase() { this.load(); },
                 async load() {

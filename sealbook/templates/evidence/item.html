@@ -10,8 +10,7 @@
   <template v-if="it">
     <nav class="ev-crumbs" aria-label="Breadcrumb"><span>${ caseName(it.investigation) }</span> / <a href="/evidence">Evidence</a> / <span>${ it.title }</span></nav>
     <div class="ev-head">
-      <h1><i :class="ICON[it.kind]" class="r-tile is-source me-1" aria-hidden="true"></i>${ it.title } <span class="muted font-weight-medium">${ [DOC[it.doc_type] !== it.title ? DOC[it.doc_type] : null, it.filename !== it.title ? it.filename : null].filter(Boolean).join(', ') }</span></h1>
-      <p class="mono muted" :title="it.sha256">${ short(it.sha256) }</p>
+      <h1 :title="'SHA-256 ' + it.sha256"><i :class="ICON[it.kind]" class="r-tile is-source me-1" aria-hidden="true"></i>${ it.title } <span class="muted font-weight-medium">${ [DOC[it.doc_type] !== it.title ? DOC[it.doc_type] : null, it.filename !== it.title ? it.filename : null].filter(Boolean).join(', ') }</span></h1>
       <v-chip v-if="credentials" size="small" variant="outlined" :color="credentials.color" :prepend-icon="credentials.icon" @click="tab = 'meta'">Content credentials: ${ credentials.text }</v-chip>
       <v-chip v-if="located" size="small" variant="outlined" prepend-icon="ti ti-map-pin" @click="tab = 'meta'">${ located }</v-chip>
       <v-chip v-if="it.sensitive" color="sensitive" variant="outlined" size="small" prepend-icon="ti ti-eye-off">sensitive</v-chip>
@@ -204,7 +203,7 @@
         <h3 class="mt-5 mb-2">History</h3>
         <v-timeline v-if="it.history.length" side="end" density="compact" align="start" truncate-line="both">
           <v-timeline-item v-for="h in it.history" :key="h.id" :dot-color="h.actor.agent ? 'agent' : 'primary'" size="x-small">
-            <div><strong>${ h.prop === 'review' ? h.display + 'ed' : prop(h.prop) }</strong> ${ aboutLabel(h.subject.slice(10)) } by ${ h.actor.label }</div>
+            <div :title="'Statement ' + h.subject.slice(10)"><strong>${ h.prop === 'review' ? h.display + 'ed' : prop(h.prop) }</strong> ${ aboutLabel(h.subject.slice(10)) } by ${ h.actor.label }</div>
             <div class="text-body-small muted">${ h.recorded_at.slice(0, 16).replace('T', ' ') } UTC</div>
           </v-timeline-item>
         </v-timeline>

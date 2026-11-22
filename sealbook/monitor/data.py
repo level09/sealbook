@@ -3,6 +3,7 @@ panel, the side panel pages and the live stream."""
 
 from __future__ import annotations
 
+import contextvars
 import math
 import re
 import uuid
@@ -516,6 +517,37 @@ def _statement_query():
     )
 
 
+# Set while `name_subjects` reads names, whose own rows need no names.
+_NAMING = contextvars.ContextVar("naming", default=False)
+
+
+async def name_subjects(db: AsyncSession, rows: list[dict]) -> list[dict]:
+    """Person subjects labelled by the one label rule (`people.names`), numbered
+    "Unnamed person N" when every name is masked: never an id slice."""
+    from sealbook.people import data as people  # people builds on this module
+
+    ids = sorted(
+        {r["subject"][7:] for r in rows if r.get("subject", "").startswith("person:")}
+    )
+    if not ids:
+        return rows
+    token = _NAMING.set(True)
+    try:
+        # ponytail: one identity graph read per call; pass groups in when a page
+        # already holds them and statement_rows shows up in profiles.
+        names = await people.names(db, ids)
+    finally:
+        _NAMING.reset(token)
+    unnamed: dict[str, str] = {}
+    for r in rows:
+        if r.get("subject", "").startswith("person:"):
+            p = r["subject"][7:]
+            r["subject_label"] = names.get(p) or unnamed.setdefault(
+                p, f"Unnamed person {len(unnamed) + 1}"
+            )
+    return rows
+
+
 async def statement_rows(db: AsyncSession, *where, limit=500, order=None) -> list[dict]:
     q = (
         _statement_query()
@@ -535,7 +567,8 @@ async def statement_rows(db: AsyncSession, *where, limit=500, order=None) -> lis
         runs=[r[0].run_id for r in rows],
         principals=[r[0].author_id for r in rows],
     )
-    return [ctx.statement(*r) for r in rows]
+    out = [ctx.statement(*r) for r in rows]
+    return out if _NAMING.get() else await name_subjects(db, out)
 
 
 async def feed_rows(

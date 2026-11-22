@@ -301,7 +301,7 @@ export const storyPage = boot => ({
     },
     async loadSaved() { try { this.saved = (await axios.get('/api/stories/saved')).data.items; } catch { this.saved = []; } },
     savedHref(q) { return '/stories?' + new URLSearchParams(Object.fromEntries(Object.entries(q).filter(([, v]) => v))); },
-    savedLabel(q) { const n = q.ref ? q.ref.split(',').length : 0; return {person: `Person ${q.ref?.slice(0, 8)}`, group: `Group of ${n}`, incident: `Incident ${q.ref?.slice(9, 17)}`, place: `Place ${q.ref?.slice(0, 8)}`, filter: 'Whole investigation'}[q.lens] + (q.investigation ? `, ${q.investigation}` : ''); },
+    savedLabel(q) { const n = q.ref ? q.ref.split(',').length : 0; return {person: `Person ${q.ref?.slice(0, 8)}`, group: `Group of ${n}`, incident: `Incident ${q.ref?.slice(9, 17)}`, place: `Place ${q.ref?.slice(0, 8)}`, filter: 'Whole investigation'}[q.lens] + (q.investigation ? `, ${this.caseName(q.investigation)}` : ''); },
     async unsave(id) { await axios.delete(`/api/stories/saved/${id}`); this.loadSaved(); },
     openPackage() { this.pkg = {...this.pkg, open: true, title: `Story: ${this.s.title}`}; },
     async makePackage() {

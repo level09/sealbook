@@ -56,7 +56,8 @@ Keys the seeder reads beyond that shape, all optional:
   leader line when they would overlap, and the note "Invented places, drawn to
   relative position, not a real map". The four cases mark every place. Invented
   places lie in open sea so that no real town reads as the scene; the marker, not
-  the coordinates, says they are invented.
+  the coordinates, says they are invented. Sources arrive from the channel "Case
+  study: <title>".
 - `conclusion`: `{"text", "standard", "rests_on", "alternatives": [{"text", "why"}],
   "not_established": [...], "peer_review": true}`, the case's signed conclusion
   (`sealbook/cases/conclusions.py`). `standard` is a key of

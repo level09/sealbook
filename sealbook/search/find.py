@@ -353,6 +353,13 @@ async def _findings(db, f, people, places):
     return items
 
 
+def origin(o: str) -> str:
+    """An origin as a person names it: "channel:Case study, The name nobody wrote
+    down" reads as its channel, a device as its label, a web page as its address."""
+    kind, _, rest = o.partition(":")
+    return rest if kind in ("channel", "device", "url") and rest else o
+
+
 def _kind(doc):
     t = doc["doc_type"]
     return None if t in (None, "unknown") else t.replace("_", " ")
@@ -439,8 +446,12 @@ async def find(db, query, f, *, types=TYPES, limit=8, embedding=None, revealed=(
                     "sha256": row["sha256"],
                     "title": doc["title"],
                     "subtitle": ", ".join(
-                        x for x in (_kind(doc), doc["date"], *doc["origins"]) if x
+                        x
+                        for x in (_kind(doc), doc["date"], *map(origin, doc["origins"]))
+                        if x
                     ),
+                    # The recorded origins as stored, for checking on hover.
+                    "origins": doc["origins"],
                     "exact": True,
                     "why": {"signals": row["signals"], "matched": row.get("matched")},
                     "masked": masked,

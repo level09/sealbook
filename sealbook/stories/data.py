@@ -9,6 +9,7 @@ from datetime import date
 
 from sqlalchemy import select
 
+from sealbook.cases.models import Case
 from sealbook.discovery.models import Segment
 from sealbook.discovery.service import available
 from sealbook.ledger.contracts import Prop, Tier
@@ -367,8 +368,16 @@ async def story(db, user, lens: str, ref: str | None, f: dict) -> dict:
             title = story_rows[0]["label"] if story_rows else "Person"
         elif lens == "group" and ref:
             title = f"{len(story_rows)} people"
+        elif f["investigation"]:
+            # The case by its name, as the case switcher shows it; the slug is a key.
+            title = (
+                await db.scalar(
+                    select(Case.name).where(Case.slug == f["investigation"])
+                )
+                or f["investigation"]
+            )
         else:
-            title = f["investigation"] or "All investigations"
+            title = "All investigations"
     return {
         "lens": lens,
         "ref": ref,

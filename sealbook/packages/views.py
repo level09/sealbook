@@ -157,6 +157,27 @@ async def briefs():
             if not b.sentences
             or any(i in here for s in b.sentences for i in s.statement_ids)
         ]
+    built = {}
+    for p in await db.scalars(
+        select(Package)
+        .where(Package.brief_id.in_([b.id for b in found]))
+        .order_by(Package.created_at.desc())
+    ):
+        built.setdefault(p.brief_id, []).append(
+            {
+                "id": str(p.id),
+                "audience": p.audience,
+                "statements": p.statements,
+                "created_at": p.created_at.isoformat(),
+                "state": "revoked"
+                if p.revoked_at
+                else "finalized"
+                if p.finalized_at
+                else "attesting",
+                # The manifest hash, for checking a copy against this list.
+                "manifest_sha256": p.manifest_sha256,
+            }
+        )
     return _json(
         {
             "items": [
@@ -166,6 +187,7 @@ async def briefs():
                     "audience": b.audience,
                     "sentences": len(b.sentences),
                     "created_at": b.created_at.isoformat(),
+                    "packages": built.get(b.id, []),
                 }
                 for b in found
             ]

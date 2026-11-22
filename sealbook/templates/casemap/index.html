@@ -69,7 +69,7 @@
 {% block content %}
 <v-container fluid class="cm-page py-4">
   <div class="cm-head">
-    <h1>Case map</h1><p>${ investigation ? investigation + ', ' : '' }${ subtitle }</p>
+    <h1>Case map</h1><p>${ investigation ? caseName(investigation) + ', ' : '' }${ subtitle }</p>
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
   <v-empty-state v-if="!investigation" icon="ti ti-map-2" title="Pick a case" text="The case map shows one case at a time. Choose it in the case switcher at the top."></v-empty-state>
