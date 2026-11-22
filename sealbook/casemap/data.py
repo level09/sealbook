@@ -117,7 +117,7 @@ def bands(points: list[dict], near=None) -> list[dict]:
 
 
 def open_ends(points: list[dict], events=(), kinds=None, today=None) -> list[dict]:
-    """ "No record after": the gap finder's open ends (`gaps.detect`) over the points
+    """ "No record after": the gap finder's open ends after an account (`gaps.watched`) over the points
     on the timeline, with release and death events closing a silence. Kept only when
     the last account is itself on the timeline, so a masked claim never sets a date
     the reader cannot see. Pure."""
@@ -133,7 +133,7 @@ def open_ends(points: list[dict], events=(), kinds=None, today=None) -> list[dic
         for p in points
     ] + list(events)
     out = []
-    for g in gaps.detect(claims, kinds or {}, today):
+    for g in gaps.watched(claims, kinds or {}, today):
         last = g["bounds"][-1]
         if g["window"][1] is None and str(last.id) in seen:
             out.append(

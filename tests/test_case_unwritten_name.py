@@ -10,6 +10,7 @@ down in the case's README."""
 
 import asyncio
 import json
+import tempfile
 import unittest
 from datetime import date, datetime
 from pathlib import Path
@@ -22,6 +23,7 @@ from sqlalchemy import func, select
 from stk.user.models import Role, User
 
 from acceptance import eval_agents
+from sealbook.agents import gaps, read
 from sealbook.agents.models import AgentTask
 from sealbook.cases import conclusions
 from sealbook.collaboration.models import Assignment
@@ -60,6 +62,44 @@ class UnwrittenNameTest(unittest.TestCase):
         self.assertEqual(gaps["detected_elsewhere"], 0)
         self.assertEqual((gaps["detected"], gaps["reported"]), (2, 2))
         self.assertEqual(self.report["planted_deferred"]["gaps"], 0)
+        # The supervisor's account starts the driver's watch, so the stopped
+        # routine is not found a second time.
+        self.assertEqual(gaps["routine_stops"], 0)
+
+    def test_the_driver_silence_is_found_without_the_supervisor_statement(self):
+        """The logs alone, in their three dated batches: his routine stops on 12
+        March, the last line naming him, and he is named again on 26 May. Each
+        batch is its own source, so the place they all record carries the
+        routine. Nobody else's routine is flagged, Petra Coyle's leave included."""
+        spec = json.loads(CASE.read_text(encoding="utf-8"))
+        gone = {r for r, v in spec["records"].items() if v["source"] == "supervisor"}
+        spec["claims"] = [c for c in spec["claims"] if c["record"] not in gone]
+        spec["records"] = {r: v for r, v in spec["records"].items() if r not in gone}
+        spec["clusters"] = [[r for r in c if r not in gone] for c in spec["clusters"]]
+        del spec["sources"]["supervisor"]
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "case.json"
+            path.write_text(json.dumps(spec), encoding="utf-8")
+            _, case, events, _ = eval_agents.load(path)
+        found = gaps.detect(case.claims, events, date.fromisoformat(spec["today"]))
+        stops = [g for g in found if "routine" in g]
+        self.assertEqual(len(stops), 1, stops)
+        (aron,) = stops
+        gate = f"person:{eval_agents._id('aron_gate1')}"
+        self.assertEqual(aron["person"], read.cluster_of(case.groups, gate))
+        self.assertEqual(aron["window"], ["2026-03-12", "2026-05-26"])
+        self.assertEqual(aron["days"], 75)
+        routine = aron["routine"]
+        self.assertEqual(
+            (routine["source"], routine["place"]), (None, "Wenmere depot gate")
+        )
+        self.assertEqual(
+            gaps.routine_words(routine, aron["window"], routine["place"]),
+            "Recorded at Wenmere depot gate about 5 days a week from 2 February 2026 "
+            "to 12 March 2026, then in no record at all for 75 days, while it went on",
+        )
+        # Dana's open silence after the notice still stands.
+        self.assertEqual(len(found), 2)
 
     def test_the_driver_silence_is_honestly_over_the_threshold(self):
         aron = next(
@@ -71,7 +111,7 @@ class UnwrittenNameTest(unittest.TestCase):
 
     def test_logs_hold_several_hundred_dated_lines(self):
         seen = [c for c in self.spec["claims"] if c["prop"] == "seen_at"]
-        self.assertEqual(len(self.spec["claims"]), 669)
+        self.assertEqual(len(self.spec["claims"]), 671)
         self.assertGreater(len(seen), 500)
 
     def test_the_logs_arrive_in_dated_batches_and_the_acts_are_playable(self):
@@ -142,7 +182,7 @@ class UnwrittenNameActsTest(unittest.IsolatedAsyncioTestCase):
         inv = "case-unwritten-name"
         async with ext.async_session_factory() as s:
             out = await seed_study(s, self.app, CASE)
-        self.assertEqual((out["sources"], out["claims"]), (18, 669))
+        self.assertEqual((out["sources"], out["claims"]), (18, 671))
         # The question: five records at first, none in April, the two May and
         # June logs that name him again.
         self.assertEqual([c["matches"] for c in out["question checks"]], [5, 0, 2])

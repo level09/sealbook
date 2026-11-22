@@ -8,21 +8,32 @@ run has no driver.
 
 `make.py` writes `case.json` and `files/` (`uv run python
 acceptance/cases/unwritten-name/make.py`). Investigation `case-unwritten-name`,
-`today` 2026-07-01. 669 claims over 46 records and 18 sources: 417 gate log lines,
+`today` 2026-07-01. 671 claims over 47 records and 18 sources: 417 gate log lines,
 150 fuel receipts and 108 dispatch rows, of which 608 name a driver and become
-`seen_at` claims; the rest say "relief" or leave the driver blank. The roster is a plan, not a sighting, so it makes no claims.
+`seen_at` claims; the rest say "relief" or leave the driver blank. The roster is a
+plan, not a sighting; its one claim is Petra Coyle's recorded leave, "on leave"
+from 6 April to 12 June 2026, pinned to her first LV cell.
 The depot hands the gate log and the fuel receipts over in three dated batches
 (February and March, April, May and June), each its own file and source, so a
 driver has one record per log and batch, each with its name on its first row.
 
 ## What the gap finder really detects
 
-`gaps.detect` watches a person only after an arrest, a detention, a last-seen
-account or a missing report, and flags a silence longer than 60 days (61 or more)
-until the next dated record. A sighting on the same day closes the watch. A
-routine presence that simply stops is not flagged. So Aron's silence is found
-because the night supervisor's statement says when she last saw him, and his last
-named log line is 12 March. Without that statement the finder would not see it.
+`gaps.detect` watches a person after an arrest, a detention, a last-seen account
+or a missing report, and flags a silence longer than 60 days (61 or more) until
+the next dated record. It also flags a regular presence that stops: someone named
+by one source, or in records of one place, on 20 or more days over four weeks or
+more, whose next record of any kind comes more than 60 days and five times their
+usual interval later while that source or place goes on recording others. With the
+night supervisor's statement, Aron's silence is the watch from 14 March, the night
+she last saw him. Without it, the logs alone give it from his last named line,
+12 March, to 26 May (75 days). Each dated batch of the gate log is its own source
+and the February and March batch ends on 31 March, so no single source runs on
+past the silence; the place every batch records, Wenmere depot gate, does, and
+carries the routine: "Recorded at Wenmere depot gate about 5 days a week from 2
+February 2026 to 12 March 2026, then in no record at all for 75 days, while it went
+on". Petra Coyle's 70 days are closed by the roster's leave claim, which covers
+them; without it the routine rule flags her.
 
 ## Planted truth
 
@@ -33,7 +44,7 @@ named log line is 12 March. Without that statement the finder would not see it.
 | Not a gap | Nils Harrow, 2026-04-01 to 2026-05-30 | arrested, back 59 days later: under the threshold |
 | Not a gap | Leon Abbot, 2026-04-21 to 2026-06-30 | 70 days off the logs, but released on bail first |
 | Not a gap | Ivo Sand, 2026-02-20 to 2026-06-01 | 101 days, but a year-only Holt Cross record may fall inside it |
-| Not a gap | Petra Coyle, 2026-04-04 to 2026-06-13 | 70 days of recorded leave; nothing starts a watch on her |
+| Not a gap | Petra Coyle, 2026-04-04 to 2026-06-13 | 70 days off the logs, but the roster records her leave over them |
 
 No same-person pairs, namesakes or contradictions are planted; the truth keeps
 those keys empty so `acceptance/eval_agents.py` can read the file.
@@ -46,7 +57,10 @@ rose from 20 to 24 with the extra records. Fixed mode (`evaluate(path=...)`, the
 deferred. The contradiction hunter gets no candidates and the linker proposes no
 same person. The linker does offer 24 relation candidates (drivers seen together
 at the depot, sources about one person); these are counted, not scored.
-`tests/test_case_unwritten_name.py` pins these numbers.
+`tests/test_case_unwritten_name.py` pins these numbers. Re-scored 2026-11-22 with
+the routine rule and the roster's leave claim: the same, and 0 routine stops (the
+statement starts the watch first). With the supervisor's statement removed, one
+routine stop, Aron from 12 March to 26 May (75 days), and still no planted non-gap.
 
 Live, one trial, `deepseek/deepseek-v4.1-flash-1017` on `cloud-zdr`, reasoning
 none: gap recall 1.0 (detection is the rules); the model's line for Aron's

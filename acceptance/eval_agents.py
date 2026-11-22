@@ -337,10 +337,8 @@ def score_gaps(spec, case, events, out, keys):
     planted = {key(g): g for g in spec["truth"].get("gaps", [])}
     absent = {key(g): g for g in spec["truth"].get("not_gaps", [])}
     scope = {k[0] for k in planted | absent}
-    found = {
-        (g["person"], *g["window"])
-        for g in gaps.detect(case.claims, events, date.fromisoformat(spec["today"]))
-    }
+    every = gaps.detect(case.claims, events, date.fromisoformat(spec["today"]))
+    found = {(g["person"], *g["window"]) for g in every}
     reported = {(i["person"], *i["window"]) for i in out["items"]}
     # The run ranks gaps to its own today, so match a gap by person and start.
     ranked = gaps.detect(case.claims, events)
@@ -356,6 +354,8 @@ def score_gaps(spec, case, events, out, keys):
             {f for f in found if f[0] in scope} - planted.keys()
         ),
         "detected_elsewhere": len({f for f in found if f[0] not in scope}),
+        # Silences found because a regular presence stopped, not after an account.
+        "routine_stops": sum("routine" in g for g in every),
         "planted": [
             g
             | {

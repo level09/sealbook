@@ -135,6 +135,135 @@ class GapRulesTest(unittest.TestCase):
         self.assertTrue(gaps.fresh(gaps.detect([last, later], today=TODAY)[0], seen))
 
 
+def workdays(start, end, person="person:a", source="gate log", text="Depot gate"):
+    """A sighting on every weekday from start to end, as a gate log writes them."""
+    lo, hi = date.fromisoformat(start), date.fromisoformat(end)
+    days = (lo + timedelta(days=n) for n in range((hi - lo).days + 1))
+    return [
+        claim(Prop.SEEN_AT, d.isoformat(), person=person, source=source, text=text)
+        for d in days
+        if d.weekday() < 5
+    ]
+
+
+class RoutineSilenceTest(unittest.TestCase):
+    """A presence regular in dated records that stops is offered as a silence."""
+
+    def setUp(self):
+        # Someone else keeps the log going all year, so it does not just end.
+        self.log = workdays("2013-01-07", "2013-12-20", person="person:other")
+
+    def routine(self, claims, events=None):
+        return [
+            g for g in gaps.detect(claims + self.log, events, TODAY) if "routine" in g
+        ]
+
+    def closed(self, claims, events=None):
+        return [g for g in self.routine(claims, events) if g["window"][1]]
+
+    def test_regular_presence_that_stops_is_a_silence_about_the_record(self):
+        before = workdays("2013-02-04", "2013-03-29")
+        back = claim(Prop.SEEN_AT, "2013-06-12", source="gate log", text="Depot gate")
+        (gap,) = self.closed([*before, back])
+        self.assertEqual(gap["window"], ["2013-03-29", "2013-06-12"])
+        self.assertEqual(gap["days"], 75)
+        self.assertEqual(gap["bounds"], [before[-1], back])
+        routine = gap["routine"]
+        self.assertEqual((routine["source"], routine["seen"]), ("gate log", 40))
+        self.assertEqual(
+            gaps.routine_words(routine, gap["window"], "the gate log"),
+            "Named in the gate log about 5 days a week from 4 February 2013 to "
+            "29 March 2013, then in no record at all for 75 days, while it went on",
+        )
+
+    def test_silence_at_or_under_the_floor_is_not_offered(self):
+        before = workdays("2013-02-04", "2013-03-29")
+        for days, expected in ((59, 0), (60, 0), (61, 1)):
+            back = dataclasses.replace(
+                before[0], id=uuid.uuid4(), lo=before[-1].lo + timedelta(days=days)
+            )
+            back = dataclasses.replace(back, hi=back.lo)
+            self.assertEqual(len(self.closed([*before, back])), expected, days)
+
+    def test_a_handful_of_sightings_is_not_watched(self):
+        few = workdays("2013-02-04", "2013-02-15")  # ten days
+        self.assertEqual(self.routine(few), [])
+
+    def test_a_short_burst_is_not_a_routine(self):
+        burst = [
+            dataclasses.replace(c, id=uuid.uuid4())
+            for c in workdays("2013-02-04", "2013-02-22")
+            for _ in range(2)
+        ]
+        self.assertEqual(self.routine(burst), [])
+
+    def test_open_silence_counts_only_while_the_log_goes_on(self):
+        before = workdays("2013-02-04", "2013-03-29")
+        (gap,) = self.routine(before)
+        self.assertEqual(gap["window"], ["2013-03-29", None])
+        self.assertEqual(gap["routine"]["until"], "2013-12-20")
+        self.log = workdays("2013-01-07", "2013-05-10", person="person:other")
+        self.assertEqual(self.routine(before), [])
+
+    def test_a_record_covering_the_silence_closes_it(self):
+        before = workdays("2013-02-04", "2013-03-29")
+        back = claim(Prop.SEEN_AT, "2013-06-12", source="gate log", text="Depot gate")
+        year = claim(Prop.SEEN_AT, "2013-01-01", "2013-12-31", source="staff list")
+        leave = claim(Prop.OCCUPATION, "2013-04-01", "2013-06-11", source="roster")
+        for cover in (year, leave):
+            self.assertEqual(self.closed([*before, cover, back]), [], cover.source)
+
+    def test_arrest_and_release_leave_it_to_the_watch(self):
+        before = workdays("2013-02-04", "2013-03-29")
+        arrest = claim(Prop.ARRESTED_AT, "2013-04-01")
+        release = claim(Prop.EVENT, "2013-04-02", text="Released on bail")
+        back = claim(Prop.SEEN_AT, "2013-06-12", source="gate log", text="Depot gate")
+        claims = [*before, arrest, release, back]
+        self.assertEqual(self.closed(claims, {release.id: "released"}), [])
+
+    def test_a_last_seen_account_is_found_once_not_twice(self):
+        before = workdays("2013-02-04", "2013-03-29")
+        last = claim(Prop.LAST_SEEN, "2013-04-01", source="statement")
+        back = claim(Prop.SEEN_AT, "2013-06-12", source="gate log", text="Depot gate")
+        found = [
+            g
+            for g in gaps.detect([*before, last, back, *self.log], today=TODAY)
+            if g["person"] == "person:a" and g["window"][1]
+        ]
+        self.assertEqual([g["window"] for g in found], [["2013-04-01", "2013-06-12"]])
+        self.assertNotIn("routine", found[0])
+
+    def test_the_time_before_a_first_record_is_not_a_silence(self):
+        late = workdays("2013-09-02", "2013-12-20")
+        self.assertEqual(self.routine(late), [])
+        self.assertEqual(self.routine(late[-25:]), [])
+
+    def test_a_sparse_routine_waits_for_its_own_interval(self):
+        def line(day, person="person:a"):
+            return claim(
+                Prop.SEEN_AT, day, person=person, source="register", text="Office"
+            )
+
+        monthly = [line(f"{y}-{m:02d}-03") for y in (2011, 2012) for m in range(1, 13)]
+        self.log = [line(f"2013-{m:02d}-20", "person:other") for m in range(1, 9)]
+        back = line("2013-03-25")  # 112 days, under five months of 31 days
+        self.assertEqual(self.closed([*monthly, back]), [])
+        later = line("2013-07-01")  # 210 days
+        self.assertEqual(len(self.closed([*monthly, later])), 1)
+
+    def test_thresholds_are_policy_data(self):
+        self.assertEqual(gaps.GAP_DAYS, gaps.POLICY["watch_days"])
+        self.assertTrue(
+            {
+                "routine_sightings",
+                "routine_span_days",
+                "routine_floor_days",
+                "routine_factor",
+            }
+            <= gaps.POLICY.keys()
+        )
+
+
 class GapValidationTest(unittest.TestCase):
     def setUp(self):
         self.arrest = claim(Prop.ARRESTED_AT, "2013-01-01")

@@ -394,13 +394,18 @@ Each case's own README holds its story, planted truth and score. What
   14 March side by side under Sources disagree, each with its time, and says why
   they were raised: at overlapping times, 18:00 to 24:00 and 21:52, and 18:00 to
   24:00 and 22:07. Every claim was read by the app.
-- **The name nobody wrote down** (`case-unwritten-name`): 14 sources and 651
-  claims, 608 of them log lines pinned to their sheet cells. Each log line is its
+- **The name nobody wrote down** (`case-unwritten-name`): 18 sources and 671
+  claims, 608 of them log lines pinned to their sheet cells, and the roster's one
+  claim, Petra Coyle's recorded leave. Each log line is its
   own mention joined to its driver, so Aron Vesk's page reads "86 records joined
   as one person". The gap finder proposes both planted gaps; his page shows "No
   evidence for 73 days" and the gap from 14 March to 26 May 2026. The supervisor's
-  scanned statement is read by the OCR tool from its fixed text. The depot
-  photograph has the real operator's van cut off its right edge.
+  scanned statement is read by the OCR tool from its fixed text. Since 2026-11-22
+  the gap finder also notices a regular presence that stops, so the logs alone,
+  without the statement, give Aron's silence from his last named line on 12 March
+  (75 days), carried by the place the three gate log batches record; with the
+  statement the watch from 14 March holds and the routine is not offered twice.
+  The depot photograph has the real operator's van cut off its right edge.
 - **The footage that was two years old** (`case-old-footage`): 36 clips and the 16
   posts that came with a caption, each clip fingerprinted as it arrives in posting
   order. The viral clip's Copies tab lists "Same recording, Video posted by Ostra

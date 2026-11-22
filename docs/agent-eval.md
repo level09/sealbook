@@ -460,6 +460,33 @@ candidates and trap avoidance 0.0 to 3 and 1.0; the one live trial scored
 precision 1.0, recall 1.0 and trap avoidance 1.0 (0.0 in every trial of three
 before).
 
+## Routine silences, 2026-11-22
+
+The gap finder used to watch a person only after an arrest, a detention, a
+last-seen account or a missing report. It now also offers a regular presence in
+dated records that stops (`gaps.stopped`, thresholds in
+`sealbook/agents/gap_policy.csv`): at least 20 distinct days named by one source
+or in records of one place, over at least 28 days; a silence until the next dated
+record of any kind longer than 60 days and five times the person's own median
+interval there; and the source or place still recording others past that length.
+It starts only at a sighting and never before a first record, and any dated record
+inside the silence, a year-only one included, closes it. A log handed over in dated
+batches is several sources, none of which runs on past the silence, so the place
+they all record carries the routine. The report counts them as `routine_stops`.
+
+Fixed mode, before and after, default case: recall 1.0, 0 planted non-gaps
+flagged, 0 extra in planted people, 18 detected elsewhere, 22 detected, 12
+reported, 10 deferred, 3 planted deferred; `routine_stops` 0, since no one in it
+is named on 20 days. The Unwritten name, in its 11 acts with three log batches:
+recall 1.0, 2 detected and reported, 0 non-gaps flagged, 24 relation candidates;
+`routine_stops` 0 because the supervisor's last-seen account starts the driver's
+watch. With that statement removed, the logs alone give one routine stop, Aron
+Vesk from 12 March to 26 May 2026 (75 days), at the place Wenmere depot gate, and
+nothing for the four planted non-gaps (`tests/test_case_unwritten_name.py`). The
+roster's recorded leave is now a claim (`petra_roster.leave`); on the case without
+it the routine rule flags Petra Coyle's 70 days (1 planted non-gap flagged, 3
+detected), which nothing in the record explained.
+
 ## Known gaps
 
 - One synthetic case, 132 claims. The numbers say nothing about archive scale or

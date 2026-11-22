@@ -308,6 +308,10 @@
    "source": "fuel3",
    "person": "leon"
   },
+  "petra_roster": {
+   "source": "roster",
+   "person": "petra"
+  },
   "dana_flatmate": {
    "source": "flatmate",
    "person": "dana"
@@ -406,6 +410,7 @@
    "nils_gate3"
   ],
   [
+   "petra_roster",
    "petra_dispatch",
    "petra_fuel1",
    "petra_gate1",
@@ -10062,6 +10067,36 @@
    }
   },
   {
+   "key": "petra_roster.name",
+   "record": "petra_roster",
+   "prop": "name",
+   "value": "Petra Coyle",
+   "from": null,
+   "to": null,
+   "place": null,
+   "tier": "unconfirmed",
+   "pin": {
+    "sheet": 1,
+    "row": 61,
+    "column": 2
+   }
+  },
+  {
+   "key": "petra_roster.leave",
+   "record": "petra_roster",
+   "prop": "occupation",
+   "value": "on leave",
+   "from": "2026-04-06",
+   "to": "2026-06-12",
+   "place": null,
+   "tier": "unconfirmed",
+   "pin": {
+    "sheet": 1,
+    "row": 61,
+    "column": 3
+   }
+  },
+  {
    "key": "dana_flatmate.name",
    "record": "dana_flatmate",
    "prop": "name",
@@ -10397,7 +10432,7 @@
     "record": "petra_gate1",
     "from": "2026-04-04",
     "to": "2026-06-13",
-    "why": "70 days on recorded leave; no last-seen, arrest or missing account starts a watch on her, so the finder never measures this silence"
+    "why": "70 days off the logs, but the roster records her leave from 6 April to 12 June, a dated record that covers the silence"
    }
   ],
   "contradictions": [],

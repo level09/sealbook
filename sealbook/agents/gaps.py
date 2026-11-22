@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import csv
+import itertools
 import re
+import statistics
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import date
+from pathlib import Path
 
 from sqlalchemy import select
 
@@ -21,7 +25,10 @@ from sealbook.settings import Config
 TOOL = "gaps"
 AGENT = "Gap finder"
 PROMPT_VERSION = "gap-finder-1"
-GAP_DAYS = 60
+# The thresholds, each with what it means, for a team to read and change.
+with open(Path(__file__).with_name("gap_policy.csv"), newline="") as f:
+    POLICY = {r["key"]: int(r["value"]) for r in csv.DictReader(f)}
+GAP_DAYS = POLICY["watch_days"]
 CAP = 12
 PER_CALL = 4
 BUDGET_SECONDS = LEASE.total_seconds() - 90
@@ -70,6 +77,16 @@ SCHEMA = {
 
 
 def detect(claims, events=None, today=None) -> list[dict]:
+    """Every silence: a watch after an account (`watched`) and a routine that
+    stops (`stopped`). Each starts at a different kind of record, so none is
+    found twice."""
+    return sorted(
+        watched(claims, events, today) + stopped(claims, events),
+        key=lambda x: (-x["days"], x["person"], x["window"][0], x["window"][1] or ""),
+    )
+
+
+def watched(claims, events=None, today=None) -> list[dict]:
     """Use the outer edges of uncertain dates so a year is never a day's evidence."""
     events, today = events or {}, today or date.today()
     people = {}
@@ -123,6 +140,129 @@ def detect(claims, events=None, today=None) -> list[dict]:
     return sorted(
         found,
         key=lambda x: (-x["days"], x["person"], x["window"][0], x["window"][1] or ""),
+    )
+
+
+def _routine_keys(c) -> tuple:
+    """A sighting on one day belongs to its source's routine and its place's."""
+    if c.prop != Prop.SEEN_AT or not c.lo or (c.hi or c.lo) != c.lo:
+        return ()
+    return (("source", c.source), ("place", c.text.strip().casefold()))
+
+
+def stopped(claims, events=None) -> list[dict]:
+    """A presence regular in dated records that stops. A person named on at least
+    `routine_sightings` days over at least `routine_span_days` by one source, or
+    in records of one place, whose next dated record of any kind comes later than
+    both `routine_floor_days` and `routine_factor` times their own median interval
+    there, while that source or place goes on recording others past that length.
+    It says the records fall silent, never why. The silence starts at a sighting:
+    after an arrest, a release or a last-seen account the watch decides, and a
+    dated record covering the time (a year-only list, recorded leave) closes it.
+    Only what came before the silence counts as the routine."""
+    events = events or {}
+    reach, people = {}, defaultdict(list)
+    for c in claims:
+        for k in _routine_keys(c):
+            reach[k] = max(reach.get(k, c.lo), c.lo)
+        if c.person and c.lo:
+            people[c.person].append(c)
+    found = []
+    for person, dated in sorted(people.items()):
+        dated.sort(key=lambda c: (c.lo, c.hi or c.lo, str(c.id)))
+        days, edge, tail, ended = defaultdict(list), None, [], False
+        for c in [*dated, None]:
+            if c is not None and edge is not None and c.lo <= edge:
+                pass
+            elif tail and not ended and all(_routine_keys(t) for t in tail):
+                gap = _stop(person, tail, days, edge, c, reach)
+                if gap:
+                    found.append(gap)
+            if c is None:
+                break
+            ended = ended or events.get(c.id) == "killed"
+            for k in _routine_keys(c):
+                if not days[k] or days[k][-1] != c.lo:
+                    days[k].append(c.lo)
+            end = c.hi or c.lo
+            if edge is None or end > edge:
+                edge, tail = end, [c]
+            elif end == edge:
+                tail.append(c)
+    return found
+
+
+def _stop(person, tail, days, edge, nxt, reach) -> dict | None:
+    """The strongest routine the last sightings belong to, if the silence after
+    them is long for it."""
+    if nxt and (nxt.lo - edge).days <= POLICY["routine_floor_days"]:
+        return None
+    best = None
+    for k in dict.fromkeys(k for t in tail for k in _routine_keys(t)):
+        seen = days[k]
+        if (
+            len(seen) < POLICY["routine_sightings"]
+            or (seen[-1] - seen[0]).days < POLICY["routine_span_days"]
+        ):
+            continue
+        usual = statistics.median((b - a).days for a, b in itertools.pairwise(seen))
+        limit = max(POLICY["routine_floor_days"], POLICY["routine_factor"] * usual)
+        length = ((nxt.lo if nxt else reach[k]) - edge).days
+        if length > limit and (reach[k] - edge).days > limit:
+            if best is None or len(seen) > best[1]["seen"]:
+                span = (seen[-1] - seen[0]).days
+                last = next(t for t in tail if k in _routine_keys(t))
+                best = (
+                    last,
+                    {
+                        "source": k[1] if k[0] == "source" else None,
+                        "place": last.text if k[0] == "place" else None,
+                        "seen": len(seen),
+                        "from": seen[0].isoformat(),
+                        "per_week": round(len(seen) * 7 / span, 1),
+                        "usual_days": usual,
+                        "until": reach[k].isoformat(),
+                    },
+                    length,
+                )
+    if best is None:
+        return None
+    last, routine, length = best
+    return {
+        "person": person,
+        "window": [edge.isoformat(), nxt.lo.isoformat() if nxt else None],
+        "days": length,
+        "bounds": [last, nxt] if nxt else [last],
+        "routine": routine,
+    }
+
+
+def routine_words(routine, window, where) -> str:
+    """ "Named in the gate log about 5 days a week from 2 February 2026 to 12 March
+    2026, then in no record at all for 75 days, while it went on": the records,
+    never the person."""
+    lo, hi = (date.fromisoformat(d) if d else None for d in window)
+    first = date.fromisoformat(routine["from"])
+    rate = routine["per_week"]
+    often = (
+        f"about {round(rate)} days a week"
+        if rate >= 1.5
+        else "about once a week"
+        if rate >= 0.75
+        else f"about {max(1, round(rate * 30.44 / 7))} times a month"
+        if rate * 30.44 / 7 >= 1.5
+        else "about once a month"
+        if rate * 30.44 / 7 >= 0.75
+        else f"about every {round(routine['usual_days'] / 30.44)} months"
+    )
+    named = (
+        f"Named in {where}" if routine["source"] else f"Recorded at {where}"
+    ) + f" {often} from {when(first, None)} to {when(lo, None)}"
+    if hi is None:
+        until = when(date.fromisoformat(routine["until"]), None)
+        return f"{named}, then in no record since, while it went on to {until}"
+    return (
+        f"{named}, then in no record at all for {(hi - lo).days} days, while it went on"
     )
 
 
@@ -181,6 +321,7 @@ def candidates(case, gaps, h) -> list[dict]:
             gap
             | {
                 "h": h("g", (person, *gap["window"])),
+                "words": describe(gap, lambda sha: case.docs[sha]["title"]),
                 "_basis": basis,
                 "claims": [claim_view(h, c, case.docs) for c in basis],
                 "leads": [h("c", c.id) for c in leads],
@@ -194,13 +335,23 @@ def payload(cands) -> dict:
         "gaps": [
             {
                 "h": g["h"],
-                "window": window_words(g["window"]),
+                "window": g["words"],
                 "claims": g["claims"],
                 "leads": g["leads"],
             }
             for g in cands
         ]
     }
+
+
+def describe(gap, title) -> str:
+    """The silence in words; a stopped routine names the source by `title(sha)`
+    or the place it was recorded at."""
+    routine = gap.get("routine")
+    if not routine:
+        return window_words(gap["window"])
+    where = title(routine["source"]) if routine["source"] else routine["place"]
+    return routine_words(routine, gap["window"], where)
 
 
 def window_words(window) -> str:
@@ -287,6 +438,7 @@ def validate(answer, cands, h, claims) -> tuple[list, dict]:
             {
                 "person": g["person"],
                 "window": g["window"],
+                **({"routine": g["routine"]} if "routine" in g else {}),
                 "where": item["where"].strip(),
                 "searches": [s.strip() for s in item["searches"]],
                 "claims": sorted(str(i) for i in ids),
@@ -409,7 +561,7 @@ async def gaps(c) -> str:
     reason = None
     if not kept:
         reason = (
-            "Every person's record is continuous within 60 days, or has no dated detention or missing account."
+            "Every person's record is continuous within 60 days, or has no dated detention or missing account, and no regular presence in the records stops."
             if not every
             else "These gaps were already reported. New evidence must change their bounds before they are proposed again."
             if not fresh_gaps
@@ -539,7 +691,7 @@ async def show(db, user, investigation) -> dict:
             | {
                 "person": person,
                 "name": name,
-                "window_text": window_words(item["window"]),
+                "window_text": describe(item, lambda sha: ctx.doc(sha)["title"]),
                 # The header already names the person.
                 "claims": [
                     line(c)

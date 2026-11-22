@@ -261,7 +261,7 @@ def dispatch_rows(worked):
 
 def roster_rows():
     """The plan, week by week: E early, L late, R rest, LV leave. A plan is not a
-    sighting, so the roster makes no claims."""
+    sighting, so the roster's only claim is the leave it records (`build`)."""
     rows = []
     monday = START
     while monday <= END:
@@ -539,8 +539,9 @@ def whole(name):
     return {"page": 1, "bbox": [0, 0, width, height]}
 
 
-def build(gate, fuel, dispatch):
-    """One claim per log line that names a driver, on the line's day."""
+def build(gate, fuel, dispatch, roster):
+    """One claim per log line that names a driver, on the line's day, and the
+    leave the roster records, over its whole span from its first LV cell."""
     forms = {
         (kind, DRIVERS[k][i]): k
         for k in DRIVERS
@@ -569,6 +570,24 @@ def build(gate, fuel, dispatch):
                 place="station",
                 pin=cell,
             )
+
+    for key, (start, end) in ROSTER_LEAVE.items():
+        n, row = next(
+            (n, r)
+            for n, r in enumerate(roster, start=2)
+            if r[1] == DRIVERS[key][0] and "LV" in r
+        )
+        rec = f"{key}_roster"
+        record(rec, "roster", key, row[1], pin={"sheet": 1, "row": n, "column": 2})
+        claim(
+            f"{rec}.leave",
+            rec,
+            "occupation",
+            "on leave",
+            start,
+            end,
+            pin={"sheet": 1, "row": n, "column": row.index("LV") + 1},
+        )
 
     record("dana_flatmate", "flatmate", "dana", "Dana Kovar")
     claim("dana_flatmate.age", "dana_flatmate", "age", "24")
@@ -717,8 +736,8 @@ NOT_GAPS = [
         "petra_gate1",
         "2026-04-04",
         "2026-06-13",
-        "70 days on recorded leave; no last-seen, arrest or missing account starts a "
-        "watch on her, so the finder never measures this silence",
+        "70 days off the logs, but the roster records her leave from 6 April to "
+        "12 June, a dated record that covers the silence",
     ),
 ]
 BATCH = ["supervisor", "manager", "flatmate"]  # the intake brief's batch
@@ -1158,6 +1177,7 @@ def main():
     FILES.mkdir(exist_ok=True)
     worked = shifts()
     gate, fuel, dispatch = gate_rows(worked), fuel_rows(worked), dispatch_rows(worked)
+    roster = roster_rows()
     for n, _, _, _, suffix in BATCHES:
         write_csv(
             f"gate_log_{suffix}.csv",
@@ -1177,12 +1197,12 @@ def main():
     write_csv(
         "shift_roster.csv",
         ["week of", "driver", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        roster_rows(),
+        roster,
     )
     for name, text in TEXTS.items():
         (FILES / name).write_text(text + "\n" + FICTIONAL + "\n", encoding="utf-8")
     crop_depot()
-    build(gate, fuel, dispatch)
+    build(gate, fuel, dispatch, roster)
     check()
     clusters = [
         sorted(r for r, v in RECORDS.items() if v["person"] == p)

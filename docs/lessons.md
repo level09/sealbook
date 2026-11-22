@@ -886,3 +886,8 @@ covers in the text it was read from (`span_blob`).
   Places now carry `time`, `monitor.data.apart_why` compares the clock against the
   distance at `method/travel.csv`'s speed and says why a pair was raised, and a
   photograph's own place and time sit beside a side as context about the device.
+- The gap finder missed a driver named in the logs every working day who then
+  vanished from them: it watched only after an arrest, detention, last-seen account
+  or missing report, so a routine that stops needed a statement to be seen. It now
+  measures each person against their own routine; a planted non-gap that only a
+  plan recorded (leave on the roster) had to become a dated claim to stay closed.

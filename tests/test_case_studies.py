@@ -494,7 +494,7 @@ class SeedCasesTest(Seeding):
         spec = json.loads(path_of("unwritten-name").read_text())
         async with ext.async_session_factory() as s:
             out = await seed_study(s, self.app, path_of("unwritten-name"))
-        self.assertEqual((out["sources"], out["claims"]), (18, 669))
+        self.assertEqual((out["sources"], out["claims"]), (18, 671))
         self.assertEqual(out["gaps proposals"], 2)
         self.assertNotIn("contradictions proposals", out)
         async with ext.async_session_factory() as s:

@@ -312,7 +312,7 @@ async def show(db, user, batch: str) -> dict:
         ]
         ends = [
             e
-            for e in gaps.detect(joined, await gaps.event_kinds(db, pair))
+            for e in gaps.watched(joined, await gaps.event_kinds(db, pair))
             if e["window"][1] is None
         ]
         if ends:

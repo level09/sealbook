@@ -1,0 +1,6 @@
+key,value,meaning
+watch_days,60,"After an arrest, a detention, a last-seen account or a missing report, a silence longer than this many days until the next dated record is offered."
+routine_sightings,20,"A routine needs at least this many distinct days on which one source, or records of one place, name the person."
+routine_span_days,28,"Those days must run over at least this many days, so a short burst is not a routine."
+routine_floor_days,60,"A routine's silence is offered only when it is longer than this many days."
+routine_factor,5,"and longer than this many times the person's own usual interval between those days."
