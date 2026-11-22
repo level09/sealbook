@@ -172,7 +172,7 @@ class RoutineSilenceTest(unittest.TestCase):
         self.assertEqual((routine["source"], routine["seen"]), ("gate log", 40))
         self.assertEqual(
             gaps.routine_words(routine, gap["window"], "the gate log"),
-            "Named in the gate log about 5 days a week from 4 February 2013 to "
+            "Named in “the gate log” about 5 days a week from 4 February 2013 to "
             "29 March 2013, then in no record at all for 75 days, while it went on",
         )
 

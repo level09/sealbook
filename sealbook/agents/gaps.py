@@ -238,7 +238,7 @@ def _stop(person, tail, days, edge, nxt, reach) -> dict | None:
 
 
 def routine_words(routine, window, where) -> str:
-    """ "Named in the gate log about 5 days a week from 2 February 2026 to 12 March
+    """ "Named in “the gate log” about 5 days a week from 2 February 2026 to 12 March
     2026, then in no record at all for 75 days, while it went on": the records,
     never the person."""
     lo, hi = (date.fromisoformat(d) if d else None for d in window)
@@ -256,7 +256,7 @@ def routine_words(routine, window, where) -> str:
         else f"about every {round(routine['usual_days'] / 30.44)} months"
     )
     named = (
-        f"Named in {where}" if routine["source"] else f"Recorded at {where}"
+        f"Named in “{where}”" if routine["source"] else f"Recorded at {where}"
     ) + f" {often} from {when(first, None)} to {when(lo, None)}"
     if hi is None:
         until = when(date.fromisoformat(routine["until"]), None)
