@@ -39,7 +39,7 @@ from sealbook.monitor.data import LOCATED
 from sealbook.people import data as people_data
 from sealbook.places import normalise, phrases, resolve
 from sealbook.search.arabic import candidates as name_match
-from sealbook.search.arabic import natural
+from sealbook.search.arabic import natural, same_keys
 from sealbook.settings import Config
 from sealbook.sheets import dates
 
@@ -185,7 +185,9 @@ def candidates(
         ]
         if not pairs or not touches(people[a] + people[b]):
             continue
-        agree, differ = [], []
+        # A written spelling before one heard in a recording.
+        pairs.sort(key=lambda p: p[0].heard + p[1].heard)
+        agree, differ, ruled_out = [], [], False
         for prop in COMPARED:
             xs = [c for c in people[a] if c.prop == prop]
             ys = [c for c in people[b] if c.prop == prop]
@@ -209,6 +211,15 @@ def candidates(
                 )
             elif state == "differ":
                 differ.append((xs[0], ys[0]))
+                # A parent's name heard in a recording that differs only in its
+                # spelling (Thomas, Tomas: the same consonants) may be a mishearing,
+                # so it never rules the pair out; another name still does.
+                misheard = prop in PARENTS and any(
+                    (x.heard or y.heard) and same_keys(x.text, y.text)
+                    for x in xs
+                    for y in ys
+                )
+                ruled_out = ruled_out or (prop in CONTRADICTS and not misheard)
         for prop in ("last_seen", "arrested_at", "detained_at", "seen_at"):
             xs = [c for c in people[a] if c.prop == prop]
             ys = [c for c in people[b] if c.prop == prop]
@@ -223,7 +234,7 @@ def candidates(
             )
             if hit:
                 agree.append(hit)
-        if not agree or any(x.prop in CONTRADICTS for x, _ in differ):
+        if not agree or ruled_out:
             continue
         x, y = pairs[0]
         same.append(
@@ -255,6 +266,9 @@ def candidates(
     holders: dict[str, set[str]] = {}
     for p, ns in names.items():
         for n in ns:
+            # A name alone carries this candidate, so a heard one never does.
+            if n.heard:
+                continue
             if len((key := normalise(natural(n.text))).split()) >= 2:
                 holders.setdefault(key, set()).add(p)
     named = []
@@ -265,8 +279,12 @@ def candidates(
         bare = [p for p in (a, b) if all(c.prop == Prop.NAME for c in people[p])]
         if not bare or not touches(people[a] + people[b]):
             continue
-        x = next(c for c in names[a] if normalise(natural(c.text)) == key)
-        y = next(c for c in names[b] if normalise(natural(c.text)) == key)
+        x = next(
+            c for c in names[a] if not c.heard and normalise(natural(c.text)) == key
+        )
+        y = next(
+            c for c in names[b] if not c.heard and normalise(natural(c.text)) == key
+        )
         named.append(
             (
                 -len(key.split()),
@@ -648,7 +666,11 @@ async def focus_of(db, case, ref: str | None) -> set | None:
 def _statement(c, link: dict) -> StatementIn:
     cand, kind, basis = link["cand"], link["kind"], link["basis"]
     refs = sorted(_ref(b.id) for b in basis)
-    why = {"why": link["why"]} if link["why"] else {}
+    heard = [b.text for b in basis if b.heard and b.prop == Prop.NAME]
+    said = link["why"] + (
+        f" A name rests on a recording: heard as {', '.join(heard)}." if heard else ""
+    )
+    why = {"why": said.strip()} if said.strip() else {}
     prefix = cand["h"][0]
     anchor = basis[0]
     if prefix in ("m", "n", "x"):

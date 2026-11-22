@@ -24,7 +24,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, array_agg
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sealbook.ledger.contracts import Prop, StatementIn, Tier
+from sealbook.ledger.contracts import EvidenceKind, Prop, StatementIn, Tier
 from sealbook.ledger.models import Payload, Statement, StatementTier
 from sealbook.ledger.write import append, current_clause, lock_chain
 from sealbook.monitor import filter as mfilter
@@ -364,6 +364,15 @@ def agreement(prop: str, xs: list, ys: list) -> tuple[str, str | None]:
     return ("differ", None) if all(full) else ("agree", "year only")
 
 
+def _heard(row: dict) -> bool:
+    """A name heard in a recording, not written: a weaker basis than a written one."""
+    return EvidenceKind.SPOKEN in (row.get("evidence") or ())
+
+
+def _heard_value(value) -> bool:
+    return isinstance(value, dict) and bool(value.get("heard"))
+
+
 def label_rank(name: str) -> tuple:
     """How well one spelling labels a person, best first: the most names longer
     than an initial ("Aron Vesk" before "A. Vesk"), then written in natural order
@@ -378,9 +387,10 @@ async def names(session: AsyncSession, people, groups=None) -> dict[str, str]:
     """The label for each person id: the best name the reader may see from any source
     of any linked record. Across every member of the person, accepted before
     corroborated before unconfirmed, then the fullest natural-order spelling
-    (`label_rank`), then the earliest recorded. Masked (sensitive source) and erased
-    names are never labels, so a person with only those is absent and pages say
-    "Unnamed person"."""
+    (`label_rank`), then the earliest recorded. A written name wins over one heard in
+    a recording; a person known only from a heard name reads "heard as Joe". Masked
+    (sensitive source) and erased names are never labels, so a person with only those
+    is absent and pages say "Unnamed person"."""
     if groups is None:
         groups, _ = await identity(session)
     members = {p: groups.get(p, frozenset({p})) for p in people}
@@ -399,6 +409,7 @@ async def names(session: AsyncSession, people, groups=None) -> dict[str, str]:
     # the same evidence (ids are random).
     order = lambda r: (  # noqa: E731
         NAME_ORDER.get(r["tier"], 3),
+        _heard(r),
         label_rank(r["display"]),
         r["recorded_at"],
         r["id"],
@@ -407,8 +418,10 @@ async def names(session: AsyncSession, people, groups=None) -> dict[str, str]:
     for r in rows:
         if r["display"]:
             m = pid(r["subject"])
+            # A person known only from a recording says so.
+            shown = f"heard as {r['display']}" if _heard(r) else r["display"]
             if m not in best or order(r) < best[m][0]:
-                best[m] = (order(r), r["display"])
+                best[m] = (order(r), shown)
     return {
         p: min(found)[1]
         for p, ms in members.items()
@@ -542,9 +555,16 @@ async def _duplicates(
 ) -> list[dict]:
     """Other persons whose names match this one's, with the fields that agree or
     differ, most agreement first. Proposals for a human; nothing here merges
-    anything. A candidate that only differs is left out."""
+    anything. A candidate that only differs is left out, and so is one whose every
+    matching name was heard in a recording with no field agreeing: a heard name is a
+    weaker basis than a written one."""
     values = await _person_values(session, [Prop.NAME, *CORROBORATING])
     mine = [v for v in values if v[1] in members]
+    heard = {
+        sid
+        for sid, _, prop, val, _ in values
+        if prop == Prop.NAME and _heard_value(val)
+    }
     names = [
         (sid, t)
         for sid, _, prop, val, _ in mine
@@ -562,9 +582,13 @@ async def _duplicates(
             continue
         other = groups.get(person, frozenset({person}))
         c = found.setdefault(
-            min(other), {"members": other, "names": [], "not_same": False}
+            min(other),
+            {"members": other, "names": [], "not_same": False, "written": False},
         )
         c["names"].append(sid)
+        c["written"] = c["written"] or any(
+            n not in heard for n in matched if sid not in heard
+        )
         c["not_same"] = c["not_same"] or any(
             frozenset((a, b)) in blocked for a in members for b in other
         )
@@ -597,10 +621,14 @@ async def _duplicates(
                     year_only.append(str(prop))
             elif state == "differ":
                 differ.append(str(prop))
+        if not c["written"] and not agree:
+            continue
         out.append(
             {
                 "person": person,
                 "names": _by_name(c["names"], shown),
+                # Every matching name was heard in a recording, not written.
+                "heard": not c["written"],
                 "agree": agree,
                 "differ": differ,
                 "year_only": year_only,

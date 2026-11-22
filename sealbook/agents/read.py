@@ -23,7 +23,13 @@ from sealbook import blobs
 from sealbook.collaboration.notifications import PROP as FIELD
 from sealbook.discovery.service import available
 from sealbook.ledger import chain, write
-from sealbook.ledger.contracts import EXTRACTED_PROPS, Prop, StatementIn, Tier
+from sealbook.ledger.contracts import (
+    EXTRACTED_PROPS,
+    EvidenceKind,
+    Prop,
+    StatementIn,
+    Tier,
+)
 from sealbook.ledger.models import Blob, Payload, Principal, Statement, StatementTier
 from sealbook.monitor import filter as mfilter
 from sealbook.monitor.data import LOCATED, PERSONAL, Context, display
@@ -54,6 +60,8 @@ class Claim:
     tier: str
     sensitive: bool
     time: str | None = None  # of a place: "21:52" or "18:00-24:00", when stated
+    # Heard in a recording, not written: a weaker basis for matching a name.
+    heard: bool = False
 
 
 @dataclass
@@ -80,7 +88,9 @@ class Case:
 
     def name(self, person: str, among=None) -> str | None:
         """The best name of a cluster: accepted first, then from a source that is
-        not sensitive, then the fullest natural-order spelling (as `people.names`)."""
+        not sensitive, then written before heard, then the fullest natural-order
+        spelling (as `people.names`). A person known only from a recording reads
+        "heard as Joe"."""
         names = [
             c
             for c in (among or self.claims)
@@ -90,11 +100,14 @@ class Case:
             key=lambda c: (
                 c.tier != Tier.ACCEPTED,
                 c.sensitive,
+                c.heard,
                 people.label_rank(c.text),
                 str(c.id),
             )
         )
-        return names[0].text if names else None
+        if not names:
+            return None
+        return f"heard as {names[0].text}" if names[0].heard else names[0].text
 
 
 def cluster_of(groups: dict, subject: str) -> str:
@@ -150,6 +163,8 @@ async def case(db, investigation: str) -> Case:
             time=value.get("time")
             if st.prop in LOCATED and isinstance(value, dict)
             else None,
+            heard=EvidenceKind.SPOKEN in (st.evidence or ())
+            or (isinstance(value, dict) and bool(value.get("heard"))),
         )
         for st, tier, value, sha in rows
     ]
@@ -321,6 +336,7 @@ def claim_view(h: Handles, c: Claim, docs: dict) -> dict:
         "value": c.text,
         "when": when(c.lo, c.hi),
         **({"time": c.time.replace("-", " to ")} if c.time else {}),
+        **({"heard": True} if c.heard else {}),
         "source": docs[c.source]["title"],
         "decided": c.tier == Tier.ACCEPTED,
     }

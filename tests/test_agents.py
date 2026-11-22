@@ -10,6 +10,7 @@ import sys
 import unittest
 import uuid
 from datetime import UTC, date, datetime
+from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
@@ -289,6 +290,72 @@ class ValidateTest(unittest.TestCase):
         # A bare mention holding the same full name in the other order.
         cands = linker.candidates(case(passport, born, other), [], None, Handles())
         self.assertEqual([c["h"][0] for c in cands], ["n"])
+
+    def test_a_heard_name_is_a_weaker_basis_than_a_written_one(self):
+        """never-there's voice note: speech to text wrote "Joe" for Jo Quill."""
+        here = Path(__file__).parents[1] / "acceptance" / "cases" / "never-there"
+        [voice] = orjson.loads((here / "recordings.json").read_bytes())["speech"]
+        said = voice["segments"][0]["text"]
+        self.assertTrue(said.startswith("Joe, it's me"))
+
+        def case(*claims):
+            docs = {c.source: {"title": c.source, "doc_type": ""} for c in claims}
+            return read.Case("c", list(claims), docs, {}, {})
+
+        def heard(prop, text, person):
+            c = claim(prop, text, person=person, source="voice")
+            return dataclasses.replace(c, heard=True)
+
+        jo = claim(Prop.NAME, "Jo Quill", person="person:a")
+        born = claim(Prop.BIRTH_DATE, "1978", person="person:a")
+        joe = heard(Prop.NAME, said.split(",")[0], "person:b")
+        # What the voice note gives: a name and nothing else. No candidate.
+        self.assertEqual(
+            linker.candidates(case(jo, born, joe), [], None, Handles()), []
+        )
+        # A heard full name alone never carries a same-full-name candidate; written,
+        # the same bare mention does.
+        full = heard(Prop.NAME, "Jo Quill", "person:b")
+        self.assertEqual(
+            linker.candidates(case(jo, born, full), [], None, Handles()), []
+        )
+        printed = claim(Prop.NAME, "Jo Quill", person="person:b", source="s2")
+        self.assertEqual(
+            [
+                c["h"][0]
+                for c in linker.candidates(case(jo, born, printed), [], None, Handles())
+            ],
+            ["n"],
+        )
+        # With a field that agrees it is a proposal that says it was heard, and a
+        # father's name heard another way does not rule it out on spelling alone.
+        year = heard(Prop.BIRTH_DATE, "1978", "person:b")
+        father = claim(Prop.FATHER_NAME, "Tomas", person="person:a")
+        misheard = heard(Prop.FATHER_NAME, "Thomas", "person:b")
+        cands = linker.candidates(
+            case(jo, born, father, joe, year, misheard), [], None, Handles()
+        )
+        self.assertEqual([c["h"][0] for c in cands], ["m"])
+        self.assertTrue(cands[0]["b"]["names"][0]["heard"])
+        link = {
+            "cand": cands[0],
+            "kind": "same_person",
+            "basis": cands[0]["_basis"],
+            "why": "The names match and birth date agree.",
+        }
+        run = SimpleNamespace(
+            run=SimpleNamespace(principal_id=uuid.uuid4(), id=uuid.uuid4())
+        )
+        st = linker._statement(run, link)
+        self.assertIn("heard as Joe", st.value["why"])
+        # Written, the same differing father rules the pair out.
+        written = claim(Prop.FATHER_NAME, "Thomas", person="person:b", source="s2")
+        self.assertEqual(
+            linker.candidates(
+                case(jo, born, father, joe, year, written), [], None, Handles()
+            ),
+            [],
+        )
 
     def test_linker_needs_cited_non_name_basis(self):
         other = claim(Prop.NAME, "يوسف خالد العلي", person="person:b", source="s2")

@@ -911,3 +911,9 @@ covers in the text it was read from (`span_blob`).
   the cited claims by record, not by joined person. One function
   (`people.agreement`, on `people.same_value`) now serves all three. A view that
   explains an agent's decision must call the agent's comparison, not restate it.
+
+- never-there's voice note made a person "Joe" for Jo, and every name matcher would
+  have weighed that spelling like a printed one. A heard name now carries `heard`
+  through `read.Claim`, the linker, reading, Candidate duplicates and the label
+  rule: it supports a proposal only beside an agreeing field, never rules a pair
+  out on spelling alone (same consonants), and says "heard as". Carry a value's provenance into every comparison of it.

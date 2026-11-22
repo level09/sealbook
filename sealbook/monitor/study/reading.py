@@ -252,20 +252,24 @@ async def recover(st, keys) -> None:
     got = await _written(st, keys)
     usable = [g for g in got if g[2] != Tier.REJECTED]
     planted = [c for k in keys for c in st.claims[k]]
-    # A record is the person whose name the app wrote in the record's source.
+    # A record is the person whose name the app wrote in the record's source; a
+    # name written there wins over one heard in a recording of it.
     for c in planted:
         if c["prop"] != "name" or c["record"] in st.subjects:
             continue
         source = st.records[c["record"]]["source"]
-        same = [
-            f
-            for f, v, _, k in usable
-            if k == source
-            and f.prop == Prop.NAME
-            and same_value(Prop.NAME, _shown(v), c["value"])
-        ]
+        same = sorted(
+            (
+                (bool(v.get("heard")), f.subject)
+                for f, v, _, k in usable
+                if k == source
+                and f.prop == Prop.NAME
+                and same_value(Prop.NAME, _shown(v), c["value"])
+            ),
+            key=lambda x: x[0],
+        )
         if same:
-            st.subjects[c["record"]] = same[0].subject
+            st.subjects[c["record"]] = same[0][1]
     recovered = 0
     for c in planted:
         source = st.records[c["record"]]["source"]

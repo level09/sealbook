@@ -25,7 +25,7 @@ from stk.migrations import (
 from stk.user.models import Role, User
 
 from sealbook.app import create_app
-from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.contracts import EvidenceKind, Prop, StatementIn
 from sealbook.ledger.models import Blob, Payload, Statement
 from sealbook.ledger.write import append, verify_db
 from sealbook.mcp.tools import _search as mcp_search
@@ -333,6 +333,8 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
         # The record that sorts first by id holds the poorest spelling.
         first, rest = (f"person:{uuid.UUID(int=i)}" for i in (1, 2))
         third = f"person:{uuid.UUID(int=3)}"
+        joe = f"person:{uuid.UUID(int=4)}"
+        heard = {"heard": True}
         async with ext.async_session_factory() as s, s.begin():
             # Names are labels only from a source the reader may see: quote one.
             seen = await statement_rows(
@@ -349,6 +351,9 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
                 (rest, Prop.NAME, {"text": "A. Vesk"}),
                 (rest, Prop.NAME, {"text": "Vesk, Aron"}),
                 (third, Prop.NAME, {"text": "Aron Vesk"}),
+                # Fuller, but heard in a recording: never the label over a written one.
+                (third, Prop.NAME, {"text": "Aron Mikael Vesk", **heard}),
+                (joe, Prop.NAME, {"text": "Joe", **heard}),
                 (rest, Prop.SAME_AS, {"person": data.pid(first)}),
                 (third, Prop.SAME_AS, {"person": data.pid(first)}),
             ):
@@ -361,11 +366,13 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
                         author_id=human.id,
                         span_blob=quoted.span_blob,
                         span=quoted.span,
+                        evidence=(EvidenceKind.SPOKEN,) if "heard" in value else (),
                     ),
                     sign=passkey.sig,
                 )
         async with ext.async_session_factory() as s:
-            labels = await data.names(s, [data.pid(first), data.pid(third)])
+            labels = await data.names(s, [data.pid(p) for p in (first, third, joe)])
+        self.assertEqual(labels.pop(data.pid(joe)), "heard as Joe")
         self.assertEqual(set(labels.values()), {"Aron Vesk"})
 
     def test_label_rank_prefers_full_natural_order(self):
