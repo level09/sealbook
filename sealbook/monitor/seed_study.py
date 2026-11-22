@@ -29,7 +29,7 @@ from pathlib import Path
 import click
 import orjson
 import stk.extensions as ext
-from sqlalchemy import select
+from sqlalchemy import String, delete, or_, select
 from stk.user.models import User
 
 from sealbook import blobs
@@ -39,7 +39,14 @@ from sealbook.discovery.evidence import copy_reason
 from sealbook.ingest.service import system_agent
 from sealbook.ledger import write
 from sealbook.ledger.contracts import Prop, Tier
-from sealbook.ledger.models import Blob, Payload, Run, Statement, StatementTier
+from sealbook.ledger.models import (
+    Acquisition,
+    Blob,
+    Payload,
+    Run,
+    Statement,
+    StatementTier,
+)
 from sealbook.ledger.write import principal_for_user
 from sealbook.monitor import seed_flows as flows
 from sealbook.monitor.seed import Seeder, seeded
@@ -67,6 +74,10 @@ MIME = {
 ARABIC = re.compile(r"[؀-ۿ]")
 # The worker's tools that need no model: intake's own steps, run as it would.
 LOCAL = ("geotag", "thumbnail", "fingerprint", "index")
+# Model readings intake and a finished batch queue, which the case stands in for:
+# its own runs wrote those claims, links and briefs. Meaning search (`embed`) stays
+# queued for a runner to finish.
+STOOD_IN = ("ocr", "extract", "assess", "link", "brief")
 # The agents a case's planted truth asks about, by the truth keys that score them.
 AGENTS = {
     "linker": ("same_person", "twins"),
@@ -317,6 +328,7 @@ async def _play(session, app, spec, root, acts, until, tape) -> dict:
         tape=tape,
     )
     played = await study.play(st, acts, until)
+    await drop_stood_in(session, inv, st.batch)
     return (
         {
             "investigation": inv,
@@ -327,6 +339,26 @@ async def _play(session, app, spec, root, acts, until, tape) -> dict:
         | st.out
         | {"acts": played, "missed": st.missed}
     )
+
+
+async def drop_stood_in(session, inv: str, batch: str | None) -> None:
+    """Remove the case's queued readings the case answered itself, so a live runner
+    does not read its sources again on top of the case. A queued run has no events
+    and wrote nothing."""
+    mine = [
+        Run.inputs["acquisition"].astext.in_(
+            select(Acquisition.id.cast(String)).where(
+                Acquisition.context["investigation"].astext == inv
+            )
+        ),
+        Run.inputs["investigation"].astext == inv,
+    ]
+    if batch:
+        mine.append(Run.inputs["batch"].astext == batch)
+    await session.execute(
+        delete(Run).where(Run.status == "queued", Run.tool.in_(STOOD_IN), or_(*mine))
+    )
+    await session.commit()
 
 
 async def colleague(s: Seeder, inv: str, handle: str, name: str):

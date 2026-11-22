@@ -34,6 +34,7 @@ from sealbook.ledger.write import verify_db
 from sealbook.monitor import study
 from sealbook.monitor.seed_study import seed_study
 from sealbook.settings import Config
+from tests.test_case_studies import stood_in
 from tests.test_people import POSTGRES, _app
 
 CASE = (
@@ -183,6 +184,8 @@ class UnwrittenNameActsTest(unittest.IsolatedAsyncioTestCase):
         async with ext.async_session_factory() as s:
             out = await seed_study(s, self.app, CASE)
         self.assertEqual((out["sources"], out["claims"]), (18, 671))
+        async with ext.async_session_factory() as s:
+            self.assertEqual(await stood_in(s), 0)
         # The question: five records at first, none in April, the two May and
         # June logs that name him again.
         self.assertEqual([c["matches"] for c in out["question checks"]], [5, 0, 2])

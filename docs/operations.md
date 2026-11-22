@@ -403,11 +403,9 @@ itself in its last act and saves the finalized package at
 five recordings to one seeded before them, set the environment for that one command:
 `docker compose exec -e STK_ENV=development website stk demo-seed --recordings`.
 Stop the runner first (`docker compose stop runner`): a live runner claims the
-seeder's queued runs and the case fails halfway. Seeding leaves embedding runs and
-30 model readings of unwritten-name and old-footage sources queued. Run only the
-embeddings (`docker compose run --rm runner python -m stk runner --tool embed`,
-then `--tool embed_actor`); the full runner would read those sources live on top
-of the case.
+seeder's queued runs and the case fails halfway. Seeding removes the model readings
+intake queued for sources the case answers itself, and leaves only the embedding
+runs queued, which the runner then finishes.
 
 ## Verification
 

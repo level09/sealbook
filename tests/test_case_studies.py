@@ -79,6 +79,16 @@ class FourNamesScoreTest(unittest.TestCase):
         self.assertIsNone(self.report["metrics"]["canary_held"]["mean"])
 
 
+async def stood_in(s) -> int:
+    """Readings still queued that the case answered itself; a runner would read
+    those sources again on top of the case."""
+    from sealbook.monitor.seed_study import STOOD_IN
+
+    return await s.scalar(
+        select(func.count()).where(Run.status == "queued", Run.tool.in_(STOOD_IN))
+    )
+
+
 class Seeding(unittest.IsolatedAsyncioTestCase):
     """A throwaway database with an owner, no embedding and no model routes."""
 

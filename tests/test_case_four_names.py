@@ -30,7 +30,7 @@ from sealbook.packages.cli import make_signing_cert
 from sealbook.packages.models import Package
 from sealbook.people import data as people
 from sealbook.sheets.models import DatasetVersion
-from tests.test_case_studies import Seeding
+from tests.test_case_studies import Seeding, stood_in
 from tests.test_packages import FakeAnchor
 from tests.test_people import POSTGRES
 
@@ -160,6 +160,7 @@ class FourNamesSeedTest(Seeding):
         self.assertTrue((self.saved / got["saved"]).exists())
         async with ext.async_session_factory() as s:
             self.assertEqual(await verify_db(s), [])
+            self.assertEqual(await stood_in(s), 0)
             # Desks' five joins and the linker's six true links, accepted; the
             # surveyor's link declined with the analyst's reason.
             self.assertEqual(await self.links(s), {Tier.ACCEPTED: 11, Tier.REJECTED: 1})
