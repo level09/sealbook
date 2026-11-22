@@ -942,3 +942,9 @@ covers in the text it was read from (`span_blob`).
   through `read.Claim`, the linker, reading, Candidate duplicates and the label
   rule: it supports a proposal only beside an agreeing field, never rules a pair
   out on spelling alone (same consonants), and says "heard as". Carry a value's provenance into every comparison of it.
+
+- Seeding old-footage hung for twelve hours: the `read` step replayed one clip's
+  transcript on its own session, which took the ledger's advisory write lock, then
+  handed the next clip to the worker's `process`, whose own session waited on that
+  lock forever. Commit the seeding session before any call that opens its own
+  session and appends, and run a long seed under `timeout` so a hang fails loudly.

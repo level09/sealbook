@@ -9,6 +9,7 @@ person the app wrote, and the counts go to `out["read"]`."""
 
 from __future__ import annotations
 
+import asyncio
 import re
 from datetime import date
 
@@ -16,7 +17,7 @@ import orjson
 import stk.extensions as ext
 from sqlalchemy import select
 
-from sealbook import blobs
+from sealbook import blobs, speech
 from sealbook.ingest.service import queue_read
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import (
@@ -53,6 +54,14 @@ async def _acqs(st, keys) -> dict[str, str]:
 async def _transcribe(st, run, key: str) -> None:
     tape, s = st.tape, st.s
     sha = s.blobs[key]
+    blob = await st.session.get(Blob, sha)
+    path = await asyncio.to_thread(blobs.verified_path, blob, Config.BLOB_DIR)
+    if not (await asyncio.to_thread(speech.probe, path))[1]:
+        # A video without a sound track: the worker's own run says so and queues
+        # the first pass on the frames alone. No model is loaded, nothing to record.
+        await st.session.commit()
+        await process(ext.async_session_factory, run.id)
+        return
     if tape.recording:
         await process(ext.async_session_factory, run.id)
         await st.session.refresh(run)
@@ -100,9 +109,11 @@ async def _transcribe(st, run, key: str) -> None:
         origin=f"the {said['model']['repo']} output recorded in recordings.json",
         recorded={"model": said["model"]["repo"], "at": tape.data.get("recorded_at")},
     )
-    # The transcribe tool queues extraction of its transcript when it finishes.
-    acq = await flows._acq(s, key)
-    await queue_read(st.session, acq, "extract", s.blobs[f"{key}_tx"])
+    # The transcribe tool queues extraction of its transcript when it finishes, and
+    # nothing when no speech was heard.
+    if said["segments"]:
+        acq = await flows._acq(s, key)
+        await queue_read(st.session, acq, "extract", s.blobs[f"{key}_tx"])
 
 
 @step("read")
@@ -129,6 +140,9 @@ async def read(st, act, args) -> None:
         if not runs:
             break
         for run in runs:
+            # The worker's run opens its own session and takes the ledger's write
+            # lock: nothing this session wrote (a replayed transcript) may hold it.
+            await st.session.commit()
             done.add(run.id)
             key = acqs[run.inputs["acquisition"]]
             if run.tool == "transcribe":
@@ -251,7 +265,8 @@ async def recover(st, keys) -> None:
     """Match each planted claim of the read sources to what extraction wrote."""
     got = await _written(st, keys)
     usable = [g for g in got if g[2] != Tier.REJECTED]
-    planted = [c for k in keys for c in st.claims[k]]
+    # Claims about people only: what a post reports is planted (`claims`).
+    planted = [c for k in keys for c in st.claims[k] if c["record"] in st.records]
     # A record is the person whose name the app wrote in the record's source; a
     # name written there wins over one heard in a recording of it.
     for c in planted:
