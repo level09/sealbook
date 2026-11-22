@@ -16,6 +16,8 @@ export function mark(map) {
   el.className = 'schematic-note';
   el.textContent = NOTE;
   map.getContainer().appendChild(el);
+  // Labels wrap rather than run off the edge (shell.css).
+  map.getContainer().classList.add('schematic');
   map.addControl(new maplibregl.ScaleControl({unit: 'metric'}), 'bottom-left');
 }
 
@@ -25,8 +27,10 @@ export function fit(map, coords) {
   if (!coords.length) return;
   const b = new maplibregl.LngLatBounds();
   coords.forEach(c => b.extend(c));
-  const w = map.getContainer().clientWidth;
-  map.fitBounds(b, {padding: {top: 64, bottom: 40, left: 40, right: Math.min(200, Math.round(w * 0.4))}, maxZoom: 15, duration: 0});
+  // One place has no spread to fit: it sits left so its label has the width.
+  const w = map.getContainer().clientWidth, one = b.getWest() === b.getEast() && b.getSouth() === b.getNorth();
+  const right = one ? Math.round(w * 0.6) : Math.min(200, Math.round(w * 0.4));
+  map.fitBounds(b, {padding: {top: 64, bottom: 40, left: 40, right}, maxZoom: 15, duration: 0});
 }
 
 const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;

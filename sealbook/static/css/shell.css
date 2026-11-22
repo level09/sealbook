@@ -258,6 +258,8 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 
 /* A map of invented places says so on its face (static/js/schematic.js). */
 .schematic-note { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 2; width: fit-content; max-width: calc(100% - 16px); padding: 4px 10px; border-radius: 6px; background: var(--panel); border: 1px dashed var(--line-strong); color: var(--ink-2); font-size: 12.5px; font-weight: 600; pointer-events: none; }
+/* A schematic's labels wrap instead of running off the map. */
+.schematic .map-label, .schematic .cm-lbl, .schematic .st-mk .l { white-space: normal; max-width: min(220px, 55vw); line-height: 1.25; }
 /* A label moved off its place points back to it. */
 .schematic-lead { position: relative; overflow: visible; }
 .maplibregl-marker.schematic-lead { position: absolute; }

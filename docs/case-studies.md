@@ -53,7 +53,8 @@ Keys the seeder reads beyond that shape, all optional:
   `place.fictional` from it, and the case map, Stories, a person's Track on the map
   and the place page then draw a schematic: no coastline, tiles or region outline,
   the places at their relative positions with a scale, labels moved apart with a
-  leader line when they would overlap, and the note "Invented places, drawn to
+  leader line when they would overlap and wrapping rather than running off the
+  map, no gazetteer credit, and the note "Invented places, drawn to
   relative position, not a real map". The four cases mark every place. Invented
   places lie in open sea so that no real town reads as the scene; the marker, not
   the coordinates, says they are invented. Sources arrive from the channel "Case

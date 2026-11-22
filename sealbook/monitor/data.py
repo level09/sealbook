@@ -869,7 +869,10 @@ def map_layer(rows: list[dict], places: dict) -> dict:
         # Every drawn place is invented: draw a schematic, not a real basemap.
         "schematic": invented == {True},
         "unresolved": list(unresolved.values()),
-        "attribution": "GeoNames (CC BY 4.0)",
+        # Invented places come from no gazetteer, so none is credited for them.
+        "attribution": "invented for the case, no gazetteer"
+        if invented == {True}
+        else "GeoNames (CC BY 4.0)",
     }
 
 
