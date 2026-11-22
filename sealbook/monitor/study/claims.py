@@ -1,5 +1,6 @@
 """Planted claims: what an extraction run would write, pinned where the case file
-says, for the sources that have arrived and that the app does not read itself.
+says, for the sources that have arrived and that the app does not read itself, and
+what the post a read file came with reports.
 `accept` has the case analyst accept the claims planted as accepted, or the claim
 keys an act names."""
 
@@ -36,9 +37,15 @@ async def claims(st, act, args) -> None:
 
     for key in st.arrived:
         mine = [c for c in st.claims[key] if c["key"] not in st.written]
-        if st.read(key) or not mine:
-            continue
         doc = st.text_of[key]
+        if st.read(key):
+            # The app reads the file, not the post it came with: what the post
+            # reports is planted from the post's own words.
+            post = st.spec["sources"][key].get("post")
+            mine = [c for c in mine if post and c["record"] not in st.records]
+            doc = f"{key}_post"
+        if not mine:
+            continue
         run = await s.run(
             st.extractor,
             "extract",

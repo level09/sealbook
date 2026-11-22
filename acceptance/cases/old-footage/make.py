@@ -2,6 +2,7 @@
 
   uv run python acceptance/cases/old-footage/make.py           # derive the copies, write case.json
   uv run python acceptance/cases/old-footage/make.py --fetch   # first download and re-encode the Commons clips
+  uv run python acceptance/cases/old-footage/make.py --record  # read the clips on the live routes
 
 The footage is real and openly licensed (Wikimedia Commons). The story around it is
 invented: the place names, accounts, captions and posting dates are fictional, and no
@@ -475,6 +476,131 @@ def posted(key, date, account, caption):
     }
 
 
+# What the desk types into the search box in act 3: words for what the viral clip
+# shows, and the bridge the captions name. Act 4 runs the first search again.
+SEARCHES = ["submerged trees", "bridge"]
+
+
+def acts(sources):
+    """The investigation in six acts (docs/case-studies.md, "Acts"). The clips
+    arrive in posting order within each act, so each is fingerprinted against the
+    clips already held; the 2024 original arrives last, as the archive is added."""
+
+    def by_date(keys):
+        return sorted(keys, key=lambda k: (sources[k]["date"], k))
+
+    rest = set(sources) - {"copy_viral", "original"}
+    day_one = by_date(k for k in rest if sources[k]["date"] <= "2026-06-02")
+    inbox = by_date(rest - set(day_one))
+    read = ["read", "claims"]
+    return [
+        {
+            "title": "The clip that spread",
+            "day": "2026-06-02",
+            "story": "A clip of the river Ostra over its banks in Lindmark spreads "
+            "under 'JUST IN' and reaches the newsroom's tip line with its post. "
+            "The app listens for speech, looks at eight frames and proposes a "
+            "title, a description and labels for what the clip shows. The caption "
+            "is what the post reports, unconfirmed.",
+            "shows": ["reading", "first pass"],
+            "sources": ["copy_viral"],
+            "steps": read,
+            "see": ["/evidence/{source:copy_viral}"],
+        },
+        {
+            "title": "Reposts and other floods",
+            "day": "2026-06-02",
+            "story": "Over the day the tip line fills with reposts, other people's "
+            "flood videos and clips that only look like weather. The app reads "
+            "each one as it arrives and fingerprints its picture and sound. "
+            "Several reposts already match each other by their sound: one "
+            "recording is spreading, but nothing here says where it began.",
+            "shows": ["reading", "copies"],
+            "sources": day_one,
+            "steps": [*read, "matches"],
+            "see": [
+                "/evidence/{source:copy_trim}",
+                "/evidence/{source:flood_footbridge}",
+            ],
+        },
+        {
+            "title": "Searching the pile by what it shows",
+            "day": "2026-06-03",
+            "story": "More clips arrive in a batch from the inbox. Instead of "
+            "scrolling 35 videos, the desk searches for what the viral clip "
+            "shows, submerged trees, and finds the reposts and one other flood "
+            "by the app's own description of them. A search for the bridge the "
+            "captions name finds two other people's bridges and one post; the "
+            "app saw no bridge in the viral clip. A description says what the "
+            "frames show, never where or when they were filmed.",
+            "shows": ["reading", "search"],
+            "sources": inbox,
+            "steps": [
+                *read,
+                *({"do": "search", "query": q} for q in SEARCHES),
+            ],
+            "see": [f"/search?q={urllib.parse.quote_plus(q)}" for q in SEARCHES],
+        },
+        {
+            "title": "The archive from two years ago",
+            "day": "2026-06-03",
+            "story": "A producer remembers a flood clip from June 2024 and the desk "
+            "adds Ostra Valley Weather's video from the archive. Its fingerprints "
+            "tie it to the viral clip and to six other reposts by their sound, and "
+            "two of those by picture too. The search for submerged trees now "
+            "finds the 2024 video as well.",
+            "shows": ["copies"],
+            "sources": ["original"],
+            "steps": [
+                *read,
+                "matches",
+                {"do": "search", "query": SEARCHES[0]},
+            ],
+            "see": [
+                "/evidence/{source:original}",
+                f"/search?q={urllib.parse.quote_plus(SEARCHES[0])}",
+            ],
+        },
+        {
+            "title": "Side by side",
+            "day": "2026-06-03",
+            "story": "The analyst opens the viral clip beside the 2024 video, "
+            "plays them together and confirms each match between the copies "
+            "and the original as the same recording, with her reason and her "
+            "passkey. The app proposed nothing between clips that are not the "
+            "same footage, so there is nothing to decline. The muted, cropped, "
+            "mirrored short matched nothing and stays unexplained.",
+            "shows": ["copies"],
+            "sources": [],
+            "steps": [
+                {
+                    "do": "confirm copies",
+                    "relationship": "same_recording",
+                    "why": "Side by side the same footage: the same river, trees "
+                    "and buildings and the same sound, cut, mirrored or stamped "
+                    "differently.",
+                },
+            ],
+            "see": [
+                "/evidence/{source:copy_viral}?with={source:original}",
+                "/evidence/{source:original}",
+            ],
+        },
+        {
+            "title": "The conclusion",
+            "day": "2026-06-03",
+            "story": "The analyst writes that the clip shared as new is the 2024 "
+            "video, on the two posts' words beside the confirmed matches, names "
+            "the alternative she set aside and what is not established, and "
+            "signs it; a reviewer agrees.",
+            "shows": ["conclusion", "peer review"],
+            "sources": [],
+            "steps": ["conclusion"],
+            "see": ["/cases/overview"],
+        },
+    ]
+
+
 def case():
     sources = {}
     for key, (_, _, _, _, date, account, caption) in {**ORIGINAL, **LOOKALIKES}.items():
@@ -491,6 +617,9 @@ def case():
         }
     for s in sources.values():
         s["sha256"] = sha256(FILES / s["file"])
+        # The app reads every clip itself: speech to text, then the first pass on
+        # eight frames and the transcript. The posts stay typed captures.
+        s["read"] = True
     # Each caption is the event its post reports, unconfirmed: no person, and a
     # place with no coordinates.
     claims = [
@@ -586,6 +715,7 @@ def case():
             ],
             "peer_review": True,
         },
+        "acts": acts(sources),
     }
     (HERE / "case.json").write_text(
         json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8"
@@ -602,6 +732,43 @@ def main():
     data = case()
     total = sum((FILES / s["file"]).stat().st_size for s in data["sources"].values())
     print(f"{len(data['sources'])} clips, {total / 1e6:.1f} MB")
+    if "--record" in sys.argv:
+        record()
+
+
+def record():
+    """Read the case once on the live routes, in a throwaway database, and write
+    recordings.json: local speech to text on each clip with sound, then one first
+    pass per clip (eight frames and the transcript) and one extraction per
+    transcript with words in it. Needs OPENROUTER_API_KEY and the speech weights
+    (SPEECH_MODEL_DIR, `stk speech-model`). Never edit recordings.json by hand."""
+    import os
+    import secrets
+
+    sys.path.insert(0, str(HERE.parents[2]))
+    from alembic import command
+    from sqlalchemy.engine import make_url
+    from stk.migrations import build_alembic_config, throwaway_database_url
+
+    from sealbook.settings import Config
+
+    with (
+        throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True) as url,
+        tempfile.TemporaryDirectory() as blob_dir,
+    ):
+        command.upgrade(build_alembic_config("sealbook", url, quiet=True), "heads")
+        env = os.environ | {
+            "SQLALCHEMY_DATABASE_URI": make_url(url)
+            .set(drivername="postgresql+asyncpg")
+            .render_as_string(hide_password=False),
+            "BLOB_DIR": blob_dir,
+        }
+        stk = ["uv", "run", "stk"]
+        password = secrets.token_hex(16) + "Aa1!"
+        install = [*stk, "install", "-e", "owner@example.com", "-p", password]
+        subprocess.run(install, env=env, check=True)
+        seed = [*stk, "demo-seed", "--case", HERE.name, "--record"]
+        subprocess.run(seed, env=env, check=True)
 
 
 if __name__ == "__main__":

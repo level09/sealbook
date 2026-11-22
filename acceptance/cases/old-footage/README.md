@@ -9,8 +9,10 @@ elsewhere; `files/ATTRIBUTION.md` says what each clip really shows.
 ```bash
 uv run python acceptance/cases/old-footage/make.py           # derive copies, write case.json
 uv run python acceptance/cases/old-footage/make.py --fetch   # also re-download the Commons clips
+uv run python acceptance/cases/old-footage/make.py --record  # read the clips on the live routes
 uv run python acceptance/cases/old-footage/eval.py           # score, no database
 uv run python -m unittest tests.test_case_old_footage        # the pinned score
+uv run stk demo-seed --case old-footage [--until N]          # into the app, act by act
 ```
 
 ## Planted truth
@@ -32,17 +34,22 @@ Seven copies are made from the original and one from the viral copy:
 | copy_viral_muted | the viral copy, sound removed | picture, against copy_viral | yes, through copy_viral |
 | copy_short_muted | 9:16 cut, mirrored, sound removed | nothing | no, a measured miss |
 
-## Score (2026-11-21, PDQ distance 31, quality 50, 20 candidates)
+## Score (2026-11-22, PDQ distance 31, quality 50, 20 candidates, 4 sound points)
 
 Copies matched to the clip they were made from: 8 of 9, all banded strong. Tied to
-the original through strong proposals: 8 of 9. Strong proposals outside the planted
-family: 0.
+the original through strong proposals: 8 of 9. Proposals outside the planted
+family: 0, strong or weak.
 
-Weak proposals outside the family: 36, touching all six look-alikes and several
-unrelated clips, including one between the original and a look-alike. Each rests on
-one or two shared sound landmarks: `audio.align` returns a result for any shared
-hash, and the service writes a proposal for any result. The evidence page bands
-these weak (`SOUND_STRONG_LANDMARKS = 4`), but they are listed.
+Until 2026-11-22 the score had 36 weak proposals outside the family, touching all
+six look-alikes and several unrelated clips, each resting on one or two shared sound
+landmarks: `audio.align` returned a result for any shared hash, and the service
+wrote a proposal for any result. Now a sound match needs
+`Config.SOUND_MIN_LANDMARKS` (4) points lined up at one offset before anything is
+proposed. On this set every true copy aligns 76 points or more (copy_trim, 12 s of
+shared sound), and no unrelated pair aligns more than 2. The cost: at about 6 to 8
+landmarks a second on this footage, two clips sharing less than about a second of
+sound are no longer proposed by sound; quiet or noisy audio gives fewer landmarks
+and raises that floor.
 
 What the code survives here: re-encoding, downscaling and trimming keep both
 signals. A logo banner, a crop, a mirror or an upright cut defeat the frame hash
@@ -51,3 +58,70 @@ the sound gone and the picture cropped and mirrored, nothing ties the copy.
 
 The eval stands in for Postgres with exact search over the clips already held, in
 posting-date order, using the service's sampling and candidate limits.
+
+## The case in acts
+
+`stk demo-seed --case old-footage [--until N]` plays six acts. Every clip is marked
+`read`: the app listens for speech locally (faster-whisper large-v3-turbo), then its
+first pass looks at eight frames and the transcript and proposes a triage, a title
+in English and Arabic, description lines and labels, which are indexed so search
+finds the clip by what it shows. The posts stay typed captures, and each caption is
+planted as the event its post reports, unconfirmed. Clips arrive in posting order
+inside each act and are fingerprinted against the clips already held, so the 2024
+original, which arrives last, is compared with every repost.
+
+| Act | Day | Shows | What happens | See |
+| --- | --- | --- | --- | --- |
+| 1 The clip that spread | 2 Jun | reading, first pass | the viral clip and its post arrive; `read`, `claims` | the viral clip's first pass |
+| 2 Reposts and other floods | 2 Jun | reading, copies | 20 clips dated up to 2 June; the reposts match each other by sound | copy_trim's Copies tab, the footbridge clip |
+| 3 Searching the pile by what it shows | 3 Jun | reading, search | 14 more clips; the desk searches "submerged trees" and "bridge" | `/search?q=submerged+trees`, `/search?q=bridge` |
+| 4 The archive from two years ago | 3 Jun | copies | the 2024 original; fingerprints tie it to seven reposts; the search again | the original's Copies tab, the search |
+| 5 Side by side | 3 Jun | copies | the analyst confirms each strong match in the family as the same recording, signed | the viral clip beside the original |
+| 6 The conclusion | 3 Jun | conclusion, peer review | the signed conclusion and the reviewer's agreement | Overview |
+
+Steps of `sealbook/monitor/study/matches.py`:
+
+- `matches`: counts the match proposals written so far, as `out["match proposals"]`.
+- `confirm copies` (`relationship`, default `same_recording`; `why`): the analyst
+  confirms, signed, each open strong match joining two clips of the planted family,
+  naming the relationship as the evidence page's Confirm does. Weak proposals and
+  any outside the family stay for a person.
+- `search` (`query`): the desk's keyword search over the case, with the access
+  logged as the search page logs it; `out["search"][query]` lists the source keys
+  found (a post shows as `<clip>_post`).
+
+No act declines a proposal: with the sound gate there is nothing outside the
+family to decline. The muted, cropped, mirrored short matched nothing.
+
+### What the app read (recorded 2026-11-22)
+
+37 chat calls on cloud-zdr: 36 first passes with `google/gemini-3.8-flash` (eight
+frames each) and one extraction with `anthropic/claude-haiku-5.5`, about 466,000
+prompt and 42,000 completion tokens, USD 0.50 as the route billed. Speech to text
+ran locally on 30 clips with sound; six have none. Replay calls nothing.
+
+- The app described all 36 clips. No description names Lindmark, the Ostra or a
+  date: the frames show a river in flood, trees and buildings, which fits the real
+  Commons footage (filmed in Linz) as well as the story. The description is never
+  evidence of the fictional place, and the captions stay unconfirmed claims.
+- Search for "submerged trees", what the viral clip shows, finds 8 of the 9 copies
+  (copy_vertical's description says "around trees" and "submerges") and one
+  look-alike (the flooded ford) after act 3, and after act 4 the 2024 original
+  first. Search for "bridge" finds the two look-alikes with a bridge the app saw
+  and the posts that name one; the app saw no bridge in the viral clip or the
+  original.
+- Fingerprints wrote 29 proposals, all strong and all inside the family; the
+  analyst confirms all 29. The original ties to the viral clip and six other
+  reposts by sound (copy_lowrate and copy_trim by picture too), copy_viral_muted
+  ties through copy_viral by picture, and copy_short_muted is not tied.
+- Whisper heard "اشتركوا في القناة" ("subscribe to the channel") in running water on
+  copy_trim and flood_promenade, a phrase it is known to invent on noise, and the
+  first pass then listed "a speaker requests viewers to subscribe to the channel"
+  as said. Both transcripts are the same text, so each clip's page also shows the
+  other clip's line.
+- The first pass triages weather footage as a human-rights first pass would:
+  non-incident, and "some evidence" on a few clips of rain or snow.
+
+Meaning search is not used: a search's query is embedded when it is asked, and
+the recordings cannot replay that, so the `embed` runs stay queued and the leads
+by meaning stay empty.

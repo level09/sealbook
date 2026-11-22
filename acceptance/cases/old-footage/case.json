@@ -38,7 +38,8 @@
     "doc_type": "social_post",
     "text": "Ostra Valley Weather\nPosted 3 June 2024\n\nThe Ostra at the Mill Bridge in Lindmark this afternoon. Water still rising.\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "9ef6d93a7a1479ebd898183cb5b452b0b94ddb1d7aa57a2bd243ab8d2dd9c857"
+   "sha256": "9ef6d93a7a1479ebd898183cb5b452b0b94ddb1d7aa57a2bd243ab8d2dd9c857",
+   "read": true
   },
   "flood_promenade": {
    "title": "Video posted by Harbour Street Cam on 2 June 2026",
@@ -53,7 +54,8 @@
     "doc_type": "social_post",
     "text": "Harbour Street Cam\nPosted 2 June 2026\n\nPromenade under water by the old castle, Lindmark.\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "e88fbd56062b73a09c6ebb125356a37f13faba0238cc5d279331b838ba80bf65"
+   "sha256": "e88fbd56062b73a09c6ebb125356a37f13faba0238cc5d279331b838ba80bf65",
+   "read": true
   },
   "flood_footbridge": {
    "title": "Video posted by Kerrow Farm on 2 June 2026",
@@ -68,7 +70,8 @@
     "doc_type": "social_post",
     "text": "Kerrow Farm\nPosted 2 June 2026\n\nOur footbridge is gone. The Ostra is higher than we have ever seen it.\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "77c738824f6592eec01c14f828f998f4ec7644721b9483e662d34b6e42e4c55c"
+   "sha256": "77c738824f6592eec01c14f828f998f4ec7644721b9483e662d34b6e42e4c55c",
+   "read": true
   },
   "flood_garden": {
    "title": "Video posted by N. Ashby on 1 June 2026",
@@ -83,7 +86,8 @@
     "doc_type": "social_post",
     "text": "N. Ashby\nPosted 1 June 2026\n\nThe brook at the bottom of the garden this morning, Lower Lindmark.\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "d15b10921b71fccf62a6f04df400b92822166036e8905c2a9ccf1e74b70c9f03"
+   "sha256": "d15b10921b71fccf62a6f04df400b92822166036e8905c2a9ccf1e74b70c9f03",
+   "read": true
   },
   "flood_arches": {
    "title": "Video posted by Ostra Anglers on 2 June 2026",
@@ -98,7 +102,8 @@
     "doc_type": "social_post",
     "text": "Ostra Anglers\nPosted 2 June 2026\n\nThe arches at Pell Weir. Brown water right up to the stone.\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "bedeb9e503babd63637142ac7585253ecb4c926b2cd2c541144aeac2199696e2"
+   "sha256": "bedeb9e503babd63637142ac7585253ecb4c926b2cd2c541144aeac2199696e2",
+   "read": true
   },
   "flood_channel": {
    "title": "Video posted by Lindmark Civic on 3 June 2026",
@@ -113,7 +118,8 @@
     "doc_type": "social_post",
     "text": "Lindmark Civic\nPosted 3 June 2026\n\nThe flood channel by the ring road is running full.\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "d65de2ed86b55b2eb83b05160ceefa0fee726d1279b2b5baefcc11c55f9fe26c"
+   "sha256": "d65de2ed86b55b2eb83b05160ceefa0fee726d1279b2b5baefcc11c55f9fe26c",
+   "read": true
   },
   "flood_ford": {
    "title": "Video posted by Hill Road Watch on 2 June 2026",
@@ -128,7 +134,8 @@
     "doc_type": "social_post",
     "text": "Hill Road Watch\nPosted 2 June 2026\n\nDo not try the ford on Hill Road today.\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "d49a246c89d425a39c50505d70b6b29cbddb10b501d9ec21e4933185f37cbbe9"
+   "sha256": "d49a246c89d425a39c50505d70b6b29cbddb10b501d9ec21e4933185f37cbbe9",
+   "read": true
   },
   "copy_lowrate": {
    "title": "Video posted by Daily Weather Clips on 1 June 2026",
@@ -143,7 +150,8 @@
     "doc_type": "social_post",
     "text": "Daily Weather Clips\nPosted 1 June 2026\n\nMassive flooding right now\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "b61f5216606f12769828b9822139fd2eb905c3a9755cd781e133c4dd4a77102a"
+   "sha256": "b61f5216606f12769828b9822139fd2eb905c3a9755cd781e133c4dd4a77102a",
+   "read": true
   },
   "copy_trim": {
    "title": "Video posted by Lindmark Now on 2 June 2026",
@@ -158,7 +166,8 @@
     "doc_type": "social_post",
     "text": "Lindmark Now\nPosted 2 June 2026\n\nMill Bridge this morning. Stay away from the river.\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "59e57cb0736ef97605da8e8e7b8995d55a43463da3217eea5034fee6426dee77"
+   "sha256": "59e57cb0736ef97605da8e8e7b8995d55a43463da3217eea5034fee6426dee77",
+   "read": true
   },
   "copy_logo": {
    "title": "Video posted by Breaking Weather 24 on 2 June 2026",
@@ -173,7 +182,8 @@
     "doc_type": "social_post",
     "text": "Breaking Weather 24\nPosted 2 June 2026\n\nBREAKING: Ostra floods Lindmark\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "d3711eb11b45091eeee7bbe29fd41f622403cca31560cbdcb8746ccc3f7b73cb"
+   "sha256": "d3711eb11b45091eeee7bbe29fd41f622403cca31560cbdcb8746ccc3f7b73cb",
+   "read": true
   },
   "copy_crop": {
    "title": "Video posted by Valley Storm Chasers on 2 June 2026",
@@ -188,7 +198,8 @@
     "doc_type": "social_post",
     "text": "Valley Storm Chasers\nPosted 2 June 2026\n\nClose look at the river in Lindmark today\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "6125102633d73a0be8fcf71131859646b9a1ccb0415fe62710910eba45434e30"
+   "sha256": "6125102633d73a0be8fcf71131859646b9a1ccb0415fe62710910eba45434e30",
+   "read": true
   },
   "copy_mirror": {
    "title": "Video posted by M. Ferrow on 2 June 2026",
@@ -203,7 +214,8 @@
     "doc_type": "social_post",
     "text": "M. Ferrow\nPosted 2 June 2026\n\nUnreal scenes in Lindmark this morning\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "7764a70a1234d0fe0389ee2924c35465b6ed4fbce8fdc88984b9e04c05dc411a"
+   "sha256": "7764a70a1234d0fe0389ee2924c35465b6ed4fbce8fdc88984b9e04c05dc411a",
+   "read": true
   },
   "copy_vertical": {
    "title": "Video posted by lindmark.shorts on 3 June 2026",
@@ -218,7 +230,8 @@
     "doc_type": "social_post",
     "text": "lindmark.shorts\nPosted 3 June 2026\n\nOstra today\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "8ad9f159df744af62f9a8af78c6749d50f47929b88f15f8b7ebccf7cb6234490"
+   "sha256": "8ad9f159df744af62f9a8af78c6749d50f47929b88f15f8b7ebccf7cb6234490",
+   "read": true
   },
   "copy_viral": {
    "title": "Video posted by World Weather Now on 2 June 2026",
@@ -233,7 +246,8 @@
     "doc_type": "social_post",
     "text": "World Weather Now\nPosted 2 June 2026\n\nJUST IN: the Ostra bursts its banks in Lindmark this morning\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "349903b81faad0bd067b3bb8e02a9e28a8c7fbb58175250f51b3ac09566fed51"
+   "sha256": "349903b81faad0bd067b3bb8e02a9e28a8c7fbb58175250f51b3ac09566fed51",
+   "read": true
   },
   "copy_viral_muted": {
    "title": "Video posted by Weather Repost Hub on 3 June 2026",
@@ -248,7 +262,8 @@
     "doc_type": "social_post",
     "text": "Weather Repost Hub\nPosted 3 June 2026\n\nLindmark right now (sound off)\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "0f6e1a651a85ab8f657059d6dd8c733db01a34d77dfa9f9b3b54b905f8e134e1"
+   "sha256": "0f6e1a651a85ab8f657059d6dd8c733db01a34d77dfa9f9b3b54b905f8e134e1",
+   "read": true
   },
   "copy_short_muted": {
    "title": "Video posted by clipsdaily.reel on 3 June 2026",
@@ -263,7 +278,8 @@
     "doc_type": "social_post",
     "text": "clipsdaily.reel\nPosted 3 June 2026\n\nFlood in Lindmark, no words\n\nFictional: the account, the caption and the date are invented.\n"
    },
-   "sha256": "96c6fdd8b675b5ab010a2c4e1d8deb5e88d6b7cbda4ce2f6378e55b1c8622244"
+   "sha256": "96c6fdd8b675b5ab010a2c4e1d8deb5e88d6b7cbda4ce2f6378e55b1c8622244",
+   "read": true
   },
   "pile_plane_clouds": {
    "title": "Video in the tip line inbox, plane clouds",
@@ -271,7 +287,8 @@
    "sensitivity": "ordinary",
    "date": "2026-05-01",
    "file": "pile_plane_clouds.mp4",
-   "sha256": "1969b989ddc0ff89c962d45e0560ed0e35808d9edca4aa7587b53d6066a8ac72"
+   "sha256": "1969b989ddc0ff89c962d45e0560ed0e35808d9edca4aa7587b53d6066a8ac72",
+   "read": true
   },
   "pile_cumulus": {
    "title": "Video in the tip line inbox, cumulus",
@@ -279,7 +296,8 @@
    "sensitivity": "ordinary",
    "date": "2026-06-08",
    "file": "pile_cumulus.mp4",
-   "sha256": "94f6185eb56d05f154ed7246c76aafe303d2ed59702cec182e83340764fb22d8"
+   "sha256": "94f6185eb56d05f154ed7246c76aafe303d2ed59702cec182e83340764fb22d8",
+   "read": true
   },
   "pile_arcus": {
    "title": "Video in the tip line inbox, arcus",
@@ -287,7 +305,8 @@
    "sensitivity": "ordinary",
    "date": "2026-05-15",
    "file": "pile_arcus.mp4",
-   "sha256": "190be23185f84aa5cbc8cdd103443550f4d75e7fb9bff3f210bf88b38cca5298"
+   "sha256": "190be23185f84aa5cbc8cdd103443550f4d75e7fb9bff3f210bf88b38cca5298",
+   "read": true
   },
   "pile_ghat_mist": {
    "title": "Video in the tip line inbox, ghat mist",
@@ -295,7 +314,8 @@
    "sensitivity": "ordinary",
    "date": "2026-06-22",
    "file": "pile_ghat_mist.mp4",
-   "sha256": "9c21c4ef7cbb4b64616a2f7df66cfbe151c01c20bcf8a4a62e70ddaf1b75f2c9"
+   "sha256": "9c21c4ef7cbb4b64616a2f7df66cfbe151c01c20bcf8a4a62e70ddaf1b75f2c9",
+   "read": true
   },
   "pile_lone_tree": {
    "title": "Video in the tip line inbox, lone tree",
@@ -303,7 +323,8 @@
    "sensitivity": "ordinary",
    "date": "2026-05-01",
    "file": "pile_lone_tree.mp4",
-   "sha256": "eaba1cd65163b9d991738042be741c20f05ddfbb3029e31f4e4598eebd2a933d"
+   "sha256": "eaba1cd65163b9d991738042be741c20f05ddfbb3029e31f4e4598eebd2a933d",
+   "read": true
   },
   "pile_weir_pool": {
    "title": "Video in the tip line inbox, weir pool",
@@ -311,7 +332,8 @@
    "sensitivity": "ordinary",
    "date": "2026-06-08",
    "file": "pile_weir_pool.mp4",
-   "sha256": "dcb6e8d71496c1644360fc4e3eddfb0713253d372784cafbfb491118e38c9091"
+   "sha256": "dcb6e8d71496c1644360fc4e3eddfb0713253d372784cafbfb491118e38c9091",
+   "read": true
   },
   "pile_falls_brown": {
    "title": "Video in the tip line inbox, falls brown",
@@ -319,7 +341,8 @@
    "sensitivity": "ordinary",
    "date": "2026-05-15",
    "file": "pile_falls_brown.mp4",
-   "sha256": "d0ef72f9fa80e34455b5b8a23f16a2176b4a01b229c8caa6a19db5e7fd0efe34"
+   "sha256": "d0ef72f9fa80e34455b5b8a23f16a2176b4a01b229c8caa6a19db5e7fd0efe34",
+   "read": true
   },
   "pile_falls_tall": {
    "title": "Video in the tip line inbox, falls tall",
@@ -327,7 +350,8 @@
    "sensitivity": "ordinary",
    "date": "2026-06-22",
    "file": "pile_falls_tall.mp4",
-   "sha256": "4da303642d7b3e446c1d756dda6ad8e166b651129956d6d6f2cc1b540d57236b"
+   "sha256": "4da303642d7b3e446c1d756dda6ad8e166b651129956d6d6f2cc1b540d57236b",
+   "read": true
   },
   "pile_falls_small": {
    "title": "Video in the tip line inbox, falls small",
@@ -335,7 +359,8 @@
    "sensitivity": "ordinary",
    "date": "2026-05-01",
    "file": "pile_falls_small.mp4",
-   "sha256": "2b933537de5a5fb9a4173c1fb429b397a5e3214bf04e19b32034753a80cb2f73"
+   "sha256": "2b933537de5a5fb9a4173c1fb429b397a5e3214bf04e19b32034753a80cb2f73",
+   "read": true
   },
   "pile_falls_cliff": {
    "title": "Video in the tip line inbox, falls cliff",
@@ -343,7 +368,8 @@
    "sensitivity": "ordinary",
    "date": "2026-06-08",
    "file": "pile_falls_cliff.mp4",
-   "sha256": "5000a66a9ce47b16f6b744af562fd71e247d22c303e8daa88a1c153a6a1658a8"
+   "sha256": "5000a66a9ce47b16f6b744af562fd71e247d22c303e8daa88a1c153a6a1658a8",
+   "read": true
   },
   "pile_rain_puddle": {
    "title": "Video in the tip line inbox, rain puddle",
@@ -351,7 +377,8 @@
    "sensitivity": "ordinary",
    "date": "2026-05-15",
    "file": "pile_rain_puddle.mp4",
-   "sha256": "f30031f4465f57f216c1dfffabd2b7c5cba5db456a66870c60dbc59465173de3"
+   "sha256": "f30031f4465f57f216c1dfffabd2b7c5cba5db456a66870c60dbc59465173de3",
+   "read": true
   },
   "pile_lake_drops": {
    "title": "Video in the tip line inbox, lake drops",
@@ -359,7 +386,8 @@
    "sensitivity": "ordinary",
    "date": "2026-06-22",
    "file": "pile_lake_drops.mp4",
-   "sha256": "f4fd5b51bd71fc63d2973c73b08e7b1f4ecbcf9a3be44e994641be29eef0a26f"
+   "sha256": "f4fd5b51bd71fc63d2973c73b08e7b1f4ecbcf9a3be44e994641be29eef0a26f",
+   "read": true
   },
   "pile_rain_trees": {
    "title": "Video in the tip line inbox, rain trees",
@@ -367,7 +395,8 @@
    "sensitivity": "ordinary",
    "date": "2026-05-01",
    "file": "pile_rain_trees.mp4",
-   "sha256": "102985ce1b16e171f6e68d25bd99f3466eb92c667834534419a57fd07da06c2d"
+   "sha256": "102985ce1b16e171f6e68d25bd99f3466eb92c667834534419a57fd07da06c2d",
+   "read": true
   },
   "pile_snow_roofs": {
    "title": "Video in the tip line inbox, snow roofs",
@@ -375,7 +404,8 @@
    "sensitivity": "ordinary",
    "date": "2026-06-08",
    "file": "pile_snow_roofs.mp4",
-   "sha256": "ac6a9e594670ee86a9407d9ec933a6fbcf88854514fcde1a7b02e1090535c4eb"
+   "sha256": "ac6a9e594670ee86a9407d9ec933a6fbcf88854514fcde1a7b02e1090535c4eb",
+   "read": true
   },
   "pile_snow_wall": {
    "title": "Video in the tip line inbox, snow wall",
@@ -383,7 +413,8 @@
    "sensitivity": "ordinary",
    "date": "2026-05-15",
    "file": "pile_snow_wall.mp4",
-   "sha256": "c3af774addaf6031c16ca887f45c0a6f1080108ac3cc8fb4c12f159b052dc870"
+   "sha256": "c3af774addaf6031c16ca887f45c0a6f1080108ac3cc8fb4c12f159b052dc870",
+   "read": true
   },
   "pile_wide_river": {
    "title": "Video in the tip line inbox, wide river",
@@ -391,7 +422,8 @@
    "sensitivity": "ordinary",
    "date": "2026-06-22",
    "file": "pile_wide_river.mp4",
-   "sha256": "a8ceb0dbc78755263116e955b87f3c82e92a478f8653858232a7885c77fc57dc"
+   "sha256": "a8ceb0dbc78755263116e955b87f3c82e92a478f8653858232a7885c77fc57dc",
+   "read": true
   },
   "pile_lake_ice": {
    "title": "Video in the tip line inbox, lake ice",
@@ -399,7 +431,8 @@
    "sensitivity": "ordinary",
    "date": "2026-05-01",
    "file": "pile_lake_ice.mp4",
-   "sha256": "3aa12b3b8817d9b4f3d3a7a7d1fb3ed7e89b9a0e8d3506a337f8c6c5a5b30dbd"
+   "sha256": "3aa12b3b8817d9b4f3d3a7a7d1fb3ed7e89b9a0e8d3506a337f8c6c5a5b30dbd",
+   "read": true
   },
   "pile_marsh_drone": {
    "title": "Video in the tip line inbox, marsh drone",
@@ -407,7 +440,8 @@
    "sensitivity": "ordinary",
    "date": "2026-06-08",
    "file": "pile_marsh_drone.mp4",
-   "sha256": "a6aa2faf3da66c4a7da16414cf14ec7e793859593b25229913aaae5c173ade49"
+   "sha256": "a6aa2faf3da66c4a7da16414cf14ec7e793859593b25229913aaae5c173ade49",
+   "read": true
   },
   "pile_rail_line": {
    "title": "Video in the tip line inbox, rail line",
@@ -415,7 +449,8 @@
    "sensitivity": "ordinary",
    "date": "2026-05-15",
    "file": "pile_rail_line.mp4",
-   "sha256": "629441eaf5b32f9145c529e73efd657cab9ad6471d1a1e83a65e6b147783489e"
+   "sha256": "629441eaf5b32f9145c529e73efd657cab9ad6471d1a1e83a65e6b147783489e",
+   "read": true
   },
   "pile_statue_fountain": {
    "title": "Video in the tip line inbox, statue fountain",
@@ -423,7 +458,8 @@
    "sensitivity": "ordinary",
    "date": "2026-06-22",
    "file": "pile_statue_fountain.mp4",
-   "sha256": "d0496b9c349f091a4b079cf6f045e9c47c8031583eba08965028a4a787b61ac4"
+   "sha256": "d0496b9c349f091a4b079cf6f045e9c47c8031583eba08965028a4a787b61ac4",
+   "read": true
   }
  },
  "claims": [
@@ -765,5 +801,167 @@
    "One muted, cropped and mirrored copy matched nothing."
   ],
   "peer_review": true
- }
+ },
+ "acts": [
+  {
+   "title": "The clip that spread",
+   "day": "2026-06-02",
+   "story": "A clip of the river Ostra over its banks in Lindmark spreads under 'JUST IN' and reaches the newsroom's tip line with its post. The app listens for speech, looks at eight frames and proposes a title, a description and labels for what the clip shows. The caption is what the post reports, unconfirmed.",
+   "shows": [
+    "reading",
+    "first pass"
+   ],
+   "sources": [
+    "copy_viral"
+   ],
+   "steps": [
+    "read",
+    "claims"
+   ],
+   "see": [
+    "/evidence/{source:copy_viral}"
+   ]
+  },
+  {
+   "title": "Reposts and other floods",
+   "day": "2026-06-02",
+   "story": "Over the day the tip line fills with reposts, other people's flood videos and clips that only look like weather. The app reads each one as it arrives and fingerprints its picture and sound. Several reposts already match each other by their sound: one recording is spreading, but nothing here says where it began.",
+   "shows": [
+    "reading",
+    "copies"
+   ],
+   "sources": [
+    "pile_falls_small",
+    "pile_lake_ice",
+    "pile_lone_tree",
+    "pile_plane_clouds",
+    "pile_rain_trees",
+    "pile_arcus",
+    "pile_falls_brown",
+    "pile_rail_line",
+    "pile_rain_puddle",
+    "pile_snow_wall",
+    "copy_lowrate",
+    "flood_garden",
+    "copy_crop",
+    "copy_logo",
+    "copy_mirror",
+    "copy_trim",
+    "flood_arches",
+    "flood_footbridge",
+    "flood_ford",
+    "flood_promenade"
+   ],
+   "steps": [
+    "read",
+    "claims",
+    "matches"
+   ],
+   "see": [
+    "/evidence/{source:copy_trim}",
+    "/evidence/{source:flood_footbridge}"
+   ]
+  },
+  {
+   "title": "Searching the pile by what it shows",
+   "day": "2026-06-03",
+   "story": "More clips arrive in a batch from the inbox. Instead of scrolling 35 videos, the desk searches for what the viral clip shows, submerged trees, and finds the reposts and one other flood by the app's own description of them. A search for the bridge the captions name finds two other people's bridges and one post; the app saw no bridge in the viral clip. A description says what the frames show, never where or when they were filmed.",
+   "shows": [
+    "reading",
+    "search"
+   ],
+   "sources": [
+    "copy_short_muted",
+    "copy_vertical",
+    "copy_viral_muted",
+    "flood_channel",
+    "pile_cumulus",
+    "pile_falls_cliff",
+    "pile_marsh_drone",
+    "pile_snow_roofs",
+    "pile_weir_pool",
+    "pile_falls_tall",
+    "pile_ghat_mist",
+    "pile_lake_drops",
+    "pile_statue_fountain",
+    "pile_wide_river"
+   ],
+   "steps": [
+    "read",
+    "claims",
+    {
+     "do": "search",
+     "query": "submerged trees"
+    },
+    {
+     "do": "search",
+     "query": "bridge"
+    }
+   ],
+   "see": [
+    "/search?q=submerged+trees",
+    "/search?q=bridge"
+   ]
+  },
+  {
+   "title": "The archive from two years ago",
+   "day": "2026-06-03",
+   "story": "A producer remembers a flood clip from June 2024 and the desk adds Ostra Valley Weather's video from the archive. Its fingerprints tie it to the viral clip and to six other reposts by their sound, and two of those by picture too. The search for submerged trees now finds the 2024 video as well.",
+   "shows": [
+    "copies"
+   ],
+   "sources": [
+    "original"
+   ],
+   "steps": [
+    "read",
+    "claims",
+    "matches",
+    {
+     "do": "search",
+     "query": "submerged trees"
+    }
+   ],
+   "see": [
+    "/evidence/{source:original}",
+    "/search?q=submerged+trees"
+   ]
+  },
+  {
+   "title": "Side by side",
+   "day": "2026-06-03",
+   "story": "The analyst opens the viral clip beside the 2024 video, plays them together and confirms each match between the copies and the original as the same recording, with her reason and her passkey. The app proposed nothing between clips that are not the same footage, so there is nothing to decline. The muted, cropped, mirrored short matched nothing and stays unexplained.",
+   "shows": [
+    "copies"
+   ],
+   "sources": [],
+   "steps": [
+    {
+     "do": "confirm copies",
+     "relationship": "same_recording",
+     "why": "Side by side the same footage: the same river, trees and buildings and the same sound, cut, mirrored or stamped differently."
+    }
+   ],
+   "see": [
+    "/evidence/{source:copy_viral}?with={source:original}",
+    "/evidence/{source:original}"
+   ]
+  },
+  {
+   "title": "The conclusion",
+   "day": "2026-06-03",
+   "story": "The analyst writes that the clip shared as new is the 2024 video, on the two posts' words beside the confirmed matches, names the alternative she set aside and what is not established, and signs it; a reviewer agrees.",
+   "shows": [
+    "conclusion",
+    "peer review"
+   ],
+   "sources": [],
+   "steps": [
+    "conclusion"
+   ],
+   "see": [
+    "/cases/overview"
+   ]
+  }
+ ]
 }
