@@ -103,10 +103,7 @@ async def queue(
     tools = []
     if mime == "application/pdf":
         tools.append(("pdf", None))
-    if Config.EMBEDDING_MODEL and (
-        mime == "application/pdf"
-        or mime.startswith(("text/", "image/", "audio/", "video/"))
-    ):
+    if Config.EMBEDDING_MODEL and (mime.startswith("text/") or embeddings.embeds(mime)):
         tools.append(("embed", Config.EMBEDDING_MODEL))
     if mime.startswith(("image/", "video/", "audio/")):
         tools.append(("fingerprint", None))

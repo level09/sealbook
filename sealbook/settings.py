@@ -29,12 +29,27 @@ class Config(stk.Config):
     BLOB_DIR = os.environ.get(
         "BLOB_DIR", os.path.join(PROJECT_ROOT, "instance", "blobs")
     )
-    # One embedding space for text, images and audio. By default a hosted model on
-    # OpenRouter's zero-retention route (cloud-zdr), one item per call because batched
-    # calls lose the zero-retention endpoint. EMBEDDING_ROUTE=local with EMBEDDING_URL
-    # points it at a private Ollama-style /api/embed server instead.
+    # One embedding space. By default a hosted model on OpenRouter's zero-retention
+    # route (cloud-zdr), one item per call because batched calls lose the
+    # zero-retention endpoint. EMBEDDING_ROUTE=local with EMBEDDING_URL points it at a
+    # private Ollama-style /api/embed server instead. OpenAI text-embedding-3-large
+    # (Azure, zero retention) reads text only and found 31 of 32 gold-set answers
+    # through the text the app derives from media (2026-11-22, docs/decisions.md).
     EMBEDDING_ROUTE = os.environ.get("EMBEDDING_ROUTE", "cloud-zdr")
-    EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "google/gemini-embedding-2")
+    EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "openai/text-embedding-3-large")
+    # The media the embedding model reads itself besides text: "image" (photos, PDF
+    # pages, video frames) and "audio" (30-second windows), comma-separated.
+    # EmbeddingGemma 2 on a private server takes "image,audio". Empty, a photo is
+    # found by its first pass, a scan by its OCR text and speech by its transcript.
+    EMBEDDING_MEDIA = tuple(
+        sorted(
+            m.strip()
+            for m in os.environ.get("EMBEDDING_MEDIA", "").split(",")
+            if m.strip()
+        )
+    )
+    if not set(EMBEDDING_MEDIA) <= {"image", "audio"}:
+        raise ValueError(f"EMBEDDING_MEDIA={EMBEDDING_MEDIA!r} may hold image, audio")
     EMBEDDING_URL = os.environ.get("EMBEDDING_URL")
     EMBEDDING_REVISION = os.environ.get("EMBEDDING_REVISION", "")
     INDEX_BATCH_CHUNKS = int(os.environ.get("INDEX_BATCH_CHUNKS", "32"))
@@ -148,18 +163,20 @@ class Config(stk.Config):
     # MODEL_CLOUD_ZDR= (empty) turns it off. GOOGLE_VISION_API_KEY
     # turns on the vision route, Google Cloud Vision text detection, which the policy
     # prefers for OCR of ordinary sources: it reads text and never describes a picture.
-    # OCR on OpenRouter (cloud-zdr, cloud) uses its own model: on the demo's Arabic
-    # scans Gemini 4 Argon and Gemini 3.1 Pro read all 28 known values in every run,
-    # where cheaper models missed handwritten names and places (2026-10-31,
-    # docs/agent-eval.md); Argon is not a preview. OCR_MODEL= (empty) uses the
-    # route's model.
-    OCR_MODEL = os.environ.get("OCR_MODEL", "google/gemini-4-argon")
+    # OCR on OpenRouter (cloud-zdr, cloud) uses its own model. Google's models have
+    # only zero-retention endpoints with Safety Retention, which an account set to
+    # ZDR only refuses (checked 2026-11-22); of 19 models with a strict endpoint,
+    # GPT-6.2 Sol, Opus 5.5, Kimi K3.1 Pro, GPT-6.2 Astra and Grok 4.7 read every
+    # value on the cases' and demo's scans, Arabic handwriting included, and Sol
+    # costs least of them (2026-11-22, docs/agent-eval.md). OCR_MODEL= (empty) uses
+    # the route's model.
+    OCR_MODEL = os.environ.get("OCR_MODEL", "openai/gpt-6.2-sol")
     # The first pass (triage, title, description, labels) on OpenRouter, for text,
-    # photos and video. On analyst-labelled records Gemini 3.8 Flash proposed far more
-    # of the analysts' alleged labels than Haiku, level with Sonnet at less cost; GPT
-    # Luna's provider filter refused some testimonies (2026-10-31).
-    # ASSESS_MODEL= (empty) uses the route's model.
-    ASSESS_MODEL = os.environ.get("ASSESS_MODEL", "google/gemini-3.8-flash")
+    # photos and video. On the cases' 94 first passes GPT-6 Luna judged every item
+    # "no evidence", as it should, and put no violence words on weather clips; on 18
+    # synthetic posts it labelled the most alleged violations and refused none
+    # (2026-11-22, docs/agent-eval.md). ASSESS_MODEL= (empty) uses the route's model.
+    ASSESS_MODEL = os.environ.get("ASSESS_MODEL", "openai/gpt-6-luna")
     RUN_MODELS = {
         r: m
         for r, m in (

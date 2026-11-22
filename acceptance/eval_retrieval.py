@@ -1,9 +1,14 @@
 """Measure retrieval on the synthetic gold set in acceptance/retrieval/.
 
-Needs an Ollama /api/embed server with a multimodal embedding model:
+An Ollama /api/embed server with a multimodal embedding model:
   EMBEDDING_URL=http://127.0.0.1:11434 EMBEDDING_MODEL=embeddinggemma-2 \
     uv run python acceptance/eval_retrieval.py
-Prints one JSON report. Measures retrieval on this set only.
+or the configured hosted model on OpenRouter's zero-retention route, through the
+app's own call (OPENROUTER_API_KEY, no EMBEDDING_URL):
+  uv run python acceptance/eval_retrieval.py
+A medium the model does not read (EMBEDDING_MEDIA) is replaced by the text the app
+derives from it, kept in retrieval/derived.json; a query whose answer leaves no
+text (the tone) is a miss. Prints one JSON report. Measures this set only.
 """
 
 import base64
@@ -122,6 +127,47 @@ class Embedder:
         return vec / np.linalg.norm(vec)
 
 
+class HostedEmbedder:
+    """The configured hosted model through `embeddings._post_hosted`: one item per
+    call, provider.zdr, the served model checked."""
+
+    def __init__(self, model):
+        from sealbook.discovery import embeddings
+
+        self.post, self.model, self.latency_ms = embeddings._post_hosted, model, []
+
+    def __call__(self, value):
+        import asyncio
+
+        t = time.perf_counter()
+        values, *_ = asyncio.run(self.post([value], [], self.model, None))
+        self.latency_ms.append((time.perf_counter() - t) * 1000)
+        vec = np.asarray(values[0], dtype=np.float64)
+        return vec / np.linalg.norm(vec)
+
+
+def derive(items, media):
+    """Media of a kind the model does not read becomes the text derived from it,
+    one item per file; a file with no derived text drops out."""
+    derived = json.loads((DATA / "derived.json").read_text(encoding="utf-8"))["text"]
+    out, seen = [], set()
+    for it in items:
+        if it["kind"] == "text" or it["kind"] in media:
+            out.append(it)
+        elif it["file"] not in seen and derived[it["file"]].strip():
+            seen.add(it["file"])
+            kind = "image" if it["kind"] == "image" else "audio"
+            out.append(
+                {
+                    "file": it["file"],
+                    "kind": kind,
+                    "unit": "whole",
+                    "input": DOC_PREFIX + derived[it["file"]],
+                }
+            )
+    return out
+
+
 def refuse_ignored_media(items, vecs):
     """Distinct images or audio with near-identical vectors mean the server dropped the media."""
     for kind in ("image", "audio"):
@@ -169,8 +215,9 @@ def evaluate(queries, items, vecs, embed):
         }
         relevant = {r["file"] for r in q["relevant"]}
         if relevant:
+            # An answer with nothing embedded ranks past the last file.
             ranks = [n for n, (f, _) in enumerate(ranking, 1) if f in relevant]
-            row["rank"] = ranks[0]
+            row["rank"] = ranks[0] if ranks else len(ranking) + 1
             row["location_hit"] = any(
                 r["file"] == top_file and overlaps(items[top_i], r)
                 for r in q["relevant"]
@@ -207,11 +254,21 @@ def summarize(rows):
 
 
 def main():
-    url, model = os.environ.get("EMBEDDING_URL"), os.environ.get("EMBEDDING_MODEL")
-    if not url or not model:
-        sys.exit("set EMBEDDING_URL and EMBEDDING_MODEL (an Ollama /api/embed server)")
+    from sealbook.settings import Config
+
+    url = os.environ.get("EMBEDDING_URL")
+    model = os.environ.get("EMBEDDING_MODEL") if url else Config.EMBEDDING_MODEL
+    if not model or not (url or os.environ.get("OPENROUTER_API_KEY")):
+        sys.exit(
+            "set EMBEDDING_MODEL and EMBEDDING_URL (an Ollama /api/embed server) "
+            "or OPENROUTER_API_KEY (the hosted model)"
+        )
     manifest, items = corpus()
-    embed = Embedder(url, model)
+    if url:
+        embed = Embedder(url, model)
+    else:
+        embed = HostedEmbedder(model)
+        items = derive(items, Config.EMBEDDING_MEDIA)
     vecs = [embed(it["input"]) for it in items]
     refuse_ignored_media(items, vecs)
     corpus_latency = {k: [] for k in ("text", "image", "audio")}

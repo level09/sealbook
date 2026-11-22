@@ -74,7 +74,8 @@ infer that running the web server schedules or validates those services.
 | Setting | Meaning |
 | --- | --- |
 | `EMBEDDING_ROUTE` | `cloud-zdr` (default, OpenRouter with zero retention) or `local` (a private Ollama-style server at `EMBEDDING_URL`); no fallback between them |
-| `EMBEDDING_MODEL` | Model for text, actor and media vectors; default `google/gemini-embedding-2`, `embeddinggemma-2` on a private server; empty disables semantic search |
+| `EMBEDDING_MODEL` | Model for text, actor and media vectors; default `openai/text-embedding-3-large` (text only), `embeddinggemma-2` on a private server; empty disables semantic search |
+| `EMBEDDING_MEDIA` | What the model embeds besides text, comma-separated: `image` (photos, PDF pages, video frames), `audio` (30-second windows). Empty by default: media is found through its first pass, OCR text and transcript. `image,audio` for EmbeddingGemma 2. Part of the recipe, so changing it is a new index generation |
 | `EMBEDDING_URL` | Private server base URL when `EMBEDDING_ROUTE=local`, for example `http://127.0.0.1:11434` |
 | `EMBEDDING_API_KEY` | Optional credential for that service |
 | `EMBEDDING_REVISION` | Pin weights, projector and runtime build in one revision string |
@@ -106,6 +107,21 @@ chunk/page/media cursor and yield briefly to new evidence.
 
 After changing weights, projector, runtime or preprocessing, update the revision
 and requeue acquisitions with `--rebuild`, following every printed batch cursor.
+
+A server that indexed with Gemini Embedding 2 (the default from 2026-10-25 to
+2026-11-22) has vectors in a space the new default does not select: the model and
+recipe are part of the space key, so semantic search on it returns no leads until
+the new space is built, and exact search is unaffected. Nothing switches back
+automatically. Rebuild every case, then run the worker until the queue is empty:
+
+```sh
+uv run stk enrich --limit 1000 --rebuild          # repeat with --after <printed cursor>
+uv run stk runner
+```
+
+Coverage on the evidence page stays incomplete until the new vectors exist. To keep
+Gemini instead, an account must accept Safety Retention endpoints; a ZDR-only
+account gets 404 on every call (decisions.md).
 Reference drift under an unchanged alias is refused until explicit rebuild. Old
 generations remain outside current semantic queries; coverage stays incomplete
 until current vectors exist. A rebuild may repeat work and preserves prior signed
@@ -138,15 +154,15 @@ policy row to `{local}` so nothing falls back to a hosted model.
 | `ROUTE_LOCAL_API_KEY` | Optional; Ollama needs none |
 | `ROUTE_LOCAL_TIMEOUT` | Seconds one local call may take, default 120; the run lease is this plus a minute, at least 5 minutes |
 | `MODEL_LOCAL` | Private endpoint model for OCR and extraction; it must accept images |
-| `OPENROUTER_API_KEY` | Key for both cloud routes |
+| `OPENROUTER_API_KEY` | Key for both cloud routes. An account set to ZDR only also refuses zero-retention endpoints with Safety Retention, and a model with no other endpoint answers 404 to every call; `uv run python -m unittest tests.test_zdr_models` checks every configured hosted model against OpenRouter's public endpoint list |
 | `MODEL_CLOUD_ZDR` | OpenRouter model, sent with `provider.zdr` so only zero-retention providers serve it; default `anthropic/claude-haiku-5.5` (chosen on 2026-10-31 over Gemma 4, see [agent-eval](agent-eval.md)) |
 | `ROUTE_CLOUD_ZDR_PROVIDERS` | Empty by default, which pins nothing: any zero-retention provider may serve. Set to comma-separated OpenRouter provider slugs (`deepinfra,google-vertex/us-east5`) and every `cloud-zdr` chat and embedding call also sends them as `provider.only`; a response whose served provider is not on the list fails the run or search. OpenRouter reports a display name ("DeepInfra"), not a slug, so a name matches when it equals a pin's base slug (before the first `/`) after both are lowercased and cut to letters and digits. A provider whose display name does not fold to its slug always fails; pick another provider or clear the pin |
-| `EMBEDDING_ROUTE` | `cloud-zdr` (default): `EMBEDDING_MODEL` on OpenRouter, default `google/gemini-embedding-2`, one item per call; `local`: an Ollama-style `/api/embed` server at `EMBEDDING_URL` |
+| `EMBEDDING_ROUTE` | `cloud-zdr` (default): `EMBEDDING_MODEL` on OpenRouter, default `openai/text-embedding-3-large`, one item per call; `local`: an Ollama-style `/api/embed` server at `EMBEDDING_URL` |
 | `MODEL_CLOUD` | OpenRouter model for ordinary sources |
 | `ANTHROPIC_API_KEY` | Key for the `anthropic` route (not zero retention; see Proactive agents) |
 | `MODEL_ANTHROPIC` | Claude model for OCR and extraction on the `anthropic` route, tried last; a source uses it only when its policy row allows `anthropic`, so set that for public material only |
-| `ASSESS_MODEL` | OpenRouter model for the first pass (triage, title, description, labels) on `cloud-zdr` and `cloud`, for text, photos and video, default `google/gemini-3.8-flash`; empty uses the route's model. On analyst-labelled records it proposed far more of the labels analysts gave than Haiku, level with Sonnet at lower cost |
-| `OCR_MODEL` | OpenRouter model for OCR on `cloud-zdr` and `cloud`, default `google/gemini-4-argon` (the best of 18 on the demo's Arabic scans, see [agent-eval](agent-eval.md)); empty uses the route's model |
+| `ASSESS_MODEL` | OpenRouter model for the first pass (triage, title, description, labels) on `cloud-zdr` and `cloud`, for text, photos and video, default `openai/gpt-6-luna` (since 2026-11-22, the best of six strict zero-retention models on the cases' first passes, see [agent-eval](agent-eval.md)); empty uses the route's model |
+| `OCR_MODEL` | OpenRouter model for OCR on `cloud-zdr` and `cloud`, default `openai/gpt-6.2-sol` (since 2026-11-22, the cheapest of five strict zero-retention models that read every value on the case and demo scans, see [agent-eval](agent-eval.md)); empty uses the route's model |
 | `GOOGLE_VISION_API_KEY` | Turns on the `vision` route: Google Cloud Vision document text detection, which the policy prefers for OCR of ordinary sources (Arabic and English hints). Sensitive sources never use it unless a policy row allows `vision` for them |
 
 Checked here on 2026-10-25: `google/gemma-4-31b-it` on the zero-retention route read the

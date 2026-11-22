@@ -1,0 +1,11 @@
+{
+ "about": "Text the app derives from the media items, for an embedding model that reads text only (EMBEDDING_MEDIA empty): the scan read by OCR (anthropic/claude-haiku-5.5), each photo's first-pass title and description (anthropic/claude-haiku-5.5, the lines worker._describe indexes) and each recording's speech to text lines (elevenlabs/scribe-v2), all on OpenRouter's zero-retention route with the app's own requests on 2026-11-22. The tone has no words. Recorded once; regenerate rather than edit.",
+ "text": {
+  "scan_page.png": "جرى توزيع الخبز على سكان الحي يوم الأحد\nعدد الأسر المسجلة مئتان وائنتا عشرة أسرة\nتم تسليم مفاتيح المخزن إلى أبي سليم",
+  "aleppo_checkpoint.png": "Barriers and defaced portrait billboard on street\nحواجز إسمنتية ولوحة إعلانية مشوهة على الطريق\nConcrete barriers painted with red, white and green stars and stripes line the road on the left.\nA billboard portrait of a man in a suit has its face scratched or smeared with green paint.\nArabic script in white on the billboard reads a greeting phrase.\nA small roofed booth and a corrugated metal wall stand behind the barriers.\nA watermark logo appears in the lower right corner.",
+  "aleppo_souk.jpg": "Damaged covered market arcade with rubble\nممر سوق مغطى متضرر مع أنقاض\nArched stone covered market passage with large holes in the vaulted roof and daylight coming through.\nPiles of collapsed stone blocks and rubble line the right side of the passage.\nDamaged shutters and a corrugated metal shutter on the left side, with debris on the ground.\nSeveral people walk through the passage; two men stand on the left and a woman walks in the centre.\nA man on the left is raising a phone to take a photograph.",
+  "speech.wav": "صباح الخير.\nهي رسالة صوتية قصيرة عن رحلة الأسبوع الجاي عالساحل.\nراح ننطلق من كراج الباصات الساعة 7 الصبح.\nجيبوا معكم جاكيت خفيف لأنه الجو برد جنب البحر.\nراح نوقف بضيعة صغيرة لنشتري زيتون وجبنة بلدية.\nبعد الغدا راح نزور القلعة القديمة وبعدين نتمشى عالبحر.\nالكل راح يرجع عالمدينة قبل نص الليل.",
+  "speech_excerpt.wav": "جيبوا معكم جاكيت خفيف لأنه الجو برد جنب البحر.\nراح نوقف بضيعة صغيرة لنشتري زيتون وجبنة بلدية.\nبعد الغدا راح نزور القلعة القديمة وبعدين نتمشى على البحر.\nالكل",
+  "tone.wav": ""
+ }
+}

@@ -90,9 +90,10 @@ def parts(path, mime, cursor, limit):
         raise ValueError("media duration is outside the configured decode bound")
     streams = {row["codec_type"] for row in metadata["streams"]}
     windows = []
-    if "video" in streams:
+    # Only the media the model reads; speech is also found through its transcript.
+    if "video" in streams and "image" in Config.EMBEDDING_MEDIA:
         windows += [(t, "frame") for t in range(0, math.ceil(seconds), 3)]
-    if "audio" in streams:
+    if "audio" in streams and "audio" in Config.EMBEDDING_MEDIA:
         windows += [
             (t, "audio") for t in range(0, math.ceil(seconds), 25) if seconds - t >= 2
         ]

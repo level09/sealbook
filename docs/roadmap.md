@@ -127,7 +127,7 @@ connected-workflow build. Keep this table aligned with code and tests.
 | Model/preprocessing drift protection | Implemented | Reference changes are refused without rebuild; new configuration generations exclude old vectors |
 | Progressive indexing with coverage | Implemented | Bounded continuation jobs, acquisition cursor and visible current-generation coverage; fingerprint decode remains per file |
 | Exact identifiers and weaker discovery leads | Implemented | Literal IDs rank first; incidental substrings cannot exhaust the candidate cap; semantic leads are labeled |
-| Semantic image/audio retrieval | Implemented, synthetic evaluation done | Gemini Embedding 2 on OpenRouter (zero retention) by default, EmbeddingGemma 2 on a private Ollama server optional, in the single 768-dimensional space; canaries, signed recipe and raw outputs tested; synthetic set recall@5 0.94 |
+| Semantic image/audio retrieval | Implemented, synthetic evaluation done | OpenAI text-embedding-3-large on OpenRouter (zero retention) by default since 2026-11-22, text only, media found through its first pass, OCR text and transcript (synthetic set recall@5 0.97, the wordless tone missed); EmbeddingGemma 2 on a private Ollama server embeds images and audio themselves (recall@5 0.94), in the single 768-dimensional space; canaries, signed recipe and raw outputs tested |
 
 ## Further connected chunks
 

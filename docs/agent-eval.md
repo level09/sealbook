@@ -392,10 +392,86 @@ never writes it that way. Cost and seconds are for all four images.
 
 Every model answered "no text" for the photo once the answer was structured. What
 the cheaper models miss are handwritten names and places (حرستا, فادي كرم). Only
-Gemini 4 Argon and Gemini 3.1 Pro read every value in every run; Argon is the
-default `OCR_MODEL` because it is not a preview. These scans no longer separate the
+Gemini 4 Argon and Gemini 3.1 Pro read every value in every run; Argon was the
+default `OCR_MODEL` until 2026-11-22 (section below) because it is not a preview. These scans no longer separate the
 two leaders: a harder set (more handwriting, stamps, low light) is needed before
 the next choice. Three scans of one synthetic hand: a direction, not a benchmark.
+
+## OCR and first pass on strict zero-retention models, 2026-11-22
+
+Google's models lost every zero-retention endpoint without Safety Retention, which
+the owner's account refuses (decisions.md), so Gemini 4 Argon and Gemini 3.8 Flash
+were replaced. The harness scripts were run once from a scratch directory and are
+not in the repo; the inputs and truth are.
+
+OCR: the app's own request (`worker.OCR_PROMPT`, `OCR_SCHEMA`, temperature 0) on
+the cloud-zdr route, one run per model, on 15 images: the never-there statements
+and exhibit sheets (4), the four-names forms (5, the licence with an Arabic name and
+father), the unwritten-name gate book (handwritten cells) and supervisor statement,
+the demo's detainee list and dormitory roster and the handwritten register page
+(Arabic), and the damaged-building photo, which has no text. Latin word and
+character error are against the text each make.py drew; a value counts when it
+appears character for character, as a claim's quote must: 63 Latin values (form
+fields, gate book cells, digits on the Arabic pages) and 33 Arabic ones (every cell
+of the three Arabic pages and the licence's two fields). Arabic CER is the edit
+distance of each Arabic value to its closest stretch of the answer.
+
+| Model | Latin WER | Latin values | Arabic values | Arabic CER | No-text photo | Median s | USD a page |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `openai/gpt-6.2-sol` | 0.000 | 63/63 | 33/33 | 0.000 | right | 2.8 | 0.0077 |
+| `anthropic/claude-opus-5.5` | 0.000 | 63/63 | 33/33 | 0.000 | right | 4.2 | 0.0164 |
+| `moonshotai/kimi-k3.1-pro` | 0.000 | 63/63 | 33/33 | 0.000 | right | 6.0 | 0.0164 |
+| `x-ai/grok-4.7` | 0.000 | 63/63 | 33/33 | 0.000 | right | 34.5 | 0.0239 |
+| `openai/gpt-6.2-astra` | 0.000 | 63/63 | 33/33 | 0.000 | right | 3.8 | 0.0310 |
+| `anthropic/claude-haiku-5.5` | 0.000 | 63/63 | 32/33 | 0.008 | right | 2.0 | 0.0004 |
+| `thinkingmachines/inkling-2-small` | 0.000 | 63/63 | 32/33 | 0.004 | right | 3.0 | 0.0017 |
+| `deepseek/deepseek-v4.1-flash-1017` | 0.003 | 62/62 | 32/33 | 0.008 | right | 6.5 | 0.0009 |
+| `anthropic/claude-sonnet-5.5` | 0.000 | 63/63 | 31/33 | 0.008 | right | 3.1 | 0.0082 |
+| `openai/gpt-6-luna` | 0.000 | 63/63 | 31/33 | 0.016 | right | 5.9 | 0.0005 |
+| `qwen/qwen3.8-27b` | 0.001 | 62/63 | 29/33 | 0.024 | right | 2.4 | 0.0015 |
+| `google/gemma-4-31b-it` | 0.000 | 63/63 | 28/33 | 0.020 | right | 1.8 | 0.0001 |
+| `z-ai/glm-5.3-flash` | 0.000 | 63/63 | 27/33 | 0.052 | right | 3.6 | 0.0006 |
+| `mistralai/mistral-large-4-0` | 0.001 | 63/63 | 23/33 | 0.068 | wrong | 18.6 | 0.0054 |
+| `minimax/minimax-m3.1-flash` | 0.003 | 63/63 | 21/33 | 0.100 | right | 1.6 | 0.0006 |
+| `xiaomi/mimo-v2.6-pro` | 0.013 | 63/63 | 14/33 | 0.211 | right | 12.6 | 0.0198 |
+| `nvidia/nemotron-3.5-super-vl` | 0.004 | 62/63 | 13/28 | 0.189 | right | 3.8 | 0.0011 |
+
+`xiaomi/mimo-v2.6-flash` ran out of tokens on 7 of 15 pages and `tencent/hy4` took
+over 30 s a page and was stopped; Gemini 4 Argon, Gemini 3.8 Flash and Claude Fable
+5.2 answered 404 on the strict route. The typed Latin pages no longer separate
+models; the handwritten Arabic place and person names do (دوما, حرستا, فادي كرم).
+Haiku wrote "حroutine" for one handwritten place. One run per model, because the
+key's spending limit was reached; Argon had three.
+
+First pass: the 94 first-pass requests the three read cases recorded, rebuilt from
+the main blob store exactly as `worker.assess` builds them (all 94 matched their
+recorded request keys), sent to each model. None of these items records a war crime
+or a human-rights violation, so "no evidence" is right for all of them; the kind is
+right when it fits the planted document type (a police statement may read as an
+interview or an official document; weather clips are non-incidents). A weather
+clip counts when its title or description holds a violence word (violation,
+attack, weapon, damage and the like, English and Arabic), negated or not; most
+hits for Haiku and Qwen are lines such as "No people, weapons or damage are
+visible". Parts dropped are the app's own grounding check (quote in the text, box
+in the photo, frame or quote in the clip).
+
+| Model | Kind right | No evidence | Violation labels | Weather clips with violence words | Parts dropped | Median s | USD an item |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `openai/gpt-6-luna` | 0.99 | 1.00 | 0 | 0/36 | 4/551 | 6.4 | 0.0005 |
+| `qwen/qwen3.8-27b` | 1.00 | 1.00 | 0 | 5/36 | 2/709 | 8.6 | 0.0059 |
+| `anthropic/claude-haiku-5.5` | 0.94 | 0.98 | 0 | 4/36 | 12/600 | 4.1 | 0.0011 |
+| `thinkingmachines/inkling-2-small` | 0.94 | 1.00 | 0 | 26/36 | 32/716 | 5.9 | 0.0019 |
+| `z-ai/glm-5.3-flash` (91, then the key limit) | 0.89 | 0.98 | 0 | 9/35 | 5/655 | 10.3 | 0.0007 |
+| Gemini 3.8 Flash, as recorded | 0.98 | 0.85 | 0 | 0/36 | 0/565 | | 0.0088 |
+
+Gemini judged 14 weather clips "some evidence"; Luna judged none, and called one
+takings book a non-incident. On the 18 extraction posts (`acceptance/extract`, the
+same request with each post as the item) Luna labelled the violation the post
+alleges on 9 of 13 (airstrike, shelling, detention, killing), Haiku and Qwen on 8
+(Qwen ran out of tokens on two), GLM 5.3 Flash on none (it labelled "Alleged
+Perpetrator" only); no model refused a post or labelled the two page notices.
+Luna's misses: an airstrike post, a car bomb, the aftermath of shelling and a
+barrel bomb, each left without a label rather than mislabelled.
 
 ## Extraction check
 

@@ -107,6 +107,12 @@ The synthetic retrieval gold set (`acceptance/eval_retrieval.py`) measures the
 model directly and is unchanged: recall@1 0.81, recall@5 0.94 over 32 positive
 queries, negative top score 0.67 against 0.80 for positives.
 
+On 2026-11-22 the hosted default became OpenAI text-embedding-3-large, which reads
+text only (models.md). On the gold set, with media replaced by the text the app
+derives from it, it scored recall@1 0.94 and recall@5 0.97, negatives at most 0.38
+against 0.61. This battery was not run again on it: it needs the demo database
+rebuilt on the new space, and the OpenRouter key had reached its spending limit.
+
 ## Causes found
 
 1. Each query embedding sent two image and two audio reference probes with the
