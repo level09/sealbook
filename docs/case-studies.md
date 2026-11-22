@@ -88,8 +88,9 @@ the fixed answer, so their proposals wait for a person: the linker for
 `not_gaps`, and the intake brief for a `batch`. Last, with a `conclusion`, the case
 analyst (Ines Halvorsen, an invented name) accepts exactly the items it rests on and
 nothing else, signs the conclusion, which marks the case concluded, and a second
-analyst (Tomas Reyes) signs agreement as peer reviewer. The surveyor's proposal in
-four-names and the weak matches in old-footage stay for a person. A match proposal
+analyst (Tomas Reyes) signs agreement as peer reviewer. In four-names the
+analyst declines the surveyor's proposal in act 7, with her reason; seed to
+`--until 6` to leave it open. The weak matches in old-footage stay for a person. A match proposal
 cannot be cited by a conclusion, so `"copies"` is accepted but not cited, and
 old-footage's conclusion cites the two posts' words beside it. In a worktree, set
 `BLOB_DIR` to the main checkout's `instance/blobs` so the main server can read the
@@ -101,11 +102,13 @@ located kind (`seen_at`, `last_seen`, `arrested_at`, `detained_at`,
 person confirmed. Incidents come from accepted incident statements, which only a
 person's decision on a finding writes.
 
-Not handled yet: sheets are ingested as files, not through the sheet mapping step
-(`sheets.confirm`), so no dataset version exists; PDF spans fail (`pages_required`,
+Not handled yet: a sheet goes through the mapping step only when its source carries
+`sheet` (`{dataset, key_column, mapping}`) and an act runs `sheets`; otherwise it is
+ingested as a file with no dataset version; PDF spans fail (`pages_required`,
 see `blobmeta.py`); audio and video `{"ms"}` pins are untried (claims quote the
-transcript instead); no incidents or findings are seeded, and assignments only
-where an act asks for them; an act's `day` is the story's, while the ledger records
+transcript instead); incidents, findings and assignments are seeded only where an
+act asks for them (unwritten-name seeds one accepted incident and one rejected
+finding); an act's `day` is the story's, while the ledger records
 seed time; a conclusion cannot cite a match proposal, nor cite a claim
 as the one it contradicts (never-there's conclusion leaves her own Brindle Cross
 claim out). The old-footage case has no people, so its Stories and Case
@@ -159,7 +162,7 @@ unknown step or `shows` word, a source arriving twice or never.
 | --- | --- | --- |
 | `claims` | `claims.py` | The planted claims of arrived sources the app does not read, pinned where the case says |
 | `accept` | `claims.py` | The case analyst accepts, signed, the claims `claims` names, or those planted as accepted |
-| `clusters` | `people.py` | The desks' own accepted same-person links, and each sheet row joined to its record |
+| `clusters` | `people.py` | The desks' own accepted same-person links, and each sheet row joined to its record; `"only": "rows"` joins the rows and leaves the planted clusters to `join` |
 | `links` | `people.py` | The analyst accepts the linker's open proposals that join records the case plants as one person (a cluster or a truth pair), and no other |
 | `places` | `places.py` | Imports the planted places once; confirms the place of each written located claim |
 | `agents` | `agents.py` | The agents the planted truth scores, on the fixed answer |
@@ -174,6 +177,12 @@ unknown step or `shows` word, a source arriving twice or never.
 | `conclusion` | `conclusion.py` | The case's signed conclusion and the peer agreement |
 | `join` | `people.py` | The analyst joins `records` (or every planted cluster) as one person, her own signed decision with `why` |
 | `planted` | `claims.py` | Fallback for a read source: the planted `claims` extraction did not propose, by a run labelled planted, with `why` |
+| `sheets` | `sheets.py` | The act's sheets with a `sheet` mapping: `sheets.service.confirm` writes the dataset version, then `extract_sheet` reads the released rows with fixed per-row answers from the case's cell values; each planted sheet claim is matched to its cell |
+| `decline` | `decide.py` | The analyst declines, signed with `why`, each open same-person proposal joining records the truth plants as `twins` |
+| `package` | `package.py` | `title`, `audience`, `sentences: [{text, cite}]`, `save`: writes the brief, runs `stk anchor` once, builds and signs (`stk demo-cert` in development), two analysts attest, finalizes, saves the export and checks it offline; without a certificate or receipts it stops and says what the build waits for |
+| `question` | `standing.py` | The owner asks the standing `question`, with no schedule (it wakes on evidence only); its first check reads what the case holds |
+| `wake` | `standing.py` | The extraction runs of the act's arrived claims wake the question (`tasks.evidence`) and the woken check runs now; nothing before a question exists |
+| `discover` | `discovery.py` | Runs discovery, then the analyst decides `month`'s findings in one gesture each: `incident` `{title, keep, roles}` accepts the candidate incident keeping the named claims, `reject` rejects the shared presence with that reason |
 
 Adding a kind of step: write `sealbook/monitor/study/<name>.py` with
 
@@ -330,13 +339,11 @@ Checked 2026-11-21 against the code; each is a function a new step module can ca
   at arrival and in `read`; `/search?q=...` then finds passages, and a picture by
   its first pass. `embed` (meaning search) needs the embedding route and is left
   queued.
-- **Package build.** `packages.service.build(db, brief, user, config)` after a
-  `Brief` and `packages.save_sentence(db, brief, user, text, ids)` on accepted
-  claims. Locally it is blocked twice: `C2PA_SIGN_CERT` and `C2PA_SIGN_KEY` (an
-  es256 certificate and key for `c2patool`) are not configured, and every cited row
-  must be anchored (`stk anchor`: OpenTimestamps and a timestamp authority, network)
-  before a build is allowed. A `package` act can write the brief and its sentences,
-  and must say the build waits for anchoring.
+- **Package build.** The `package` step does it end to end (four-names act 9).
+  Signing needs `C2PA_SIGN_CERT` and `C2PA_SIGN_KEY`; `stk demo-cert` writes a demo
+  pair in development (docs/operations.md). Every cited row must be anchored, and the
+  step runs the real `stk anchor` once, which needs the network; tests use
+  `FakeAnchor` instead.
 
 ## One man, four names (fraud)
 
