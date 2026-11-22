@@ -46,7 +46,7 @@
 .ex-pic.pair .yr:nth-of-type(2) { left: calc(50% + 17px); }
 .ex-pic.pair .match {
   position: absolute; left: 50%; top: 50%; translate: -50% -50%; padding: 8px 14px; border-radius: 999px; white-space: nowrap;
-  border: 1.5px dashed #fff; background: var(--violet); color: #fff; font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase;
+  border: 1.5px dashed #fff; background: #5732c2; color: #fff; font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase;
   box-shadow: 0 10px 30px -8px rgb(0 0 0 / .5);
 }
 .wide .ex-pic.type { aspect-ratio: auto; background: none; padding: 8px 0 0 84px; place-content: start; text-align: start; }
@@ -96,6 +96,7 @@ html.motion .strike { --strike: 0%; }
 .part.mic h2 { color: var(--paper); max-width: none; }
 .part.mic > p { margin: 0 auto 18px; color: color-mix(in srgb, var(--paper) 78%, transparent); }
 .part.mic details { max-width: 60ch; margin: 0 auto; text-align: left; color: color-mix(in srgb, var(--paper) 78%, transparent); }
+.part.mic summary, .part.mic summary::marker { color: var(--paper); }
 
 /* Exhibit 9: the three witnesses a batch root is sent to. */
 .witnesses { list-style: none; margin: 36px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
