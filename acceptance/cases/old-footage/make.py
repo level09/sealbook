@@ -695,8 +695,9 @@ def case():
             "{original, copies} is the same recording; no other pair in this set is. "
             "known_misses are measured by eval.py, not hidden.",
         },
-        # The strong matches inside the planted family are accepted first ("copies");
-        # a match cannot be cited, so the conclusion cites the two posts' words.
+        # The strong matches inside the planted family are accepted and cited
+        # ("copies"), beside the two posts' words. The viral clip has no strong match
+        # straight to the original, so the family is cited whole.
         "conclusion": {
             "text": "The clip shared as new on 2 June 2026 is a copy of the video "
             "Ostra Valley Weather posted on 3 June 2024.",
