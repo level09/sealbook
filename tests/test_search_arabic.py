@@ -5,7 +5,13 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 from stk.migrations import throwaway_database_url
 
-from sealbook.search.arabic import NORMALIZE_SQL, candidates, name_keys, normalize
+from sealbook.search.arabic import (
+    NORMALIZE_SQL,
+    candidates,
+    name_keys,
+    normalize,
+    same_keys,
+)
 from sealbook.settings import Config
 
 
@@ -81,6 +87,32 @@ class NameTests(unittest.TestCase):
         ]:
             with self.subTest(a=a, b=b):
                 self.assertTrue(candidates(a, b))
+
+    def test_given_names_that_begin_with_al(self):
+        # A hamza on the alif (إلياس, إلهام) is never the article ال.
+        self.assertEqual(name_keys("إلياس"), name_keys("Elias"))
+        self.assertEqual(name_keys("إِلْهَام"), name_keys("Ilham"))
+        self.assertEqual(name_keys("آلاء"), name_keys("Alaa"))
+        # Without the hamza the two letters may be either, so both readings match.
+        for a, b in [
+            ("الياس", "Elias"),
+            ("الياس", "إلياس"),
+            ("الهام", "Ilham"),
+            ("أدريان إلياس قصار", "Adrian Elias Kassar"),
+            ("العلي", "Ali"),
+            ("الحلبي", "Halabi"),
+            ("الحلبي", "al-Halabi"),
+        ]:
+            with self.subTest(a=a, b=b):
+                self.assertTrue(candidates(a, b))
+                self.assertTrue(same_keys(a, b))
+        # A real article is still stripped, and a hamza does not stop it elsewhere.
+        self.assertEqual(name_keys("يوسف العلي"), ("sf", "l"))
+        self.assertEqual(name_keys("نور الدين"), name_keys("Nour al-Din"))
+        self.assertEqual(name_keys("عبد الله"), name_keys("Abdullah"))
+        self.assertEqual(name_keys("آل سعود"), name_keys("Al Saud"))
+        self.assertFalse(same_keys("إلياس", "ياس"))
+        self.assertFalse(same_keys("الياس", "Kassar"))
 
     def test_different_person(self):
         self.assertFalse(candidates("يوسف خالد العلي", "يوسف محمد العلي"))

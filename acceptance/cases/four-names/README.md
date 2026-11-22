@@ -20,8 +20,8 @@ uv run stk demo-cert                                          # once, for the la
 uv run stk demo-seed --case four-names [--until N]           # into the app, act by act
 ```
 
-The planted truth (422 claims, the linker's fixed-mode recall 0.667, the surveyor
-offered by the rules) is unchanged and scored by `acceptance/eval_agents.py`
+The planted truth (422 claims, the linker's fixed-mode recall 1.0 since
+2026-11-22, the surveyor offered by the rules) is scored by `acceptance/eval_agents.py`
 (`FourNamesScoreTest` in `tests/test_case_studies.py`).
 
 ## The acts
@@ -76,15 +76,15 @@ open, so a person or the film can decide them; act 7 is that decision.
   sex, written as "M" without the male or female the property needs. So the man's
   trail across the three sites is not on the map in this telling; nothing is
   planted in its place, since the conclusion does not rest on it.
-- Linker, on what the app wrote, fixed mode: 5 proposals, the 4 true links and the
+- Linker, on what the app wrote, fixed mode: 7 proposals, the 6 true links and the
   surveyor through the consultant's year-only birth date, as in the planted score.
-  The licence's pairs with the supplier and the passport are still missed
-  (إلياس keyed as the article plus a name); the consultant bridges them.
-- Decisions: the desks' 5 joins and the 4 true links accepted, the surveyor's link
+  Re-measured 2026-11-22: before then the licence's pairs with the supplier and the
+  passport were missed (إلياس keyed as the article plus a name).
+- Decisions: the desks' 5 joins and the 6 true links accepted, the surveyor's link
   declined with the reason "Not the same man. The surveyors register gives Adrian
   Kasar 19 August 1974 and Torvane; the consultant's papers give only the year
   1974, and the other desks give 2 March 1974 and Velmora. A shared name and birth
-  year are not enough." The conclusion rests on the 9 accepted links.
+  year are not enough." The conclusion rests on the 11 accepted links.
 - Package: a court brief of 5 sentences citing 15 accepted claims, opening with the
   conclusion; 50 statements disclosed, 12 source files shipped. Anchored by the
   real `stk anchor` (a.pool and b.pool.opentimestamps.org, freetsa.org), signed

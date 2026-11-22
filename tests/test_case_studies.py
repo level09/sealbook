@@ -56,23 +56,16 @@ class FourNamesScoreTest(unittest.TestCase):
         self.assertEqual(story["kind"], "fraud")
 
     def test_rule_layer_is_pinned(self):
-        """Four of the six cross-desk pairs are candidates. The two the rules rule
-        out join the licence, whose father إلياس keys as ياس (the article ال
-        stripped) against Elias; the consultant's records, which name no father,
-        still bridge the licence to the other three."""
+        """All six cross-desk pairs are candidates. The licence's father إلياس
+        carries a hamza, so its ال is the name's own letters, not the article, and
+        it keys as Elias does."""
         self.assertEqual(self.report["claims"], 422)
         self.assertTrue(self.report["complete"])
-        self.assertEqual(self.linker["recall"], 0.667)
+        self.assertEqual(self.linker["recall"], 1.0)
         missed = [
             p["records"] for p in self.linker["same_person"] if not p["candidate"]
         ]
-        self.assertEqual(
-            missed,
-            [
-                ["licence/holder", "passport/holder"],
-                ["licence/holder", "vendor_form/owner"],
-            ],
-        )
+        self.assertEqual(missed, [])
         merged = [p["records"] for p in self.linker["twins"] if p["proposed"]]
         self.assertEqual(merged, [["agreement/consultant", "surveyors/S009"]])
         self.assertEqual(self.linker["other_false_proposals"], 0)

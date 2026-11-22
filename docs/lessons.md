@@ -857,3 +857,9 @@ covers in the text it was read from (`span_blob`).
   and the extractor and the first pass matched quotes with an exact `str.find`. Every
   quote now goes through `ledger.span.locate`, where any whitespace run matches any
   other. Match model quotes against OCR and transcript text through that one helper.
+
+- The Arabic father إلياس (Elias) keyed as `s` and ruled two true pairs out in
+  four-names: `name_keys` normalised إ to ا before it stripped a leading ال as the
+  article. The article is written with a bare alif, so a hamza is read before
+  normalising, and a bare ال now tries both readings. Read orthographic signals
+  before the normaliser folds them away.

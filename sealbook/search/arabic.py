@@ -76,33 +76,62 @@ def _skeleton(token: str) -> str:
     return re.sub(r"(.)\1+", r"\1", token).removesuffix("h")
 
 
-def name_keys(name: str) -> tuple[str, ...]:
-    """Return lossy consonant keys, joining devotional abd compounds."""
-    text = normalize(name).lower()
+# A hamza on the alif marks the name's own first letter (إلياس Elias, آلاء Alaa): the
+# article ال is written with a bare alif, so only a bare one can be the article.
+_HAMZA_AL = re.compile(
+    r"(?<![\u0621-\u064a])[أإآ][\u064b-\u0652]*ل(?=[\u064b-\u0652]*[\u0621-\u064a])"
+)
+
+
+def _options(name: str) -> tuple[tuple[str, ...], ...]:
+    """Per name in `name`, the keys it may stand for, the likelier reading first."""
+    text = normalize(_HAMZA_AL.sub("ل", name)).lower()
     text = re.sub(r"\babd[oue]l", "abd al ", text)
     tokens = re.findall(r"[a-zء-غف-يʿʾʻʼ‘’']+", text)
-    keys = []
+    out: list[tuple[str, ...]] = []
     compound = False
     for token in tokens:
         if token in {"al", "el", "ال"}:
             continue
+        keys = [_skeleton(token)]
         if token.startswith("ال"):
-            token = token[2:]
-        key = _skeleton(token)
-        if not key:
+            # A bare alif and lam is the article (العلي, Ali) or, with the hamza left
+            # unwritten, the name's own letters (الياس, Elias). After abd it is the
+            # article.
+            keys = [_skeleton(token[2:])] + ([] if compound else keys)
+        keys = [k for k in dict.fromkeys(keys) if k]
+        if not keys:
             continue
         if compound:
-            keys[-1] = re.sub(r"(.)\1+", r"\1", keys[-1] + key)
+            out[-1] = tuple(
+                re.sub(r"(.)\1+", r"\1", p + k) for p in out[-1] for k in keys
+            )
         else:
-            keys.append(key)
+            out.append(tuple(keys))
         compound = token in {"abd", "عبد"}
-    return tuple(keys)
+    return tuple(out)
+
+
+def name_keys(name: str) -> tuple[str, ...]:
+    """Return lossy consonant keys, joining devotional abd compounds. A bare ال
+    gives its article reading; `candidates` and `same_keys` also try the other."""
+    return tuple(keys[0] for keys in _options(name))
+
+
+def _same(a: tuple[str, ...], b: tuple[str, ...]) -> bool:
+    return not set(a).isdisjoint(b)
+
+
+def same_keys(a: str, b: str) -> bool:
+    """The same names in the same order, as consonant keys (خالد, Khaled)."""
+    x, y = _options(a), _options(b)
+    return bool(x) and len(x) == len(y) and all(map(_same, x, y))
 
 
 def candidates(query: str, name: str) -> bool:
     """Propose ordered name matches; callers must corroborate before merging."""
-    shorter, longer = sorted((name_keys(query), name_keys(name)), key=len)
+    shorter, longer = sorted((_options(query), _options(name)), key=len)
     if not shorter:
         return False
     remaining = iter(longer)
-    return all(any(key == other for other in remaining) for key in shorter)
+    return all(any(_same(key, other) for other in remaining) for key in shorter)

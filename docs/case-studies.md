@@ -349,33 +349,32 @@ portrait; see `files/ATTRIBUTION.md`.
 | Namesake pairs that must never merge | 8 | a deck cadet Adrian Kassar born 1988, and a marine surveyor Adrian Kasar born 19 August 1974 in Torvane, against each desk |
 | Gaps, contradictions, judgment calls | 0 | not this case's point |
 
-### Results, 2026-11-21
+### Results, 2026-11-22
 
 | Metric | Fixed (rules) | Live |
 | --- | --- | --- |
-| Linker same-person recall | 0.667 (4 of 6 are candidates) | 0.667 (all 4 proposed) |
+| Linker same-person recall | 1.0 (6 of 6 are candidates) | 1.0 (all 6 proposed) |
 | False merges on namesakes | 1 | 0 (declined) |
 | Other false proposals | 0 | 0 |
-| Run complete (nothing cut by the cap) | yes, 5 candidates of 12 | yes |
+| Run complete (nothing cut by the cap) | yes, 7 candidates of 12 | yes |
 
 Live is `deepseek/deepseek-v4.1-flash-1017` on `cloud-zdr`, reasoning `none`, one
-trial, served by DigitalOcean and Ionstream: 3.4 s and 2,603 tokens for the linker.
-It declined the surveyor because "the places of birth differ (Torvane vs Velmora)".
+trial, served by Nebius and OpenInference: 4.2 s and 3,444 tokens for the linker.
+It declined the surveyor, as it did on 2026-11-21 when it gave "the places of birth
+differ (Torvane vs Velmora)".
 
 What the numbers say:
 
-- The two missed pairs join the licence to the guarantor and to the supplier. The
-  licence gives the father as إلياس; `name_keys` strips its first two letters as if
-  they were the article ال and keys it as `s`, while Elias keys as `ls`. A father
-  that differs rules a pair out. The story was written expecting all six; it stands
-  because the consultant's records, which name no father, are a candidate with each
-  of the other three desks. Accepting the four true proposals joins all nine records.
-  The stripping is a bug in `sealbook/search/arabic.py`, reported and not fixed here.
+- All six pairs are candidates. Until 2026-11-22 two were not: the licence gives
+  the father as إلياس, and `name_keys` stripped its first two letters as if they
+  were the article ال, so it keyed as `s` against Elias's `ls` and a differing
+  father ruled the pair out. A hamza on the alif is never the article, so it now
+  keys as Elias. Accepting the six true proposals joins all nine records.
 - The surveyor reaches Review through the consultant alone: the consultants
   register and the agreement give only the birth year 1974, which agrees with his
   full date, and a different place of birth does not rule a pair out. The deck
   cadet never reaches it: his birth date rules him out against every desk.
-- A reader holding one desk's file sees nothing wrong. The rules build the five
+- A reader holding one desk's file sees nothing wrong. The rules build the seven
   candidates from 422 claims with no model, and a person still decides each link.
 
 ## The four cases, seeded
@@ -408,7 +407,7 @@ by Tomas Reyes, with the case marked concluded:
 
 | Case | Conclusion | Confidence | Rests on |
 | --- | --- | --- | --- |
-| One man, four names | The four desks' names are one man | Reasonable grounds to believe | 9 same-person links: the desks' 5 and the linker's 4 true proposals |
+| One man, four names | The four desks' names are one man | Reasonable grounds to believe | 11 same-person links: the desks' 5 and the linker's 6 true proposals |
 | The witness who was never there | Mara Quill was at the yard on Tanner's Row that evening, not in Brindle Cross from six | Reasonable grounds to believe | The two exhibit sheets' claims, MQ/3 and MQ/4 |
 | The name nobody wrote down | Aron Vesk is named in no log for 73 days after the night Dana Kovar boarded his bus; a lead, not a finding about what he did | Reasonable suspicion | Both supervisor sightings and his last and next log lines |
 | The footage that was two years old | The clip shared as new is a copy of the 2024 video | Clear and convincing | The two posts' words; the strong matches are accepted but cannot be cited |
