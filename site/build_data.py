@@ -1715,6 +1715,25 @@ def build_assistants() -> dict:
     return {"scopes": [{"name": k, "text": v} for k, v in oauth.SCOPES.items()]}
 
 
+# The public site names no other system the app could be read as coupled to; the
+# docs do, for the team. Phrases first, then any sentence still naming it is left out.
+NAMED = "Bayanat"
+UNNAMED = {
+    "alleged labels from Bayanat's open label list": "alleged labels from an open label list",
+    ", both lists Bayanat's": "",
+    "Each item's stage in Bayanat's words": "Each item's stage",
+}
+
+
+def unnamed(text: str) -> str:
+    for old, new in UNNAMED.items():
+        text = text.replace(old, new)
+    parts = re.split(r"(?<=[.;])\s+", text)
+    text = " ".join(p for p in parts if NAMED not in p)
+    assert NAMED not in text, text
+    return text
+
+
 def build_status() -> dict:
     status = (ROOT / "docs/status.md").read_text()
     rows = [
@@ -1800,10 +1819,16 @@ def build_status() -> dict:
         )
     ]
     return {
-        "areas": [{"area": a, "does": i, "limits": lim} for a, i, lim in rows],
+        "areas": [
+            {"area": a, "does": unnamed(i), "limits": unnamed(lim)}
+            for a, i, lim in rows
+            if NAMED not in a
+        ],
         # Feature measurements first; the suite results follow.
-        "measured": metrics + measured,
-        "planned": planned + [p.replace("`", "") for p in planned_tail],
+        "measured": [unnamed(m) for m in metrics + measured],
+        "planned": [
+            unnamed(p) for p in planned + [p.replace("`", "") for p in planned_tail]
+        ],
         "updated": re.search(r"Updated (\d{4}-\d\d-\d\d)", status).group(1),
     }
 

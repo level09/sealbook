@@ -267,7 +267,7 @@
     ].map(([n, label]) => h("div", {}, h("b", { text: String(n) }), h("span", { text: label }))));
     // Areas grouped by what an analyst would look for; an area not listed here lands in More.
     const GROUPS = [
-      ["Evidence in", ["Intake", "Sources", "Source support", "Evidence page", "Evidence location", "Transcription", "First pass", "Thumbnails", "Deduplication", "Sheets", "Bayanat import", "Batch answer"]],
+      ["Evidence in", ["Intake", "Sources", "Source support", "Evidence page", "Evidence location", "Transcription", "First pass", "Thumbnails", "Deduplication", "Sheets", "Batch answer"]],
       ["People and places", ["People", "Entity pages", "Places", "Maps", "Basemap", "Place suggestions", "Case map"]],
       ["Search", ["Located search", "Semantic search", "Index health", "Discover", "Web research"]],
       ["Agents", ["Standing questions", "Proactive agents", "Agents page and Noticer", "Model routes", "MCP"]],
