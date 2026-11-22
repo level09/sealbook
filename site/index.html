@@ -236,7 +236,7 @@
   <dl class="promises">
     <div><dt>Sensitive files</dt><dd>A policy table decides which model may read each file. A sensitive source goes only to a private model or a zero-retention route. If that model is down the run fails; it is never rerouted.</dd></div>
     <div><dt>Who sees what</dt><dd>Sensitive sources stay covered on screen until someone chooses to reveal them. Every reveal is logged, and so is every view of any other source.</dd></div>
-    <div><dt>Speech</dt><dd>Recordings are transcribed on the server that holds them.</dd></div>
+    <div><dt>Speech</dt><dd>A sensitive recording is transcribed on the server that holds it. An ordinary one goes to a hosted transcriber on a zero-retention route, or stays on your server too if you turn that off.</dd></div>
     <div><dt>Maps</dt><dd>The app serves its own basemap, so no map request leaves your server.</dd></div>
     <div><dt>Every model run</dt><dd>Sealed with the tool, the model that served it and its parameters, so a reading can be traced years later.</dd></div>
     <div><dt>This site</dt><dd>No third-party requests and no analytics.</dd></div>
