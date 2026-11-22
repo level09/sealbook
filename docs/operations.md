@@ -402,6 +402,12 @@ itself in its last act and saves the finalized package at
 `stk demo-seed` refuses outside development. To seed a hosted demo, or to add the
 five recordings to one seeded before them, set the environment for that one command:
 `docker compose exec -e STK_ENV=development website stk demo-seed --recordings`.
+Stop the runner first (`docker compose stop runner`): a live runner claims the
+seeder's queued runs and the case fails halfway. Seeding leaves embedding runs and
+30 model readings of unwritten-name and old-footage sources queued. Run only the
+embeddings (`docker compose run --rm runner python -m stk runner --tool embed`,
+then `--tool embed_actor`); the full runner would read those sources live on top
+of the case.
 
 ## Verification
 
