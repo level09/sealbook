@@ -417,7 +417,7 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
                     select(Payload.value)
                     .join(Statement, Statement.commitment == Payload.commitment)
                     .where(
-                        Statement.subject == f"person:{self.case['P1']}",
+                        Statement.subject == f"person:{self.root}",
                         Statement.prop == Prop.ACCESS,
                     )
                 )
