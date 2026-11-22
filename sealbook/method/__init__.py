@@ -137,5 +137,13 @@ def standards() -> dict[str, dict]:
     }
 
 
+@cache
+def travel() -> dict[str, int]:
+    """How fast a person may move between two places they are said to be on one
+    day (travel.csv, the team's to change): the contradiction rules flag two
+    places only when the time between them is shorter than this allows."""
+    return {r["key"]: int(r["value"]) for r in _rows("travel.csv")}
+
+
 assert priority("incident", "some_evidence") == "high"
 assert priority("post_incident", "some_evidence") == "low"

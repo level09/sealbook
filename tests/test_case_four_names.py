@@ -125,14 +125,16 @@ class FourNamesSeedTest(Seeding):
                 "claims": 400,
             },
         )
-        # The scans, read by the app: 16 of the 22 planted claims. Missed: the five
-        # "signed in person at" places and the passport's "M" (written, no norm).
-        self.assertEqual(out["read"], {"planted": 22, "recovered": 16, "written": 18})
+        # The scans, read by the app: 17 of the 22 planted claims. Missed: four of
+        # the five "signed in person at" places and the passport's "M" (written, no
+        # norm). The vendor form's place arrives since extraction asks where a
+        # person was (2026-11-22).
+        self.assertEqual(out["read"], {"planted": 22, "recovered": 17, "written": 19})
         self.assertNotIn("recognised", out)  # read in natural order, no step
         self.assertEqual(
             sorted(out["missed"]),
             sorted(
-                [f"{r}.seen_at" for r in ("vendor_form/owner", "agreement/consultant")]
+                ["agreement/consultant.seen_at"]
                 + [
                     f"{r}.seen_at"
                     for r in ("guarantee_deed/guarantor", "licence/holder")
@@ -140,7 +142,7 @@ class FourNamesSeedTest(Seeding):
                 + ["passport/holder.seen_at", "passport/holder.sex"]
             ),
         )
-        self.assertEqual(out["claims"], 416)
+        self.assertEqual(out["claims"], 417)  # 416 before the vendor form's place
         self.assertEqual(out["linker proposals"], 7)
         self.assertEqual(out["declined"], 1)
         got = out["package"]
@@ -197,6 +199,6 @@ class FourNamesSeedTest(Seeding):
             out = await seed_study(s, self.app, CASE, until=1)
         self.assertEqual(out["sources"], 4)
         self.assertEqual(out["sheets"]["datasets"], 3)
-        self.assertEqual(out["read"]["recovered"], 4)
+        self.assertEqual(out["read"]["recovered"], 5)
         async with ext.async_session_factory() as s:
             self.assertEqual(await self.links(s), {Tier.ACCEPTED: 1})

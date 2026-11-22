@@ -6,7 +6,6 @@ keys an act names."""
 from __future__ import annotations
 
 from sealbook.ledger.contracts import EvidenceKind as E
-from sealbook.monitor.seed_full import LLM
 from sealbook.monitor.seed_study import person, value_of
 from sealbook.monitor.study import step
 
@@ -40,7 +39,13 @@ async def claims(st, act, args) -> None:
         if st.read(key) or not mine:
             continue
         doc = st.text_of[key]
-        run = await s.run(st.extractor, "extract", [doc], **LLM)
+        run = await s.run(
+            st.extractor,
+            "extract",
+            [doc],
+            **PLANTED,
+            inputs={"answer": "case file", "demo": "planted from the case file"},
+        )
         for c in mine:
             pin = c.get("pin") or st.pins.get(c["key"])
             needle, after, at, on = None, "", None, doc
@@ -98,6 +103,7 @@ async def planted(st, act, args) -> None:
         run.inputs = {
             **run.inputs,
             "demo": f"planted from the case file: {args['why']}",
+            "answer": "case file",
         }
         pin = c.get("pin") or {}
         after = pin.get("after", "")

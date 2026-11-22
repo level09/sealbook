@@ -809,6 +809,8 @@ LLM = {
     "model_served": "qwen3-vl-4b-sy-demo",
     "provider_served": "local-vllm",
     "prompt_hash": "0" * 64,
+    # Written by this seed: the model named above never ran.
+    "inputs": {"answer": "fixed"},
 }
 
 

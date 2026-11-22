@@ -141,7 +141,8 @@ class People:
                 "key": f"principal:{p.id}",
             }
         if actor["kind"] == "agent":
-            name, detail = p.name, run.model_served if run else None
+            name = p.name
+            detail = data.answered(run)["detail"] if run else None
         else:
             name, detail = actor["label"], actor["detail"]
         return {

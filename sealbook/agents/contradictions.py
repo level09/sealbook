@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from itertools import combinations
+import uuid
 
 from sqlalchemy import select, text
 
@@ -13,13 +13,13 @@ from sealbook.discovery.evidence import granted
 from sealbook.ledger.contracts import Tier
 from sealbook.ledger.models import Blob, Run
 from sealbook.ledger.queue import LEASE
-from sealbook.monitor.data import LOCATED, _apart, map_layer
+from sealbook.monitor.data import LOCATED, Context, apart_why, clock, map_layer
 from sealbook.people import data as people
 from sealbook.settings import Config
 
 TOOL = "contradictions"
 AGENT = "Contradiction hunter"
-PROMPT_VERSION = "contradictions-4"
+PROMPT_VERSION = "contradictions-5"
 CAP = 24
 PER_CALL = 4
 BUDGET_SECONDS = LEASE.total_seconds() - 90
@@ -38,7 +38,12 @@ SYSTEM = (
     "colleague to settle it. Every item must cite claims from at least two sides "
     "of one candidate. A candidate with proposed_link compares two person "
     "records that a proposal, not yet reviewed, calls one person; there the "
-    "values may show they are two people. "
+    "values may show they are two people. A candidate with raised says why the "
+    "rules put two places side by side: times that overlap, too little time to "
+    "travel between them, or the same day with no times stated; a place claim "
+    "may carry the time of day the source gives. A candidate with device names "
+    "files whose own metadata puts their device at one side's place and time: "
+    "it says where the device was, not who held it. "
     "Use handles only in claims. In why and question, refer to records by "
     "their source title or as the first and second record; an item whose why "
     "or question contains a handle such as c1 is discarded. "
@@ -82,6 +87,7 @@ def forks(claims, places, timeless) -> list[dict]:
             "subject": "track",
             "subject_label": "track",
             "when": read.when(c.lo, c.hi),
+            "time": c.time,
             "actor": {"agent": True},
         }
         for c in claims
@@ -91,7 +97,6 @@ def forks(claims, places, timeless) -> list[dict]:
     for row in rows:
         facts.setdefault(row["prop"], []).append(row)
     layer = map_layer(rows, places)
-    points = {p["id"]: p for p in layer["points"]}
     steps = next(iter(layer["tracks"].values()), {}).get("steps", [])
     by_id = {str(c.id): c for c in claims}
     out = []
@@ -99,12 +104,10 @@ def forks(claims, places, timeless) -> list[dict]:
         facts, steps, places, {}, timeless=timeless, same_value=read.same_value
     ):
         cand = {"sides": [[by_id[s["id"]]] for s in fork["sides"]]}
-        if fork["kind"] == "position":
-            cand["_pairs"] = [
-                {a.id, b.id}
-                for a, b in combinations([s[0] for s in cand["sides"]], 2)
-                if _apart(points[str(a.id)], points[str(b.id)])
-            ]
+        if fork.get("why"):
+            # Two places on one day: only the pairs that cannot both hold, and why.
+            cand["_pairs"] = [{uuid.UUID(i) for i in p["ids"]} for p in fork["why"]]
+            cand["raised"] = sorted({p["why"] for p in fork["why"]})
         out.append(cand)
     return out
 
@@ -128,6 +131,9 @@ def candidates(case) -> list[dict]:
                 for cand in forks(persons[a] + persons[b], case.places, timeless)
                 if len({c.person for side in cand["sides"] for c in side}) == 2
             ]
+    for cand in out:
+        if cand.get("raised") and (device := beside(cand, case)):
+            cand["device"] = device
     out.sort(
         key=lambda x: (
             -sum(c.tier == Tier.ACCEPTED for s in x["sides"] for c in s),
@@ -136,6 +142,43 @@ def candidates(case) -> list[dict]:
         )
     )
     return out
+
+
+def beside(cand, case) -> list[dict]:
+    """Files whose own metadata puts their device at one side's place on its day,
+    inside that side's time when it gives one. Context for a person, never a side:
+    it says where the device was, not who held it."""
+    out = []
+    for side in cand["sides"]:
+        c, place = side[0], case.places.get(side[0].id)
+        if place is None or place.lon is None or c.lo is None or c.lo != c.hi:
+            continue
+        span = clock(c.time) if c.time else None
+        for cap in case.captures:
+            at = clock(cap["time"])
+            if cap["day"] != c.lo or (span and not span[0] <= at[0] <= span[1]):
+                continue
+            here = {
+                "place_id": None,
+                "place": "device",
+                "prop": c.prop,
+                "lonlat": cap["lonlat"],
+                "precision_m": cap["precision_m"] or 1,
+            }
+            there = here | {
+                "place": "claim",
+                "lonlat": [float(place.lon), float(place.lat)],
+                "precision_m": place.precision_m or 1,
+            }
+            if apart_why(here, there) is None:
+                out.append(cap | {"side": c.id})
+    return out
+
+
+DEVICE_NOTE = (
+    "the file's own metadata, about the file and the device: where and when the "
+    "device was, not who held it, and not an accepted fact about the person"
+)
 
 
 def payload(cands, h, docs) -> dict:
@@ -152,6 +195,22 @@ def payload(cands, h, docs) -> dict:
                 ]
             }
             | ({"proposed_link": True} if cand.get("link") else {})
+            | ({"raised": cand["raised"]} if cand.get("raised") else {})
+            | (
+                {
+                    "device": [
+                        {
+                            "file": docs.get(d["source"], {}).get("title", "a file"),
+                            "beside": h("c", d["side"]),
+                            "time": d["time"],
+                            "note": DEVICE_NOTE,
+                        }
+                        for d in cand["device"]
+                    ]
+                }
+                if cand.get("device")
+                else {}
+            )
             for cand in cands
         ]
     }
@@ -259,11 +318,14 @@ async def contradictions(c) -> str:
             "contradictions must act for the named person on the local route"
         )
     case = await read.case(c.s, investigation)
+    case.captures = await read.captures(c.s, investigation)
     every = candidates(case)
     seen = await reported(c.s, investigation)
     pending = [x for x in every if fresh([b.id for s in x["sides"] for b in s], seen)]
     await read.log_read(
-        c, f"investigation:{investigation}", [x.id for x in case.claims]
+        c,
+        f"investigation:{investigation}",
+        [x.id for x in case.claims] + [x["id"] for x in case.captures],
     )
     await c.emit("input_read", claims=len(case.claims), candidates=len(every))
     c.run.prompt_hash = read.prompt_hash(PROMPT_VERSION, SYSTEM, SCHEMA)
@@ -301,6 +363,19 @@ async def contradictions(c) -> str:
             cost[k] += got[k] or 0
         found, why = validate(got["answer"], part, h, case.claims)
         for item in found:
+            # Why the rules raised it, and any device beside it, in the report
+            # beside the model's reading.
+            ids = set(item["claims"])
+            cand = next(
+                x for x in part if ids <= {str(b.id) for s in x["sides"] for b in s}
+            )
+            if cand.get("raised"):
+                item["raised"] = cand["raised"]
+            if cand.get("device"):
+                item["device"] = [
+                    {"source": d["source"], "time": d["time"], "side": str(d["side"])}
+                    for d in cand["device"]
+                ]
             if fresh(item["claims"], seen):
                 items.append(item)
                 seen.add(frozenset(item["claims"]))
@@ -376,6 +451,9 @@ async def show(db, user, investigation: str) -> dict:
         return result
     case = await read.case(db, investigation)
     by_id = {str(c.id): c for c in case.claims}
+    files = await Context.load(
+        db, blobs=[d["source"] for i in out["items"] for d in i.get("device", [])]
+    )
     shown = set()
     for item in out["items"]:
         if any(i not in by_id for i in item["claims"]):
@@ -424,12 +502,22 @@ async def show(db, user, investigation: str) -> dict:
                         "field": read.label(c.prop),
                         "value": c.text,
                         "when": read.when(c.lo, c.hi),
+                        "time": c.time.replace("-", " to ") if c.time else None,
                         "source": case.docs[c.source]["title"],
                         "source_date": dated(c.source),
                         "decided": c.tier == Tier.ACCEPTED,
                         "href": f"/evidence/{c.source}",
                     }
                     for c in claims
+                ],
+                "device": [
+                    {
+                        "title": files.doc(d["source"])["title"],
+                        "href": f"/evidence/{d['source']}",
+                        "time": d["time"],
+                        "place": by_id[d["side"]].text if d["side"] in by_id else None,
+                    }
+                    for d in item.get("device", [])
                 ],
             }
         )

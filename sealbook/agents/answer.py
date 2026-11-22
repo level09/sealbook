@@ -18,7 +18,7 @@ from sealbook.agents.read import FIXED, RULES, cluster_of, label, same_value, wh
 from sealbook.discovery.evidence import granted, kind_of, transcript_timeline
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import Blob, Run, Statement
-from sealbook.monitor.data import LOCATED
+from sealbook.monitor.data import LOCATED, PLANTED
 from sealbook.places import normalise
 from sealbook.review.findings import month_label
 
@@ -57,9 +57,14 @@ def clock(ms: int) -> str:
     return f"{ms // 60000}:{ms // 1000 % 60:02d}"
 
 
-def where_ran(route, endpoint, model) -> str:
-    if model == FIXED:
-        return "recorded for the demo, no model ran"
+def where_ran(route, endpoint, model, answer=None) -> str:
+    """Where a run's answer came from; `answer` is the seeder's mark in its inputs."""
+    if answer == "case file" or model == PLANTED:
+        return "the case file, no model ran"
+    if answer == "recorded":
+        return "a recorded answer, replayed; no model ran"
+    if answer == "fixed" or model == FIXED:
+        return "a fixed demo answer, no model ran"
     if model == RULES or route is None:
         return "this server"
     if route == "local":
@@ -317,8 +322,11 @@ async def show(db, user, batch: str) -> dict:
         w.pop("pair", None)
 
     # Where each step ran, from the runs themselves.
+    answer = Run.inputs["answer"].astext
     rows = await db.execute(
-        select(Run.tool, Run.route, Run.endpoint, Run.model_served, func.count())
+        select(
+            Run.tool, Run.route, Run.endpoint, Run.model_served, answer, func.count()
+        )
         .where(
             Run.status == "done",
             Run.inputs["blobs"][0].astext.in_(shas)
@@ -326,13 +334,13 @@ async def show(db, user, batch: str) -> dict:
                 Run.tool.in_(("link", "brief")) & cast(Run.inputs, Text).contains(batch)
             ),
         )
-        .group_by(Run.tool, Run.route, Run.endpoint, Run.model_served)
+        .group_by(Run.tool, Run.route, Run.endpoint, Run.model_served, answer)
     )
     ran = {}
-    for tool, route, endpoint, model, n in rows:
+    for tool, route, endpoint, model, how, n in rows:
         key = (
             STEPS.get(tool, tool.replace("_", " ").capitalize()),
-            where_ran(route, endpoint, model),
+            where_ran(route, endpoint, model, how),
         )
         ran[key] = ran.get(key, 0) + n
     order = list(STEPS.values())

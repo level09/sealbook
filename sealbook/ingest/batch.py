@@ -18,6 +18,7 @@ from sealbook.ledger import write
 from sealbook.ledger.contracts import EXTRACTED_PROPS, Prop, Route
 from sealbook.ledger.gate import resolve
 from sealbook.ledger.models import Acquisition, Blob, Payload, Principal, Run, Statement
+from sealbook.monitor.data import answered
 from sealbook.settings import Config
 from sealbook.sheets import parse as sheets
 from sealbook.sheets.models import DatasetVersion
@@ -345,8 +346,11 @@ async def steps(
     reads = [r for r in runs if r.tool in READ_TOOLS]
     if reads:
         route = ROUTE_WORDS.get(reads[0].route, "a model")
+        how = answered(reads[0])
         done = (
-            "Read on this server."
+            f"{how['label']}: {how['detail']}."
+            if how["how"] in ("recorded", "fixed", "planted")
+            else "Read on this server."
             if reads[0].tool in ("transcribe", "pdf")
             else f"Read by {route}."
         )

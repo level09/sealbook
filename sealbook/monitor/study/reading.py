@@ -98,6 +98,7 @@ async def _transcribe(st, run, key: str) -> None:
         said["duration_ms"],
         lang=said["language"]["language"],
         origin=f"the {said['model']['repo']} output recorded in recordings.json",
+        recorded={"model": said["model"]["repo"], "at": tape.data.get("recorded_at")},
     )
     # The transcribe tool queues extraction of its transcript when it finishes.
     acq = await flows._acq(s, key)
@@ -142,7 +143,12 @@ async def read(st, act, args) -> None:
                 }
                 transport = st.tape.transport(label)
                 if note := st.tape.note(run):
-                    run.inputs = {**run.inputs, "demo": note}
+                    run.inputs = {
+                        **run.inputs,
+                        "demo": note,
+                        "answer": "recorded",
+                        "recorded_at": st.tape.data.get("recorded_at"),
+                    }
                     await st.session.commit()
             await process(ext.async_session_factory, run.id, transport)
             await st.session.refresh(run)

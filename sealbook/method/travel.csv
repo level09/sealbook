@@ -1,0 +1,2 @@
+key,value,meaning
+speed_kmh,120,"The fastest a person is taken to cover the straight line between two places on one day. Set high on purpose: two places on one day are raised as a conflict only when no plausible journey joins them, and a person decides the rest."

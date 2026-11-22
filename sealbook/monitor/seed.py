@@ -209,7 +209,8 @@ class Seeder:
         run = Run(
             principal_id=agent.id,
             tool=tool,
-            inputs={"blobs": [self.blobs[k] for k in doc_keys]},
+            inputs={"blobs": [self.blobs[k] for k in doc_keys]}
+            | fields.pop("inputs", {}),
             pubkey=key.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw),
             status="running",
             **fields,
@@ -370,6 +371,8 @@ async def seed(session) -> dict:
         "model_served": "qwen3-vl-4b-sy-demo",
         "provider_served": "local-vllm",
         "prompt_hash": "0" * 64,
+        # Written by this seed: the model named above never ran.
+        "inputs": {"answer": "fixed"},
     }
 
     run = await s.run(extractor, "extract", ["register"], **llm)

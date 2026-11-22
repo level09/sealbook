@@ -858,6 +858,35 @@ covers in the text it was read from (`span_blob`).
   quote now goes through `ledger.span.locate`, where any whitespace run matches any
   other. Match model quotes against OCR and transcript text through that one helper.
 
+## Reading sources and comparing them (2026-11-22)
+
+- Claims no model read showed as "AI sheet extraction" or under a seed's model id
+  ("qwen3-vl-4b-sy-demo"): the proposer label was the tool's name and the detail the
+  run's `model_served`, which a seed or a replay fills like a live run. A seeder now
+  marks how a run was answered in its inputs (`answer`: `recorded`, `fixed`, `case
+  file`) and `monitor.data.answered` reads that, never the model id, for the
+  evidence page, Review, the Inbox and the Guide's proof.
+- A voice note's "Jo" heard as "Joe" became a person "Joe" whose name rested on
+  "printed text": extraction took the evidence kind from the model, which only ever
+  sees text and cannot know it was spoken. The worker now knows a transcript by its
+  source (an audio or video acquisition), writes its claims as `spoken` and marks a
+  name `heard`, so screens read "heard as" and a matcher can weigh it below a
+  written name.
+- Extraction recovered none of the 34 places in never-there where a statement puts
+  a person somewhere on a day ("I was at my sister's house from six until past
+  midnight"), so the alibi had to be planted: the prompt defined `seen_at` as
+  "where they were seen", which a first-person or reported account never reads as,
+  and the schema had no field for a time of day. `seen_at` is now where a named
+  person was, by any account, with `time` and `account` on every fact; recovery
+  went from 118 to 148 of 152 with no invented person on the extraction check.
+  Re-record every case whose recordings hold an extraction when the prompt moves.
+- The contradiction hunter flagged Jo at the market at 09:40 and home that evening
+  like a broken alibi, in every live trial: `_apart` compared days and places, the
+  claims carried no time of day, and the photograph's capture time was never read.
+  Places now carry `time`, `monitor.data.apart_why` compares the clock against the
+  distance at `method/travel.csv`'s speed and says why a pair was raised, and a
+  photograph's own place and time sit beside a side as context about the device.
+
 - The Arabic father إلياس (Elias) keyed as `s` and ruled two true pairs out in
   four-names: `name_keys` normalised إ to ا before it stripped a leading ال as the
   article. The article is written with a bare alif, so a hamza is read before

@@ -178,6 +178,66 @@ class CandidateTest(unittest.TestCase):
         items, dropped = contradictions.validate(answer, cands, h, case.claims)
         self.assertEqual((len(items), sum(dropped.values())), (1, 0))
 
+    def test_two_places_by_the_clock_with_the_device_beside_them(self):
+        """Her account of the evening against the gate at 21:52 is raised, with
+        why; the market that morning is not. A photograph whose own metadata puts
+        the camera at the gate then is set beside that side, about the file and
+        the device, never as a claim about her."""
+        day = date(2026, 3, 14)
+
+        def place(lon):
+            return SimpleNamespace(
+                id=uuid.uuid4(),
+                lon=lon,
+                lat=-31.6216,
+                name_en="Town",
+                name_ar="",
+                precision_m=2000,
+            )
+
+        yard, sister, market_place = place(-27.4764), place(-27.1192), place(-27.47)
+        alibi = replace(
+            claim(Prop.SEEN_AT, "Brindle Cross"), lo=day, hi=day, time="18:00-24:00"
+        )
+        gate = replace(
+            claim(Prop.SEEN_AT, "Tanner's Row", source="s2"),
+            lo=day,
+            hi=day,
+            time="21:52",
+        )
+        market = replace(
+            claim(Prop.SEEN_AT, "Larkhaven market", source="s3"),
+            lo=day,
+            hi=day,
+            time="09:40",
+        )
+        market_place.lon = -27.40  # about 7 km from the yard, beyond its precision
+        case = self.case(
+            [alibi, gate, market],
+            {alibi.id: sister, gate.id: yard, market.id: market_place},
+        )
+        case.captures = [
+            {
+                "id": uuid.uuid4(),
+                "source": "photo",
+                "day": day,
+                "time": "21:52",
+                "lonlat": [-27.4764, -31.6216],
+                "precision_m": 50,
+            }
+        ]
+        [cand] = contradictions.candidates(case)
+        self.assertEqual({c.id for s in cand["sides"] for c in s}, {alibi.id, gate.id})
+        self.assertEqual(
+            cand["raised"], ["at overlapping times, 18:00 to 24:00 and 21:52"]
+        )
+        [device] = cand["device"]
+        self.assertEqual((device["source"], device["side"]), ("photo", gate.id))
+        payload = contradictions.payload([cand], read.Handles(), case.docs)
+        [said] = payload["candidates"][0]["device"]
+        self.assertIn("about the file and the device", said["note"])
+        self.assertEqual(said["time"], "21:52")
+
     def test_position_citations_must_include_an_actual_conflicting_pair(self):
         a = replace(
             claim(Prop.LAST_SEEN, "Town A"), lo=date(2013, 1, 1), hi=date(2013, 1, 1)
@@ -261,6 +321,7 @@ class ReportTest(unittest.IsolatedAsyncioTestCase):
                 mock.AsyncMock(return_value=SimpleNamespace(id=principal)),
             ),
             mock.patch.object(read, "case", mock.AsyncMock(return_value=case)),
+            mock.patch.object(read, "captures", mock.AsyncMock(return_value=[])),
             mock.patch.object(
                 contradictions, "reported", mock.AsyncMock(return_value=set(seen))
             ),

@@ -104,6 +104,55 @@ class TrackTest(unittest.TestCase):
         loose = pt("d", "Harasta east", [36.392, 33.558], precision=None)
         self.assertTrue(track([harasta, loose])["steps"][0]["fork"])
 
+    def test_two_places_on_one_day_conflict_by_the_clock(self):
+        """With a time on both claims, two places conflict only when the times
+        overlap or are closer than the policy's travel speed allows; without, the
+        day alone raises it and says the times were not stated."""
+
+        def pt(i, place, lonlat, time=None):
+            return {
+                "id": i,
+                "place": place,
+                "place_id": place,
+                "lonlat": lonlat,
+                "precision_m": 2000,
+                "from": "2026-03-14",
+                "prop": "seen_at",
+                "inherited": False,
+                "time": time,
+            }
+
+        # About 34 km apart, a little over 17 minutes at 120 km/h.
+        yard, sister = [-27.4764, -31.6216], [-27.1192, -31.6216]
+        alibi = pt("a", "Brindle Cross", sister, "18:00-24:00")
+        gate = pt("b", "Tanner's Row", yard, "21:52")
+        [step] = track([alibi, gate])["steps"]
+        self.assertTrue(step["fork"])
+        self.assertEqual(
+            step["pairs"],
+            [
+                {
+                    "ids": ["a", "b"],
+                    "why": "at overlapping times, 18:00 to 24:00 and 21:52",
+                }
+            ],
+        )
+        # The market in the morning and home that evening can both hold.
+        market = pt("c", "Larkhaven market", yard, "09:40")
+        self.assertFalse(track([alibi, market])["steps"][0]["fork"])
+        # Fifteen minutes cannot cover 34 km at the policy's speed.
+        close = pt("d", "Tanner's Row", yard, "18:00")
+        late = pt("e", "Brindle Cross", sister, "18:15")
+        [step] = track([close, late])["steps"]
+        self.assertEqual(
+            step["pairs"][0]["why"],
+            "18:00 and 18:15 are 15 minutes apart, and 34 km takes at least 17 "
+            "minutes at 120 km/h",
+        )
+        # No time on one side: the day alone, and it says so.
+        [step] = track([alibi, pt("f", "Tanner's Row", yard)])["steps"]
+        self.assertEqual(step["pairs"][0]["why"], "same day, times not stated")
+
     def test_tracks_many_subjects(self):
         def p(i, subject, day):
             return {

@@ -77,9 +77,11 @@ export function mount(boot) {
         const p = this.proof.data, c = this.proof.claim;
         if (!p) return [];
         const b = p.batch, r = p.review, steps = [];
-        steps.push(p.read ? {title: `Read by ${p.read.tool}`, detail: `Run on ${p.read.where}.${p.run_signature ? ` The run signed the claim with its own key${p.run_signature.verifies ? ', and the signature checks' : ', but the signature does not check'}.` : ''}`, state: 'ai'}
+        const ran = p.read && ['model', 'tool'].includes(p.read.how);
+        steps.push(p.read ? {title: ran ? `Read by ${p.read.tool}` : p.read.tool, detail: `${ran ? `Run on ${p.read.where}` : p.read.where[0].toUpperCase() + p.read.where.slice(1)}.${p.run_signature ? ` The run signed the claim with its own key${p.run_signature.verifies ? ', and the signature checks' : ', but the signature does not check'}.` : ''}`, state: 'ai'}
           : {title: 'Entered by a person', detail: 'No tool read this value.', state: 'hand'});
-        steps.push({title: c.actor.agent ? 'Proposed by AI' : 'Proposed', detail: `${when(p.proposed_at)}${c.span?.bbox ? `, pinned to a region on page ${c.span.page || 1}` : c.span ? `, pinned to ${spanLabel(c.span)}` : ''}.`, state: 'ai waiting'});
+        const by = {planted: 'Proposed from the case file', fixed: 'Proposed by the demo seed'}[c.actor.how];
+        steps.push({title: c.actor.agent ? by || 'Proposed by AI' : 'Proposed', detail: `${when(p.proposed_at)}${c.span?.bbox ? `, pinned to a region on page ${c.span.page || 1}` : c.span ? `, pinned to ${spanLabel(c.span)}` : ''}.`, state: 'ai waiting'});
         steps.push(r ? {title: `Accepted by ${r.by}`, detail: `Signed ${r.passkey ? (r.demo ? 'with a demo passkey' : 'with a passkey') : 'without a passkey'} at ${when(r.at)}${r.verifies ? '' : ', and the signature does not check'}.`, state: 'held'}
           : {title: 'Accepted', detail: 'No review record names who accepted it.', state: 'waiting'});
         steps.push({title: `Sealed as entry ${p.entry.seq.toLocaleString('en')}`, detail: 'Each entry carries the hash of the one before it.', state: 'held'});
@@ -153,7 +155,7 @@ export function mount(boot) {
       hl() {const s = this.boot.segment; return s?.span && ['text', 'web'].includes(this.it?.kind) && s.kind === 'text' ? s.span : null;},
     },
     methods: {
-      ms, prop, short, spanLabel, plural,
+      ms, prop, short, spanLabel, plural, evidenceWords,
       say(text) {this.snack = {show: true, text};},
       // Where a claim came from in plain words; the model or importer is the tooltip.
       byLabel(c) {

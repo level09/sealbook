@@ -137,7 +137,7 @@ export function mount(boot) {
     },
     methods: {
       hue: findingHue,
-      fmtDate, span, ago, plural, label, sec,
+      fmtDate, span, ago, plural, label, sec, evidenceWords,
       say(text) {this.snack = {show: true, text};},
       fail(err) {
         if (err?.noPasskey) {this.needPasskey = err.setupUrl; return;}
@@ -171,7 +171,9 @@ export function mount(boot) {
           const fix = [{t: label(c.prop).replace(/^./, x => x.toUpperCase()) + ': correct', quiet: true}, {...was, tight: true}, {t: 'to', quiet: true, tight: true}, {...value, tight: true}];
           return c.prop === 'name' ? fix : [subject, ...fix];
         }
-        const out = [subject, {t: label(c.prop), quiet: true, prop: true, icon: PROP_ICON[c.prop] || 'ti ti-point'}, value];
+        // A name heard in a recording reads as heard, a weaker basis than a written one.
+        const heard = c.prop === 'name' && (c.evidence || []).includes('spoken');
+        const out = [subject, {t: label(c.prop) + (heard ? ', heard as' : ''), quiet: true, prop: true, icon: PROP_ICON[c.prop] || 'ti ti-point'}, value];
         if (c.from && !['birth_date', 'document_date'].includes(c.prop)) out.push({t: span(c.from, c.to) + (c.inherited ? ' (document date)' : ''), quiet: c.inherited, date: true});
         return out;
       },

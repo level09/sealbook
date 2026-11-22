@@ -222,6 +222,85 @@ def work(tool: str | None) -> str:
     return TOOL_WORDS.get(tool) or (tool or "unknown work").replace("_", " ")
 
 
+# How a run's answer came about. A seeder marks it in the run's inputs ("answer":
+# "recorded", "fixed" or "case file"); the two fixed model names below are older
+# marks. A model id never decides it: a seed can carry any name it likes.
+FIXED = "sealbook-demo-fixed-output"  # agents.read.FIXED, which imports this module
+PLANTED = "planted-from-case.json"
+WHERE = {
+    "cloud-zdr": "hosted model on the zero-retention route",
+    "cloud": "hosted model",
+    "anthropic": "hosted model",
+    "vision": "hosted text recognition",
+}
+
+
+def answered(run) -> dict:
+    """What produced a run's output, from its own provenance: `how` is "model" (a
+    model read it here), "recorded" (a model's answer recorded once, replayed with
+    no model running), "fixed" (a demo's fixed answer), "planted" (copied from a
+    case file) or "tool" (this server's own code). `label` says it in words a
+    person reads first; `detail` keeps the model id and where it ran."""
+    inputs = run.inputs or {}
+    mark = inputs.get("answer")
+    if mark == "case file" or run.model_requested == PLANTED:
+        return {
+            "how": "planted",
+            "label": "Planted from the case file",
+            "detail": "copied from the case file, no model ran",
+        }
+    if mark == "recorded":
+        at = inputs.get("recorded_at")
+        d = date.fromisoformat(at[:10]) if at else None
+        day = f"{d.day} {d:%B %Y}" if d else None
+        where = WHERE.get(run.route, run.route or "a model")
+        return {
+            "how": "recorded",
+            "label": f"Replayed from a recording of {day}"
+            if day
+            else "Replayed from a recording",
+            "detail": f"the answer {run.model_served} gave when recorded ({where}); "
+            "no model ran here"
+            if run.route in WHERE
+            else f"the answer {run.model_served} gave when recorded; no model ran here",
+        }
+    if mark == "fixed" or FIXED in (run.model_requested, run.model_served):
+        return {"how": "fixed", "label": "Fixed demo answer", "detail": "no model ran"}
+    if run.model_served and run.route in WHERE:
+        return {
+            "how": "model",
+            "label": "Read by a model",
+            "detail": f"{run.model_served}, {WHERE[run.route]}",
+        }
+    if run.model_served and run.route == "local" and run.tool in MODEL_TOOLS:
+        own = run.endpoint and not run.endpoint.startswith("local:")
+        where = "your own model server" if own else "this server"
+        return {
+            "how": "model",
+            "label": "Read by a model",
+            "detail": f"{run.model_served}, {where}",
+        }
+    return {"how": "tool", "label": work(run.tool), "detail": None}
+
+
+def run_label(run) -> str:
+    """A run's work and, when no model ran, how it was answered: "AI extraction",
+    "Extraction, replayed from a recording of 21 November 2026", "Sheet
+    extraction, planted from the case file"."""
+    how, label = answered(run), work(run.tool)
+    if how["how"] in ("model", "tool"):
+        return label
+    plain = label.removeprefix("AI ")
+    said = how["label"]
+    return f"{plain[:1].upper()}{plain[1:]}, {said[:1].lower()}{said[1:]}"
+
+
+# Tools whose output a model writes when one is configured.
+MODEL_TOOLS = frozenset(
+    {"extract", "extract_sheet", "assess", "ocr", "transcribe", "asr", "propose"}
+)
+
+
 def event_words(token: str | None) -> str | None:
     return token and EVENT_WORDS.get(token, token.replace("_", " "))
 
@@ -361,12 +440,16 @@ class Context:
                 "label": f"{author.name} for {boss.name}",
                 "for": boss.name,
             }
-        # The work in plain words; the model is secondary detail, never the label.
-        tool = run.tool if run else None
+        # The work and how it was answered in plain words; the model is secondary
+        # detail, never the label.
+        if run is None:
+            return base | {"kind": "extractor", "label": work(None), "detail": None}
+        how = answered(run)
         return base | {
             "kind": "extractor",
-            "label": work(tool),
-            "detail": run.model_served if run else None,
+            "label": run_label(run),
+            "detail": how["detail"],
+            "how": how["how"],
         }
 
     @staticmethod
@@ -415,6 +498,10 @@ class Context:
             "from": lo.isoformat() if lo else None,
             "to": hi.isoformat() if hi else None,
             "when": when(lo, hi),
+            # The time of day a place held ("21:52", "18:00-24:00"), when stated.
+            "time": value.get("time")
+            if st.prop in LOCATED and isinstance(value, dict) and not masked
+            else None,
             "inherited": bool(lo) and not own,
             "evidence": st.evidence,
             "recorded_at": st.recorded_at.isoformat(),
@@ -557,20 +644,67 @@ async def investigations(db: AsyncSession) -> list[str]:
 SEQUENCE = frozenset({Prop.LAST_SEEN, Prop.ARRESTED_AT})
 
 
-def _apart(a: dict, b: dict) -> bool:
-    """Two same-day positions that cannot both hold: different places, not a
-    last-seen and arrest pair, and farther apart than the larger of their
-    precisions (the rule discovery's `near()` uses for shared presence)."""
+def clock(time: str | None) -> tuple[int, int] | None:
+    """A claim's time of day ("21:52", "18:00-24:00") as its first and last minute
+    after midnight. A range that ends before it starts runs to midnight."""
+    try:
+        mins = [int(t[:2]) * 60 + int(t[3:5]) for t in (time or "").split("-")]
+    except ValueError:
+        return None
+    if not time or len(mins) > 2:
+        return None
+    lo, hi = mins[0], mins[-1]
+    return (lo, hi) if hi >= lo else (lo, 24 * 60)
+
+
+def clock_words(time: str) -> str:
+    return time.replace("-", " to ")
+
+
+def apart_why(a: dict, b: dict) -> str | None:
+    """Why two same-day positions cannot both hold, or None when they can. The
+    places must differ, not be a last-seen and arrest pair, and lie farther apart
+    than the larger of their precisions (the rule discovery's `near()` uses for
+    shared presence). With a time of day on both, they conflict only when the
+    times overlap or are closer than travel at the policy's speed allows
+    (`method.travel()`); without, the day alone raises it and the reason says so."""
     if (a["place_id"] or normalise(a["place"])) == (
         b["place_id"] or normalise(b["place"])
     ):
-        return False
+        return None
     if {a["prop"], b["prop"]} == SEQUENCE:
-        return False
+        return None
     reach = max(a.get("precision_m") or 0, b.get("precision_m") or 0)
-    if a.get("precision_m") and b.get("precision_m") and a.get("lonlat"):
-        return _metres(a["lonlat"], b["lonlat"]) > reach
-    return True
+    metres = (
+        _metres(a["lonlat"], b["lonlat"])
+        if a.get("lonlat") and b.get("lonlat")
+        else None
+    )
+    if a.get("precision_m") and b.get("precision_m") and metres is not None:
+        if metres <= reach:
+            return None
+    ta, tb = clock(a.get("time")), clock(b.get("time"))
+    if ta is None or tb is None:
+        return "same day, times not stated"
+    first, then = sorted((a["time"], b["time"]), key=clock)
+    words = f"{clock_words(first)} and {clock_words(then)}"
+    gap = max(ta[0], tb[0]) - min(ta[1], tb[1])
+    if gap <= 0:
+        return f"at overlapping times, {words}"
+    if metres is None:
+        return f"same day at {words}, the distance between the places not known"
+    speed = method.travel()["speed_kmh"]
+    need = metres / 1000 / speed * 60
+    if gap < need:
+        return (
+            f"{words} are {gap} minutes apart, and {metres / 1000:.0f} km takes at "
+            f"least {math.ceil(need)} minutes at {speed} km/h"
+        )
+    return None
+
+
+def _apart(a: dict, b: dict) -> bool:
+    return apart_why(a, b) is not None
 
 
 def places_apart(prop: str, a, b) -> bool:
@@ -604,10 +738,11 @@ def _metres(a, b) -> float:
 def track(points: list[dict]) -> dict:
     """One subject's located statements as a sequence of dated steps. Pure.
 
-    `points` carry "id", "place", "place_id", "from" (ISO date), "prop" and
-    "inherited". Points on one date form a step; a step whose position props name
-    places that cannot both hold (`_apart`) is a fork. Places compare by resolved id,
-    so two spellings of one place never fork; an unresolved place compares by its
+    `points` carry "id", "place", "place_id", "from" (ISO date), "prop",
+    "inherited" and optionally "time". Points on one date form a step; a step whose
+    position props name places that cannot both hold (`apart_why`) is a fork, and
+    `pairs` lists each such pair with why. Places compare by resolved id, so two
+    spellings of one place never fork; an unresolved place compares by its
     normalised text.
     Silences between steps and after the last one are gaps, never smoothed."""
     steps: dict = {}
@@ -617,12 +752,18 @@ def track(points: list[dict]) -> dict:
     for day, pts in steps.items():
         places = sorted({p["place"] for p in pts})
         positions = [p for p in pts if p["prop"] in POSITION and not p["inherited"]]
+        pairs = [
+            {"ids": [a["id"], b["id"]], "why": why}
+            for a, b in combinations(positions, 2)
+            if (why := apart_why(a, b))
+        ]
         out.append(
             {
                 "date": day,
                 "places": places,
                 "ids": [p["id"] for p in pts],
-                "fork": any(_apart(a, b) for a, b in combinations(positions, 2)),
+                "fork": bool(pairs),
+                "pairs": pairs,
                 "gap_days": (date.fromisoformat(day) - prev).days if prev else None,
             }
         )
@@ -674,6 +815,7 @@ def map_layer(rows: list[dict], places: dict) -> dict:
             "lonlat": [float(place.lon), float(place.lat)],
             "precision_m": place.precision_m,
             "from": r["from"],
+            "time": r.get("time"),
             "when": r["when"],
             "inherited": r["inherited"],
             "tier": r["tier"],

@@ -437,6 +437,29 @@ the text names the cause) and 20 times after. The Arabic post had it 19 times bo
 before and after, sometimes listed twice. Six trials over all 18 posts after the
 change invented no event in the posts that report none.
 
+Whereabouts, 2026-11-22. The never-there case study lost all 34 of its claims where
+a statement puts a person somewhere on a day ("I was at my sister's house in
+Brindle Cross from six until past midnight", "she came about half past eleven"):
+the prompt named `seen_at` "where they were seen", which a first-person account
+never reads as. The prompt now defines `seen_at` as where a named person was on a
+day, seen there, by their own account or as another reports it, and every fact
+carries `time` (24-hour, "21:52" or "18:00-24:00", or null) and `account` (`own`,
+`other` or null). `worker.facts` keeps both on place facts only and drops a time
+not in clock form; the not-a-person guard, the span check and the rule that a
+transcript's words are spoken stay as they were. On the 18 posts, one trial each
+on `anthropic/claude-haiku-5.5`, before and after the change: 0 invented people, 0
+invented events, people found 1.0 and towns found 1.0 both times. On never-there,
+recovered planted claims went from 118 to 148 of 152.
+
+Times on the contradiction hunter, 2026-11-22. Two places on one day now conflict
+by the clock when both claims carry a time (`sealbook/method/travel.csv`, 120
+km/h), else by the day as before, and each candidate carries why it was raised.
+The default planted case has no times, so `tests/test_agent_eval.py`'s pinned
+numbers keep their meaning and value. On never-there, fixed mode went from 4
+candidates and trap avoidance 0.0 to 3 and 1.0; the one live trial scored
+precision 1.0, recall 1.0 and trap avoidance 1.0 (0.0 in every trial of three
+before).
+
 ## Known gaps
 
 - One synthetic case, 132 claims. The numbers say nothing about archive scale or

@@ -31,11 +31,10 @@ from sealbook.monitor import filter as mfilter
 from sealbook.monitor.data import (
     LOCATED,
     META,
-    POSITION,
     Context,
+    apart_why,
     display,
     map_layer,
-    places_apart,
     statement_rows,
 )
 from sealbook.monitor.filter import statement_clause
@@ -417,11 +416,24 @@ async def names(session: AsyncSession, people, groups=None) -> dict[str, str]:
     }
 
 
-def _same_day_apart(a: dict, b: dict, places: dict, prop: str) -> bool:
+def _same_day_apart(a: dict, b: dict, places: dict) -> str | None:
+    """Why two place claims on one exact day cannot both hold (`apart_why`, by
+    their resolved places and times of day), or None."""
     if not (a["from"] and a["from"] == a["to"] == b["from"] == b["to"]):
-        return False
-    pa, pb = places.get(uuid.UUID(a["id"])), places.get(uuid.UUID(b["id"]))
-    return places_apart(prop, pa, pb) if pa and pb else True
+        return None
+
+    def point(r):
+        p = places.get(uuid.UUID(r["id"]))
+        return {
+            "place_id": str(p.id) if p else None,
+            "place": r["display"],
+            "prop": r["prop"],
+            "lonlat": [float(p.lon), float(p.lat)] if p and p.lon is not None else None,
+            "precision_m": p.precision_m if p else None,
+            "time": r.get("time"),
+        }
+
+    return apart_why(point(a), point(b))
 
 
 def _overlap(a: dict, b: dict) -> bool:
@@ -450,6 +462,7 @@ def disagreements(
             "id": r["id"],
             "prop": r["prop"],
             "value": r["display"],
+            "time": r.get("time"),
             "file": link.get("file"),
             "href": link.get("href"),
         }
@@ -462,18 +475,17 @@ def disagreements(
     for s in steps:
         if not s["fork"]:
             continue
-        ids = [
-            i
-            for i in s["ids"]
-            if rows[i]["prop"] in POSITION and not rows[i]["inherited"]
-        ]
+        # Only the claims in a pair that cannot both hold: a place that fits the
+        # others' times is not a side.
+        paired = {i for p in s["pairs"] for i in p["ids"]}
         forks.append(
             {
                 "kind": "position",
                 "prop": "position",
                 "from": s["date"],
                 "to": s["date"],
-                "sides": [side(rows[i]) for i in ids],
+                "sides": [side(rows[i]) for i in s["ids"] if i in paired],
+                "why": s["pairs"],
             }
         )
     shown = [{x["id"] for x in f["sides"]} for f in forks]
@@ -494,9 +506,11 @@ def disagreements(
                 if a["from"] and b["from"] and not _overlap(a, b):
                     continue
                 # Places at overlapping dates (a month and a day in it) can both be
-                # true: only one exact day at two places too far apart is a
-                # disagreement, and a quarter and its city never are.
-                if prop in LOCATED and not _same_day_apart(a, b, places, prop):
+                # true: only one exact day at two places too far apart, at times
+                # no journey joins, is a disagreement, and a quarter and its city
+                # never are.
+                why = _same_day_apart(a, b, places) if prop in LOCATED else None
+                if prop in LOCATED and not why:
                     continue
                 if any({a["id"], b["id"]} <= ids for ids in shown):
                     continue
@@ -510,6 +524,11 @@ def disagreements(
                         "to": min(a["to"], b["to"]) if a["to"] and b["to"] else None,
                         "sides": [side(a), side(b)],
                     }
+                    | (
+                        {"why": [{"ids": [a["id"], b["id"]], "why": why}]}
+                        if why
+                        else {}
+                    )
                 )
     return forks
 

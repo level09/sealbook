@@ -12,6 +12,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
+import httpx2
 import numpy as np
 import orjson
 from alembic import command
@@ -218,6 +219,57 @@ class SpeechTest(unittest.IsolatedAsyncioTestCase):
             status = await batch.status(s, "b1")
         self.assertEqual(status["items"][0]["stages"]["read"], "done")
         self.assertEqual(status["items"][0]["read_progress"]["unit"], "ms")
+
+    async def test_claims_from_a_transcript_are_heard_not_printed(self):
+        """The model calls every text printed; a transcript's words were heard. The
+        claims say so, and a name carries that it was heard, so a person reads
+        "heard as" and a matcher can weigh it below a written one."""
+        await self.ingest(tone(self.tmp / "a.wav", 10))
+        await self.drain()
+        answer = {
+            "statements": [
+                {
+                    "mention": "Line",
+                    "prop": "name",
+                    "value": {"text": "line at 4", "lang": "en"},
+                    "occurrence": 1,
+                    "evidence": ["printed_text"],
+                    "valid": None,
+                }
+            ],
+            "events": [],
+        }
+
+        def reply(request):
+            return httpx2.Response(
+                200,
+                json={
+                    "model": "m/l",
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "message": {"content": orjson.dumps(answer).decode()},
+                        }
+                    ],
+                },
+            )
+
+        os.environ.setdefault("ROUTE_LOCAL_BASE_URL", "http://local.test/v1")
+        await work_once(self.Session, ["extract"], httpx2.MockTransport(reply))
+        async with self.Session() as s:
+            [extract] = (
+                await s.execute(select(Run).where(Run.tool == "extract"))
+            ).scalars()
+            self.assertEqual(extract.status, "done", extract.error)
+            st, value = (
+                await s.execute(
+                    select(Statement, Payload.value)
+                    .join(Payload, Payload.commitment == Statement.commitment)
+                    .where(Statement.prop == Prop.NAME)
+                )
+            ).one()
+        self.assertEqual(st.evidence, ["spoken"])
+        self.assertTrue(value["heard"])
 
     async def test_long_recording_continues_in_windows_without_cutting_lines(self):
         self.enterContext(mock.patch.object(Config, "SPEECH_CHUNK_SECONDS", 10))
