@@ -80,7 +80,7 @@
         <div>
           <a v-if="i.href" :href="i.href">${ i.text || 'A claim no longer on record' }</a>
           <span v-else>${ i.text || 'A claim no longer on record' }</span>
-          <div v-if="i.about || i.source" class="s">${ [i.about, i.when, i.source].filter(Boolean).join('. ') }</div>
+          <div v-if="i.about || i.source" class="s">${ i.about || i.source }</div>
         </div>
         <span class="cd-state" :class="{gone: i.state !== 'stands'}">${ i.state === 'stands' ? (i.tier === 'accepted' ? 'accepted as said' : 'as said') : i.words }</span>
       </div>

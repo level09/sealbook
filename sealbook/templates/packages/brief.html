@@ -79,7 +79,7 @@
                     <v-list v-if="brief.packages.length">
                         <v-list-item v-for="p in brief.packages" :key="p.id">
                             <v-list-item-title class="text-wrap">Package of ${ brief.title }</v-list-item-title>
-                            <v-list-item-subtitle :title="'Manifest SHA-256 ' + p.manifest_sha256">
+                            <v-list-item-subtitle class="text-wrap" :title="'Manifest SHA-256 ' + p.manifest_sha256">
                                 For ${ p.audience }, built ${ day(p.created_at) }, ${ p.statements } ${ p.statements === 1 ? 'statement' : 'statements' }, ${ state(p) }
                             </v-list-item-subtitle>
                             <div v-if="p.withheld && p.withheld.length" class="text-body-small mt-1">Withholds ${ p.withheld.length === 1 ? 'one source file' : p.withheld.length + ' source files' }: ${ p.withheld.map(w => w.title).join(', ') }. ${ p.withheld.length === 1 ? 'Its hash' : 'Each hash' } still verifies.</div>
