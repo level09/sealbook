@@ -18,6 +18,7 @@ from stk.user.models import Role, User
 
 from sealbook.agents import contradictions
 from sealbook.app import create_app
+from sealbook.cases import conclusions
 from sealbook.cases.models import Case
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import (
@@ -29,7 +30,6 @@ from sealbook.ledger.models import (
     Statement,
     StatementTier,
 )
-from sealbook.people import data as people
 from sealbook.settings import Config
 
 POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
@@ -126,21 +126,28 @@ class CaseOverviewTest(unittest.IsolatedAsyncioTestCase):
                     for sha, case in ((self.x, X), (self.y, Y))
                 ],
             )
-            person = f"person:{uuid.uuid4()}"
+            person, other = f"person:{uuid.uuid4()}", f"person:{uuid.uuid4()}"
             facts = [
                 (self.x, Prop.NAME, Tier.ACCEPTED),
                 (self.x, Prop.BIRTH_DATE, Tier.UNCONFIRMED),
                 (self.x, Prop.FATHER_NAME, Tier.REJECTED),
                 (self.x, Prop.SAME_AS, Tier.ACCEPTED),  # identity link, not a fact
                 (self.y, Prop.NAME, Tier.CORROBORATED),  # case Y
+                # Case Y also has what no person holds: a post's report and a match.
+                (self.y, Prop.REPORTS, Tier.ACCEPTED),
+                (self.y, Prop.MEDIA_MATCH, Tier.UNCONFIRMED),
             ]
             rows = [
                 {
                     "id": uuid.uuid4(),
-                    "subject": person,
+                    "subject": f"blob:{sha}"
+                    if prop in (Prop.REPORTS, Prop.MEDIA_MATCH)
+                    else other
+                    if sha == self.y
+                    else person,
                     "prop": prop,
                     "commitment": hexs(),
-                    "span_blob": sha,
+                    "span_blob": None if prop == Prop.MEDIA_MATCH else sha,
                     "author_id": agent,
                     "recorded_at": now - timedelta(minutes=30),
                     "hash": hexs(),
@@ -216,15 +223,30 @@ class CaseOverviewTest(unittest.IsolatedAsyncioTestCase):
         body = await r.get_json()
         self.assertEqual(r.status_code, 200, body)
         stands = body["stands"]
-        # The person page's facts: rejected, identity links and case Y left out.
+        # Everything the case holds by kind, as a conclusion may cite it: the
+        # rejected claim and case Y left out, the accepted link counted.
+        none = {"accepted": 0, "unconfirmed": 0}
         self.assertEqual(
-            stands["claims"], {"unconfirmed": 1, "corroborated": 0, "accepted": 1}
+            stands["items"],
+            {
+                "claims": {"accepted": 1, "corroborated": 0, "unconfirmed": 1},
+                "links": {"accepted": 1, "unconfirmed": 0},
+                "matches": none,
+                "findings": none,
+            },
         )
         async with ext.async_session_factory() as s:
-            roster = await people.roster(s, X)
+            citeable = await conclusions.citeable(s, X)
         self.assertEqual(
-            sum(stands["claims"].values()), sum(p["facts"] for p in roster.values())
+            [len(citeable[k]) for k in ("claims", "links", "findings")], [1, 1, 0]
         )
+        # A case with no people still says what it holds.
+        r = await me.get(f"/api/cases/overview?investigation={Y}")
+        items = (await r.get_json())["stands"]["items"]
+        self.assertEqual(
+            items["claims"], {"accepted": 1, "corroborated": 1, "unconfirmed": 0}
+        )
+        self.assertEqual(items["matches"], {"accepted": 0, "unconfirmed": 1})
         self.assertEqual(stands["sources"]["total"], 1)
         self.assertIsNone(stands["anchored"])
         self.assertEqual((stands["disagreements"], stands["findings"]), (0, 0))

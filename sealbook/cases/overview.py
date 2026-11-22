@@ -11,10 +11,15 @@ from sqlalchemy import func, select
 from sealbook.agents import contradictions, read
 from sealbook.agents import overview as agents
 from sealbook.anchor.models import Batch
+from sealbook.cases import conclusions
 from sealbook.desk.data import since
+from sealbook.discovery.models import FindingKey
+from sealbook.discovery.service import available
 from sealbook.ingest import batch
-from sealbook.ledger.models import Acquisition
-from sealbook.people import data as people
+from sealbook.ledger import write
+from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.models import Acquisition, Payload, Statement, StatementTier
+from sealbook.monitor import filter as mfilter
 from sealbook.review import findings
 
 LIVE = ("queued", "running")
@@ -62,17 +67,77 @@ async def sources(db, investigation: str) -> dict:
     }
 
 
+async def holds(db, user, investigation: str) -> dict:
+    """What the case holds by kind and tier, counted as a conclusion may cite it
+    (`conclusions.citeable`), so the accepted numbers include whatever a
+    conclusion rests on: claims from its available sources, about people or
+    documents; same-person links between its person records; its findings; and
+    copy matches between its items. Rejected, erased and superseded ones are left
+    out. Open findings are those the reader's Discover lists."""
+    live = (
+        StatementTier.tier != Tier.REJECTED,
+        write.current_clause(),
+        Payload.value.is_not(None),
+    )
+    case = mfilter.statement_clause({"investigation": investigation, "time": None})
+
+    async def count(*where, tiers=(Tier.ACCEPTED, Tier.UNCONFIRMED)) -> dict:
+        found = dict(
+            (
+                await db.execute(
+                    select(StatementTier.tier, func.count())
+                    .select_from(Statement)
+                    .join(StatementTier, StatementTier.statement_id == Statement.id)
+                    .join(Payload, Payload.commitment == Statement.commitment)
+                    .where(*live, *where)
+                    .group_by(StatementTier.tier)
+                )
+            )
+            .tuples()
+            .all()
+        )
+        return {str(t): found.get(t, 0) for t in tiers}
+
+    accepted_findings = await db.scalar(
+        select(func.count())
+        .select_from(FindingKey)
+        .join(StatementTier, StatementTier.statement_id == FindingKey.statement_id)
+        .where(
+            FindingKey.investigation == investigation,
+            StatementTier.tier == Tier.ACCEPTED,
+        )
+    )
+    return {
+        "claims": await count(
+            Statement.prop.in_([str(p) for p in conclusions.CLAIMS]),
+            case,
+            available(mfilter.source(mfilter.statement_blob())),
+            tiers=(Tier.ACCEPTED, Tier.CORROBORATED, Tier.UNCONFIRMED),
+        ),
+        "links": await count(
+            Statement.prop.in_(conclusions.LINKS),
+            Statement.subject.in_(conclusions._persons(investigation)),
+        ),
+        "matches": await count(Statement.prop == Prop.MEDIA_MATCH, case),
+        "findings": {
+            "accepted": accepted_findings,
+            "unconfirmed": len(await findings.queue(db, user, investigation)),
+        },
+    }
+
+
 async def stands(db, user, investigation: str) -> dict:
     case = await read.case(db, investigation)
     # The disagreements the contradiction hunter starts from: the person page's
     # "Sources disagree", across two sources or more, one person at a time.
     forks = [c for c in contradictions.candidates(case) if not c.get("link")]
     anchored = await db.scalar(select(func.max(Batch.at)))
+    items = await holds(db, user, investigation)
     return {
-        "claims": await people.tiers(db, investigation),
+        "items": items,
         "sources": await sources(db, investigation),
         "disagreements": len(forks),
-        "findings": len(await findings.queue(db, user, investigation)),
+        "findings": items["findings"]["unconfirmed"],
         "anchored": anchored.isoformat() if anchored else None,
     }
 

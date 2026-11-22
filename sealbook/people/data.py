@@ -251,19 +251,6 @@ def _listed(investigation: str | None) -> tuple:
     )
 
 
-async def tiers(session: AsyncSession, investigation: str | None) -> dict[str, int]:
-    """The roster's facts counted by tier instead of by person: the same rows."""
-    rows = await session.execute(
-        select(StatementTier.tier, func.count())
-        .select_from(Statement)
-        .join(StatementTier, StatementTier.statement_id == Statement.id)
-        .where(*_listed(investigation))
-        .group_by(StatementTier.tier)
-    )
-    found = dict(rows.tuples().all())
-    return {str(t): found.get(t, 0) for t in PROJECTIONS["draft"]}
-
-
 async def roster(
     session: AsyncSession, investigation: str | None = None, groups=None
 ) -> dict[str, dict]:

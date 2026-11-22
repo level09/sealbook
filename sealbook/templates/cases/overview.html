@@ -112,15 +112,16 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
   <section v-if="s" class="ov-panel ov-stands" aria-labelledby="ov-h-stands">
     <header>
       <h2 id="ov-h-stands" class="text-title-large">Where this case stands</h2>
-      <span class="ov-muted">${ plural(claimTotal, 'claim') } about people, from ${ plural(s.sources.total, 'source') }</span>
+      <span class="ov-muted">${ itemTotal ? plural(itemTotal, 'item') + ' on the record' : 'Nothing on the record yet' }, from ${ plural(s.sources.total, 'source') }</span>
     </header>
-    <div v-if="claimTotal" class="ov-bar" role="img" :aria-label="TIERS.map(t => plural(s.claims[t.k], 'claim') + ' ' + t.k).join(', ')">
-      <span v-for="t in TIERS" v-show="s.claims[t.k]" :key="t.k" class="ov-tier" :class="t.k" :style="{flex: s.claims[t.k]}" :title="plural(s.claims[t.k], 'claim') + ' ' + t.k"></span>
+    <div v-if="itemTotal" class="ov-bar" role="img" :aria-label="TIERS.map(t => tierCount(t.k) + ' ' + t.k).join(', ')">
+      <span v-for="t in TIERS" v-show="tierCount(t.k)" :key="t.k" class="ov-tier" :class="t.k" :style="{flex: tierCount(t.k)}" :title="tierCount(t.k) + ' ' + t.k + ': ' + kindsText(t.k)"></span>
     </div>
     <div class="ov-stats">
       <a v-for="x in stats" :key="x.s" class="ov-stat" :href="x.href">
         <span class="n" :class="x.word ? 'text-title-medium' : 'text-headline-small'"><i v-if="x.tier" class="ov-tier" :class="x.tier" aria-hidden="true"></i>${ x.n }</span>
         <span class="s text-body-medium">${ x.s }</span>
+        <span v-if="x.kinds" class="s d-block text-body-small">${ x.kinds }</span>
       </a>
     </div>
     <div v-if="waiting.length" class="ov-wait" role="status">
@@ -177,7 +178,10 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
 import {plural} from '/static/js/changes.js';
 import {STATUS, brokenLine, day, peerLine, reveal, signing, statusLine} from '/static/js/conclusions.js';
 
-const TIERS = [{k: 'accepted', s: 'accepted, signed by a person', href: '/people'}, {k: 'corroborated', s: 'corroborated by independent origins', href: '/people'}, {k: 'unconfirmed', s: 'unconfirmed, waiting for review', href: '/review?box=open'}];
+const TIERS = [{k: 'accepted', s: 'accepted, signed by a person'}, {k: 'corroborated', s: 'corroborated by independent origins', href: '/people'}, {k: 'unconfirmed', s: 'waiting for a person to decide', href: '/review?box=open'}];
+// What a case holds, in the words a reader uses; a case with no people still has these.
+const KINDS = [['claims', 'claim', 'claims'], ['links', 'link between records', 'links between records'], ['findings', 'finding', 'findings'], ['matches', 'copy match', 'copy matches']];
+const listed = parts => parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts.at(-1) : parts[0] || '';
 const err = e => e.response?.data?.message || e.response?.data?.description || e.message;
 const when = iso => new Date(iso).toLocaleString(undefined, {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
 
@@ -185,7 +189,9 @@ window.app = Vue.createApp({
   mixins: [layoutMixin, signing], delimiters: config.delimiters,
   data: () => ({s: null, away: null, todo: null, cc: null, ask: null, error: '', reading: false, done: 0, TIERS, STATUS}),
   computed: {
-    claimTotal() { return this.s ? TIERS.reduce((n, t) => n + this.s.claims[t.k], 0) : 0; },
+    itemTotal() { return this.s ? TIERS.reduce((n, t) => n + this.tierCount(t.k), 0) : 0; },
+    // The standing conclusion whose citations the accepted count includes.
+    restsOn() { return (this.cc?.conclusions || []).find(c => c.state !== 'erased' && c.rests_on?.length)?.rests_on.length || 0; },
     waiting() { return this.s?.sources.waiting || []; },
     actionable() { return this.waiting.filter(w => w.read || w.retry?.length); },
     waitText() {
@@ -195,7 +201,11 @@ window.app = Vue.createApp({
     stats() {
       const s = this.s, src = s.sources;
       return [
-        ...TIERS.map(t => ({n: s.claims[t.k].toLocaleString(), s: t.s, href: t.href, tier: t.k})),
+        ...TIERS.map(t => ({
+          n: this.tierCount(t.k).toLocaleString(), s: t.s, tier: t.k,
+          href: t.href || (this.cc?.conclusions[0] ? '/cases/conclusions/' + this.cc.conclusions[0].id : '/sources'),
+          kinds: [this.kindsText(t.k), t.k === 'accepted' && this.restsOn ? `The conclusion rests on ${this.restsOn === this.tierCount(t.k) ? (this.restsOn === 1 ? 'it' : 'all of them') : this.restsOn + ' of them'}.` : ''].filter(Boolean).join('. '),
+        })),
         {n: `${src.read} of ${src.total}`, s: `sources read${src.waiting.length ? ', ' + src.waiting.length + ' waiting' : ''}${src.working ? ', ' + src.working + ' in progress' : ''}`, href: '/sources'},
         {n: s.disagreements, s: s.disagreements === 1 ? 'place where sources disagree' : 'places where sources disagree', href: '/people'},
         {n: s.findings, s: s.findings === 1 ? 'open finding to decide' : 'open findings to decide', href: '/discover'},
@@ -220,6 +230,11 @@ window.app = Vue.createApp({
   },
   methods: {
     plural, day, statusLine, brokenLine, peerLine, reveal,
+    tierCount(tier) { return KINDS.reduce((n, [k]) => n + (this.s.items[k][tier] || 0), 0); },
+    kindsText(tier) {
+      const parts = KINDS.filter(([k]) => this.s.items[k][tier]).map(([k, one, many]) => plural(this.s.items[k][tier], one, many));
+      return parts.length ? listed(parts) : '';
+    },
     ago(at) { const h = Math.round((Date.now() - new Date(at)) / 36e5); return h < 1 ? 'Just now' : h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`; },
     useCase() { this.load(); },
     async load() {

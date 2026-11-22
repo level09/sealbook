@@ -896,3 +896,8 @@ covers in the text it was read from (`span_blob`).
   was the one query on those pages that took no investigation, and every sibling
   did. A function a case page calls takes the case; a test with two cases catches
   the one that forgets.
+
+- "Where this case stands" read "0 accepted" beside a conclusion resting on 9
+  accepted links: the panel counted only facts about people, while a conclusion
+  cites claims of any subject, links and findings. Count a summary from the same
+  rules as what it summarises (`conclusions.citeable`), not from a neighbouring page.
