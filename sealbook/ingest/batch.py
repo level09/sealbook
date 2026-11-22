@@ -17,9 +17,16 @@ from sealbook.ingest import service
 from sealbook.ledger import write
 from sealbook.ledger.contracts import EXTRACTED_PROPS, Prop, Route
 from sealbook.ledger.gate import resolve
-from sealbook.ledger.models import Acquisition, Blob, Payload, Principal, Run, Statement
+from sealbook.ledger.models import (
+    Acquisition,
+    Blob,
+    Payload,
+    Principal,
+    Run,
+    RunEvent,
+    Statement,
+)
 from sealbook.monitor.data import answered
-from sealbook.settings import Config
 from sealbook.sheets import parse as sheets
 from sealbook.sheets.models import DatasetVersion
 from sealbook.sources.data import title
@@ -134,11 +141,12 @@ async def no_model(db: AsyncSession, acq: Acquisition, tool: str) -> str | None:
 async def _no_model_for(db: AsyncSession, acq: Acquisition, tool: str) -> str | None:
     if tool == "transcribe":
         policy = resolve(await write.policies(db), tool, acq.doc_type, acq.sensitivity)
-        if not Config.SPEECH_MODEL:
+        if not service.speech_models():
             return "Speech reading is not set up on this server."
-        if Route.LOCAL not in policy.routes:
+        if service.speech_route(policy.routes) is None:
             return (
-                f"The rules for {acq.sensitivity} sources do not allow speech reading."
+                f"The rules for {acq.sensitivity} sources do not allow speech reading "
+                "by the models set up."
             )
         return None
     if (await service._route(db, tool, acq))[0] is not None:
@@ -351,9 +359,20 @@ async def steps(
             f"{how['label']}: {how['detail']}."
             if how["how"] in ("recorded", "fixed", "planted")
             else "Read on this server."
-            if reads[0].tool in ("transcribe", "pdf")
+            if reads[0].tool == "pdf"
+            or (reads[0].tool == "transcribe" and reads[0].route == Route.LOCAL)
             else f"Read by {route}."
         )
+        if reads[0].tool == "transcribe" and await db.scalar(
+            select(RunEvent.id)
+            .where(
+                RunEvent.run_id.in_([r.id for r in reads]),
+                RunEvent.drop_reason == "no_speech",
+            )
+            .limit(1)
+        ):
+            # A result, not an empty read: say it where the read is shown.
+            done = f"{done} No speech found."
         read = await _run_step(db, "read", label, reads, done, progress)
     elif tool is None:
         return [

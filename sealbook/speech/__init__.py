@@ -1,4 +1,6 @@
-"""Local speech to text: faster-whisper on the worker, no audio leaves the machine.
+"""Speech to text: a hosted transcriber on OpenRouter for ordinary recordings, or
+faster-whisper on the worker, where no audio leaves the machine (the policy row
+picks the route, sealbook.ingest.service.speech_route).
 
 A transcribe run decodes one window of the recording, keeps the speech segments
 that start inside it and queues a continuation from where the last kept segment
@@ -10,9 +12,11 @@ The last run joins the segments into one transcript blob for claim extraction.""
 from __future__ import annotations
 
 import asyncio
+import base64
 import functools
 import json
 import math
+import re
 import subprocess
 import time
 from datetime import timedelta
@@ -23,18 +27,38 @@ import orjson
 
 from sealbook import blobs
 from sealbook.ledger import chain, queue, write
-from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.contracts import Prop, Route, StatementIn
 from sealbook.ledger.models import Blob, Run
+from sealbook.runs import routes
 from sealbook.settings import Config
 
 RATE = 16000
 # Whisper reads 30 s at a time; decoding past the window lets the segment that
 # straddles its end finish instead of being cut mid-word.
 TAIL_SECONDS = 30
-# Below this detection confidence the recording is read as Arabic, the language
-# most of this evidence is in; the detected guess is still recorded.
+# Below this detection confidence the language is recorded as uncertain. The
+# detected language is still the one read: no language is preferred.
 LANGUAGE_CONFIDENCE = 0.5
-PREFERRED_LANGUAGE = "ar"
+# Whisper writes subtitle boilerplate ("Thank you.", "subscribe to the channel")
+# over water, wind and rain. A segment the model itself holds with little
+# confidence on both of its scores is dropped. Measured on 2026-11-22 (docs/
+# decisions.md): spoken segments in English and Arabic scored avg_logprob -0.10
+# to -0.19 and a mean word probability of 0.83 or more; every invented one -0.63
+# or lower and 0.58 or lower. no_speech_prob was 0.000 on every segment, spoken or
+# not, so it decides nothing here. A forced language defeats this: with Arabic
+# forced the same water came back as a confident Arabic line, which is why the
+# detected language is always the one read.
+LOW_LOGPROB = -0.45
+LOW_WORD_P = 0.7
+# The hosted transcriber is asked for word times; lines are cut from them.
+HOSTED = {
+    "response_format": "verbose_json",
+    "timestamp_granularities": ["word"],
+    "temperature": 0,
+}
+SENTENCE_END = re.compile(r"[.!?؟।。！？…]$")
+PAUSE_MS = 1000
+LINE_MS = 30000
 # Stop taking segments this long before the lease would expire.
 LEASE_MARGIN = timedelta(seconds=60)
 DECODE = {
@@ -147,14 +171,25 @@ def decode(path, start_ms, length_ms) -> np.ndarray:
 
 def language(model, audio) -> dict:
     detected, probability, _ = model.detect_language(audio, vad_filter=True)
-    use = detected if probability >= LANGUAGE_CONFIDENCE else PREFERRED_LANGUAGE
-    # A string: run inputs carry it to continuations and canonical JSON has no floats.
-    return {"language": use, "detected": detected, "probability": f"{probability:.3f}"}
+    # Strings: run inputs carry it to continuations and canonical JSON has no floats.
+    return {
+        "language": detected,
+        "detected": detected,
+        "probability": f"{probability:.3f}",
+        "uncertain": bool(probability < LANGUAGE_CONFIDENCE),
+    }
+
+
+def not_speech(seg) -> bool:
+    """The model's own verdict that a segment is noise it put words to."""
+    p = [w.probability for w in seg.words or []]
+    return seg.avg_logprob < LOW_LOGPROB and bool(p) and sum(p) / len(p) < LOW_WORD_P
 
 
 def recognise(model, audio, lang, offset_ms, deadline) -> tuple[list[dict], bool]:
     """Segments on the source timeline, and whether the window was read to its end.
-    Segments are a generator, so stopping at the deadline loses at most one window."""
+    Segments are a generator, so stopping at the deadline loses at most one window.
+    A segment the model scores as noise is kept marked `not_speech`, for the record."""
 
     def ms(seconds):
         return offset_ms + int(round(seconds * 1000))
@@ -169,7 +204,8 @@ def recognise(model, audio, lang, offset_ms, deadline) -> tuple[list[dict], bool
         text = seg.text.strip()
         if text:
             segments.append(
-                {
+                ({"not_speech": True} if not_speech(seg) else {})
+                | {
                     "ms": [ms(seg.start), ms(seg.end)],
                     "text": text,
                     "avg_logprob": p(seg.avg_logprob),
@@ -205,29 +241,22 @@ async def transcribe(c) -> str:
         await c.emit("input_read", drop_reason="no_audio_track", duration_ms=duration)
         await _watch(c, blob)
         return chain.sha256(chain.canon({"blob": blob.sha256, "audio": False}))
-    model, provenance = await asyncio.to_thread(load_model)
     window_end = min(duration, cursor + Config.SPEECH_CHUNK_SECONDS * 1000)
     decoded_end = min(duration, window_end + TAIL_SECONDS * 1000)
-    audio = await asyncio.to_thread(decode, path, cursor, decoded_end - cursor)
-    await c.emit("input_read", ms=[cursor, decoded_end], duration_ms=duration)
-    lang = c.run.inputs.get("language") or await asyncio.to_thread(
-        language, model, audio
-    )
-    c.run.model_served = f"{provenance['repo']}@{provenance['revision']}"
-    c.run.provider_served = provenance["runtime"]
-    c.run.endpoint = f"local:{provenance['device']}:{provenance['compute_type']}"
-    c.run.prompt_hash = chain.sha256(chain.canon(DECODE))
     # The worker's clock, not the queue's: a slow machine reads less per run.
     budget = queue.LEASE - LEASE_MARGIN
     started = time.monotonic()
-    segments, complete = await asyncio.to_thread(
-        recognise,
-        model,
-        audio,
-        lang["language"],
-        cursor,
-        started + budget.total_seconds(),
-    )
+    if c.run.route == Route.LOCAL:
+        segments, complete, lang, provenance, settings = await _local(
+            c, path, cursor, decoded_end, duration, started + budget.total_seconds()
+        )
+    else:
+        segments, lang, provenance, settings = await _hosted(
+            c, path, cursor, decoded_end, duration
+        )
+        complete = True
+    noise = [s for s in segments if s.get("not_speech")]
+    segments = [s for s in segments if not s.get("not_speech")]
     elapsed_ms = int((time.monotonic() - started) * 1000)
     ends = [s["ms"][1] for s in segments]
     if not complete:
@@ -272,9 +301,11 @@ async def transcribe(c) -> str:
                 "duration_ms": duration,
                 "language": lang,
                 "model": provenance,
-                "decode": DECODE,
+                "decode": settings,
                 "elapsed_ms": elapsed_ms,
                 "segments": kept,
+                # Dropped as noise the model put words to (not_speech).
+                "not_speech": noise,
             }
         ),
         "application/json",
@@ -286,6 +317,7 @@ async def transcribe(c) -> str:
     await c.emit(
         "transcribed",
         segments=len(kept),
+        not_speech=len(noise),
         completed_ms=reached,
         total_ms=duration,
         elapsed_ms=elapsed_ms,
@@ -310,6 +342,123 @@ async def transcribe(c) -> str:
         return artifact.sha256
     await _finish(c, blob, lines)
     return artifact.sha256
+
+
+async def _local(c, path, cursor, decoded_end, duration, deadline):
+    model, provenance = await asyncio.to_thread(load_model)
+    audio = await asyncio.to_thread(decode, path, cursor, decoded_end - cursor)
+    await c.emit("input_read", ms=[cursor, decoded_end], duration_ms=duration)
+    lang = c.run.inputs.get("language") or await asyncio.to_thread(
+        language, model, audio
+    )
+    c.run.model_served = f"{provenance['repo']}@{provenance['revision']}"
+    c.run.provider_served = provenance["runtime"]
+    c.run.endpoint = f"local:{provenance['device']}:{provenance['compute_type']}"
+    c.run.prompt_hash = chain.sha256(chain.canon(DECODE))
+    segments, complete = await asyncio.to_thread(
+        recognise, model, audio, lang["language"], cursor, deadline
+    )
+    return segments, complete, lang, provenance, DECODE
+
+
+async def _hosted(c, path, cursor, decoded_end, duration):
+    """One window sent to the hosted transcriber as lossless 16 kHz FLAC. The
+    language is the model's to detect in each window."""
+    flac = await asyncio.to_thread(encode, path, cursor, decoded_end - cursor)
+    await c.emit("input_read", ms=[cursor, decoded_end], duration_ms=duration)
+    c.run.prompt_hash = chain.sha256(chain.canon(HOSTED))
+    served = await routes.transcription(
+        Route(c.run.route),
+        {
+            "model": c.run.model_requested,
+            "input_audio": {"data": base64.b64encode(flac).decode(), "format": "flac"},
+            **HOSTED,
+        },
+        c.transport,
+    )
+    c.run.endpoint = served.endpoint
+    c.run.model_served = served.model
+    c.run.provider_served = served.provider
+    raw = await blobs.put(c.s, served.raw, "application/json", Config.BLOB_DIR)
+    data = served.data
+    if "words" not in data:
+        raise routes.RouteError(
+            f"{served.model} returned no word times, so its lines cannot be located"
+        )
+    p = data.get("language_confidence")
+    lang = {
+        "language": data.get("language") or "",
+        "detected": data.get("language") or "",
+        "probability": f"{p:.3f}" if p is not None else "",
+        "uncertain": p is None or p < LANGUAGE_CONFIDENCE,
+    }
+    provenance = {
+        "model": served.model,
+        "route": c.run.route,
+        "endpoint": served.endpoint,
+        # OpenRouter's id for the call: its generation record names the served
+        # model version and provider.
+        "generation": data.get("generation"),
+        "response": raw.sha256,
+    }
+    await c.emit("model_called", seconds=(data.get("usage") or {}).get("seconds"))
+    return lines_of(data, cursor), lang, provenance, HOSTED
+
+
+def encode(path, start_ms, length_ms) -> bytes:
+    """One window as mono 16 kHz FLAC, bit-exact so the same window is the same
+    bytes on every run of one ffmpeg."""
+    return _ffmpeg(
+        ["ffmpeg", "-nostdin", "-v", "error", "-ss", f"{start_ms / 1000:.3f}"]
+        + ["-t", f"{length_ms / 1000:.3f}", "-i", str(path), "-map", "0:a:0"]
+        + ["-ac", "1", "-ar", str(RATE), "-c:a", "flac", "-fflags", "+bitexact"]
+        + ["-flags:a", "+bitexact", "-f", "flac", "pipe:1"],
+        timeout=60 + length_ms // 1000,
+    ).stdout
+
+
+def lines_of(data: dict, offset_ms: int) -> list[dict]:
+    """A hosted answer's spoken words as lines on the source timeline: a line ends
+    at a sentence's end, a pause of PAUSE_MS or LINE_MS. Each line's text is cut
+    from the answer's own text, so spacing in every script is the model's. Tagged
+    sounds ("[background noise]") are not words heard and start no line."""
+    text = data.get("text") or ""
+    lines, line, at = [], [], 0
+
+    def close():
+        if line:
+            start, end = line[0]["at"], line[-1]["at"] + len(line[-1]["w"])
+            lines.append(
+                {
+                    "ms": [line[0]["ms"][0], line[-1]["ms"][1]],
+                    "text": text[start:end].strip(),
+                    "words": [{k: v for k, v in w.items() if k != "at"} for w in line],
+                }
+            )
+            line.clear()
+
+    for w in data["words"]:
+        word = w["word"].strip()
+        if w.get("type", "word") != "word" or not word:
+            continue
+        found = text.find(word, at)
+        if found < 0:
+            raise routes.RouteError("the transcriber's words are not in its text")
+        ms = [offset_ms + round(w["start"] * 1000), offset_ms + round(w["end"] * 1000)]
+        if line and (
+            ms[0] - line[-1]["ms"][1] >= PAUSE_MS or ms[1] - line[0]["ms"][0] > LINE_MS
+        ):
+            close()
+        line.append(
+            {"w": word, "ms": ms, "at": found}
+            # A decimal string: canonical JSON refuses floats.
+            | ({"p": f"{w['confidence']:.3f}"} if "confidence" in w else {})
+        )
+        at = found + len(word)
+        if SENTENCE_END.search(word):
+            close()
+    close()
+    return lines
 
 
 async def _derived(c, child, source):

@@ -4,7 +4,8 @@
   "extract": "anthropic/claude-haiku-5.5",
   "ocr": "google/gemini-4-argon",
   "assess": "google/gemini-3.8-flash",
-  "speech": "large-v3-turbo"
+  "speech": "large-v3-turbo",
+  "transcribe": "elevenlabs/scribe-v2"
  },
  "calls": [
   {
@@ -1510,13 +1511,14 @@
   {
    "source": "voice",
    "tool": "assess",
-   "input_sha256": "b5c3b60ea8a8dc37ad683791ec2fb789fd80fcf8a15f7876e4a0987fbf903c8c",
-   "request": "d9e9cfe9b21a10f85c160bcd2cdbb798b20f5970f05bc94c3fbf8098cd93841a",
+   "input_sha256": "4be333c9c6ba87b1d54dffe054f1eae7d2a88fe0583f721fde70a9ff5fb3fd30",
+   "request": "ecf63ed1dc85477e946fbd8e0339289ae228e42a96889c21b86b2c668e1e04e4",
    "model_requested": "google/gemini-3.8-flash",
-   "recorded_at": "2026-11-21T22:09:59+00:00",
+   "recorded_at": "2026-11-22T14:04:52+00:00",
    "status": 200,
-   "response": "\n         \n\n         \n\n         \n{\"id\":\"gen-1795298991-ietiAbyIAZyu7U7MjX5R\",\"object\":\"chat.completion\",\"created\":1795298991,\"model\":\"google/gemini-3.8-flash\",\"provider\":\"Google\",\"system_fingerprint\":null,\"service_tier\":\"provisioned\",\"choices\":[{\"index\":0,\"logprobs\":null,\"finish_reason\":\"stop\",\"native_finish_reason\":\"STOP\",\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"lang\\\": \\\"en\\\",\\n  \\\"content\\\": \\\"non_incident\\\",\\n  \\\"reliability\\\": \\\"no_evidence\\\",\\n  \\\"triage_quote\\\": \\\"Something's come\\\\nup with the books.\\\",\\n  \\\"why\\\": \\\"The text is an everyday personal communication regarding work and schedule with no reference to any conflict, crime, or violation.\\\",\\n  \\\"title\\\": \\\"Message sent regarding work delay\\\",\\n  \\\"title_ar\\\": \\\"رسالة بخصوص التأخر في العمل\\\",\\n  \\\"title_quote\\\": \\\"Start without me.\\\",\\n  \\\"description\\\": [\\n    {\\n      \\\"line\\\": \\\"The sender informs Joe to begin without them.\\\",\\n      \\\"quote\\\": \\\"Joe, it's me. Start without me.\\\"\\n    },\\n    {\\n      \\\"line\\\": \\\"The sender reports being delayed at the yard on Tanner's Row.\\\",\\n      \\\"quote\\\": \\\"I'm still at the yard on Tanner's Row.\\\"\\n    },\\n    {\\n      \\\"line\\\": \\\"The sender states an issue arose concerning the books.\\\",\\n      \\\"quote\\\": \\\"Something's come\\\\nup with the books.\\\"\\n    },\\n    {\\n      \\\"line\\\": \\\"The sender promises to arrive by half past eleven.\\\",\\n      \\\"quote\\\": \\\"I'll be with you by half eleven.\\\"\\n    }\\n  ],\\n  \\\"labels\\\": []\\n}\",\"refusal\":null,\"reasoning\":\"**Processing Personal Message**\\n\\nI'm currently analyzing a user's text message. The focus is on extracting key information like sender, recipient, location, and time, while also identifying any implied urgency or context. This involves parsing the informal language and understanding the situational details presented.\\n\\n**Evaluating Personal Message Content**\\n\\nMy current focus is on determining the nature and implications of the personal message. I'm examining its content to ascertain if it refers to an incident or is merely routine communication. The aim is to classify it appropriately and extract any relevant contextual details.\\n\\n\",\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"**Processing Personal Message**\\n\\nI'm currently analyzing a user's text message. The focus is on extracting key information like sender, recipient, location, and time, while also identifying any implied urgency or context. This involves parsing the informal language and understanding the situational details presented.\\n\\n**Evaluating Personal Message Content**\\n\\nMy current focus is on determining the nature and implications of the personal message. I'm examining its content to ascertain if it refers to an incident or is merely routine communication. The aim is to classify it appropriately and extract any relevant contextual details.\\n\\n\",\"format\":\"google-gemini-v1\",\"index\":0},{\"type\":\"reasoning.encrypted\",\"data\":\"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.eyJlbmRwb2ludF9zbHVnIjoiZ29vZ2xlL2dlbWluaS0zLjgtZmxhc2gtMjAyNjA5MDJ8Z29vZ2xlLXZlcnRleC9nbG9iYWwifQ\",\"format\":\"google-gemini-v1\",\"index\":1}]}}],\"usage\":{\"prompt_tokens\":3191,\"completion_tokens\":705,\"total_tokens\":3896,\"cost\":0.005037,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.005037,\"upstream_inference_prompt_cost\":0.00239325,\"upstream_inference_completions_cost\":0.00264375},\"completion_tokens_details\":{\"reasoning_tokens\":409,\"image_tokens\":0,\"audio_tokens\":0}}}",
-   "response_sha256": "48485a6034b4ccd04f2ff9ec72250e92cf5850a90bf6893fdccaa3340fdb009b",
+   "response": "\n         \n\n         \n{\"id\":\"gen-1795356288-q0vt9wpkkkvOFK6VnK3G\",\"object\":\"chat.completion\",\"created\":1795356288,\"model\":\"google/gemini-3.8-flash\",\"provider\":\"Google\",\"system_fingerprint\":null,\"service_tier\":\"default\",\"choices\":[{\"index\":0,\"logprobs\":null,\"finish_reason\":\"stop\",\"native_finish_reason\":\"STOP\",\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"lang\\\": \\\"en\\\",\\n  \\\"content\\\": \\\"non_incident\\\",\\n  \\\"reliability\\\": \\\"no_evidence\\\",\\n  \\\"triage_quote\\\": \\\"Joe, it's me.\\\",\\n  \\\"why\\\": \\\"The text is a brief personal message about a delay and contains no mention or evidence of any human-rights violations or war crimes.\\\",\\n  \\\"title\\\": \\\"Personal message regarding a delay\\\",\\n  \\\"title_ar\\\": \\\"رسالة شخصية بخصوص تأخير\\\",\\n  \\\"title_quote\\\": \\\"Start without me.\\\",\\n  \\\"description\\\": [\\n    {\\n      \\\"line\\\": \\\"A person asks Joe to begin without them.\\\",\\n      \\\"quote\\\": \\\"Start without me.\\\"\\n    },\\n    {\\n      \\\"line\\\": \\\"The sender is located at the yard on Tanner's Row.\\\",\\n      \\\"quote\\\": \\\"I'm still at the yard on Tanner's Row.\\\"\\n    },\\n    {\\n      \\\"line\\\": \\\"An issue has arisen regarding the books.\\\",\\n      \\\"quote\\\": \\\"Something's come up with the books.\\\"\\n    },\\n    {\\n      \\\"line\\\": \\\"The sender expects to arrive by half past eleven.\\\",\\n      \\\"quote\\\": \\\"I'll be with you by half eleven\\\"\\n    }\\n  ],\\n  \\\"labels\\\": []\\n}\",\"refusal\":null,\"reasoning\":\"**Analyzing Textual Data**\\n\\nI'm currently processing a short message to extract key information. My focus is on identifying entities, sentiment, and any actionable directives within the text, preparing to translate this into a structured JSON format for a human-rights analyst's needs.\\n\\n\",\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"**Analyzing Textual Data**\\n\\nI'm currently processing a short message to extract key information. My focus is on identifying entities, sentiment, and any actionable directives within the text, preparing to translate this into a structured JSON format for a human-rights analyst's needs.\\n\\n\",\"format\":\"google-gemini-v1\",\"index\":0},{\"type\":\"reasoning.encrypted\",\"data\":\"AY89a1+iQlTbEiUkW+fR2cazLiyeN9kGtPDZlYywraneFnQKYsIcO1HQhhKMJmdLi+3Dlob+Yc+HMyROd4QyASAknaY5jmOoe/WecRfPmJVSTIhay50WF1ExlTL874oxHCVkVdmpO/9uv5R+D9lWz66WQcfd/brdyAwc+Od4XXPrw67P6DBR+29jQsBigVyaILQW21pLIR9pLcNiMipeKmpmDAmDsaHIsuN/8PSHR4VwdxpQPsiSo8JkeAzvEOgAzNN804krSnDhx7cJtirIkHAqoVL4clk3FIUM6bT5Ld7m8xp5ElXUGzLntj04QDJcSh/we4aKJxPo0KFmOuyh8bQEp3ijJPjftHdKndhn9EeLFdPbpXrOKyYREzx93mlszFlzjlluSKIizU/pJduPr3RkJoBjq94iEi0h8hke9G0n2e7veBdZbgubmxdH42ueF7waHPabub1cCGjPSpdfzFC4eG1o9Fxn6bkkwvAhMsYSZ9Qr3MlgcYc5rvSegMDCfOcSMjM7PuHZXcVWCSEKn5WB1VPEg+2ahLluMlD9udeicbVmiUmPcEaKH8IaOpM4OHTCyLpo3aKv75dYEnl7u2PeA6ZVeNqtu/Tx+Y0nnhH1sdMB2aCpJgJ0ZaB4fJPUZjWdQHAxS8QkbtSUeqFVSnOUjUnwv9U8UvjzV1rLk/F6/E/dpT2v98xWl2iHxkMwbcOabBuLjvkC4ufrfcJr2zTuPOga7d6Ji7tedad1DG3RhFJWjlDtRo2WenE9JJtklURiaZGxp4CNde3FC3WglebiSgg//tlM1H+UzZt3OmmKmhTpaPqskhsRi0u3fTp4h4jLLaf09XsH1+dPms0OFjyClC9UjU5p8NFl2JecCJepTw5i4Mq/hp2ADuoUC7yoDTh5NeVuL+qZxjiVmUzTh6YSrL1bsVAhlfdXASHhVIT2uqu5XfHb/ZY7Qgon0WcMosyxKABJgOo0ScIY0Tt51QCoem0wMR6VRH5YJe0tROyndU7Msch2OVoMAzOlSTTvUmsfXr1Y+Hn8WLkxmUGyDFUIZrU1njLHABx9XIIqn9FioJnKVDyVdgq4AZRgmbZuP8QDOqzzcyYbCmA5fFWVtqTHYM//6W+QkXYHgcpGIioseW2bBJSfPKQF3XjA8df+yb4X2jibmCXKQRrQYEFL5LTJE76kEdGM/TbzL4PoufP9wm3AZdfsr4TVNYg2RYu42xKiJnqpPPLVzAUKaQ9XVrXyu9WD7xzwqhxsaGJGh0Vw52rQPo29gcs3Utyaq3rQ8WiLnieULsQkjzjwsaIIqXO2J7ue1Xnfw4ZRRtalhBYFOHjGOOfquS2lJwWlaXfgrO7Z1qGOubJRG9zHJYIXFWKzzPc3fjyLbOwukXdGLKwfZK8LVI0RCYJdMMWN6zUzzdsqkYQBOpkbqw1aUtjbxC0oJ4+W/rcx92oXJS0dHwL0Soqjxu0q2/qkgqmKBqSa83jGPCi2vjFKBD8u2BpWzGIH/BfUalvpZoZlwFy8nJfFnu2YLsaP/lr/g3lhtT1Mtp6FkWTIjj6IOHvTxUn6f4wWmWfq8RZPpsLkr4V159W380xDl9JTaM05S8NmwKQB7a5bAVPhXdSTD1kx+dFDXDiZ+SZFE7JOZVP4aGkkSHMqUS+LD7dDo3QbGB3+Z0bOLVcsdKyQ/jMO71J1I60evanv2Qq3I3KRXwfX0LyDMirI5MXYjHFyi4XYJkTkBHP41McDNmSF1fpvrnETEBSprKYCK8FXCU/B7Cd393QZr1AgdR2E5S5Ys698X7xa6aB45XtG9w1njfZ5NEzljgW72oiwvgm3UjgdI7whx3JeCVroX0p+dRGceoJR7mSIw7SyUkz47XMorlEJnGF3jpIUCZNQi3lEFeY=.eyJlbmRwb2ludF9zbHVnIjoiZ29vZ2xlL2dlbWluaS0zLjgtZmxhc2gtMjAyNjA5MDJ8Z29vZ2xlLXZlcnRleC9nbG9iYWwifQ\",\"format\":\"google-gemini-v1\",\"index\":1}]}}],\"usage\":{\"prompt_tokens\":3193,\"completion_tokens\":571,\"total_tokens\":3764,\"cost\":0.004536,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.004536,\"upstream_inference_prompt_cost\":0.00239475,\"upstream_inference_completions_cost\":0.00214125},\"completion_tokens_details\":{\"reasoning_tokens\":288,\"image_tokens\":0,\"audio_tokens\":0}}}",
+   "response_sha256": "7f36ea9c45463deb050cca20513fe0a091d0486a15c2722b055f1f0154f4352e",
+   "generation": "gen-1795356288-q0vt9wpkkkvOFK6VnK3G",
    "prompt_hash": "48e28a53c0c773cb9820348b33fe1ed484225f91bf322934ca28596448e14df5",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
@@ -1525,16 +1527,34 @@
   {
    "source": "voice",
    "tool": "extract",
-   "input_sha256": "b5c3b60ea8a8dc37ad683791ec2fb789fd80fcf8a15f7876e4a0987fbf903c8c",
-   "request": "b04e778540cfb4e43d35a28568ab263f59d5117486a9a38590e466fccc93eb4e",
+   "input_sha256": "4be333c9c6ba87b1d54dffe054f1eae7d2a88fe0583f721fde70a9ff5fb3fd30",
+   "request": "4e65b1f7b43450f5da748945cbe60b452069c761b8b14bec02b10b786909daac",
    "model_requested": "anthropic/claude-haiku-5.5",
-   "recorded_at": "2026-11-22T09:12:49+00:00",
+   "recorded_at": "2026-11-22T14:04:47+00:00",
    "status": 200,
-   "response": "\n         \n{\"id\":\"gen-1795338766-F0hZggc2ATmx78aG2xdX\",\"object\":\"chat.completion\",\"created\":1795338766,\"model\":\"anthropic/claude-haiku-5.5\",\"provider\":\"Google\",\"system_fingerprint\":null,\"service_tier\":null,\"choices\":[{\"index\":0,\"logprobs\":null,\"finish_reason\":\"stop\",\"native_finish_reason\":\"end_turn\",\"message\":{\"role\":\"assistant\",\"content\":\"{\\\"events\\\":[],\\\"statements\\\":[{\\\"mention\\\":\\\"Joe\\\",\\\"prop\\\":\\\"name\\\",\\\"value\\\":{\\\"text\\\":\\\"Joe\\\",\\\"lang\\\":\\\"en\\\"},\\\"occurrence\\\":1,\\\"valid\\\":null,\\\"time\\\":null,\\\"account\\\":null,\\\"evidence\\\":[\\\"printed_text\\\"]}]}\",\"refusal\":null,\"reasoning\":null,\"reasoning_details\":[{\"type\":\"reasoning.text\",\"signature\":\"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.eyJlbmRwb2ludF9zbHVnIjoiYW50aHJvcGljL2NsYXVkZS1oYWlrdS01LjUtMjAyNjEwMDd8Z29vZ2xlLXZlcnRleC9nbG9iYWwifQ\",\"format\":\"anthropic-claude-v1\",\"index\":0}]}}],\"usage\":{\"prompt_tokens\":2341,\"completion_tokens\":601,\"total_tokens\":2942,\"cost\":0.0005346,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.0005346,\"upstream_inference_prompt_cost\":0.0002341,\"upstream_inference_completions_cost\":0.0003005},\"completion_tokens_details\":{\"reasoning_tokens\":515,\"image_tokens\":0,\"audio_tokens\":0}}}",
-   "response_sha256": "950185e57ffaf30787a4a3bbb1bfb508642597bae7ef6d044f386e4f077ae8a6",
+   "response": "\n         \n\n         \n{\"id\":\"gen-1795356282-Ijpcmx3DBl5j8NLd6OYC\",\"object\":\"chat.completion\",\"created\":1795356282,\"model\":\"anthropic/claude-haiku-5.5\",\"provider\":\"Google\",\"system_fingerprint\":null,\"service_tier\":null,\"choices\":[{\"index\":0,\"logprobs\":null,\"finish_reason\":\"stop\",\"native_finish_reason\":\"end_turn\",\"message\":{\"role\":\"assistant\",\"content\":\"{\\\"events\\\":[],\\\"statements\\\":[{\\\"mention\\\":\\\"Joe\\\",\\\"prop\\\":\\\"name\\\",\\\"value\\\":{\\\"text\\\":\\\"Joe\\\",\\\"lang\\\":\\\"en\\\"},\\\"occurrence\\\":1,\\\"valid\\\":null,\\\"time\\\":null,\\\"account\\\":null,\\\"evidence\\\":[\\\"printed_text\\\"]}]}\",\"refusal\":null,\"reasoning\":null,\"reasoning_details\":[{\"type\":\"reasoning.text\",\"signature\":\"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.eyJlbmRwb2ludF9zbHVnIjoiYW50aHJvcGljL2NsYXVkZS1oYWlrdS01LjUtMjAyNjEwMDd8Z29vZ2xlLXZlcnRleC9nbG9iYWwifQ\",\"format\":\"anthropic-claude-v1\",\"index\":0}]}}],\"usage\":{\"prompt_tokens\":2343,\"completion_tokens\":533,\"total_tokens\":2876,\"cost\":0.0005008,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.0005008,\"upstream_inference_prompt_cost\":0.0002343,\"upstream_inference_completions_cost\":0.0002665},\"completion_tokens_details\":{\"reasoning_tokens\":447,\"image_tokens\":0,\"audio_tokens\":0}}}",
+   "response_sha256": "b7ed3c480811034f4c9cef3b51af22a6548626792b5cae7d27713e6c2b19a294",
+   "generation": "gen-1795356282-Ijpcmx3DBl5j8NLd6OYC",
    "prompt_hash": "0d312256ff12e8255a8196621cb434bba3889c62e94c29679ddc540b024385c8",
    "model_served": "anthropic/claude-haiku-5.5",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "voice",
+   "tool": "transcribe",
+   "input_sha256": "737d0745ca19fca09369468fbe7ea084635ab50f78628253355b1605b99c41ad",
+   "cursor": 0,
+   "request": "3e57f7f104925b9b9b8a87713883726fe15ddf7edfd7328b3ff055db13910e07",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T14:04:41+00:00",
+   "status": 200,
+   "response": "{\"text\":\"Joe, it's me. Start without me. I'm still at the yard on Tanner's Row. Something's come up with the books. I'll be with you by half eleven\",\"usage\":{\"seconds\":11.3,\"cost\":0.00069055555555543},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.9961013197898865,\"duration\":11.3,\"segments\":[{\"id\":0,\"start\":0,\"end\":11.3,\"text\":\"Joe, it's me. Start without me. I'm still at the yard on Tanner's Row. Something's come up with the books. I'll be with you by half eleven\"}],\"words\":[{\"word\":\"Joe,\",\"start\":0.16,\"end\":0.42,\"confidence\":0.9882074926576888},{\"word\":\"it's\",\"start\":0.7,\"end\":0.86,\"confidence\":0.9997987118307772},{\"word\":\"me.\",\"start\":0.94,\"end\":1.2,\"confidence\":0.9999918541555151},{\"word\":\"Start\",\"start\":2.38,\"end\":2.64,\"confidence\":0.999991297797926},{\"word\":\"without\",\"start\":2.68,\"end\":3,\"confidence\":0.9999991655356624},{\"word\":\"me.\",\"start\":3.04,\"end\":3.18,\"confidence\":0.9999169645345454},{\"word\":\"I'm\",\"start\":3.72,\"end\":3.86,\"confidence\":0.9999803709650646},{\"word\":\"still\",\"start\":3.98,\"end\":4.14,\"confidence\":0.9999998807907247},{\"word\":\"at\",\"start\":4.18,\"end\":4.26,\"confidence\":1},{\"word\":\"the\",\"start\":4.3,\"end\":4.4,\"confidence\":0.9999339624169533},{\"word\":\"yard\",\"start\":4.44,\"end\":4.8,\"confidence\":0.979653689196172},{\"word\":\"on\",\"start\":4.86,\"end\":5,\"confidence\":0.9999983310727032},{\"word\":\"Tanner's\",\"start\":5.06,\"end\":5.44,\"confidence\":0.998246759162668},{\"word\":\"Row.\",\"start\":5.5,\"end\":5.72,\"confidence\":0.9820332150070419},{\"word\":\"Something's\",\"start\":6.46,\"end\":6.92,\"confidence\":0.999963545067397},{\"word\":\"come\",\"start\":7,\"end\":7.16,\"confidence\":0.9999995231630692},{\"word\":\"up\",\"start\":7.24,\"end\":7.52,\"confidence\":0.9999998807907247},{\"word\":\"with\",\"start\":7.56,\"end\":7.68,\"confidence\":0.9999992847447459},{\"word\":\"the\",\"start\":7.72,\"end\":7.8,\"confidence\":0.9999998807907247},{\"word\":\"books.\",\"start\":7.86,\"end\":8.26,\"confidence\":0.9999889533980899},{\"word\":\"I'll\",\"start\":8.82,\"end\":8.98,\"confidence\":0.9999992847450301},{\"word\":\"be\",\"start\":9.02,\"end\":9.18,\"confidence\":0.9999995231630692},{\"word\":\"with\",\"start\":9.22,\"end\":9.44,\"confidence\":0.9999995231630692},{\"word\":\"you\",\"start\":9.5,\"end\":9.74,\"confidence\":0.9999996423722521},{\"word\":\"by\",\"start\":9.8,\"end\":9.98,\"confidence\":0.9999980926550052},{\"word\":\"half\",\"start\":10.06,\"end\":10.26,\"confidence\":0.9995675765499131},{\"word\":\"eleven\",\"start\":10.32,\"end\":10.7,\"confidence\":0.9454967606401012}]}",
+   "response_sha256": "55c60cd1fad8d06abfd5d4db5f7016f8970e9f8cb9c9fee6f855e27be22fd97a",
+   "generation": "gen-stt-1795356280-VVPl2V6llR2zgGeaPaNW",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -1658,267 +1678,7 @@
    "route": "cloud-zdr"
   }
  ],
- "speech": [
-  {
-   "source": "voice",
-   "input_sha256": "737d0745ca19fca09369468fbe7ea084635ab50f78628253355b1605b99c41ad",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "1.000"
-   },
-   "duration_ms": 11306,
-   "segments": [
-    {
-     "ms": [
-      0,
-      7140
-     ],
-     "text": "Joe, it's me. Start without me. I'm still at the yard on Tanner's Row. Something's come",
-     "avg_logprob": "-0.182",
-     "no_speech_prob": "0.000",
-     "words": [
-      {
-       "w": "Joe,",
-       "ms": [
-        0,
-        380
-       ],
-       "p": "0.579"
-      },
-      {
-       "w": "it's",
-       "ms": [
-        680,
-        840
-       ],
-       "p": "0.968"
-      },
-      {
-       "w": "me.",
-       "ms": [
-        840,
-        1140
-       ],
-       "p": "0.997"
-      },
-      {
-       "w": "Start",
-       "ms": [
-        1980,
-        2580
-       ],
-       "p": "0.977"
-      },
-      {
-       "w": "without",
-       "ms": [
-        2580,
-        2820
-       ],
-       "p": "0.995"
-      },
-      {
-       "w": "me.",
-       "ms": [
-        2820,
-        3160
-       ],
-       "p": "1.000"
-      },
-      {
-       "w": "I'm",
-       "ms": [
-        3400,
-        3820
-       ],
-       "p": "0.997"
-      },
-      {
-       "w": "still",
-       "ms": [
-        3820,
-        4080
-       ],
-       "p": "1.000"
-      },
-      {
-       "w": "at",
-       "ms": [
-        4080,
-        4260
-       ],
-       "p": "0.997"
-      },
-      {
-       "w": "the",
-       "ms": [
-        4260,
-        4360
-       ],
-       "p": "0.992"
-      },
-      {
-       "w": "yard",
-       "ms": [
-        4360,
-        4700
-       ],
-       "p": "0.991"
-      },
-      {
-       "w": "on",
-       "ms": [
-        4700,
-        5000
-       ],
-       "p": "0.997"
-      },
-      {
-       "w": "Tanner's",
-       "ms": [
-        5000,
-        5420
-       ],
-       "p": "0.991"
-      },
-      {
-       "w": "Row.",
-       "ms": [
-        5420,
-        5620
-       ],
-       "p": "0.763"
-      },
-      {
-       "w": "Something's",
-       "ms": [
-        6280,
-        6880
-       ],
-       "p": "0.981"
-      },
-      {
-       "w": "come",
-       "ms": [
-        6880,
-        7140
-       ],
-       "p": "0.998"
-      }
-     ]
-    },
-    {
-     "ms": [
-      7140,
-      10560
-     ],
-     "text": "up with the books. I'll be with you by half eleven.",
-     "avg_logprob": "-0.182",
-     "no_speech_prob": "0.000",
-     "words": [
-      {
-       "w": "up",
-       "ms": [
-        7140,
-        7380
-       ],
-       "p": "0.999"
-      },
-      {
-       "w": "with",
-       "ms": [
-        7380,
-        7640
-       ],
-       "p": "0.987"
-      },
-      {
-       "w": "the",
-       "ms": [
-        7640,
-        7780
-       ],
-       "p": "0.998"
-      },
-      {
-       "w": "books.",
-       "ms": [
-        7780,
-        8160
-       ],
-       "p": "0.993"
-      },
-      {
-       "w": "I'll",
-       "ms": [
-        8520,
-        8960
-       ],
-       "p": "0.995"
-      },
-      {
-       "w": "be",
-       "ms": [
-        8960,
-        9100
-       ],
-       "p": "0.999"
-      },
-      {
-       "w": "with",
-       "ms": [
-        9100,
-        9380
-       ],
-       "p": "0.999"
-      },
-      {
-       "w": "you",
-       "ms": [
-        9380,
-        9600
-       ],
-       "p": "0.999"
-      },
-      {
-       "w": "by",
-       "ms": [
-        9600,
-        9900
-       ],
-       "p": "0.999"
-      },
-      {
-       "w": "half",
-       "ms": [
-        9900,
-        10240
-       ],
-       "p": "0.983"
-      },
-      {
-       "w": "eleven.",
-       "ms": [
-        10240,
-        10560
-       ],
-       "p": "0.713"
-      }
-     ]
-    }
-   ]
-  }
- ],
- "recorded_at": "2026-11-22T09:12:52+00:00",
+ "speech": [],
+ "recorded_at": "2026-11-22T14:04:53+00:00",
  "recorded_by": "stk demo-seed --record"
 }

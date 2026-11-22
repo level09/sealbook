@@ -48,6 +48,20 @@ export function mount(boot) {
     computed: {
       claims() {return this.it ? this.it.claims.map(c => ({...c, label: prop(c.prop), value: this.read?.values?.[c.id] ?? c.display})) : [];},
       otherClaims() {return this.other ? this.other.claims.map(c => ({...c, label: prop(c.prop), value: this.otherRead?.values?.[c.id] ?? c.display})) : [];},
+      // A recording's transcript lines, and what speech to text made of it in words.
+      spoken() {return this.read?.passages.filter(p => p.location.ms) || [];},
+      speechSaid() {
+        const s = this.read?.speech;
+        if (!s) return 'Speech to text has not run on it.';
+        const by = s.route === 'local' ? 'on this server' : `by ${s.model}, a hosted model${s.route === 'cloud-zdr' ? ' that keeps no data' : ''}`;
+        return {
+          reading: 'Speech to text is reading it.',
+          failed: 'Speech to text did not finish. The steps say why and offer a retry.',
+          no_audio: 'It has no sound track, so there is no speech to read.',
+          none: `No speech found: speech to text heard none, read ${by}.`,
+          done: `Transcript read ${by}. Each line opens at its time.`,
+        }[s.state];
+      },
       // The first pass of the analyst's method (sealbook/method), shown on its own.
       pass() {
         const all = this.claims.filter(c => PASS.includes(c.prop) && c.tier !== 'rejected');

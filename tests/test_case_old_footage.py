@@ -137,25 +137,30 @@ class OldFootageActsTest(unittest.TestCase):
         self.assertEqual(set(passes), set(CASE["sources"]))
         for key, c in passes.items():
             self.assertEqual(c["input_sha256"], CASE["sources"][key]["sha256"])
-        # 36 first passes and one extraction of a transcript: 37 calls.
-        self.assertEqual(len(calls), 37)
+        # 36 first passes and 30 hosted transcriptions of the clips with sound;
+        # no transcript has words, so nothing is extracted: 66 calls.
+        self.assertEqual(len(calls), 66)
         self.assertEqual(RECORDINGS["models"]["assess"], "google/gemini-3.8-flash")
 
-    def test_speech_to_text_heard_words_in_running_water(self):
-        """Whisper wrote the same Arabic sentence, "subscribe to the channel", on
-        two clips with no speech, and the first pass repeated it as said."""
-        heard = {
-            s["source"]: [x["text"] for x in s["segments"]]
-            for s in RECORDINGS["speech"]
-            if s["segments"]
-        }
-        self.assertEqual(
-            heard,
-            {
-                "copy_trim": ["اشتركوا في القناة"],
-                "flood_promenade": ["اشتركوا في القناة"],
-            },
-        )
+    def test_speech_to_text_hears_no_words_in_running_water(self):
+        """The local Whisper once wrote "subscribe to the channel" in Arabic on two
+        clips with no speech. The hosted transcriber hears no word on any clip: it
+        tags the sound instead, and a tag is not a word heard."""
+        self.assertEqual(RECORDINGS["models"]["transcribe"], "elevenlabs/scribe-v2")
+        self.assertEqual(RECORDINGS["speech"], [])
+        heard = [c for c in RECORDINGS["calls"] if c["tool"] == "transcribe"]
+        self.assertEqual(len(heard), 30)
+        for c in heard:
+            words = json.loads(c["response"])["words"]
+            self.assertFalse(
+                [w for w in words if w.get("type", "word") == "word"], c["source"]
+            )
+        said = [
+            answer(c)["said_labels"]
+            for c in RECORDINGS["calls"]
+            if c["tool"] == "assess"
+        ]
+        self.assertFalse(any(said))
 
     def test_the_first_pass_says_what_the_frames_show_and_not_where(self):
         passes = {

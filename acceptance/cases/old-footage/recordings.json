@@ -4,7 +4,8 @@
   "extract": "anthropic/claude-haiku-5.5",
   "ocr": "google/gemini-4-argon",
   "assess": "google/gemini-3.8-flash",
-  "speech": "large-v3-turbo"
+  "speech": "large-v3-turbo",
+  "transcribe": "elevenlabs/scribe-v2"
  },
  "calls": [
   {
@@ -23,6 +24,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "copy_crop",
+   "tool": "transcribe",
+   "input_sha256": "6125102633d73a0be8fcf71131859646b9a1ccb0415fe62710910eba45434e30",
+   "cursor": 0,
+   "request": "081273a1ab36349dfa95b20acace522ec082b4b0e77d836c202c93f1ce04574b",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:15+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":21.001,\"cost\":0.001283394444444211},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":21.001,\"segments\":[{\"id\":0,\"start\":0,\"end\":21.001,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0.06,\"end\":20.94,\"confidence\":0.8103260075917204}]}",
+   "response_sha256": "e17b06201487bc3bb866bcc2b27aaa5831022e96eb083414e21fa2a6c98cb6a2",
+   "generation": "gen-stt-1795355774-EpWtwRzH3DhBeioDkfCC",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "copy_logo",
    "tool": "assess",
    "input_sha256": "d3711eb11b45091eeee7bbe29fd41f622403cca31560cbdcb8746ccc3f7b73cb",
@@ -35,6 +53,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "copy_logo",
+   "tool": "transcribe",
+   "input_sha256": "d3711eb11b45091eeee7bbe29fd41f622403cca31560cbdcb8746ccc3f7b73cb",
+   "cursor": 0,
+   "request": "1f0bb6120003f4403ff0556d2c6fc827a894d8fd921ac84233375767c2fac31f",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:17+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":21.001,\"cost\":0.001283394444444211},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":21.001,\"segments\":[{\"id\":0,\"start\":0,\"end\":21.001,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0.06,\"end\":20.94,\"confidence\":0.8476232603523288}]}",
+   "response_sha256": "a2fff5651b9e71f894fe11bf5c40440f73df1c65e0ff49374040ed2599c80900",
+   "generation": "gen-stt-1795355776-DLlDwXdpIx29VKpYWCHB",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -53,6 +88,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "copy_lowrate",
+   "tool": "transcribe",
+   "input_sha256": "b61f5216606f12769828b9822139fd2eb905c3a9755cd781e133c4dd4a77102a",
+   "cursor": 0,
+   "request": "d4825f95ade2fcdc04d66b01f8e43fcf1e6a9d21170563ac65a8899419f8bee4",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:12+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":21.001,\"cost\":0.001283394444444211},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":21.001,\"segments\":[{\"id\":0,\"start\":0,\"end\":21.001,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0.06,\"end\":20.94,\"confidence\":0.8178317070035616}]}",
+   "response_sha256": "381be33b5fead0b2e83933bf8045294235ff4c626105734704a5051c2b6a9ed9",
+   "generation": "gen-stt-1795355771-hfE0Wx7wZtYfQ1mKr2Rk",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "copy_mirror",
    "tool": "assess",
    "input_sha256": "7764a70a1234d0fe0389ee2924c35465b6ed4fbce8fdc88984b9e04c05dc411a",
@@ -65,6 +117,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "copy_mirror",
+   "tool": "transcribe",
+   "input_sha256": "7764a70a1234d0fe0389ee2924c35465b6ed4fbce8fdc88984b9e04c05dc411a",
+   "cursor": 0,
+   "request": "42a807fc042ce86e96e3ffe6098539bbf0076167c18d744ce3cd3c38bf8c74ed",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:19+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":21.001,\"cost\":0.001283394444444211},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":21.001,\"segments\":[{\"id\":0,\"start\":0,\"end\":21.001,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0.06,\"end\":20.94,\"confidence\":0.8646407215913883}]}",
+   "response_sha256": "8401aa11bcb02707eba8f4b3a8af3bc6d8b56b5922871bb5881e27403977415b",
+   "generation": "gen-stt-1795355779-biETsRXsvGCMepxXSnJ4",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -86,12 +155,13 @@
    "source": "copy_trim",
    "tool": "assess",
    "input_sha256": "59e57cb0736ef97605da8e8e7b8995d55a43463da3217eea5034fee6426dee77",
-   "request": "29dfe3c80b52121b5ba2b6a576113618cabe977172a2968db12cc30bc334faf3",
+   "request": "3dd5b0384b4f19d45cf48dfc4ea1d24c0042f56fa38145c2d71f348e5b929783",
    "model_requested": "google/gemini-3.8-flash",
-   "recorded_at": "2026-11-21T22:48:47+00:00",
+   "recorded_at": "2026-11-22T13:57:23+00:00",
    "status": 200,
-   "response": "\n         \n\n         \n\n         \n{\"id\":\"gen-1795301319-DCCilgTqvzbPJ0J7XYzm\",\"object\":\"chat.completion\",\"created\":1795301319,\"model\":\"google/gemini-3.8-flash\",\"provider\":\"Google\",\"system_fingerprint\":null,\"service_tier\":\"provisioned\",\"choices\":[{\"index\":0,\"logprobs\":null,\"finish_reason\":\"stop\",\"native_finish_reason\":\"STOP\",\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"lang\\\": \\\"ar\\\",\\n  \\\"content\\\": \\\"non_incident\\\",\\n  \\\"reliability\\\": \\\"no_evidence\\\",\\n  \\\"why\\\": \\\"The video shows a flooded river near residential buildings with no indication of conflict, war crimes, or human rights violations.\\\",\\n  \\\"triage_rests\\\": {\\n    \\\"frame\\\": 1,\\n    \\\"quote\\\": \\\"\\\"\\n  },\\n  \\\"title\\\": \\\"River floods near buildings\\\",\\n  \\\"title_ar\\\": \\\"فيضان نهر بالقرب من مبانٍ\\\",\\n  \\\"title_rests\\\": {\\n    \\\"frame\\\": 1,\\n    \\\"quote\\\": \\\"\\\"\\n  },\\n  \\\"description\\\": [\\n    {\\n      \\\"line\\\": \\\"A flooded river with brown water flows rapidly.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 1,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"line\\\": \\\"Trees along the riverbank are partially submerged in the water.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 2,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"line\\\": \\\"Multi-story residential buildings stand along the riverbank.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 1,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"line\\\": \\\"A speaker requests viewers to subscribe to the channel.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 0,\\n        \\\"quote\\\": \\\"اشتركوا في القناة\\\"\\n      }\\n    }\\n  ],\\n  \\\"seen_labels\\\": [\\n    {\\n      \\\"label\\\": \\\"Property/Buildings\\\",\\n      \\\"frame\\\": 1\\n    },\\n    {\\n      \\\"label\\\": \\\"Property/Buildings, Civilian structure\\\",\\n      \\\"frame\\\": 1\\n    }\\n  ],\\n  \\\"said_labels\\\": []\\n}\",\"refusal\":null,\"reasoning\":\"**Analyzing River Flow**\\n\\nI'm currently processing video frames, focusing on the rapidly flowing, murky river water and its impact on the surrounding environment, including submerged trees and distant residential structures.\\n\\n**Investigating Flood Dynamics**\\n\\nI'm reviewing visual data, specifically a fast-moving, silted river near dwellings and trees. The audio is an unrelated subscription request. No conflict indicators are present.\\n\\n\",\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"**Analyzing River Flow**\\n\\nI'm currently processing video frames, focusing on the rapidly flowing, murky river water and its impact on the surrounding environment, including submerged trees and distant residential structures.\\n\\n**Investigating Flood Dynamics**\\n\\nI'm reviewing visual data, specifically a fast-moving, silted river near dwellings and trees. The audio is an unrelated subscription request. No conflict indicators are present.\\n\\n\",\"format\":\"google-gemini-v1\",\"index\":0},{\"type\":\"reasoning.encrypted\",\"data\":\"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.eyJlbmRwb2ludF9zbHVnIjoiZ29vZ2xlL2dlbWluaS0zLjgtZmxhc2gtMjAyNjA5MDJ8Z29vZ2xlLXZlcnRleC9nbG9iYWwifQ\",\"format\":\"google-gemini-v1\",\"index\":1}]}}],\"usage\":{\"prompt_tokens\":12959,\"completion_tokens\":803,\"total_tokens\":13762,\"cost\":0.0127305,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.0127305,\"upstream_inference_prompt_cost\":0.00971925,\"upstream_inference_completions_cost\":0.00301125},\"completion_tokens_details\":{\"reasoning_tokens\":397,\"image_tokens\":0,\"audio_tokens\":0}}}",
-   "response_sha256": "fb342deb57b38de1e9adbce62489e88d3c2d1cfeae88284a639a2998b22e3ba7",
+   "response": "\n         \n\n         \n\n         \n{\"id\":\"gen-1795355834-8erKMbqrmJVsD3zMyNUS\",\"object\":\"chat.completion\",\"created\":1795355834,\"model\":\"google/gemini-3.8-flash\",\"provider\":\"Google\",\"system_fingerprint\":null,\"service_tier\":\"default\",\"choices\":[{\"index\":0,\"logprobs\":null,\"finish_reason\":\"stop\",\"native_finish_reason\":\"STOP\",\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"lang\\\": \\\"en\\\",\\n  \\\"content\\\": \\\"non_incident\\\",\\n  \\\"reliability\\\": \\\"some_evidence\\\",\\n  \\\"why\\\": \\\"The footage depicts a flooded river without direct conflict.\\\",\\n  \\\"triage_rests\\\": {\\n    \\\"frame\\\": 1,\\n    \\\"quote\\\": \\\"\\\"\\n  },\\n  \\\"title\\\": \\\"Flooded river near buildings\\\",\\n  \\\"title_ar\\\": \\\"نهر يفيض بالقرب من مبانٍ سكنية\\\",\\n  \\\"title_rests\\\": {\\n    \\\"frame\\\": 1,\\n    \\\"quote\\\": \\\"\\\"\\n  },\\n  \\\"description\\\": [\\n    {\\n      \\\"line\\\": \\\"A swollen river flows rapidly around partially submerged trees.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 1,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"line\\\": \\\"Multi-story residential buildings stand along the riverbank.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 1,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"line\\\": \\\"High-voltage power line towers are visible in the background.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 6,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    }\\n  ],\\n  \\\"seen_labels\\\": [\\n    {\\n      \\\"label\\\": \\\"Property/Buildings, Civilian structure\\\",\\n      \\\"frame\\\": 1\\n    },\\n    {\\n      \\\"label\\\": \\\"Property/Buildings, Public Infrastructure\\\",\\n      \\\"frame\\\": 6\\n    }\\n  ],\\n  \\\"said_labels\\\": []\\n}\",\"refusal\":null,\"reasoning\":\"**Analyzing Human Rights**\\n\\nI'm currently focused on a human-rights analysis of video frames depicting a flooded river adjacent to structures and vegetation. My aim is to provide a comprehensive assessment, adhering strictly to the requested schema and compressing evaluations toward the center of the scale for reliability.\\n\\n**Refining Reliability Scores**\\n\\nI'm recalibrating my reliability assessments for the human-rights analysis. Given the \\\"no_evidence\\\" of violations in the flood scene, and the instruction to avoid extreme scores on the \\\"no_evidence\\\", \\\"some_evidence\\\", \\\"strong_evidence\\\" scale, I'm opting for \\\"some_evidence\\\" to reflect this nuance.\\n\\n**Considering Natural Flood Nuances**\\n\\nI'm reconciling the instruction to reflect \\\"some_evidence\\\" for reliability with the observed \\\"non_incident\\\" content of a natural flood. This seems to acknowledge the potential for incidental human rights impacts while maintaining a central, less extreme score as per the developer's guidance on scale compression.\\n\\n\",\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"**Analyzing Human Rights**\\n\\nI'm currently focused on a human-rights analysis of video frames depicting a flooded river adjacent to structures and vegetation. My aim is to provide a comprehensive assessment, adhering strictly to the requested schema and compressing evaluations toward the center of the scale for reliability.\\n\\n**Refining Reliability Scores**\\n\\nI'm recalibrating my reliability assessments for the human-rights analysis. Given the \\\"no_evidence\\\" of violations in the flood scene, and the instruction to avoid extreme scores on the \\\"no_evidence\\\", \\\"some_evidence\\\", \\\"strong_evidence\\\" scale, I'm opting for \\\"some_evidence\\\" to reflect this nuance.\\n\\n**Considering Natural Flood Nuances**\\n\\nI'm reconciling the instruction to reflect \\\"some_evidence\\\" for reliability with the observed \\\"non_incident\\\" content of a natural flood. This seems to acknowledge the potential for incidental human rights impacts while maintaining a central, less extreme score as per the developer's guidance on scale compression.\\n\\n\",\"format\":\"google-gemini-v1\",\"index\":0},{\"type\":\"reasoning.encrypted\",\"data\":\"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.eyJlbmRwb2ludF9zbHVnIjoiZ29vZ2xlL2dlbWluaS0zLjgtZmxhc2gtMjAyNjA5MDJ8Z29vZ2xlLXZlcnRleC9nbG9iYWwifQ\",\"format\":\"google-gemini-v1\",\"index\":1}]}}],\"usage\":{\"prompt_tokens\":12953,\"completion_tokens\":1042,\"total_tokens\":13995,\"cost\":0.01362225,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.01362225,\"upstream_inference_prompt_cost\":0.00971475,\"upstream_inference_completions_cost\":0.0039075},\"completion_tokens_details\":{\"reasoning_tokens\":691,\"image_tokens\":0,\"audio_tokens\":0}}}",
+   "response_sha256": "444a549ca18d061b8d4c9ccfbd84f5e390703f247b778200b4944d798892f638",
+   "generation": "gen-1795355834-8erKMbqrmJVsD3zMyNUS",
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
@@ -99,17 +169,19 @@
   },
   {
    "source": "copy_trim",
-   "tool": "extract",
-   "input_sha256": "6c1514f7b37c6b5193ee0cfa0cec8788630a1f6908d44611dd2f2222bb7837b8",
-   "request": "cadd3eee9bf69c1b1e6cebbb966addec6e7a1cbe6e77c0f1bf9bf28ed36e937c",
-   "model_requested": "anthropic/claude-haiku-5.5",
-   "recorded_at": "2026-11-22T11:22:35+00:00",
+   "tool": "transcribe",
+   "input_sha256": "59e57cb0736ef97605da8e8e7b8995d55a43463da3217eea5034fee6426dee77",
+   "cursor": 0,
+   "request": "fdcc4361c00235f1cd2c85eb1e7a68ff517e7c571270c95bdb96d30330152a41",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:21+00:00",
    "status": 200,
-   "response": "\n         \n{\"id\":\"gen-1795346554-FZj0il8hsypxoFd2AzSL\",\"object\":\"chat.completion\",\"created\":1795346554,\"model\":\"anthropic/claude-haiku-5.5\",\"provider\":\"Google\",\"system_fingerprint\":null,\"service_tier\":null,\"choices\":[{\"index\":0,\"logprobs\":null,\"finish_reason\":\"stop\",\"native_finish_reason\":\"end_turn\",\"message\":{\"role\":\"assistant\",\"content\":\"{\\\"events\\\":[],\\\"statements\\\":[]}\",\"refusal\":null,\"reasoning\":null}}],\"usage\":{\"prompt_tokens\":2299,\"completion_tokens\":15,\"total_tokens\":2314,\"cost\":0.0002374,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.0002374,\"upstream_inference_prompt_cost\":0.0002299,\"upstream_inference_completions_cost\":0.0000075},\"completion_tokens_details\":{\"reasoning_tokens\":0,\"image_tokens\":0,\"audio_tokens\":0}}}",
-   "response_sha256": "3794efde27b0d3edffaa82595f981bd6ea9a189708615a9e90c775a8ad3b9262",
-   "prompt_hash": "0d312256ff12e8255a8196621cb434bba3889c62e94c29679ddc540b024385c8",
-   "model_served": "anthropic/claude-haiku-5.5",
-   "provider_served": "Google",
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":12,\"cost\":0.0007333333333332},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":12,\"segments\":[{\"id\":0,\"start\":0,\"end\":12,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":1.32,\"end\":9.02,\"confidence\":0.8948773600728706}]}",
+   "response_sha256": "0210b57a2aaad09016d88629760537186927db352457d192bf3627742eb1e6ce",
+   "generation": "gen-stt-1795355780-3777tOoZKbvUdGTX6Z2C",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -128,6 +200,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "copy_vertical",
+   "tool": "transcribe",
+   "input_sha256": "8ad9f159df744af62f9a8af78c6749d50f47929b88f15f8b7ebccf7cb6234490",
+   "cursor": 0,
+   "request": "c4e0295570e249be5d6a9d9cc4a3efb622c461b10885c2d9b404aeb3ed2668f5",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:58:40+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":21.001,\"cost\":0.001283394444444211},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":21.001,\"segments\":[{\"id\":0,\"start\":0,\"end\":21.001,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0.06,\"end\":20.94,\"confidence\":0.8493385917910833}]}",
+   "response_sha256": "f03d8319fefbfd0ec27c90b0a460fc141a0346216264e4dc29f8c495c1ec7955",
+   "generation": "gen-stt-1795355920-c7Uwytw7e6oOlJnyJITU",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "copy_viral",
    "tool": "assess",
    "input_sha256": "349903b81faad0bd067b3bb8e02a9e28a8c7fbb58175250f51b3ac09566fed51",
@@ -140,6 +229,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "copy_viral",
+   "tool": "transcribe",
+   "input_sha256": "349903b81faad0bd067b3bb8e02a9e28a8c7fbb58175250f51b3ac09566fed51",
+   "cursor": 0,
+   "request": "8f805a391c67a56bbb743e3603266ae08034e9e7b23468a5e92dd37d4fbad476",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:51:46+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":14,\"cost\":0.0008555555555554},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":14,\"segments\":[{\"id\":0,\"start\":0,\"end\":14,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0,\"end\":13.94,\"confidence\":0.9396889791871955}]}",
+   "response_sha256": "f4251ada67346070d2c9d8f103924c8684c2f65be5e566bc58d6aa67a99f3560",
+   "generation": "gen-stt-1795355505-5MB184rJw3F5nVORifFl",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -173,6 +279,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "flood_arches",
+   "tool": "transcribe",
+   "input_sha256": "bedeb9e503babd63637142ac7585253ecb4c926b2cd2c541144aeac2199696e2",
+   "cursor": 0,
+   "request": "15bca19112a0dda23c865a1e6214885308e1003946f8d160ba9c1a1e01363e27",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:23+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[rain]\",\"usage\":{\"seconds\":10.549,\"cost\":0.0006446611111109939},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.6302722096443176,\"duration\":10.549,\"segments\":[{\"id\":0,\"start\":0,\"end\":10.549,\"text\":\"[rain]\"}],\"words\":[{\"word\":\"[rain]\",\"type\":\"audio_event\",\"start\":0.04,\"end\":8.62,\"confidence\":0.8042867651773089}]}",
+   "response_sha256": "82167c7b667eba212dc59b0de6d9e53384e58d49152d21a09af18cffbf33d229",
+   "generation": "gen-stt-1795355782-1489zJRBEINcdlKOUB6y",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "flood_channel",
    "tool": "assess",
    "input_sha256": "d65de2ed86b55b2eb83b05160ceefa0fee726d1279b2b5baefcc11c55f9fe26c",
@@ -185,6 +308,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "flood_channel",
+   "tool": "transcribe",
+   "input_sha256": "d65de2ed86b55b2eb83b05160ceefa0fee726d1279b2b5baefcc11c55f9fe26c",
+   "cursor": 0,
+   "request": "4293fb8177edf250d681fbdfac1a91db04f048fae2c30ec49cfcbafb8dc88c52",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:58:42+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[birds chirping]\",\"usage\":{\"seconds\":12,\"cost\":0.0007333333333332},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5602928400039673,\"duration\":12,\"segments\":[{\"id\":0,\"start\":0,\"end\":12,\"text\":\"[birds chirping]\"}],\"words\":[{\"word\":\"[birds chirping]\",\"type\":\"audio_event\",\"start\":0,\"end\":11.94,\"confidence\":0.9487959348451498}]}",
+   "response_sha256": "e91f84177960cf29701285951511555396153a9082ce768dfa312595d4d2da4a",
+   "generation": "gen-stt-1795355921-4vjt8yYcKBd3uyQSqodT",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -203,6 +343,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "flood_footbridge",
+   "tool": "transcribe",
+   "input_sha256": "77c738824f6592eec01c14f828f998f4ec7644721b9483e662d34b6e42e4c55c",
+   "cursor": 0,
+   "request": "0e933bdf83676e48a0b26db5b07d336af27f9bd7a019dff2ccb0802619ed3d3d",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:25+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[water flowing]\",\"usage\":{\"seconds\":12,\"cost\":0.0007333333333332},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.6725940108299255,\"duration\":12,\"segments\":[{\"id\":0,\"start\":0,\"end\":12,\"text\":\"[water flowing]\"}],\"words\":[{\"word\":\"[water flowing]\",\"type\":\"audio_event\",\"start\":0,\"end\":11.94,\"confidence\":0.7946844497462379}]}",
+   "response_sha256": "d56ffeebcb3694395653d0611f1fdb3409692f13f64dcf7a4de6fba29ec22cba",
+   "generation": "gen-stt-1795355784-wrEKC2PEcJHL073GWVcW",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "flood_ford",
    "tool": "assess",
    "input_sha256": "d49a246c89d425a39c50505d70b6b29cbddb10b501d9ec21e4933185f37cbbe9",
@@ -215,6 +372,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "flood_ford",
+   "tool": "transcribe",
+   "input_sha256": "d49a246c89d425a39c50505d70b6b29cbddb10b501d9ec21e4933185f37cbbe9",
+   "cursor": 0,
+   "request": "b178758e1fdf41bcbedbe9607bbe946ee104207c7d3487b46dbd95e39dd30e00",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:27+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[static]\",\"usage\":{\"seconds\":11.9945,\"cost\":0.0007329972222220889},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.38090118765830994,\"duration\":11.9945,\"segments\":[{\"id\":0,\"start\":0,\"end\":11.9945,\"text\":\"[static]\"}],\"words\":[{\"word\":\"[static]\",\"type\":\"audio_event\",\"start\":0.2,\"end\":9.14,\"confidence\":0.7268903977052606}]}",
+   "response_sha256": "86884331ff1f677946ed92e869456fb1f3ddeac567bbd9ed94be178979ba3f54",
+   "generation": "gen-stt-1795355786-ePgj5ytYbjlJtXMavLOH",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -233,18 +407,53 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "flood_garden",
+   "tool": "transcribe",
+   "input_sha256": "d15b10921b71fccf62a6f04df400b92822166036e8905c2a9ccf1e74b70c9f03",
+   "cursor": 0,
+   "request": "1a17ff4a6302a15d9ee704bfab85c2dbd05f7f7610b65d5955fe6d651381081e",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:14+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":12,\"cost\":0.0007333333333332},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":12,\"segments\":[{\"id\":0,\"start\":0,\"end\":12,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0,\"end\":11.26,\"confidence\":0.8098729566426327}]}",
+   "response_sha256": "ef647407d743c2350c4abecefd0d83fd9ff8df5f54cb873217a5019149089a1c",
+   "generation": "gen-stt-1795355773-Jk4PSqaMc60O0dnIAJMq",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "flood_promenade",
    "tool": "assess",
    "input_sha256": "e88fbd56062b73a09c6ebb125356a37f13faba0238cc5d279331b838ba80bf65",
-   "request": "4261036e612e298907bacd555b2845d211b8c195259e356defb4fa61b9013859",
+   "request": "1687153dd9ecb827e8c37bce5c25cd4462d00adfb5c2a37b96eb49a332675bed",
    "model_requested": "google/gemini-3.8-flash",
-   "recorded_at": "2026-11-21T22:49:45+00:00",
+   "recorded_at": "2026-11-22T13:57:44+00:00",
    "status": 200,
-   "response": "\n         \n\n         \n\n         \n\n         \n\n         \n\n         \n\n         \n\n         \n\n         \n{\"id\":\"gen-1795301361-d5lu27PRjC4zP0XUSCqC\",\"object\":\"chat.completion\",\"created\":1795301361,\"model\":\"google/gemini-3.8-flash\",\"provider\":\"Google\",\"system_fingerprint\":null,\"service_tier\":\"default\",\"choices\":[{\"index\":0,\"logprobs\":null,\"finish_reason\":\"stop\",\"native_finish_reason\":\"STOP\",\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"lang\\\": \\\"ar\\\",\\n  \\\"content\\\": \\\"non_incident\\\",\\n  \\\"reliability\\\": \\\"no_evidence\\\",\\n  \\\"why\\\": \\\"The footage shows flooded streets and buildings along a river, with no indication of conflict or human rights violations.\\\",\\n  \\\"triage_rests\\\": {\\n    \\\"frame\\\": 1,\\n    \\\"quote\\\": \\\"\\\"\\n  },\\n  \\\"title\\\": \\\"Waterfront buildings inundated by floodwaters\\\",\\n  \\\"title_ar\\\": \\\"مياه الفيضانات تغمر مباني على الواجهة النهرية\\\",\\n  \\\"title_rests\\\": {\\n    \\\"frame\\\": 1,\\n    \\\"quote\\\": \\\"\\\"\\n  },\\n  \\\"description\\\": [\\n    {\\n      \\\"line\\\": \\\"Floodwaters inundate a riverside road and the lower sections of buildings.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 1,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"line\\\": \\\"Two flagpoles with flags stand beside the flooded pathway.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 1,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"line\\\": \\\"A vessel is anchored or positioned in the river near the flooded bank.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 1,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"line\\\": \\\"A voice asks viewers to subscribe to the channel.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 0,\\n        \\\"quote\\\": \\\"اشتركوا في القناة\\\"\\n      }\\n    }\\n  ],\\n  \\\"seen_labels\\\": [\\n    {\\n      \\\"label\\\": \\\"Property/Buildings\\\",\\n      \\\"frame\\\": 1\\n    },\\n    {\\n      \\\"label\\\": \\\"Property/Buildings, Civilian structure\\\",\\n      \\\"frame\\\": 1\\n    },\\n    {\\n      \\\"label\\\": \\\"Vehicle\\\",\\n      \\\"frame\\\": 1\\n    }\\n  ],\\n  \\\"said_labels\\\": []\\n}\",\"refusal\":null,\"reasoning\":\"**Analyzing Initial Frames**\\n\\nI'm currently processing the initial video frames and transcript. The first piece of speech, \\\"Subscribe to the channel,\\\" is clearly promotional in nature. I'm moving on to analyze the next segments.\\n\\n**Observing River Flooding**\\n\\nI've analyzed further frames, confirming the scene depicts a significant river flood inundating waterfront buildings. The visual evidence strongly suggests a natural disaster, aligning with the \\\"non_incident\\\" classification. The speech remains promotional.\\n\\n\",\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"**Analyzing Initial Frames**\\n\\nI'm currently processing the initial video frames and transcript. The first piece of speech, \\\"Subscribe to the channel,\\\" is clearly promotional in nature. I'm moving on to analyze the next segments.\\n\\n**Observing River Flooding**\\n\\nI've analyzed further frames, confirming the scene depicts a significant river flood inundating waterfront buildings. The visual evidence strongly suggests a natural disaster, aligning with the \\\"non_incident\\\" classification. The speech remains promotional.\\n\\n\",\"format\":\"google-gemini-v1\",\"index\":0},{\"type\":\"reasoning.encrypted\",\"data\":\"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.eyJlbmRwb2ludF9zbHVnIjoiZ29vZ2xlL2dlbWluaS0zLjgtZmxhc2gtMjAyNjA5MDJ8Z29vZ2xlLXZlcnRleC9nbG9iYWwifQ\",\"format\":\"google-gemini-v1\",\"index\":1}]}}],\"usage\":{\"prompt_tokens\":11851,\"completion_tokens\":937,\"total_tokens\":12788,\"cost\":0.012402,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.012402,\"upstream_inference_prompt_cost\":0.00888825,\"upstream_inference_completions_cost\":0.00351375},\"completion_tokens_details\":{\"reasoning_tokens\":496,\"image_tokens\":0,\"audio_tokens\":0}}}",
-   "response_sha256": "3b06f55fbfc6ac0c9a2021945e8e66845fa9975955f8326fbcb02b584b44eb48",
+   "response": "\n         \n\n         \n\n         \n{\"id\":\"gen-1795355856-WCfHTi3ZF61Czsruk3hl\",\"object\":\"chat.completion\",\"created\":1795355856,\"model\":\"google/gemini-3.8-flash\",\"provider\":\"Google\",\"system_fingerprint\":null,\"service_tier\":\"provisioned\",\"choices\":[{\"index\":0,\"logprobs\":null,\"finish_reason\":\"stop\",\"native_finish_reason\":\"STOP\",\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"lang\\\": \\\"en\\\",\\n  \\\"content\\\": \\\"non_incident\\\",\\n  \\\"reliability\\\": \\\"no_evidence\\\",\\n  \\\"why\\\": \\\"The footage shows flooded streets near a riverfront without evidence of war crimes or hostilities.\\\",\\n  \\\"triage_rests\\\": {\\n    \\\"frame\\\": 1,\\n    \\\"quote\\\": \\\"\\\"\\n  },\\n  \\\"title\\\": \\\"Flooding inundates waterfront street\\\",\\n  \\\"title_ar\\\": \\\"فيضانات تغمر شارعاً على الواجهة البحرية\\\",\\n  \\\"title_rests\\\": {\\n    \\\"frame\\\": 1,\\n    \\\"quote\\\": \\\"\\\"\\n  },\\n  \\\"description\\\": [\\n    {\\n      \\\"line\\\": \\\"Floodwaters submerge a roadway adjacent to multi-story buildings.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 1,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"line\\\": \\\"Two flags stand mounted on tall poles in the water.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 1,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"line\\\": \\\"A vessel rests on the river in the distance.\\\",\\n      \\\"rests\\\": {\\n        \\\"frame\\\": 1,\\n        \\\"quote\\\": \\\"\\\"\\n      }\\n    }\\n  ],\\n  \\\"seen_labels\\\": [\\n    {\\n      \\\"label\\\": \\\"Property/Buildings, Civilian structure\\\",\\n      \\\"frame\\\": 1\\n    },\\n    {\\n      \\\"label\\\": \\\"Identifiable, Symbols and Text\\\",\\n      \\\"frame\\\": 1\\n    }\\n  ],\\n  \\\"said_labels\\\": []\\n}\",\"refusal\":null,\"reasoning\":\"**Analyzing Recent Video Data**\\n\\nI'm currently assessing visual evidence of a flooded riverfront town. The footage highlights submerged roads, buildings, and flags amidst rising waters, with hills visible in the distance.\\n\\n\",\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"**Analyzing Recent Video Data**\\n\\nI'm currently assessing visual evidence of a flooded riverfront town. The footage highlights submerged roads, buildings, and flags amidst rising waters, with hills visible in the distance.\\n\\n\",\"format\":\"google-gemini-v1\",\"index\":0},{\"type\":\"reasoning.encrypted\",\"data\":\"AY89a1/Qhv3g4aZz/ZIKhaoaKEdLw3ynCW57q5qKNKX0/9jhrvldAv/vOZPcwCijfL8zjrQ3Q+DXOP2rOFG+dvGScK8KC5KDeMBgITxx5Vszv3koCygcXn9QlNidyRAWLMmHGctC++dR9O4XAG+NEBmCSwWY3QE+lSk1F1T/wVkvrbg1QAKgm+R2anwp7Cn84rONP9TGreU2iBWAhhwMmuPI7a6MBH+inodGJCJRt6kweLxR2s16eu7IBWu++7fA5bRI+hDDtOyogibXxtUUZMIF7KxG5b1vHEuUcZ/hPkVt883XT041q0cmd/KcTuYgy07yrycswPyFjNsjVDJ71ffbUfg+9Gc/1qEkjunRtN8y0L85yu2d2qbstuPyotCt+1NttXpsRwq4WglwT5gZjBAEVOSOIP3iYsvQ9bH1e9FQqrSVmbDSGErYirbnLAW7l5s6fziYDqwGn10JnGOOofJOoCKWQoa3xXwLmjXhSM0RWSGkzk25JtdcBmm0UgXjncRLKKmK9W6W2ULo1KC6F4YywOdP0r4IRG1bUEpu+/jr/HhiYh2w2zJiFz6wMzmQTVE+GEtD6C2SUrmR1Qh5tbWfRCEjIOpk6cL9MCLotMczVFisqW/1cOX7lxfk/z5OOeoonerEA9Huw7dnNd5CmxTmkmTvohtWEPDDFZLBnYkEbLaILV/XXeHa00GPEkmDMaDNiFnVrKx8gb6O/W92ofgN1D4r37a5mvcnqbCm0aykK2VVUvEiTY2DlBudC3JMiyZ99wiJLvThTy+rYAOcwSe62lQINKqhN4zBUxYZISS5QDcT2U5azvjtAjZnpiH8x+3w4XFKCysw8iUmurVrhUBA+4fmHzNfpE9efnlafEkiXJgZHjsAjCcaDDX8zaNBhLHB3D9G939duhVOJxPxUcxSwGee7XmeRMD57gwtZnEknpOdxo4WuJuXGzI8SpWMBJBsOGOWgt4TPmRG7ThOHzKxbEsRc3PDtxqJBQNoyT6RQmGc99NfstFD0N5ZaTsifIoP/FYMoDBgM41FyLPN4xeCSQdmFCFkpkJ3+8ZuZGnQKnCsusipeAxeku586vnZYnMKXJO87pRHHUsMwU4s8uFmn/vO7dto3fS5kHK+UqBroOzDC3VcF7HN/OrMvHCwi58sYXVMEDzvmdi1oe1dbEMvi4y+4Kp59LeR9H2RkP2bmhrZZqJ6h7ipt+RbuBPHVOTONiH2ZnxGET5+UyVxFlBHS5zOj1Q5lhU1PD1U0JTXB9pO109cmnj5mXQi4ezPEY5Utr2oaq2yt3TIyO+b2re2Pa3DAeD2rPqdY5k+1eBQZrGbE46XZ1dezj6csXYC+DyZ/FyBRM6fcgt872UEeTrgogxU4wTy38bdbKDEB+p6gzkv4/SWJ97+g4e5frvTUu+yocEs4AwGb7kZMEnm3JzsghRZWcNYzp75VnBfjqUOeAk+ihANoMxRS50LW2UMNYZRAObrCM830eZZA7tCcKC9AAHfLMnobxDZOmUv6YszuFG1oaZcm7Zgu3HQONlS6Y+pWso8B7JfI3i1h4hAyr7f+cjh6VxEkZhtWXW0S9fKxtH7Npz5XXi5lU5JKckCyql6whStyrLfqZs4KyqOUtLE7PpRRCJ/mu8xXIX2Po3nJlfdzV/RS4mvkwirikVhCXdtNu+N6TpZjBYkiVBQv2yB2P2lhPzeKn7B4US+Ez9Kvv3f1FUnw6ltcvz0jAJBRwlyCz9nr1fxAmsYK7O2QBYMaMiiiX8CB32r.eyJlbmRwb2ludF9zbHVnIjoiZ29vZ2xlL2dlbWluaS0zLjgtZmxhc2gtMjAyNjA5MDJ8Z29vZ2xlLXZlcnRleC9nbG9iYWwifQ\",\"format\":\"google-gemini-v1\",\"index\":1}]}}],\"usage\":{\"prompt_tokens\":11845,\"completion_tokens\":595,\"total_tokens\":12440,\"cost\":0.011115,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.011115,\"upstream_inference_prompt_cost\":0.00888375,\"upstream_inference_completions_cost\":0.00223125},\"completion_tokens_details\":{\"reasoning_tokens\":236,\"image_tokens\":0,\"audio_tokens\":0}}}",
+   "response_sha256": "ba3f2fc2560674dd12afb2fa213e5befc9017968767efb48647feb0138589b82",
+   "generation": "gen-1795355856-WCfHTi3ZF61Czsruk3hl",
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "flood_promenade",
+   "tool": "transcribe",
+   "input_sha256": "e88fbd56062b73a09c6ebb125356a37f13faba0238cc5d279331b838ba80bf65",
+   "cursor": 0,
+   "request": "2f8bf6583d1e234ef30677fa58dfe0ce5ab81c2b182a0b364eb4c04ef5077813",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:28+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[baggrundssnak]\",\"usage\":{\"seconds\":6.968,\"cost\":0.0004258222222221448},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.36018943786621094,\"duration\":6.968,\"segments\":[{\"id\":0,\"start\":0,\"end\":6.968,\"text\":\"[baggrundssnak]\"}],\"words\":[{\"word\":\"[baggrundssnak]\",\"type\":\"audio_event\",\"start\":0.1,\"end\":2.56,\"confidence\":0.931018776700617}]}",
+   "response_sha256": "4c9d6d08f6a673fbca8df7177bd9f28cf25d706faaf06dc4be78721a13fb14a8",
+   "generation": "gen-stt-1795355788-qpUeN0MSmDd7JjwanoBD",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -260,6 +469,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "original",
+   "tool": "transcribe",
+   "input_sha256": "9ef6d93a7a1479ebd898183cb5b452b0b94ddb1d7aa57a2bd243ab8d2dd9c857",
+   "cursor": 0,
+   "request": "289dd60a9bf15d79fbbd207a31a3950a1498ea4be63846e4d29e4970d80abc9d",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T14:00:01+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":21.001,\"cost\":0.001283394444444211},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":21.001,\"segments\":[{\"id\":0,\"start\":0,\"end\":21.001,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0.06,\"end\":20.96,\"confidence\":0.8163036243779748}]}",
+   "response_sha256": "bf83e38a74d26773c5243d87b7d4442d80c825951085ccc5f1faedad6f6a9b22",
+   "generation": "gen-stt-1795356000-l6gJTXc2lbeCH7MhVEbr",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -293,6 +519,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "pile_cumulus",
+   "tool": "transcribe",
+   "input_sha256": "94f6185eb56d05f154ed7246c76aafe303d2ed59702cec182e83340764fb22d8",
+   "cursor": 0,
+   "request": "26a3f1e6a19154fee851dd62c6776b59461f4201455e3ec06bd61c883937eb6a",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:58:43+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[birds chirping]\",\"usage\":{\"seconds\":8,\"cost\":0.0004888888888888},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5602928400039673,\"duration\":8,\"segments\":[{\"id\":0,\"start\":0,\"end\":8,\"text\":\"[birds chirping]\"}],\"words\":[{\"word\":\"[birds chirping]\",\"type\":\"audio_event\",\"start\":0,\"end\":6.56,\"confidence\":0.9709593924337858}]}",
+   "response_sha256": "d54f27458f42a6b260e2823798186c829f646b1dd310408d9fbf2b059cd6ee5a",
+   "generation": "gen-stt-1795355922-jY2wFm9YYJwUArTjHBPM",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "pile_falls_brown",
    "tool": "assess",
    "input_sha256": "d0ef72f9fa80e34455b5b8a23f16a2176b4a01b229c8caa6a19db5e7fd0efe34",
@@ -305,6 +548,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "pile_falls_brown",
+   "tool": "transcribe",
+   "input_sha256": "d0ef72f9fa80e34455b5b8a23f16a2176b4a01b229c8caa6a19db5e7fd0efe34",
+   "cursor": 0,
+   "request": "2ddcc0509da693e92cb9057407267755d956448b51624588bb68e05457ccf245",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:06+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":8,\"cost\":0.0004888888888888},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":8,\"segments\":[{\"id\":0,\"start\":0,\"end\":8,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0,\"end\":7.94,\"confidence\":0.9219214910443833}]}",
+   "response_sha256": "ae191ebf7494734c3f334bb67de8021550543090752e007a673c971dd7c1bdb0",
+   "generation": "gen-stt-1795355765-qUTddRYsGepuiVu0u4g0",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -323,6 +583,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "pile_falls_cliff",
+   "tool": "transcribe",
+   "input_sha256": "5000a66a9ce47b16f6b744af562fd71e247d22c303e8daa88a1c153a6a1658a8",
+   "cursor": 0,
+   "request": "27134fd34659db56dc991c6f9775cfca4ec3f44049315a364deb00f40007380f",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:58:44+00:00",
+   "status": 200,
+   "response": "{\"text\":\"\",\"usage\":{\"seconds\":8,\"cost\":0.0004888888888888},\"task\":\"transcribe\",\"language\":\"en\",\"language_confidence\":0,\"duration\":8,\"segments\":[],\"words\":[]}",
+   "response_sha256": "b3da36a07f82e0dbe082e6bc2b4965bd601dddaef4840b4d24efb505cc09b677",
+   "generation": "gen-stt-1795355923-gznIUHE7mTLuzGVtHfid",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "pile_falls_small",
    "tool": "assess",
    "input_sha256": "2b933537de5a5fb9a4173c1fb429b397a5e3214bf04e19b32034753a80cb2f73",
@@ -335,6 +612,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "pile_falls_small",
+   "tool": "transcribe",
+   "input_sha256": "2b933537de5a5fb9a4173c1fb429b397a5e3214bf04e19b32034753a80cb2f73",
+   "cursor": 0,
+   "request": "1f2fa571926b2ab794c22d331c2d230525181914bbb637938561ff9e049f1999",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:55:54+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[static]\",\"usage\":{\"seconds\":8,\"cost\":0.0004888888888888},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.38090118765830994,\"duration\":8,\"segments\":[{\"id\":0,\"start\":0,\"end\":8,\"text\":\"[static]\"}],\"words\":[{\"word\":\"[static]\",\"type\":\"audio_event\",\"start\":0.58,\"end\":5.08,\"confidence\":0.5931498217174488}]}",
+   "response_sha256": "7bdb3da4eb869f8e8169bda6410ff857e36eaf8708bb7bea9533d2bf95540915",
+   "generation": "gen-stt-1795355754-gquBTuDQLkIrlTtJZfBZ",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -353,6 +647,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "pile_falls_tall",
+   "tool": "transcribe",
+   "input_sha256": "4da303642d7b3e446c1d756dda6ad8e166b651129956d6d6f2cc1b540d57236b",
+   "cursor": 0,
+   "request": "efabcb2f6f3aee4265831d2630ffb73d8e71a119a9d328469285f914849a12e0",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:58:46+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":8,\"cost\":0.0004888888888888},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":8,\"segments\":[{\"id\":0,\"start\":0,\"end\":8,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0.06,\"end\":6.86,\"confidence\":0.9033722520847799}]}",
+   "response_sha256": "b04418f075ae9625150eb13cafa71234ad18e95056053190b6d2965256eed6d8",
+   "generation": "gen-stt-1795355926-Uat39NVUFkOz2bmdNDHy",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "pile_ghat_mist",
    "tool": "assess",
    "input_sha256": "9c21c4ef7cbb4b64616a2f7df66cfbe151c01c20bcf8a4a62e70ddaf1b75f2c9",
@@ -365,6 +676,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "pile_ghat_mist",
+   "tool": "transcribe",
+   "input_sha256": "9c21c4ef7cbb4b64616a2f7df66cfbe151c01c20bcf8a4a62e70ddaf1b75f2c9",
+   "cursor": 0,
+   "request": "1a8468f1ed37721f4c2d831300ebec39433fdaa3b108f462c944b3b999de49af",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:58:47+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[outro jingle]\",\"usage\":{\"seconds\":8.0005,\"cost\":0.0004889194444443555},\"task\":\"transcribe\",\"language\":\"por\",\"language_confidence\":0.7767283916473389,\"duration\":8.0005,\"segments\":[{\"id\":0,\"start\":0,\"end\":8.0005,\"text\":\"[outro jingle]\"}],\"words\":[{\"word\":\"[outro jingle]\",\"type\":\"audio_event\",\"start\":0.08,\"end\":6.82,\"confidence\":0.8740762226060952}]}",
+   "response_sha256": "89d1ee8f08fd45505019b4c148ba2686590abe4ee389ece07d6b5dee27d9cea6",
+   "generation": "gen-stt-1795355927-k2BcMUUxeD5S0hzv9idn",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -383,6 +711,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "pile_lake_drops",
+   "tool": "transcribe",
+   "input_sha256": "f4fd5b51bd71fc63d2973c73b08e7b1f4ecbcf9a3be44e994641be29eef0a26f",
+   "cursor": 0,
+   "request": "2471cfe7e14e9cf0429d2605026faac1c7680e42fe229d7d19f15168ad9524d0",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:58:48+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[applause]\",\"usage\":{\"seconds\":8.01,\"cost\":0.000489499999999911},\"task\":\"transcribe\",\"language\":\"ron\",\"language_confidence\":0.28127267956733704,\"duration\":8.01,\"segments\":[{\"id\":0,\"start\":0,\"end\":8.01,\"text\":\"[applause]\"}],\"words\":[{\"word\":\"[applause]\",\"type\":\"audio_event\",\"start\":0,\"end\":6.2,\"confidence\":0.7780497374635279}]}",
+   "response_sha256": "2be8b1340885ffc839293fb8b196d02ca3ef029ceac554ad0362907814e1b5c9",
+   "generation": "gen-stt-1795355928-xEb4VrZ2VZO8P9Wv4kei",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "pile_lake_ice",
    "tool": "assess",
    "input_sha256": "3aa12b3b8817d9b4f3d3a7a7d1fb3ed7e89b9a0e8d3506a337f8c6c5a5b30dbd",
@@ -398,6 +743,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "pile_lake_ice",
+   "tool": "transcribe",
+   "input_sha256": "3aa12b3b8817d9b4f3d3a7a7d1fb3ed7e89b9a0e8d3506a337f8c6c5a5b30dbd",
+   "cursor": 0,
+   "request": "4e84aa4f4955a2b29733b8ae0bb9e0490ca737a4233cdaba21625b30472c0217",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:55:56+00:00",
+   "status": 200,
+   "response": "{\"text\":\"\",\"usage\":{\"seconds\":8,\"cost\":0.0004888888888888},\"task\":\"transcribe\",\"language\":\"en\",\"language_confidence\":0,\"duration\":8,\"segments\":[],\"words\":[]}",
+   "response_sha256": "b3da36a07f82e0dbe082e6bc2b4965bd601dddaef4840b4d24efb505cc09b677",
+   "generation": "gen-stt-1795355756-XZXuywePK6WU8ty72DI3",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "pile_lone_tree",
    "tool": "assess",
    "input_sha256": "eaba1cd65163b9d991738042be741c20f05ddfbb3029e31f4e4598eebd2a933d",
@@ -410,6 +772,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "pile_lone_tree",
+   "tool": "transcribe",
+   "input_sha256": "eaba1cd65163b9d991738042be741c20f05ddfbb3029e31f4e4598eebd2a933d",
+   "cursor": 0,
+   "request": "e2fb218e8c4e9b04c5249efbb5e51993226a99b939d90d5b9bbd59f3ebce0b4d",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:55:58+00:00",
+   "status": 200,
+   "response": "{\"text\":\"\",\"usage\":{\"seconds\":8,\"cost\":0.0004888888888888},\"task\":\"transcribe\",\"language\":\"en\",\"language_confidence\":0,\"duration\":8,\"segments\":[],\"words\":[]}",
+   "response_sha256": "b3da36a07f82e0dbe082e6bc2b4965bd601dddaef4840b4d24efb505cc09b677",
+   "generation": "gen-stt-1795355757-Dh3ZFIkYkiXXom5eUTjK",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -443,6 +822,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "pile_plane_clouds",
+   "tool": "transcribe",
+   "input_sha256": "1969b989ddc0ff89c962d45e0560ed0e35808d9edca4aa7587b53d6066a8ac72",
+   "cursor": 0,
+   "request": "f8c095d9e337387443669875067c968cdf0449b41d20ffae04c01717aade7665",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:55:59+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":7.967,\"cost\":0.0004868722222221337},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":7.967,\"segments\":[{\"id\":0,\"start\":0,\"end\":7.967,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0.08,\"end\":5.82,\"confidence\":0.8984093843441283}]}",
+   "response_sha256": "1c2e48bb5e8268ca2fd46886e07771c33e9d59207cac2843b99729e36372d0b1",
+   "generation": "gen-stt-1795355759-6fEbhTupd3m4WVHTS1ph",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "pile_rail_line",
    "tool": "assess",
    "input_sha256": "629441eaf5b32f9145c529e73efd657cab9ad6471d1a1e83a65e6b147783489e",
@@ -455,6 +851,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "pile_rail_line",
+   "tool": "transcribe",
+   "input_sha256": "629441eaf5b32f9145c529e73efd657cab9ad6471d1a1e83a65e6b147783489e",
+   "cursor": 0,
+   "request": "1aac305e63b952d348ea3bc55ae16303cdb0344dc498cd35b0accc034063c36f",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:07+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[birds chirping]\",\"usage\":{\"seconds\":8,\"cost\":0.0004888888888888},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5602928400039673,\"duration\":8,\"segments\":[{\"id\":0,\"start\":0,\"end\":8,\"text\":\"[birds chirping]\"}],\"words\":[{\"word\":\"[birds chirping]\",\"type\":\"audio_event\",\"start\":1.38,\"end\":6.88,\"confidence\":0.9391564655338798}]}",
+   "response_sha256": "a793f6c4e75c60a89075f2544857026410bb9d5480a15a4191e3c623b6587013",
+   "generation": "gen-stt-1795355767-qYOo0EyM36XYo6N2xbHo",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -473,6 +886,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "pile_rain_puddle",
+   "tool": "transcribe",
+   "input_sha256": "f30031f4465f57f216c1dfffabd2b7c5cba5db456a66870c60dbc59465173de3",
+   "cursor": 0,
+   "request": "0c66ad8227ec699169b3a4535305a31c4f919000781722bedc36c1ee175fb2d6",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:09+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[static]\",\"usage\":{\"seconds\":8.0005,\"cost\":0.0004889194444443555},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.38090118765830994,\"duration\":8.0005,\"segments\":[{\"id\":0,\"start\":0,\"end\":8.0005,\"text\":\"[static]\"}],\"words\":[{\"word\":\"[static]\",\"type\":\"audio_event\",\"start\":0,\"end\":6.84,\"confidence\":0.6407429853663785}]}",
+   "response_sha256": "3043ce00b3436f5fd235a22af3bded8dffbe640da38e4db9774d0ee82378418a",
+   "generation": "gen-stt-1795355768-iZlyUp387H0SNsipxAE9",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "pile_rain_trees",
    "tool": "assess",
    "input_sha256": "102985ce1b16e171f6e68d25bd99f3466eb92c667834534419a57fd07da06c2d",
@@ -485,6 +915,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "pile_rain_trees",
+   "tool": "transcribe",
+   "input_sha256": "102985ce1b16e171f6e68d25bd99f3466eb92c667834534419a57fd07da06c2d",
+   "cursor": 0,
+   "request": "e53933bb6047529b06d8430365baae13c4196b46588c11c8674514c79fc7d7e3",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:56:02+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":8,\"cost\":0.0004888888888888},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":8,\"segments\":[{\"id\":0,\"start\":0,\"end\":8,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0,\"end\":7.96,\"confidence\":0.7381605787775731}]}",
+   "response_sha256": "236658234831fe2f8cd8e3f1a7b4ab327fe710e93e874bf5120917db33e9f5fe",
+   "generation": "gen-stt-1795355761-7qPKDiosDqC36PhalQw2",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -533,6 +980,23 @@
    "route": "cloud-zdr"
   },
   {
+   "source": "pile_statue_fountain",
+   "tool": "transcribe",
+   "input_sha256": "d0496b9c349f091a4b079cf6f045e9c47c8031583eba08965028a4a787b61ac4",
+   "cursor": 0,
+   "request": "7f78dea4509b585331c1775da35ddb5ba7fbc23fc5909b958fb00bee54535ba6",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:58:49+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[water flowing]\",\"usage\":{\"seconds\":8.0005,\"cost\":0.0004889194444443555},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.6725940108299255,\"duration\":8.0005,\"segments\":[{\"id\":0,\"start\":0,\"end\":8.0005,\"text\":\"[water flowing]\"}],\"words\":[{\"word\":\"[water flowing]\",\"type\":\"audio_event\",\"start\":0,\"end\":7.26,\"confidence\":0.6197882934858062}]}",
+   "response_sha256": "9fddd35ce077014ae9dd05aac7c81536641ce84e024b54e28be5df886ca5bad0",
+   "generation": "gen-stt-1795355929-GSHHxSWGsXpM9k3dFaoI",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
+  },
+  {
    "source": "pile_weir_pool",
    "tool": "assess",
    "input_sha256": "dcb6e8d71496c1644360fc4e3eddfb0713253d372784cafbfb491118e38c9091",
@@ -545,6 +1009,23 @@
    "prompt_hash": "631dc85ab7773704b3f26773f82f151b3d05bfbfad77cdfdc6978ce9f4c5f4a7",
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
+   "route": "cloud-zdr"
+  },
+  {
+   "source": "pile_weir_pool",
+   "tool": "transcribe",
+   "input_sha256": "dcb6e8d71496c1644360fc4e3eddfb0713253d372784cafbfb491118e38c9091",
+   "cursor": 0,
+   "request": "5cd8fd91313afa0f9af48918ddb13279ba0e498c4763a5ff4e958df244d91505",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:58:45+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":8.003,\"cost\":0.0004890722222221333},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":8.003,\"segments\":[{\"id\":0,\"start\":0,\"end\":8.003,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0.08,\"end\":7.96,\"confidence\":0.8679462776727013}]}",
+   "response_sha256": "e50351253bd4a78a3355aab844491897aaef61c9b61e429b7c16590246fabebc",
+   "generation": "gen-stt-1795355925-DHTYzVeRQnZvF9rY9sj6",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
    "route": "cloud-zdr"
   },
   {
@@ -561,682 +1042,26 @@
    "model_served": "google/gemini-3.8-flash",
    "provider_served": "Google",
    "route": "cloud-zdr"
-  }
- ],
- "speech": [
-  {
-   "source": "copy_crop",
-   "input_sha256": "6125102633d73a0be8fcf71131859646b9a1ccb0415fe62710910eba45434e30",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 21000,
-   "segments": []
-  },
-  {
-   "source": "copy_logo",
-   "input_sha256": "d3711eb11b45091eeee7bbe29fd41f622403cca31560cbdcb8746ccc3f7b73cb",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 21000,
-   "segments": []
-  },
-  {
-   "source": "copy_lowrate",
-   "input_sha256": "b61f5216606f12769828b9822139fd2eb905c3a9755cd781e133c4dd4a77102a",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 21000,
-   "segments": []
-  },
-  {
-   "source": "copy_mirror",
-   "input_sha256": "7764a70a1234d0fe0389ee2924c35465b6ed4fbce8fdc88984b9e04c05dc411a",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 21000,
-   "segments": []
-  },
-  {
-   "source": "copy_trim",
-   "input_sha256": "59e57cb0736ef97605da8e8e7b8995d55a43463da3217eea5034fee6426dee77",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "ar",
-    "detected": "en",
-    "probability": "0.375"
-   },
-   "duration_ms": 12000,
-   "segments": [
-    {
-     "ms": [
-      500,
-      1920
-     ],
-     "text": "اشتركوا في القناة",
-     "avg_logprob": "-0.224",
-     "no_speech_prob": "0.000",
-     "words": [
-      {
-       "w": "اشتركوا",
-       "ms": [
-        500,
-        1920
-       ],
-       "p": "0.816"
-      },
-      {
-       "w": "في",
-       "ms": [
-        1920,
-        1920
-       ],
-       "p": "0.997"
-      },
-      {
-       "w": "القناة",
-       "ms": [
-        1920,
-        1920
-       ],
-       "p": "0.997"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "source": "copy_vertical",
-   "input_sha256": "8ad9f159df744af62f9a8af78c6749d50f47929b88f15f8b7ebccf7cb6234490",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 21000,
-   "segments": []
-  },
-  {
-   "source": "copy_viral",
-   "input_sha256": "349903b81faad0bd067b3bb8e02a9e28a8c7fbb58175250f51b3ac09566fed51",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 14000,
-   "segments": []
-  },
-  {
-   "source": "flood_arches",
-   "input_sha256": "bedeb9e503babd63637142ac7585253ecb4c926b2cd2c541144aeac2199696e2",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 10549,
-   "segments": []
-  },
-  {
-   "source": "flood_channel",
-   "input_sha256": "d65de2ed86b55b2eb83b05160ceefa0fee726d1279b2b5baefcc11c55f9fe26c",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 12000,
-   "segments": []
-  },
-  {
-   "source": "flood_footbridge",
-   "input_sha256": "77c738824f6592eec01c14f828f998f4ec7644721b9483e662d34b6e42e4c55c",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 12000,
-   "segments": []
-  },
-  {
-   "source": "flood_ford",
-   "input_sha256": "d49a246c89d425a39c50505d70b6b29cbddb10b501d9ec21e4933185f37cbbe9",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 12020,
-   "segments": []
-  },
-  {
-   "source": "flood_garden",
-   "input_sha256": "d15b10921b71fccf62a6f04df400b92822166036e8905c2a9ccf1e74b70c9f03",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 12000,
-   "segments": []
-  },
-  {
-   "source": "flood_promenade",
-   "input_sha256": "e88fbd56062b73a09c6ebb125356a37f13faba0238cc5d279331b838ba80bf65",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "ar",
-    "detected": "en",
-    "probability": "0.377"
-   },
-   "duration_ms": 7016,
-   "segments": [
-    {
-     "ms": [
-      0,
-      5880
-     ],
-     "text": "اشتركوا في القناة",
-     "avg_logprob": "-0.459",
-     "no_speech_prob": "0.000",
-     "words": [
-      {
-       "w": "اشتركوا",
-       "ms": [
-        0,
-        2640
-       ],
-       "p": "0.721"
-      },
-      {
-       "w": "في",
-       "ms": [
-        2640,
-        2720
-       ],
-       "p": "0.993"
-      },
-      {
-       "w": "القناة",
-       "ms": [
-        2720,
-        5880
-       ],
-       "p": "0.987"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "source": "original",
-   "input_sha256": "9ef6d93a7a1479ebd898183cb5b452b0b94ddb1d7aa57a2bd243ab8d2dd9c857",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 21000,
-   "segments": []
-  },
-  {
-   "source": "pile_cumulus",
-   "input_sha256": "94f6185eb56d05f154ed7246c76aafe303d2ed59702cec182e83340764fb22d8",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8008,
-   "segments": []
-  },
-  {
-   "source": "pile_falls_brown",
-   "input_sha256": "d0ef72f9fa80e34455b5b8a23f16a2176b4a01b229c8caa6a19db5e7fd0efe34",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8008,
-   "segments": []
-  },
-  {
-   "source": "pile_falls_cliff",
-   "input_sha256": "5000a66a9ce47b16f6b744af562fd71e247d22c303e8daa88a1c153a6a1658a8",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8000,
-   "segments": []
-  },
-  {
-   "source": "pile_falls_small",
-   "input_sha256": "2b933537de5a5fb9a4173c1fb429b397a5e3214bf04e19b32034753a80cb2f73",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8000,
-   "segments": []
-  },
-  {
-   "source": "pile_falls_tall",
-   "input_sha256": "4da303642d7b3e446c1d756dda6ad8e166b651129956d6d6f2cc1b540d57236b",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8008,
-   "segments": []
-  },
-  {
-   "source": "pile_ghat_mist",
-   "input_sha256": "9c21c4ef7cbb4b64616a2f7df66cfbe151c01c20bcf8a4a62e70ddaf1b75f2c9",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8010,
-   "segments": []
-  },
-  {
-   "source": "pile_lake_drops",
-   "input_sha256": "f4fd5b51bd71fc63d2973c73b08e7b1f4ecbcf9a3be44e994641be29eef0a26f",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8009,
-   "segments": []
-  },
-  {
-   "source": "pile_lake_ice",
-   "input_sha256": "3aa12b3b8817d9b4f3d3a7a7d1fb3ed7e89b9a0e8d3506a337f8c6c5a5b30dbd",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8000,
-   "segments": []
-  },
-  {
-   "source": "pile_lone_tree",
-   "input_sha256": "eaba1cd65163b9d991738042be741c20f05ddfbb3029e31f4e4598eebd2a933d",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8000,
-   "segments": []
-  },
-  {
-   "source": "pile_plane_clouds",
-   "input_sha256": "1969b989ddc0ff89c962d45e0560ed0e35808d9edca4aa7587b53d6066a8ac72",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8000,
-   "segments": []
-  },
-  {
-   "source": "pile_rail_line",
-   "input_sha256": "629441eaf5b32f9145c529e73efd657cab9ad6471d1a1e83a65e6b147783489e",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8000,
-   "segments": []
-  },
-  {
-   "source": "pile_rain_puddle",
-   "input_sha256": "f30031f4465f57f216c1dfffabd2b7c5cba5db456a66870c60dbc59465173de3",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8000,
-   "segments": []
-  },
-  {
-   "source": "pile_rain_trees",
-   "input_sha256": "102985ce1b16e171f6e68d25bd99f3466eb92c667834534419a57fd07da06c2d",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8008,
-   "segments": []
-  },
-  {
-   "source": "pile_statue_fountain",
-   "input_sha256": "d0496b9c349f091a4b079cf6f045e9c47c8031583eba08965028a4a787b61ac4",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8000,
-   "segments": []
-  },
-  {
-   "source": "pile_weir_pool",
-   "input_sha256": "dcb6e8d71496c1644360fc4e3eddfb0713253d372784cafbfb491118e38c9091",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8000,
-   "segments": []
   },
   {
    "source": "pile_wide_river",
+   "tool": "transcribe",
    "input_sha256": "a8ceb0dbc78755263116e955b87f3c82e92a478f8653858232a7885c77fc57dc",
-   "model": {
-    "model": "large-v3-turbo",
-    "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
-    "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
-    "weights_sha256": "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da",
-    "runtime": "faster-whisper 1.2.1, ctranslate2 4.8.3",
-    "device": "cpu",
-    "compute_type": "int8"
-   },
-   "language": {
-    "language": "en",
-    "detected": "en",
-    "probability": "0.590"
-   },
-   "duration_ms": 8000,
-   "segments": []
+   "cursor": 0,
+   "request": "8fbf01b91f3102498ac5f8a3a5eb54e0f9f78064666d436b81432411b80b834e",
+   "model_requested": "elevenlabs/scribe-v2",
+   "recorded_at": "2026-11-22T13:58:50+00:00",
+   "status": 200,
+   "response": "{\"text\":\"[background noise]\",\"usage\":{\"seconds\":8.0005,\"cost\":0.0004889194444443555},\"task\":\"transcribe\",\"language\":\"eng\",\"language_confidence\":0.5091670751571655,\"duration\":8.0005,\"segments\":[{\"id\":0,\"start\":0,\"end\":8.0005,\"text\":\"[background noise]\"}],\"words\":[{\"word\":\"[background noise]\",\"type\":\"audio_event\",\"start\":0,\"end\":7.02,\"confidence\":0.8413816975173857}]}",
+   "response_sha256": "2bcf3bc886d8c0ef977f7411db1f45995746eecbde97cba88c76c249c5739cf2",
+   "generation": "gen-stt-1795355929-qOTqCCJrRahkUMqzSN9z",
+   "prompt_hash": "016a55c29273b47054b40dfd13002bd84c096742baaa8c8505987e20021fa8b7",
+   "model_served": "elevenlabs/scribe-v2",
+   "provider_served": "a zero-retention provider",
+   "route": "cloud-zdr"
   }
  ],
- "recorded_at": "2026-11-22T11:25:37+00:00",
+ "speech": [],
+ "recorded_at": "2026-11-22T14:01:39+00:00",
  "recorded_by": "stk demo-seed --record"
 }

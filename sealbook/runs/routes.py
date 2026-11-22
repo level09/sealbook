@@ -263,6 +263,40 @@ async def chat(
     return Served(data, resp.content, endpoint, data["model"], provider)
 
 
+async def transcription(
+    route: Route, body: dict, transport: httpx2.AsyncBaseTransport | None = None
+) -> Served:
+    """POST one recording to OpenRouter's speech to text endpoint. Its response
+    names neither the served model nor the provider (checked 2026-11-22), so the
+    requested model stands for both, constrained by the zero-retention filter, and
+    the generation id in the raw output looks them up later."""
+    if route not in (Route.CLOUD_ZDR, Route.CLOUD):
+        raise RouteError(f"{route} has no hosted speech to text")
+    base, key = _target(route)
+    if route is Route.CLOUD_ZDR:
+        body = {**body, "provider": zdr_provider()}
+    endpoint = f"{base}/audio/transcriptions"
+    try:
+        async with httpx2.AsyncClient(transport=transport, timeout=TIMEOUT) as client:
+            resp = await client.post(
+                endpoint, json=body, headers={"Authorization": f"Bearer {key}"}
+            )
+    except httpx2.HTTPError as exc:
+        raise RouteError(f"{route} unreachable: {exc!r}") from exc
+    if resp.status_code != 200:
+        raise RouteError(f"{route} returned {resp.status_code}: {resp.text[:300]}")
+    data = resp.json()
+    if "error" in data:
+        raise RouteError(f"{route} error: {data['error']}")
+    data["generation"] = resp.headers.get("x-generation-id")
+    provider = (
+        "a zero-retention provider"
+        if route is Route.CLOUD_ZDR
+        else "an unnamed provider"
+    )
+    return Served(data, resp.content, endpoint, body["model"], provider)
+
+
 def content(served: Served) -> str:
     choice = served.data["choices"][0]
     if choice.get("finish_reason") not in ("stop", None):

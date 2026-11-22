@@ -53,9 +53,17 @@ class Config(stk.Config):
     FINDINGS_PER_KIND = int(os.environ.get("FINDINGS_PER_KIND", "20"))
     FINGERPRINT_MAX_SECONDS = int(os.environ.get("FINGERPRINT_MAX_SECONDS", "3600"))
 
+    # Speech to text. Ordinary recordings go to TRANSCRIBE_MODEL on OpenRouter's
+    # speech to text endpoint (cloud-zdr, OPENROUTER_API_KEY) where the policy puts
+    # cloud-zdr first; sensitive ones stay on the local model, which the sensitive
+    # row lists first. ElevenLabs Scribe v2 wrote no word on any no-speech clip and
+    # read the Arabic and English scripts best of the zero-retention models with
+    # word times (2026-11-22, docs/decisions.md). TRANSCRIBE_MODEL= (empty) reads
+    # every recording locally.
+    TRANSCRIBE_MODEL = os.environ.get("TRANSCRIBE_MODEL", "elevenlabs/scribe-v2")
     # Local speech to text (faster-whisper). Weights are fetched once with
     # `stk speech-model`; workers only read the cache, so no audio leaves the machine.
-    # Empty turns transcription off.
+    # Empty turns local transcription off.
     SPEECH_MODEL = os.environ.get("SPEECH_MODEL", "large-v3-turbo")
     SPEECH_DEVICE = os.environ.get("SPEECH_DEVICE", "auto")
     # "auto" is int8 on CPU and float16 on CUDA.

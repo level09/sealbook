@@ -23,8 +23,10 @@ uv run stk demo-seed --case never-there [--until N]           # into the app, ac
 
 The case is told in eight acts and read by the app itself: four papers are scanned
 pages, the rest typed text, and the seeder replays the recorded answers of the
-models that read them (`recordings.json`, 110 calls on cloud-zdr and one local
-speech to text run; the 52 extractions recorded again on 2026-11-22). Extraction
+models that read them (`recordings.json`, 111 calls on cloud-zdr, one of them the
+voice note's hosted speech to text; the 52 extractions recorded again on
+2026-11-22, and the voice note's transcription, extraction and first pass that
+day too). Extraction
 recovered 148 of the 152 planted claims, Mara's own evening in Brindle Cross and
 her sister's account among them, each place with its time and in whose words, so
 nothing is planted; the hunter flags all four planted contradictions. See
@@ -51,8 +53,9 @@ So the dated claims about Mara come from her statement, her sister's and two
 exhibit sheets an examiner wrote from the phone, MQ/3 (the photograph's metadata)
 and MQ/4 (the voice note, its sent time and a transcript). The picture and the
 recording are their own sources, so a person can check each sheet against them.
-Local speech to text (faster-whisper large-v3-turbo) writes "Joe, it's me" for
-"Jo"; the claim reads "heard as Joe".
+Speech to text (ElevenLabs Scribe v2, hosted, zero retention) writes "Joe, it's
+me" for "Jo", as the local Whisper did; the claim reads "heard as Joe". Its five
+lines open within half a second of where the script puts each sentence.
 
 By the clock, Mara's own 18:00 to 24:00 in Brindle Cross overlaps 21:52 and 22:07
 on Tanner's Row, 34 km away. Her sister's "about half past eleven" fits a drive

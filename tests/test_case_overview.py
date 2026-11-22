@@ -255,3 +255,27 @@ class CaseOverviewTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([a["key"] for a in agents], ["contradictions"])
         self.assertTrue(agents[0]["failed"])
         self.assertEqual(agents[0]["href"], "/people")
+
+
+class SourcesReadTest(unittest.IsolatedAsyncioTestCase):
+    async def test_a_read_source_waiting_only_on_search_indexing_is_read(self):
+        """Replayed cases leave their embeddings queued: the Overview read "0 of 52
+        sources read, 52 in progress" while every source page said it was read."""
+        from unittest import mock
+
+        from sealbook.cases import overview
+
+        def step(key, state, **kw):
+            return {"key": key, "state": state, "words": key} | kw
+
+        steps = {
+            "a": [step("read", "done"), step("indexed", "queued", side=True)],
+            "b": [step("read", "queued")],
+        }
+        db = mock.AsyncMock()
+        db.scalars.return_value = ["a", "b"]
+        with mock.patch.object(
+            overview.batch, "source_steps", mock.AsyncMock(return_value=steps)
+        ):
+            got = await overview.sources(db, "case-x")
+        self.assertEqual((got["read"], got["working"]), (1, 1))
