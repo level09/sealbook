@@ -148,6 +148,13 @@ class FourNamesSeedTest(Seeding):
         got = out["package"]
         self.assertEqual(got["sentences"], 5)
         self.assertEqual(got["problems"], [])
+        # No sentence cites the passport copy, the one sensitive source, and the
+        # links the conclusion rests on carry no file: the package reaches 8
+        # ordinary files and ships them with their 4 OCR texts. A sensitive file
+        # would be withheld unless its builder signed to include it.
+        self.assertEqual(got["withheld"], [])
+        self.assertEqual(got["files shipped"], 12)
+        self.assertEqual(got["statements"], 54)
         self.assertEqual(got["c2pa"], "Valid")
         self.assertFalse(got["c2pa signer trusted"])  # the demo authority
         self.assertTrue((self.saved / got["saved"]).exists())

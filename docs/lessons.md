@@ -942,3 +942,9 @@ covers in the text it was read from (`span_blob`).
   through `read.Claim`, the linker, reading, Candidate duplicates and the label
   rule: it supports a proposal only beside an agreeing field, never rules a pair
   out on spelling alone (same consonants), and says "heard as". Carry a value's provenance into every comparison of it.
+
+- A court package shipped every file its rows reached, sensitive ones included, with no
+  decision on record: the audience profiles decided props and "blobs or not", and
+  nothing in the build read the acquisition's sensitivity that every reading screen
+  masks by. A new path out of the app (an export, a package, an API) must ask the same
+  sensitivity question the screens ask, and default to withholding.

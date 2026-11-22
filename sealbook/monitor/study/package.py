@@ -16,8 +16,11 @@ brief opens with the case's signed conclusion and carries what it rests on. Then
    recipient would, with no database: `sealbook.ledger.verify_package` and
    `c2patool` on the signed cover.
 
+A sensitive source is withheld, as for any builder who has not signed to include
+it: its bytes stay out and its hash still verifies (`packages.service.files`).
+
 `out["package"]` holds what happened: the statements disclosed and each check's
-result, or what the build waits for."""
+result, the files shipped and withheld, or what the build waits for."""
 
 from __future__ import annotations
 
@@ -146,7 +149,15 @@ async def check(body: bytes) -> dict:
     try:
         zipfile.ZipFile(io.BytesIO(body)).extractall(tmp)
         problems, ok = verify_package(tmp)
-        out = {"checks passed": len(ok), "problems": problems}
+        manifest = json.loads((tmp / "manifest.json").read_bytes())
+        files = json.loads((tmp / "brief.json").read_bytes())["files"]
+        out = {
+            "checks passed": len(ok),
+            "problems": problems,
+            # A sensitive file nobody signed to include stays out; its hash verifies.
+            "files shipped": len(manifest["blobs"]),
+            "withheld": [f["title"] for f in files["withheld"]],
+        }
         if shutil.which("c2patool"):
             proc = await asyncio.create_subprocess_exec(
                 "c2patool",

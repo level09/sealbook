@@ -720,6 +720,11 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
                 f"\u201c{v['text']}\u201d, {v['standard_label'].lower()}, resting on "
                 f"{n} accepted item{'s' if n != 1 else ''}"
             )
+        if s.prop == Prop.ACCESS and v.get("action") == "disclose":
+            return (
+                f"include the sensitive file “{v['title']}” in the "
+                f"{v['audience']} package"
+            )
         if s.prop == Prop.CASE_STATUS:
             if v["status"] == "concluded":
                 return "mark the case concluded"

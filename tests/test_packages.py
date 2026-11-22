@@ -326,6 +326,48 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
             await seal_run(s, read, "ab" * 32)
             await accept(self.ocr_fact)
 
+            # A sensitive source: a witness's own statement, with one accepted claim.
+            self.secret = await blobs.put(
+                s,
+                b"Witness W-7 statement: Rana Aziz, seen 2015-02-11",
+                "text/plain",
+                blob_dir,
+            )
+            await record_acquisition(
+                s,
+                blob_sha256=self.secret.sha256,
+                origin="upload:witness-w7.txt",
+                collector_id=amal.id,
+                at=datetime.now(UTC),
+                context={"title": "Witness W-7 statement"},
+                sensitivity="sensitive",
+                doc_type="witness_statement",
+            )
+            witness = Run(
+                principal_id=agent.id,
+                tool="extract",
+                route="local",
+                inputs={"blobs": [self.secret.sha256]},
+                pubkey=run.pubkey,
+            )
+            s.add(witness)
+            await s.flush()
+            self.secret_fact = await append(
+                s,
+                StatementIn(
+                    subject=f"person:{uuid.uuid4()}",
+                    prop=Prop.NAME,
+                    value={"text": "Rana Aziz", "lang": "en"},
+                    author_id=agent.id,
+                    run_id=witness.id,
+                    span_blob=self.secret.sha256,
+                    span={"start": 23, "end": 32},
+                ),
+                sign,
+            )
+            await seal_run(s, witness, "ac" * 32)
+            await accept(self.secret_fact)
+
     async def asyncTearDown(self):
         await ext.engine.dispose()
 
@@ -558,6 +600,176 @@ class PackagesTest(unittest.IsolatedAsyncioTestCase):
             manifest = orjson.loads(blobs.read(blob, self.app.config["BLOB_DIR"]))
         self.assertEqual(manifest["blobs"], [])
         self.assertEqual(len(manifest["values"]), 1)  # the name, not the review
+
+    async def secret_brief(self, client, headers, audience="court"):
+        r = await client.post(
+            "/api/packages/briefs",
+            json={"item": {"title": "The witness", "audience": audience}},
+            headers=headers,
+        )
+        bid = (await r.get_json())["id"]
+        r = await client.post(
+            f"/api/packages/briefs/{bid}/sentences",
+            json={
+                "item": {
+                    "text": "A witness names Rana Aziz.",
+                    "statement_ids": [str(self.secret_fact.id), str(self.fact.id)],
+                }
+            },
+            headers=headers,
+        )
+        self.assertEqual(r.status_code, 200, await r.get_data(as_text=True))
+        return bid
+
+    async def finished(self, amal, ha, basel, hb, pid, sha) -> Path:
+        await self.attest(amal, ha, "amal", pid, sha)
+        await self.attest(basel, hb, "basel", pid, sha)
+        r = await amal.post(f"/api/packages/{pid}/finalize", json={}, headers=ha)
+        self.assertEqual(r.status_code, 200, await r.get_data(as_text=True))
+        body = await (await amal.get(f"/packages/{pid}/download")).get_data()
+        out = self.tmp / pid
+        zipfile.ZipFile(io.BytesIO(body)).extractall(out)
+        return out
+
+    async def test_a_sensitive_file_is_withheld_unless_its_builder_signs_for_it(self):
+        """A court package never ships a sensitive source's bytes silently: by
+        default the file is withheld and its hash still verifies; including it
+        takes a passkey-signed decision by the person building, for this brief and
+        audience, which the package carries and the verifier checks."""
+        secret = self.secret.sha256
+        async with self.app.test_client() as amal, self.app.test_client() as basel:
+            ha = await self.login(amal, "amal")
+            hb = await self.login(basel, "basel")
+            bid = await self.secret_brief(amal, ha)
+
+            # The build screen says which sensitive file the package would withhold.
+            page = await (await amal.get(f"/packages/brief/{bid}")).get_data(
+                as_text=True
+            )
+            boot = orjson.loads(
+                re.search(r'id="boot">(.*?)</script>', page, re.S).group(1)
+            )
+            [row] = [f for f in boot["brief"]["files"] if f["sensitive"]]
+            self.assertEqual(
+                (row["sha256"], row["title"], row["ships"], row["decision"]),
+                (secret, "Witness W-7 statement", False, None),
+            )
+            self.assertTrue(
+                all(f["ships"] for f in boot["brief"]["files"] if not f["sensitive"])
+            )
+
+            r = await amal.post(
+                f"/api/packages/briefs/{bid}/build", json={}, headers=ha
+            )
+            self.assertEqual(r.status_code, 200, await r.get_data(as_text=True))
+            built = await r.get_json()
+            out = await self.finished(
+                amal, ha, basel, hb, built["id"], built["manifest_sha256"]
+            )
+            manifest = orjson.loads((out / "manifest.json").read_bytes())
+            shipped = {b["sha256"] for b in manifest["blobs"]}
+            self.assertNotIn(secret, shipped)
+            self.assertFalse((out / "blobs" / secret).exists())
+            self.assertIn(self.fact.span_blob, shipped)
+            # Its hash stays in the chained acquisition row, so a copy still checks.
+            self.assertIn(secret, [a["blob_sha256"] for a in manifest["acquisitions"]])
+            problems, ok = verify_package(out)
+            self.assertEqual(problems, [])
+            self.assertIn("1 source file withheld", "\n".join(ok))
+            files = orjson.loads((out / "brief.json").read_bytes())["files"]
+            self.assertEqual(
+                [(f["sha256"], f["title"]) for f in files["withheld"]],
+                [(secret, "Witness W-7 statement")],
+            )
+            self.assertEqual(files["included_sensitive"], [])
+
+            # Only a sensitive file of this brief's package can be decided on.
+            for wrong in (self.fact.span_blob, "ab" * 32):
+                r = await amal.post(
+                    f"/api/packages/briefs/{bid}/disclose",
+                    json={"item": {"files": [wrong]}},
+                    headers=ha,
+                )
+                self.assertEqual(r.status_code, 400, wrong)
+
+            # Amal signs to include it: one passkey gesture, written like a reveal.
+            r = await amal.post(
+                f"/api/packages/briefs/{bid}/disclose",
+                json={"item": {"files": [secret]}},
+                headers=ha,
+            )
+            self.assertEqual(r.status_code, 200, await r.get_data(as_text=True))
+            staged = await r.get_json()
+            self.assertIn("Witness W-7 statement", staged["rows"][0]["summary"])
+            self.assertIn("court", staged["rows"][0]["summary"])
+            r = await amal.post(
+                "/api/review/commit",
+                json={
+                    "item": {
+                        "hash": staged["hash"],
+                        "credential": self.keys["amal"].assert_(staged["hash"]),
+                    }
+                },
+                headers=ha,
+            )
+            self.assertEqual(r.status_code, 200, await r.get_data(as_text=True))
+            async with ext.async_session_factory() as s:
+                decision = (
+                    await s.execute(
+                        select(Statement).where(
+                            Statement.subject == f"blob:{secret}",
+                            Statement.prop == Prop.ACCESS,
+                        )
+                    )
+                ).scalar_one()
+                self.assertEqual(decision.sig["kind"], "webauthn")
+
+            # Basel building the same brief has not decided: still withheld.
+            r = await basel.post(
+                f"/api/packages/briefs/{bid}/build", json={}, headers=hb
+            )
+            async with ext.async_session_factory() as s:
+                p = await s.get(Package, uuid.UUID((await r.get_json())["id"]))
+                m = orjson.loads(
+                    blobs.read(
+                        await s.get(Blob, p.manifest_sha256),
+                        self.app.config["BLOB_DIR"],
+                    )
+                )
+            self.assertNotIn(secret, {b["sha256"] for b in m["blobs"]})
+
+            page = await (await amal.get(f"/packages/brief/{bid}")).get_data(
+                as_text=True
+            )
+            boot = orjson.loads(
+                re.search(r'id="boot">(.*?)</script>', page, re.S).group(1)
+            )
+            [row] = [f for f in boot["brief"]["files"] if f["sensitive"]]
+            self.assertTrue(row["ships"])
+            self.assertEqual(row["decision"]["by"], "amal")
+            r = await amal.post(
+                f"/api/packages/briefs/{bid}/build", json={}, headers=ha
+            )
+            built = await r.get_json()
+            out = await self.finished(
+                amal, ha, basel, hb, built["id"], built["manifest_sha256"]
+            )
+        manifest = orjson.loads((out / "manifest.json").read_bytes())
+        self.assertIn(secret, {b["sha256"] for b in manifest["blobs"]})
+        self.assertTrue((out / "blobs" / secret).exists())
+        # The signed decision travels with the package and verifies offline.
+        self.assertIn(str(decision.id), [st["id"] for st in manifest["statements"]])
+        self.assertIn(decision.hash, [sg["hash"] for sg in manifest["signatures"]])
+        problems, ok = verify_package(out)
+        self.assertEqual(problems, [])
+        self.assertNotIn("withheld", "\n".join(ok))
+        files = orjson.loads((out / "brief.json").read_bytes())["files"]
+        self.assertEqual(files["withheld"], [])
+        [included] = files["included_sensitive"]
+        self.assertEqual(
+            (included["sha256"], included["by"], included["decision"]),
+            (secret, "amal", str(decision.id)),
+        )
 
     async def test_package_traces_ocr_claim_to_the_acquired_scan(self):
         async with self.app.test_client() as amal, self.app.test_client() as basel:

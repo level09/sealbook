@@ -42,6 +42,34 @@
                         </div>
                     </v-card-text>
                 </v-card>
+                <v-card v-if="brief.files.length" class="mb-6">
+                    <v-card-title class="pa-4 pb-1">Source files</v-card-title>
+                    <v-card-text class="pa-4 pt-1">
+                        <p class="text-body-medium mb-3">${ filesSummary }</p>
+                        <div v-for="f in sensitiveFiles" :key="f.sha256" class="pk-file">
+                            <i class="ti ti-lock" aria-hidden="true"></i>
+                            <div class="flex-grow-1">
+                                <div class="text-title-small" dir="auto">${ f.title }</div>
+                                <div class="text-body-small">${ f.ships ? 'Included on your signed decision of ' + day(f.decision.at) + '.' : brief.ships_files ? 'Sensitive. Withheld: its bytes stay out of the package and its hash still verifies.' : 'Sensitive. Not carried by this audience.' }</div>
+                            </div>
+                            <v-btn v-if="!f.ships && brief.ships_files" size="small" prepend-icon="ti ti-fingerprint" @click="asking = f">Include</v-btn>
+                        </div>
+                    </v-card-text>
+                </v-card>
+                <v-dialog :model-value="!!asking" max-width="520" @update:model-value="v => { if (!v) asking = null; }">
+                    <v-card v-if="asking">
+                        <v-card-title class="pa-4 pb-1 text-wrap">Include a sensitive file?</v-card-title>
+                        <v-card-text class="pa-4 pt-1">
+                            <p class="mb-2"><b dir="auto">${ asking.title }</b> is marked sensitive. Including it puts its bytes in every package you build from this brief for ${ brief.audience }.</p>
+                            <p class="mb-0">Your passkey signs the decision, recorded with your name and the time like a reveal, and the package carries it.</p>
+                        </v-card-text>
+                        <v-card-actions class="pa-4 pt-0">
+                            <v-spacer></v-spacer>
+                            <v-btn variant="text" @click="asking = null">Keep it withheld</v-btn>
+                            <v-btn color="primary" prepend-icon="ti ti-fingerprint" :loading="busy" @click="disclose(asking)">Sign and include</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
                 <v-card>
                     <v-card-title class="pa-4 pb-1 d-flex align-center">
                         Packages
@@ -55,6 +83,7 @@
                                 ${ p.statements } statements . attested by ${ p.attesters.map(a => a.name).join(', ') || 'nobody yet' }
                                 ${ p.finalized_at ? '. finalized' : '' }${ p.revoked_at ? '. revoked by an erasure' : '' }
                             </v-list-item-subtitle>
+                            <div v-if="p.withheld && p.withheld.length" class="text-body-small mt-1">Withholds ${ p.withheld.length === 1 ? 'one source file' : p.withheld.length + ' source files' }: ${ p.withheld.map(w => w.title).join(', ') }. Its hash still verifies.</div>
                             <template #append>
                                 <div class="d-flex" style="gap: 8px;">
                                     <v-btn v-if="!p.finalized_at && !p.revoked_at" size="small" prepend-icon="ti ti-fingerprint" @click="attest(p)">Attest</v-btn>
@@ -95,6 +124,8 @@
         .pk-opening h2 { margin: 0; }
         .pk-conclusion { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
         .pk-stale { color: var(--negative); font-weight: 600; }
+        .pk-file { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+        .pk-file > .ti { color: var(--sensitive, inherit); font-size: 20px; }
         .pk-preview { display: flex; gap: 10px; align-items: baseline; padding: 10px 14px; border: thin solid var(--line-strong); border-radius: 6px; background: var(--wash); font-size: 13px; }
         .pk-preview b { flex: none; font: 600 11px/1.6 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 0 6px; border-radius: 4px; background: var(--ink); color: var(--panel); }
     </style>
@@ -117,10 +148,18 @@
                 return {
                     ...JSON.parse(document.getElementById('boot').textContent),
                     statements: [], search: '', draft: {id: null, text: '', statement_ids: []},
-                    refusal: '', busy: false, building: false, error: {show: false, text: ''},
+                    refusal: '', busy: false, building: false, error: {show: false, text: ''}, asking: null,
                 };
             },
             computed: {
+                sensitiveFiles() { return this.brief.files.filter(f => f.sensitive); },
+                filesSummary() {
+                    const all = this.brief.files, held = all.filter(f => !f.ships).length;
+                    const n = (k, w) => k + ' ' + w + (k === 1 ? '' : 's');
+                    if (!this.brief.ships_files) return `A ${this.brief.audience} package carries no source files: ${n(all.length, 'file')} would be named by hash only.`;
+                    if (!this.sensitiveFiles.length) return `The next build includes ${n(all.length, 'source file')}; none is sensitive.`;
+                    return `The next build includes ${n(all.length - held, 'source file')} and withholds ${n(held, 'sensitive file')}. A sensitive file goes in only on your passkey-signed decision.`;
+                },
                 shown() {
                     const q = this.search.toLowerCase();
                     return q ? this.statements.filter(s => `${s.prop} ${s.display || ''} ${s.subject_label}`.toLowerCase().includes(q)) : this.statements;
@@ -134,7 +173,7 @@
             },
             methods: {
                 fail(e) {
-                    this.error = {show: true, text: e.response?.data?.message || e.message};
+                    this.error = {show: true, text: e.response?.data?.message || e.response?.data?.error || e.message};
                 },
                 toggle(id) {
                     const ids = this.draft.statement_ids;
@@ -164,21 +203,34 @@
                         window.location.reload();
                     } catch (e) { this.fail(e); } finally { this.building = false; }
                 },
+                day(iso) { return new Date(iso).toLocaleDateString(undefined, {day: 'numeric', month: 'long', year: 'numeric'}); },
+                async passkey(options) {
+                    options.challenge = b64ToBuf(options.challenge);
+                    options.allowCredentials = (options.allowCredentials || []).map(c => ({...c, id: b64ToBuf(c.id)}));
+                    const c = await navigator.credentials.get({publicKey: options});
+                    return {
+                        id: c.id, rawId: bufToB64(c.rawId), type: c.type,
+                        response: {
+                            clientDataJSON: bufToB64(c.response.clientDataJSON),
+                            authenticatorData: bufToB64(c.response.authenticatorData),
+                            signature: bufToB64(c.response.signature),
+                            userHandle: c.response.userHandle ? bufToB64(c.response.userHandle) : null,
+                        },
+                    };
+                },
+                async disclose(f) {
+                    this.busy = true;
+                    try {
+                        const {data: staged} = await axios.post(`/api/packages/briefs/${this.brief.id}/disclose`, {item: {files: [f.sha256]}});
+                        const credential = await this.passkey(staged.options);
+                        await axios.post('/api/review/commit', {item: {hash: staged.hash, credential}});
+                        window.location.reload();
+                    } catch (e) { this.fail(e); } finally { this.busy = false; this.asking = null; }
+                },
                 async attest(p) {
                     try {
                         const {data: options} = await axios.post(`/api/packages/${p.id}/attest/options`, {});
-                        options.challenge = b64ToBuf(options.challenge);
-                        options.allowCredentials = (options.allowCredentials || []).map(c => ({...c, id: b64ToBuf(c.id)}));
-                        const c = await navigator.credentials.get({publicKey: options});
-                        const credential = {
-                            id: c.id, rawId: bufToB64(c.rawId), type: c.type,
-                            response: {
-                                clientDataJSON: bufToB64(c.response.clientDataJSON),
-                                authenticatorData: bufToB64(c.response.authenticatorData),
-                                signature: bufToB64(c.response.signature),
-                                userHandle: c.response.userHandle ? bufToB64(c.response.userHandle) : null,
-                            },
-                        };
+                        const credential = await this.passkey(options);
                         const {data} = await axios.post(`/api/packages/${p.id}/attest`, {item: credential});
                         Object.assign(p, data);
                     } catch (e) { this.fail(e); }

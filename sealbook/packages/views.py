@@ -75,6 +75,7 @@ async def _brief(b: Brief) -> dict:
         "id": str(b.id),
         "title": b.title,
         "audience": b.audience,
+        "ships_files": service.PROFILES[b.audience]["blobs"],
         "created_at": b.created_at.isoformat(),
         "sentences": [
             {
@@ -85,9 +86,28 @@ async def _brief(b: Brief) -> dict:
             }
             for s in b.sentences
         ],
-        "packages": [_package(p, await service.attesters(db, p)) for p in pkgs],
+        "packages": [
+            _package(p, await service.attesters(db, p))
+            | {
+                "withheld": await service.withheld(
+                    db, p, current_app.config["BLOB_DIR"]
+                )
+            }
+            for p in pkgs
+        ],
         "conclusions": await _opening(db, b),
+        "files": await _files(db, b),
     }
+
+
+async def _files(db, b: Brief) -> list[dict]:
+    """What the next build would carry of each file, sensitive ones first; none
+    while the brief cannot be built (no sentence, a conclusion that fell)."""
+    try:
+        rows = await service.collect(db, b, await service.case_conclusions(db, b))
+    except Refused:
+        return []
+    return await service.files(db, b, rows, current_user)
 
 
 async def _opening(db, b: Brief) -> list[dict]:
@@ -245,6 +265,21 @@ async def build(bid):
     )
     await g.db_session.commit()
     return _json({"id": str(package.id), "manifest_sha256": package.manifest_sha256})
+
+
+@packages.post("/api/packages/briefs/<uuid:bid>/disclose")
+async def disclose(bid):
+    """Stage the builder's signed decision to include sensitive files; the passkey
+    assertion is committed through /api/review/commit, as every gesture is."""
+    from sealbook.review.views import stage_gesture
+
+    brief = await _get(Brief, bid)
+    statements = await _refusing(
+        service.plan_disclose(
+            g.db_session, brief, current_user, (await _item()).get("files")
+        )
+    )
+    return await stage_gesture(g.db_session, str(uuid.uuid4()), statements)
 
 
 @packages.post("/api/packages/<uuid:pid>/attest/options")

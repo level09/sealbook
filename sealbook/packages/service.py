@@ -222,17 +222,23 @@ def _sealed(found: list[dict]) -> tuple[list[uuid.UUID], list[uuid.UUID]]:
     return own, rests
 
 
-async def collect(db: AsyncSession, brief: Brief, opening: list | None = None) -> dict:
+async def collect(
+    db: AsyncSession,
+    brief: Brief,
+    opening: list | None = None,
+    decisions: list[uuid.UUID] = (),
+) -> dict:
     """The rows a brief's package discloses: cited statements plus the reviews and
     attestations about them, the DERIVED_FROM links from their text to the
     acquired files, those files' acquisitions and the runs. `opening` is the brief's
-    case conclusions (case_conclusions), carried with what they rest on."""
+    case conclusions (case_conclusions), carried with what they rest on;
+    `decisions` the signed choices to include sensitive files (disclosures)."""
     own, rests = _sealed(opening or [])
     facts = list(dict.fromkeys([*rests, *_cited_ids(brief)]))
     # A conclusion and the case status are records about the case, never a fact a
     # sentence cites; what they rest on must be factual like any citation.
     await require_factual(db, facts)
-    cited = list(dict.fromkeys([*own, *facts]))
+    cited = list(dict.fromkeys([*own, *facts, *decisions]))
     about = [f"statement:{i}" for i in cited]
     statements = list(
         (
@@ -319,6 +325,117 @@ async def collect(db: AsyncSession, brief: Brief, opening: list | None = None) -
     }
 
 
+# --- sensitive files ------------------------------------------------------------
+# A package never ships a sensitive source's bytes silently. By default the file is
+# withheld: its hash stays in the chained acquisition row, so a recipient holding a
+# copy can still check it. Including it takes a passkey-signed decision by the
+# person building, for this brief and its audience, written like a reveal (an
+# access statement on the file) and carried in the package.
+
+DISCLOSE = "disclose"
+
+
+async def decisions(db: AsyncSession, brief: Brief, user) -> dict[str, dict]:
+    """The signed decisions of `user` to include sensitive files in this brief's
+    package for its audience, by acquired file."""
+    who = await principal_for_user(db, user.id, user.name or user.email)
+    rows = await db.execute(
+        select(Statement, Payload.value)
+        .join(Payload, Payload.commitment == Statement.commitment)
+        .where(
+            Statement.prop == Prop.ACCESS,
+            Statement.author_id == who.id,
+            Statement.sig["kind"].astext == "webauthn",
+            Payload.value["action"].astext == DISCLOSE,
+            Payload.value["brief"].astext == str(brief.id),
+            Payload.value["audience"].astext == brief.audience,
+        )
+        .order_by(Statement.recorded_at)
+    )
+    return {
+        st.subject.removeprefix("blob:"): {
+            "id": str(st.id),
+            "by": who.name,
+            "at": st.recorded_at.isoformat(),
+        }
+        for st, _ in rows
+    }
+
+
+async def files(db: AsyncSession, brief: Brief, rows: dict, user) -> list[dict]:
+    """Each acquired file the package's rows reach, with the derived text read from
+    it: its title, whether it is sensitive, the builder's signed decision to include
+    it, and whether this audience's package ships its bytes."""
+    from sealbook.monitor.data import Context
+
+    ctx = await Context.load(db, blobs=[b.sha256 for b in rows["blobs"]])
+    decided = await decisions(db, brief, user)
+    ships = PROFILES[brief.audience]["blobs"]
+    out: dict[str, dict] = {}
+    for b in rows["blobs"]:
+        doc = ctx.doc(b.sha256)
+        src = doc["source_sha256"]
+        f = out.setdefault(
+            src,
+            {
+                "sha256": src,
+                "title": ctx.doc(src)["title"],
+                "sensitive": ctx.doc(src)["sensitive"],
+                "decision": decided.get(src),
+                "blobs": [],
+            },
+        )
+        f["blobs"].append(b.sha256)
+    for f in out.values():
+        f["ships"] = ships and (not f["sensitive"] or f["decision"] is not None)
+    return sorted(out.values(), key=lambda f: (not f["sensitive"], f["title"]))
+
+
+async def withheld(db: AsyncSession, package: Package, blob_dir: str) -> list[dict]:
+    """The acquired files a built package withholds, read from its manifest: an
+    acquisition whose bytes it does not ship."""
+    from sealbook.monitor.data import Context
+
+    manifest = await _manifest(db, package, blob_dir)
+    shipped = {b["sha256"] for b in manifest["blobs"]}
+    shas = sorted({a["blob_sha256"] for a in manifest["acquisitions"]} - shipped)
+    ctx = await Context.load(db, blobs=shas)
+    return [{"sha256": sha, "title": ctx.doc(sha)["title"]} for sha in shas]
+
+
+async def plan_disclose(db: AsyncSession, brief: Brief, user, chosen) -> list:
+    """The access statements one passkey gesture signs to include these sensitive
+    files in the brief's package. Refused for a file the package does not reach, one
+    that is not sensitive, or an audience that receives no files."""
+    if not PROFILES[brief.audience]["blobs"]:
+        raise Refused(f"a {brief.audience} package carries no source files")
+    if not isinstance(chosen, list) or not chosen:
+        raise Refused("choose the sensitive files to include")
+    rows = await collect(db, brief, await case_conclusions(db, brief))
+    reached = {f["sha256"]: f for f in await files(db, brief, rows, user)}
+    who = await principal_for_user(db, user.id, user.name or user.email)
+    out = []
+    for sha in dict.fromkeys(map(str, chosen)):
+        f = reached.get(sha)
+        if f is None or not f["sensitive"]:
+            raise Refused("only a sensitive file this package carries can be included")
+        out.append(
+            StatementIn(
+                subject=f"blob:{sha}",
+                prop=Prop.ACCESS,
+                value={
+                    "action": DISCLOSE,
+                    "at": _now(),
+                    "audience": brief.audience,
+                    "brief": str(brief.id),
+                    "title": f["title"],
+                },
+                author_id=who.id,
+            )
+        )
+    return out
+
+
 async def _require_anchored(db: AsyncSession, seqs: list[int]) -> None:
     from sealbook.anchor.service import anchored
 
@@ -327,10 +444,16 @@ async def _require_anchored(db: AsyncSession, seqs: list[int]) -> None:
 
 
 async def write_manifest(
-    db: AsyncSession, rows: dict, audience: str, directory: Path, blob_dir: str
+    db: AsyncSession,
+    rows: dict,
+    audience: str,
+    directory: Path,
+    blob_dir: str,
+    withheld: set[str] = frozenset(),
 ) -> bytes:
     """Write DIR/blobs and DIR/anchors and return the manifest.json bytes; every
-    other file already at the DIR root is listed in its documents."""
+    other file already at the DIR root is listed in its documents. A `withheld`
+    blob ships no bytes; its acquisition row still carries its hash."""
     from sealbook.anchor.service import proofs
 
     profile = PROFILES[audience]
@@ -344,6 +467,8 @@ async def write_manifest(
     if profile["blobs"]:
         (directory / "blobs").mkdir()
         for blob in rows["blobs"]:
+            if blob.sha256 in withheld:
+                continue
             (directory / "blobs" / blob.sha256).write_bytes(blobs.read(blob, blob_dir))
             blob_rows.append(
                 {"sha256": blob.sha256, "md5": blob.md5, "file": blob.sha256}
@@ -535,7 +660,16 @@ async def build(db: AsyncSession, brief: Brief, user, config) -> Package:
             "(C2PA_SIGN_CERT and C2PA_SIGN_KEY)"
         )
     opening = await case_conclusions(db, brief)
-    rows = await collect(db, brief, opening)
+    listed = await files(db, brief, await collect(db, brief, opening), user)
+    sensitive = [f for f in listed if f["sensitive"]]
+    # The signed decisions travel with the package, so their signatures verify.
+    rows = await collect(
+        db,
+        brief,
+        opening,
+        [uuid.UUID(f["decision"]["id"]) for f in sensitive if f["decision"]],
+    )
+    withheld = {b for f in listed if not f["ships"] for b in f["blobs"]}
     blob_dir = config["BLOB_DIR"]
     directory = Path(tempfile.mkdtemp(prefix="package-"))
     try:
@@ -579,6 +713,26 @@ async def build(db: AsyncSession, brief: Brief, user, config) -> Package:
                         }
                         for s in brief.sentences
                     ],
+                    # What this reader receives of each sensitive file, and on
+                    # whose signed decision; withheld files verify by hash alone.
+                    "files": {
+                        "withheld": [
+                            {"sha256": f["sha256"], "title": f["title"]}
+                            for f in listed
+                            if not f["ships"]
+                        ],
+                        "included_sensitive": [
+                            {
+                                "sha256": f["sha256"],
+                                "title": f["title"],
+                                "by": f["decision"]["by"],
+                                "at": f["decision"]["at"],
+                                "decision": f["decision"]["id"],
+                            }
+                            for f in sensitive
+                            if f["ships"]
+                        ],
+                    },
                 },
                 option=orjson.OPT_INDENT_2,
             )
@@ -596,7 +750,9 @@ async def build(db: AsyncSession, brief: Brief, user, config) -> Package:
             config.get("C2PA_SIGN_CERT"),
             config.get("C2PA_SIGN_KEY"),
         )
-        manifest = await write_manifest(db, rows, brief.audience, directory, blob_dir)
+        manifest = await write_manifest(
+            db, rows, brief.audience, directory, blob_dir, withheld
+        )
         (directory / "manifest.json").write_bytes(manifest)
         # The manifest hashes every document, so equal hashes mean equal content.
         sha = chain.sha256(manifest)

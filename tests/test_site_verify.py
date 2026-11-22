@@ -111,6 +111,26 @@ class BrowserCheckTests(PackageTests):
         page = self.browser(method=zipfile.ZIP_STORED, folder="export/")
         self.assertEqual(page["problems"], [])
 
+    def test_counts_a_withheld_source_file(self):
+        self.manifest["blobs"] = []
+        (self.directory / "blobs/source").unlink()
+        (self.directory / "brief.json").write_text(
+            '{"files": {"withheld": [{"sha256": "x", "title": "Witness W-7"}]}}'
+        )
+        self.manifest["documents"] = [
+            {
+                "file": "brief.json",
+                "sha256": chain.sha256((self.directory / "brief.json").read_bytes()),
+            }
+        ]
+        self.assert_valid()
+        page = self.browser()
+        self.assertEqual(page["problems"], [])
+        self.assertEqual(
+            (page["info"]["withheldFiles"], page["info"]["withheldTitles"]),
+            (1, ["Witness W-7"]),
+        )
+
     def test_names_what_it_did_not_check(self):
         self.anchor("tsa")
         self.assert_valid()
