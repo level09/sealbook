@@ -7773,11 +7773,6 @@
       "steps": [
         "sheets",
         "read",
-        {
-          "do": "recognise",
-          "record": "passport/holder",
-          "as": "KASSAR / ADRIAN"
-        },
         "places",
         {
           "do": "join",

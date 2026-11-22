@@ -25,7 +25,7 @@ from stk.migrations import (
 from stk.user.models import Role, User
 
 from sealbook.app import create_app
-from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.contracts import EvidenceKind, Prop, StatementIn
 from sealbook.ledger.models import Blob, Payload, Statement
 from sealbook.ledger.write import append, verify_db
 from sealbook.mcp.tools import _search as mcp_search
@@ -120,6 +120,36 @@ async def _case(app) -> dict:
         await say(p2, Prop.SAME_AS, {"person": data.pid(p1)})
         case |= {"P3": p3, "human": human.id}
     return {k: data.pid(v) if k[0] == "P" else v for k, v in case.items()}
+
+
+class AgreementTest(unittest.TestCase):
+    """The one comparison the linker, Review's card and Candidate duplicates use."""
+
+    def test_a_year_agrees_with_a_full_date_in_it_and_says_so(self):
+        agree = data.agreement
+        self.assertEqual(
+            agree(Prop.BIRTH_DATE, ["1974"], ["1974-08-19"]), ("agree", "year only")
+        )
+        self.assertEqual(
+            agree(Prop.BIRTH_DATE, ["1974", "1974-03-02"], ["1974-03-02"]),
+            ("agree", None),
+        )
+        self.assertEqual(
+            agree(Prop.BIRTH_DATE, ["1975"], ["1974-08-19"]), ("differ", None)
+        )
+        self.assertEqual(agree(Prop.BIRTH_DATE, [], ["1974-08-19"]), ("unknown", None))
+        # Two full dates that differ are not saved by a year one side also gives.
+        self.assertEqual(
+            agree(Prop.BIRTH_DATE, ["1974", "1974-03-02"], ["1974-08-19"]),
+            ("differ", None),
+        )
+        self.assertEqual(agree(Prop.FATHER_NAME, ["إلياس"], ["Elias"]), ("agree", None))
+        self.assertEqual(
+            agree(Prop.NAME, ["A. Qassar"], ["Adrian Kassar"]), ("agree", None)
+        )
+        self.assertEqual(
+            agree(Prop.PLACE_OF_BIRTH, ["Torvane"], ["Velmora"]), ("differ", None)
+        )
 
 
 class ForksTest(unittest.TestCase):
@@ -299,6 +329,59 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(masked, {f"person:{p}" for p in ids})
         self.assertEqual(labels, {self.root: "Yousef Khaled Al-Ali"})
 
+    async def test_a_joined_person_is_labelled_by_the_fullest_natural_name(self):
+        # The record that sorts first by id holds the poorest spelling.
+        first, rest = (f"person:{uuid.UUID(int=i)}" for i in (1, 2))
+        third = f"person:{uuid.UUID(int=3)}"
+        joe = f"person:{uuid.UUID(int=4)}"
+        heard = {"heard": True}
+        async with ext.async_session_factory() as s, s.begin():
+            # Names are labels only from a source the reader may see: quote one.
+            seen = await statement_rows(
+                s,
+                Statement.subject == f"person:{self.case['P1']}",
+                Statement.prop == Prop.NAME,
+            )
+            quoted = await s.get(
+                Statement, uuid.UUID(next(r["id"] for r in seen if r["display"]))
+            )
+            human, passkey = await attester(s, "labeller")
+            for subject, prop, value in (
+                (first, Prop.NAME, {"text": "VESK A"}),
+                (rest, Prop.NAME, {"text": "A. Vesk"}),
+                (rest, Prop.NAME, {"text": "Vesk, Aron"}),
+                (third, Prop.NAME, {"text": "Aron Vesk"}),
+                # Fuller, but heard in a recording: never the label over a written one.
+                (third, Prop.NAME, {"text": "Aron Mikael Vesk", **heard}),
+                (joe, Prop.NAME, {"text": "Joe", **heard}),
+                (rest, Prop.SAME_AS, {"person": data.pid(first)}),
+                (third, Prop.SAME_AS, {"person": data.pid(first)}),
+            ):
+                await append(
+                    s,
+                    StatementIn(
+                        subject=subject,
+                        prop=prop,
+                        value=value,
+                        author_id=human.id,
+                        span_blob=quoted.span_blob,
+                        span=quoted.span,
+                        evidence=(EvidenceKind.SPOKEN,) if "heard" in value else (),
+                    ),
+                    sign=passkey.sig,
+                )
+        async with ext.async_session_factory() as s:
+            labels = await data.names(s, [data.pid(p) for p in (first, third, joe)])
+        self.assertEqual(labels.pop(data.pid(joe)), "heard as Joe")
+        self.assertEqual(set(labels.values()), {"Aron Vesk"})
+
+    def test_label_rank_prefers_full_natural_order(self):
+        names = ["Vesk", "VESK A", "A. Vesk", "Vesk, Aron", "ARON VESK", "Aron Vesk"]
+        self.assertEqual(
+            sorted(names, key=data.label_rank),
+            ["Aron Vesk", "ARON VESK", "Vesk, Aron", "A. Vesk", "VESK A", "Vesk"],
+        )
+
     async def login(self, client, email):
         async with self.app.app_context():
             token = create_agent_login_token(email, "/people")
@@ -334,7 +417,7 @@ class PersonTest(unittest.IsolatedAsyncioTestCase):
                     select(Payload.value)
                     .join(Statement, Statement.commitment == Payload.commitment)
                     .where(
-                        Statement.subject == f"person:{self.root}",
+                        Statement.subject == f"person:{self.case['P1']}",
                         Statement.prop == Prop.ACCESS,
                     )
                 )

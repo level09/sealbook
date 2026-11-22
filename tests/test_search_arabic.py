@@ -5,7 +5,14 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 from stk.migrations import throwaway_database_url
 
-from sealbook.search.arabic import NORMALIZE_SQL, candidates, name_keys, normalize
+from sealbook.search.arabic import (
+    NORMALIZE_SQL,
+    candidates,
+    name_keys,
+    natural,
+    normalize,
+    same_keys,
+)
 from sealbook.settings import Config
 
 
@@ -81,6 +88,48 @@ class NameTests(unittest.TestCase):
         ]:
             with self.subTest(a=a, b=b):
                 self.assertTrue(candidates(a, b))
+
+    def test_given_names_that_begin_with_al(self):
+        # A hamza on the alif (إلياس, إلهام) is never the article ال.
+        self.assertEqual(name_keys("إلياس"), name_keys("Elias"))
+        self.assertEqual(name_keys("إِلْهَام"), name_keys("Ilham"))
+        self.assertEqual(name_keys("آلاء"), name_keys("Alaa"))
+        # Without the hamza the two letters may be either, so both readings match.
+        for a, b in [
+            ("الياس", "Elias"),
+            ("الياس", "إلياس"),
+            ("الهام", "Ilham"),
+            ("أدريان إلياس قصار", "Adrian Elias Kassar"),
+            ("العلي", "Ali"),
+            ("الحلبي", "Halabi"),
+            ("الحلبي", "al-Halabi"),
+        ]:
+            with self.subTest(a=a, b=b):
+                self.assertTrue(candidates(a, b))
+                self.assertTrue(same_keys(a, b))
+        # A real article is still stripped, and a hamza does not stop it elsewhere.
+        self.assertEqual(name_keys("يوسف العلي"), ("sf", "l"))
+        self.assertEqual(name_keys("نور الدين"), name_keys("Nour al-Din"))
+        self.assertEqual(name_keys("عبد الله"), name_keys("Abdullah"))
+        self.assertEqual(name_keys("آل سعود"), name_keys("Al Saud"))
+        self.assertFalse(same_keys("إلياس", "ياس"))
+        self.assertFalse(same_keys("الياس", "Kassar"))
+
+    def test_surname_first_with_a_separator_is_read_in_natural_order(self):
+        for name in ("KASSAR / ADRIAN", "Kassar, Adrian", "Kassar,Adrian"):
+            with self.subTest(name=name):
+                self.assertTrue(same_keys(name, "Adrian Kassar"))
+                self.assertTrue(same_keys(name, "أدريان قصار"))
+                self.assertTrue(candidates(name, "Adrian Elias Kassar"))
+        self.assertEqual(natural("KASSAR / ADRIAN"), "ADRIAN KASSAR")
+        self.assertTrue(same_keys("العلي، يوسف خالد", "Yusuf Khalid al-Ali"))
+        # Without a separator the written order is the name: Ali Hasan is Ali son
+        # of Hasan, not Hasan Ali.
+        self.assertFalse(candidates("Kassar Adrian", "Adrian Kassar"))
+        # A note or a list is left as written.
+        for name in ("Faten (no surname given), nurse", "Ali, Hasan, Omar", "Ali /"):
+            with self.subTest(name=name):
+                self.assertEqual(natural(name), name)
 
     def test_different_person(self):
         self.assertFalse(candidates("يوسف خالد العلي", "يوسف محمد العلي"))

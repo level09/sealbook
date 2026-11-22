@@ -123,9 +123,10 @@ What reads badly or is not shown honestly:
   ran". A live model was not recorded for the question.
 - The Desk shows only the latest check, so after act 6 the five first matches sit
   under Past checks.
-- After the logs, the joined driver is labelled by whichever member record sorts
-  first, so the Desk match and the Stories rows read "A. Vesk", "HARROW N", "LIND
-  M"; his person page header lists every spelling.
+- After the logs, each joined driver is labelled by the fullest natural-order
+  spelling among his records (`people.label_rank`): "Aron Vesk", "N. Harrow", "M.
+  Lind". The logs name the other drivers only by an initial, so no fuller name
+  exists for them; his person page header lists every spelling.
 - The colleague's work shows on the gate log's page and the owner's Inbox, not on
   the owner's To do, which only lists work assigned to her.
 - The incident row reads "violation not categorised"; the step sets no category.

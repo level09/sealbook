@@ -36,8 +36,10 @@ from sealbook.ledger.contracts import (
 from sealbook.ledger.models import Blob, Payload, Run, Statement, StatementTier
 from sealbook.ledger.queue import LEASE
 from sealbook.monitor.data import LOCATED
+from sealbook.people import data as people_data
 from sealbook.places import normalise, phrases, resolve
 from sealbook.search.arabic import candidates as name_match
+from sealbook.search.arabic import natural, same_keys
 from sealbook.settings import Config
 from sealbook.sheets import dates
 
@@ -47,14 +49,7 @@ PROMPT_VERSION = "linker-5"
 CAP = 12  # candidates of each kind per run, strongest first
 PER_CALL = 4
 BUDGET_SECONDS = LEASE.total_seconds() - 90
-COMPARED = (
-    Prop.BIRTH_DATE,
-    Prop.FATHER_NAME,
-    Prop.MOTHER_NAME,
-    Prop.PLACE_OF_BIRTH,
-    Prop.DETENTION_BRANCH,
-    Prop.SEX,
-)
+COMPARED = people_data.COMPARED
 # A difference here rules a same-person link out, whatever else agrees.
 CONTRADICTS = (Prop.BIRTH_DATE, Prop.FATHER_NAME, Prop.MOTHER_NAME)
 # Where a person was held at a time; branch membership and transfers do not count.
@@ -190,25 +185,41 @@ def candidates(
         ]
         if not pairs or not touches(people[a] + people[b]):
             continue
-        agree, differ = [], []
+        # A written spelling before one heard in a recording.
+        pairs.sort(key=lambda p: p[0].heard + p[1].heard)
+        agree, differ, ruled_out = [], [], False
         for prop in COMPARED:
             xs = [c for c in people[a] if c.prop == prop]
             ys = [c for c in people[b] if c.prop == prop]
             if not (xs and ys):
                 continue
-            hit = next(
-                (
-                    (x, y)
+            state, _ = people_data.agreement(
+                prop, [x.text for x in xs], [y.text for y in ys]
+            )
+            if state == "agree":
+                # Cite a pair that agrees at full precision when one does.
+                agree.append(
+                    min(
+                        (
+                            (x, y)
+                            for x in xs
+                            for y in ys
+                            if read.same_value(prop, x.text, y.text)
+                        ),
+                        key=lambda p: len(p[0].text) != len(p[1].text),
+                    )
+                )
+            elif state == "differ":
+                differ.append((xs[0], ys[0]))
+                # A parent's name heard in a recording that differs only in its
+                # spelling (Thomas, Tomas: the same consonants) may be a mishearing,
+                # so it never rules the pair out; another name still does.
+                misheard = prop in PARENTS and any(
+                    (x.heard or y.heard) and same_keys(x.text, y.text)
                     for x in xs
                     for y in ys
-                    if read.same_value(prop, x.text, y.text)
-                ),
-                None,
-            )
-            if hit:
-                agree.append(hit)
-            else:
-                differ.append((xs[0], ys[0]))
+                )
+                ruled_out = ruled_out or (prop in CONTRADICTS and not misheard)
         for prop in ("last_seen", "arrested_at", "detained_at", "seen_at"):
             xs = [c for c in people[a] if c.prop == prop]
             ys = [c for c in people[b] if c.prop == prop]
@@ -223,7 +234,7 @@ def candidates(
             )
             if hit:
                 agree.append(hit)
-        if not agree or any(x.prop in CONTRADICTS for x, _ in differ):
+        if not agree or ruled_out:
             continue
         x, y = pairs[0]
         same.append(
@@ -255,7 +266,10 @@ def candidates(
     holders: dict[str, set[str]] = {}
     for p, ns in names.items():
         for n in ns:
-            if len((key := normalise(n.text)).split()) >= 2:
+            # A name alone carries this candidate, so a heard one never does.
+            if n.heard:
+                continue
+            if len((key := normalise(natural(n.text))).split()) >= 2:
                 holders.setdefault(key, set()).add(p)
     named = []
     for key, ps in holders.items():
@@ -265,8 +279,12 @@ def candidates(
         bare = [p for p in (a, b) if all(c.prop == Prop.NAME for c in people[p])]
         if not bare or not touches(people[a] + people[b]):
             continue
-        x = next(c for c in names[a] if normalise(c.text) == key)
-        y = next(c for c in names[b] if normalise(c.text) == key)
+        x = next(
+            c for c in names[a] if not c.heard and normalise(natural(c.text)) == key
+        )
+        y = next(
+            c for c in names[b] if not c.heard and normalise(natural(c.text)) == key
+        )
         named.append(
             (
                 -len(key.split()),
@@ -373,7 +391,9 @@ def candidates(
             basis += [x, y]
         else:
             last = lambda cs: {  # noqa: E731
-                normalise(c.text).split(" ")[-1] for c in cs if c.prop == Prop.NAME
+                normalise(natural(c.text)).split(" ")[-1]
+                for c in cs
+                if c.prop == Prop.NAME
             }
             parent = [
                 (x, y)
@@ -646,7 +666,11 @@ async def focus_of(db, case, ref: str | None) -> set | None:
 def _statement(c, link: dict) -> StatementIn:
     cand, kind, basis = link["cand"], link["kind"], link["basis"]
     refs = sorted(_ref(b.id) for b in basis)
-    why = {"why": link["why"]} if link["why"] else {}
+    heard = [b.text for b in basis if b.heard and b.prop == Prop.NAME]
+    said = link["why"] + (
+        f" A name rests on a recording: heard as {', '.join(heard)}." if heard else ""
+    )
+    why = {"why": said.strip()} if said.strip() else {}
     prefix = cand["h"][0]
     anchor = basis[0]
     if prefix in ("m", "n", "x"):

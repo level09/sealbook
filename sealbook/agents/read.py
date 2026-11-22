@@ -9,7 +9,6 @@ and an answer may only cite handles it was given."""
 from __future__ import annotations
 
 import io
-import re
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -24,14 +23,20 @@ from sealbook import blobs
 from sealbook.collaboration.notifications import PROP as FIELD
 from sealbook.discovery.service import available
 from sealbook.ledger import chain, write
-from sealbook.ledger.contracts import EXTRACTED_PROPS, Prop, StatementIn, Tier
+from sealbook.ledger.contracts import (
+    EXTRACTED_PROPS,
+    EvidenceKind,
+    Prop,
+    StatementIn,
+    Tier,
+)
 from sealbook.ledger.models import Blob, Payload, Principal, Statement, StatementTier
 from sealbook.monitor import filter as mfilter
 from sealbook.monitor.data import LOCATED, PERSONAL, Context, display
 from sealbook.people import data as people
+from sealbook.people.data import same_value  # noqa: F401 (read.same_value)
 from sealbook.places import normalise, resolve
 from sealbook.runs import routes
-from sealbook.search.arabic import name_keys
 from sealbook.settings import Config
 
 FIXED = "sealbook-demo-fixed-output"
@@ -55,6 +60,8 @@ class Claim:
     tier: str
     sensitive: bool
     time: str | None = None  # of a place: "21:52" or "18:00-24:00", when stated
+    # Heard in a recording, not written: a weaker basis for matching a name.
+    heard: bool = False
 
 
 @dataclass
@@ -80,14 +87,27 @@ class Case:
         return out
 
     def name(self, person: str, among=None) -> str | None:
-        """The best name of a cluster: accepted first, then in reading order."""
+        """The best name of a cluster: accepted first, then from a source that is
+        not sensitive, then written before heard, then the fullest natural-order
+        spelling (as `people.names`). A person known only from a recording reads
+        "heard as Joe"."""
         names = [
             c
             for c in (among or self.claims)
             if c.person == person and c.prop == Prop.NAME
         ]
-        names.sort(key=lambda c: (c.tier != Tier.ACCEPTED, c.sensitive, str(c.id)))
-        return names[0].text if names else None
+        names.sort(
+            key=lambda c: (
+                c.tier != Tier.ACCEPTED,
+                c.sensitive,
+                c.heard,
+                people.label_rank(c.text),
+                str(c.id),
+            )
+        )
+        if not names:
+            return None
+        return f"heard as {names[0].text}" if names[0].heard else names[0].text
 
 
 def cluster_of(groups: dict, subject: str) -> str:
@@ -143,6 +163,8 @@ async def case(db, investigation: str) -> Case:
             time=value.get("time")
             if st.prop in LOCATED and isinstance(value, dict)
             else None,
+            heard=EvidenceKind.SPOKEN in (st.evidence or ())
+            or (isinstance(value, dict) and bool(value.get("heard"))),
         )
         for st, tier, value, sha in rows
     ]
@@ -238,24 +260,6 @@ def place_name(place) -> str:
     return place.name_en or place.name_ar
 
 
-def same_value(prop: str, a: str, b: str) -> bool:
-    if prop in NAMES and bool(ARABIC.search(a)) != bool(ARABIC.search(b)):
-        # Across scripts only consonant keys can compare (خالد, Khaled). Within one
-        # script the text decides, so Hasan and Husayn stay different names.
-        # ponytail: keys drop vowels, so حسن and Husayn match; needs a vowelled key.
-        return name_keys(a) == name_keys(b)
-    a, b = normalise(a), normalise(b)
-    if a == b:
-        return True
-    # A year-only entry equals a full date at the coarser precision.
-    short, long = sorted((a, b), key=len)
-    return prop == Prop.BIRTH_DATE and bool(short) and long.startswith(short + "-")
-
-
-NAMES = {Prop.NAME, Prop.FATHER_NAME, Prop.MOTHER_NAME}
-ARABIC = re.compile(r"[\u0600-\u06ff]")
-
-
 def overlap(a: Claim, b: Claim) -> bool:
     return bool(a.lo and b.lo and a.lo <= b.hi and b.lo <= a.hi)
 
@@ -332,6 +336,7 @@ def claim_view(h: Handles, c: Claim, docs: dict) -> dict:
         "value": c.text,
         "when": when(c.lo, c.hi),
         **({"time": c.time.replace("-", " to ")} if c.time else {}),
+        **({"heard": True} if c.heard else {}),
         "source": docs[c.source]["title"],
         "decided": c.tier == Tier.ACCEPTED,
     }

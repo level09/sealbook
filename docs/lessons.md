@@ -911,3 +911,34 @@ covers in the text it was read from (`span_blob`).
   page labelled rows itself and only the monitor ran the shared naming
   (`people.names`). `statement_rows` now names person subjects for every caller,
   and a page reads a case by its name (`caseName`, `Case.name`).
+
+- The Arabic father إلياس (Elias) keyed as `s` and ruled two true pairs out in
+  four-names: `name_keys` normalised إ to ا before it stripped a leading ال as the
+  article. The article is written with a bare alif, so a hamza is read before
+  normalising, and a bare ال now tries both readings. Read orthographic signals
+  before the normaliser folds them away.
+
+- The passport's "KASSAR / ADRIAN" matched nobody, and four-names needed a
+  hand-written `recognise` step: the name match is ordered (Ali Hasan is not Hasan
+  Ali), and nothing read the slash or comma that marks surname first. Such a name
+  is now put in natural order (`search.arabic.natural`) before any name is keyed or
+  compared. Read the separators a document uses before treating word order as
+  meaning.
+
+- A driver joined from 86 log lines was labelled "A. Vesk" although
+  "Aron Vesk" was in the cluster: `people.names` took each member's best name and
+  then the member that sorted first by random id. Rank every member's spellings
+  together (`people.label_rank`), and give a tie-break a meaning before an id.
+
+- Review's identity card read "1974" against "19 Aug 1974" as differ, and the
+  person page's Candidate duplicates did the same, while the linker counted them as
+  agreeing: each view had its own text or value-key comparison, and the card split
+  the cited claims by record, not by joined person. One function
+  (`people.agreement`, on `people.same_value`) now serves all three. A view that
+  explains an agent's decision must call the agent's comparison, not restate it.
+
+- never-there's voice note made a person "Joe" for Jo, and every name matcher would
+  have weighed that spelling like a printed one. A heard name now carries `heard`
+  through `read.Claim`, the linker, reading, Candidate duplicates and the label
+  rule: it supports a proposal only beside an agreeing field, never rules a pair
+  out on spelling alone (same consonants), and says "heard as". Carry a value's provenance into every comparison of it.

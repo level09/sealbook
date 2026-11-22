@@ -3,9 +3,11 @@ what the ledger says about one, name search, and erasure."""
 
 from __future__ import annotations
 
+import re
 import uuid
 from collections import Counter
 from datetime import UTC, datetime
+from functools import partial
 
 from sqlalchemy import (
     Text,
@@ -22,7 +24,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, array_agg
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sealbook.ledger.contracts import Prop, StatementIn, Tier
+from sealbook.ledger.contracts import EvidenceKind, Prop, StatementIn, Tier
 from sealbook.ledger.models import Payload, Statement, StatementTier
 from sealbook.ledger.write import append, current_clause, lock_chain
 from sealbook.monitor import filter as mfilter
@@ -38,7 +40,7 @@ from sealbook.monitor.data import (
 from sealbook.monitor.filter import statement_clause
 from sealbook.packages.models import Package, Sentence
 from sealbook.places import normalise, resolve
-from sealbook.search.arabic import candidates
+from sealbook.search.arabic import candidates, natural, same_keys
 
 # Silence between two dated points longer than this is shown as a gap.
 GAP_DAYS = 30
@@ -56,6 +58,8 @@ CORROBORATING = (
     Prop.PLACE_OF_BIRTH,
     Prop.DETENTION_BRANCH,
 )
+# What the linker compares between two persons, and Review's card with it.
+COMPARED = (*CORROBORATING, Prop.SEX)
 
 
 def pid(ref) -> str:
@@ -302,9 +306,76 @@ async def roster(
 NAME_ORDER = {Tier.ACCEPTED: 0, Tier.CORROBORATED: 1, Tier.UNCONFIRMED: 2}
 
 
+NAMES = {Prop.NAME, Prop.FATHER_NAME, Prop.MOTHER_NAME}
+ARABIC = re.compile(r"[\u0600-\u06ff]")
+
+
+def same_value(prop: str, a: str, b: str) -> bool:
+    """One field's two values name the same thing, as the linker counts it."""
+    if prop in NAMES and bool(ARABIC.search(a)) != bool(ARABIC.search(b)):
+        # Across scripts only consonant keys can compare (خالد, Khaled). Within one
+        # script the text decides, so Hasan and Husayn stay different names.
+        # ponytail: keys drop vowels, so حسن and Husayn match; needs a vowelled key.
+        return same_keys(a, b)
+    if prop in NAMES:
+        a, b = natural(a), natural(b)
+    a, b = normalise(a), normalise(b)
+    if a == b:
+        return True
+    return _year_of(prop, a, b)
+
+
+def _year_of(prop: str, a: str, b: str) -> bool:
+    # A year-only entry equals a full date at the coarser precision.
+    short, long = sorted((a, b), key=len)
+    return prop == Prop.BIRTH_DATE and bool(short) and long.startswith(short + "-")
+
+
+def agreement(prop: str, xs: list, ys: list) -> tuple[str, str | None]:
+    """Two people's values of one field, the one comparison the linker, Review's
+    card and Candidate duplicates use: ("agree", None); ("agree", "year only") when
+    the only match is a year against a full date in it; ("differ", None), also when
+    both sides state a full date and no full dates match, whatever the years say;
+    or ("unknown", None) when a side states nothing, shown as "cannot tell". A name
+    agrees when the linker's name match holds ("A. Qassar", "Adrian Kassar")."""
+    xs, ys = [x for x in xs if x], [y for y in ys if y]
+    if not (xs and ys):
+        return "unknown", None
+    same = candidates if prop == Prop.NAME else partial(same_value, prop)
+    hits = [(x, y) for x in xs for y in ys if same(x, y)]
+    if not hits:
+        return "differ", None
+    if not all(_year_of(prop, normalise(x), normalise(y)) for x, y in hits):
+        return "agree", None
+    full = [[v for v in side if len(normalise(v)) > 4] for side in (xs, ys)]
+    return ("differ", None) if all(full) else ("agree", "year only")
+
+
+def _heard(row: dict) -> bool:
+    """A name heard in a recording, not written: a weaker basis than a written one."""
+    return EvidenceKind.SPOKEN in (row.get("evidence") or ())
+
+
+def _heard_value(value) -> bool:
+    return isinstance(value, dict) and bool(value.get("heard"))
+
+
+def label_rank(name: str) -> tuple:
+    """How well one spelling labels a person, best first: the most names longer
+    than an initial ("Aron Vesk" before "A. Vesk"), then written in natural order
+    ("Vesk, Aron" after), then the most words ("N. Harrow" before "Harrow"), then
+    not all capitals ("ARON VESK" after)."""
+    words = re.findall(r"[^\W\d_]+", name)
+    full = sum(len(w) > 1 for w in words)
+    return (-full, natural(name) != name, -len(words), name.isupper())
+
+
 async def names(session: AsyncSession, people, groups=None) -> dict[str, str]:
     """The label for each person id: the best name the reader may see from any source
-    of any linked record, accepted before corroborated before unconfirmed. Masked
+    of any linked record. Across every member of the person, accepted before
+    corroborated before unconfirmed, then the fullest natural-order spelling
+    (`label_rank`), then the earliest recorded. A written name wins over one heard in
+    a recording; a person known only from a heard name reads "heard as Joe". Masked
     (sensitive source) and erased names are never labels, so a person with only those
     is absent and pages say "Unnamed person"."""
     if groups is None:
@@ -321,17 +392,27 @@ async def names(session: AsyncSession, people, groups=None) -> dict[str, str]:
         current_clause(),
         limit=5000,
     )
-    best: dict[str, str] = {}
-    # Earliest recorded first, so a label does not change between rebuilds of the
-    # same evidence (ids are random).
-    order = lambda r: (NAME_ORDER.get(r["tier"], 3), r["recorded_at"], r["id"])  # noqa: E731
-    for r in sorted(rows, key=order):
+    # Earliest recorded breaks ties, so a label does not change between rebuilds of
+    # the same evidence (ids are random).
+    order = lambda r: (  # noqa: E731
+        NAME_ORDER.get(r["tier"], 3),
+        _heard(r),
+        label_rank(r["display"]),
+        r["recorded_at"],
+        r["id"],
+    )
+    best: dict[str, tuple] = {}
+    for r in rows:
         if r["display"]:
-            best.setdefault(pid(r["subject"]), r["display"])
+            m = pid(r["subject"])
+            # A person known only from a recording says so.
+            shown = f"heard as {r['display']}" if _heard(r) else r["display"]
+            if m not in best or order(r) < best[m][0]:
+                best[m] = (order(r), shown)
     return {
-        p: name
+        p: min(found)[1]
         for p, ms in members.items()
-        if (name := next((best[m] for m in sorted(ms) if m in best), None))
+        if (found := [best[m] for m in ms if m in best])
     }
 
 
@@ -461,9 +542,16 @@ async def _duplicates(
 ) -> list[dict]:
     """Other persons whose names match this one's, with the fields that agree or
     differ, most agreement first. Proposals for a human; nothing here merges
-    anything. A candidate that only differs is left out."""
+    anything. A candidate that only differs is left out, and so is one whose every
+    matching name was heard in a recording with no field agreeing: a heard name is a
+    weaker basis than a written one."""
     values = await _person_values(session, [Prop.NAME, *CORROBORATING])
     mine = [v for v in values if v[1] in members]
+    heard = {
+        sid
+        for sid, _, prop, val, _ in values
+        if prop == Prop.NAME and _heard_value(val)
+    }
     names = [
         (sid, t)
         for sid, _, prop, val, _ in mine
@@ -481,9 +569,13 @@ async def _duplicates(
             continue
         other = groups.get(person, frozenset({person}))
         c = found.setdefault(
-            min(other), {"members": other, "names": [], "not_same": False}
+            min(other),
+            {"members": other, "names": [], "not_same": False, "written": False},
         )
         c["names"].append(sid)
+        c["written"] = c["written"] or any(
+            n not in heard for n in matched if sid not in heard
+        )
         c["not_same"] = c["not_same"] or any(
             frozenset((a, b)) in blocked for a in members for b in other
         )
@@ -498,22 +590,35 @@ async def _duplicates(
     }
     out = []
     for person, c in sorted(found.items()):
-        agree, differ = [], []
+        agree, differ, year_only = [], [], []
         for prop in CORROBORATING:
-            ours = {k for _, p, pr, _, k in mine if pr == prop}
-            theirs = {
-                k for _, p, pr, _, k in values if pr == prop and p in c["members"]
-            }
-            if ours & theirs:
+            # The linker's rule: a year agrees with a full date in that year.
+            state, note = agreement(
+                prop,
+                [display(v, pr) for _, _, pr, v, _ in mine if pr == prop],
+                [
+                    display(v, pr)
+                    for _, p, pr, v, _ in values
+                    if pr == prop and p in c["members"]
+                ],
+            )
+            if state == "agree":
                 agree.append(str(prop))
-            elif ours and theirs:
+                if note:
+                    year_only.append(str(prop))
+            elif state == "differ":
                 differ.append(str(prop))
+        if not c["written"] and not agree:
+            continue
         out.append(
             {
                 "person": person,
                 "names": _by_name(c["names"], shown),
+                # Every matching name was heard in a recording, not written.
+                "heard": not c["written"],
                 "agree": agree,
                 "differ": differ,
+                "year_only": year_only,
                 "not_same": c["not_same"],
                 # A name match every other compared field contradicts reads as two
                 # people; it stays visible so twins are kept apart knowingly.

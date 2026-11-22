@@ -24,6 +24,7 @@ from sealbook.ledger.models import (
     Statement,
     StatementTier,
 )
+from sealbook.ledger.write import current_clause
 from sealbook.monitor import data
 from sealbook.monitor import filter as mfilter
 from sealbook.people import data as people
@@ -37,6 +38,8 @@ IDENTITY = (Prop.SAME_AS, Prop.NOT_SAME)
 LINKS = (*IDENTITY, Prop.RELATION, Prop.INVOLVED)
 LIMIT = 200
 RELATED = 20
+# Stated values an identity card compares across both joined persons.
+COMPARED_LIMIT = 200
 # Value keys that are bookkeeping, never shown as a field of an unknown prop.
 QUIET = {"at", "gesture", "basis", "lang", "fingerprint", "why"}
 
@@ -540,23 +543,34 @@ async def _basis_ids(db, st: Statement, value) -> list[uuid.UUID]:
 
 
 def compare(a: list[dict], b: list[dict]) -> list[dict]:
-    """Field by field across the two people of an identity proposal: agree, differ,
-    or unknown when a side is masked or missing. Pure."""
+    """Field by field across the two people of an identity proposal, by the
+    linker's own rule (`people.agreement`): agree (with "year only" when a year
+    meets a full date in it), differ, or unknown ("cannot tell") when a side states
+    nothing readable, or differs only from a value the reader may not see. Each
+    side lists each value once. Pure."""
     props = list(dict.fromkeys(r["prop"] for r in a + b))
     out = []
     for p in props:
-        left = [r for r in a if r["prop"] == p]
-        right = [r for r in b if r["prop"] == p]
-        texts = [
-            {(r["value"]["text"] or "").strip() for r in side if r["value"]["text"]}
-            for side in (left, right)
-        ]
-        masked = any(r["value"]["masked"] for r in left + right)
-        if not left or not right or masked or not all(texts):
+        sides = [_once([r for r in side if r["prop"] == p]) for side in (a, b)]
+        texts = [[r["value"]["text"] for r in side] for side in sides]
+        state, note = people.agreement(p, *texts)
+        if state == "differ" and any(r["value"]["masked"] for s in sides for r in s):
             state = "unknown"
-        else:
-            state = "agree" if texts[0] & texts[1] else "differ"
-        out.append({"prop": p, "a": left, "b": right, "state": state})
+        out.append(
+            {"prop": p, "a": sides[0], "b": sides[1], "state": state, "note": note}
+        )
+    return out
+
+
+def _once(rows: list[dict]) -> list[dict]:
+    """One row per readable value; masked rows stay, each its own."""
+    seen: set = set()
+    out = []
+    for r in rows:
+        text = r["value"]["text"]
+        if text is None or text.strip() not in seen:
+            out.append(r)
+            seen.add(text.strip() if text else None)
     return out
 
 
@@ -644,12 +658,34 @@ async def claim(db, user, sid: uuid.UUID) -> dict | None:
         (await rows(db, user, [st.supersedes]) or [None])[0] if st.supersedes else None
     )
     if st.prop in IDENTITY:
-        basis = await rows(db, user, await _basis_ids(db, st, value))
+        cited = await _basis_ids(db, st, value)
         other = f"person:{value['person']}" if value else None
-        item["basis"] = basis
+        item["basis"] = await rows(db, user, cited)
+        # Each side is the whole joined person, as the linker compares them: every
+        # stated value of the fields it weighs, not only the cited ones. Once the two
+        # are joined, each side is its own record again.
+        groups, _ = await people.identity(db)
+        sides = [people._cluster(groups, s) for s in (st.subject, other or st.subject)]
+        if sides[0] & sides[1]:
+            sides = [{people.pid(st.subject)}, {people.pid(other)} if other else set()]
+        stated = await db.scalars(
+            select(Statement.id)
+            .join(StatementTier, StatementTier.statement_id == Statement.id)
+            .where(
+                Statement.subject.in_([f"person:{p}" for p in sides[0] | sides[1]]),
+                Statement.prop.in_(people.COMPARED),
+                StatementTier.tier != Tier.REJECTED,
+                current_clause(),
+            )
+            .order_by(Statement.recorded_at)
+            .limit(COMPARED_LIMIT)
+        )
+        compared = await rows(db, user, list(dict.fromkeys([*cited, *stated])))
         item["compare"] = compare(
-            [r for r in basis if r["subject"] == st.subject],
-            [r for r in basis if r["subject"] == other],
+            *(
+                [r for r in compared if people.pid(r["subject"]) in side]
+                for side in sides
+            )
         )
     elif isinstance(value, dict) and value.get("basis"):
         item["basis"] = await rows(db, user, await _basis_ids(db, st, value))

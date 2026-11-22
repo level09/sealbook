@@ -813,8 +813,6 @@ BRIEF = [
     ),
 ]
 PACKAGE = "instance/packages/case-four-names.zip"
-# Extraction writes the passport holder as the page prints him, surname first.
-PASSPORT = {"do": "recognise", "record": "passport/holder", "as": "KASSAR / ADRIAN"}
 
 
 def desk(title, day, story, sources, join, before=(), after=()):
@@ -868,8 +866,7 @@ def acts():
             "brief reads the two papers that came together.",
             ["guarantees", "guarantee_deed", "passport"],
             ["guarantees/G022", "guarantee_deed/guarantor", "passport/holder"],
-            [PASSPORT],
-            ["brief"],
+            after=["brief"],
         ),
         desk(
             "The port's lists",

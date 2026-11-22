@@ -130,7 +130,7 @@ class FourNamesSeedTest(Seeding):
         # norm). The vendor form's place arrives since extraction asks where a
         # person was (2026-11-22).
         self.assertEqual(out["read"], {"planted": 22, "recovered": 17, "written": 19})
-        self.assertEqual(out["recognised"], 1)
+        self.assertNotIn("recognised", out)  # read in natural order, no step
         self.assertEqual(
             sorted(out["missed"]),
             sorted(
@@ -143,7 +143,7 @@ class FourNamesSeedTest(Seeding):
             ),
         )
         self.assertEqual(out["claims"], 417)  # 416 before the vendor form's place
-        self.assertEqual(out["linker proposals"], 5)
+        self.assertEqual(out["linker proposals"], 7)
         self.assertEqual(out["declined"], 1)
         got = out["package"]
         self.assertEqual(got["sentences"], 5)
@@ -153,9 +153,9 @@ class FourNamesSeedTest(Seeding):
         self.assertTrue((self.saved / got["saved"]).exists())
         async with ext.async_session_factory() as s:
             self.assertEqual(await verify_db(s), [])
-            # Desks' five joins and the linker's four true links, accepted; the
+            # Desks' five joins and the linker's six true links, accepted; the
             # surveyor's link declined with the analyst's reason.
-            self.assertEqual(await self.links(s), {Tier.ACCEPTED: 9, Tier.REJECTED: 1})
+            self.assertEqual(await self.links(s), {Tier.ACCEPTED: 11, Tier.REJECTED: 1})
             reason = await s.scalar(
                 select(Payload.value["reason"].astext)
                 .join(Statement, Statement.commitment == Payload.commitment)
@@ -178,18 +178,18 @@ class FourNamesSeedTest(Seeding):
             self.assertIn("no model ran", note)
             self.assertEqual(await s.scalar(select(func.count(DatasetVersion.id))), 9)
             c = await self.concluded(s, "case-four-names")
-            self.assertEqual(len(c["rests_on"]), 9)
+            self.assertEqual(len(c["rests_on"]), 11)
             package = await s.scalar(select(Package))
             self.assertIsNotNone(package.finalized_at)
 
     async def test_act_6_leaves_the_proposals_open(self):
         async with ext.async_session_factory() as s:
             out = await seed_study(s, self.app, CASE, until=6)
-        self.assertEqual(out["linker proposals"], 5)
+        self.assertEqual(out["linker proposals"], 7)
         self.assertNotIn("declined", out)
         async with ext.async_session_factory() as s:
             self.assertEqual(
-                await self.links(s), {Tier.ACCEPTED: 5, Tier.UNCONFIRMED: 5}
+                await self.links(s), {Tier.ACCEPTED: 5, Tier.UNCONFIRMED: 7}
             )
             got = await conclusions.listing(s, "case-four-names")
             self.assertEqual(got["status"]["status"], "open")
