@@ -8,6 +8,7 @@ and an answer may only cite handles it was given."""
 
 from __future__ import annotations
 
+import io
 import re
 import time
 import uuid
@@ -16,6 +17,7 @@ from datetime import UTC, date, datetime
 
 import orjson
 from jsonschema import Draft202012Validator
+from PIL import Image
 from sqlalchemy import select
 
 from sealbook import blobs
@@ -52,6 +54,7 @@ class Claim:
     span: dict | None
     tier: str
     sensitive: bool
+    time: str | None = None  # of a place: "21:52" or "18:00-24:00", when stated
 
 
 @dataclass
@@ -65,6 +68,9 @@ class Case:
     links: list[tuple[str, str]] = field(default_factory=list)
     # What a reports claim names beyond its text: claim id -> {"kind", "place", "town"}.
     reports: dict = field(default_factory=dict)
+    # Where and when a file's own metadata puts its device (`captures()`): about the
+    # file and the device, never a claim about a person.
+    captures: list = field(default_factory=list)
 
     def by_person(self) -> dict[str, list[Claim]]:
         out: dict[str, list[Claim]] = {}
@@ -134,6 +140,9 @@ async def case(db, investigation: str) -> Case:
             span=st.span,
             tier=tier,
             sensitive=docs[sha]["sensitive"],
+            time=value.get("time")
+            if st.prop in LOCATED and isinstance(value, dict)
+            else None,
         )
         for st, tier, value, sha in rows
     ]
@@ -147,6 +156,56 @@ async def case(db, investigation: str) -> Case:
     return Case(
         investigation, claims, docs, places, groups, await links(db, groups), reports
     )
+
+
+async def captures(db, investigation: str) -> list[dict]:
+    """Photographs in the case whose own metadata gives where (the geotag step's
+    `photographed_at`) and when (EXIF DateTimeOriginal, the camera's local time)
+    they were taken: {"id" (the photographed_at statement), "source", "day",
+    "time", "lonlat", "precision_m"}. A rejected place is left out.
+    ponytail: the time is read here from the file; the geotag step should write
+    it beside the place, and a recording's own time is not read at all."""
+    rows = await db.execute(
+        select(Statement, Payload.value)
+        .join(StatementTier, StatementTier.statement_id == Statement.id)
+        .join(Payload, Payload.commitment == Statement.commitment)
+        .where(
+            Statement.prop == Prop.PHOTOGRAPHED_AT,
+            StatementTier.tier != Tier.REJECTED,
+            write.current_clause(),
+            mfilter.statement_clause({"investigation": investigation, "time": None}),
+            available(mfilter.source(mfilter.statement_blob())),
+        )
+    )
+    out = []
+    for st, value in rows.all():
+        sha = st.subject.removeprefix("blob:")
+        taken = _taken(await db.get(Blob, sha))
+        if taken is None:
+            continue
+        out.append(
+            {
+                "id": st.id,
+                "source": sha,
+                "day": taken.date(),
+                "time": f"{taken:%H:%M}",
+                "lonlat": [float(x) for x in value["geometry"]["coordinates"]],
+                "precision_m": value.get("precision_m"),
+            }
+        )
+    return out
+
+
+def _taken(blob) -> datetime | None:
+    """When a photograph says it was taken, in the camera's own local time."""
+    if blob is None or not blob.mime.startswith("image/"):
+        return None
+    try:
+        with Image.open(io.BytesIO(blobs.read(blob, Config.BLOB_DIR))) as im:
+            raw = im.getexif().get_ifd(0x8769).get(36867)  # DateTimeOriginal
+        return datetime.strptime(str(raw).strip(), "%Y:%m:%d %H:%M:%S")
+    except (OSError, ValueError, TypeError):
+        return None
 
 
 async def links(db, groups: dict) -> list[tuple[str, str]]:
@@ -272,6 +331,7 @@ def claim_view(h: Handles, c: Claim, docs: dict) -> dict:
         "field": c.prop.replace("_", " "),
         "value": c.text,
         "when": when(c.lo, c.hi),
+        **({"time": c.time.replace("-", " to ")} if c.time else {}),
         "source": docs[c.source]["title"],
         "decided": c.tier == Tier.ACCEPTED,
     }

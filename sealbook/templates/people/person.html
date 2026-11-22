@@ -82,7 +82,7 @@
                     <button v-for="id in s.ids" :key="id" class="ppl-line" @click="open(id)">
                         <span class="when">${ s.date }</span>
                         <span v-if="points[id]" dir="auto">${ propLabel(points[id].prop) }: <span class="r-ink is-place">${ points[id].place }</span></span><span v-else>unmapped place</span>
-                        <span v-if="s.fork" class="ppl-fork" title="Sources place the person in two places on this day"><i class="ti ti-alert-triangle"></i> sources disagree</span>
+                        <span v-if="s.fork && (s.pairs || []).some(p => p.ids.includes(id))" class="ppl-fork" title="Sources place the person in two places on this day"><i class="ti ti-alert-triangle"></i> sources disagree</span>
                     </button>
                 </template>
                 <div v-if="p.track.gap_after" class="ppl-gap">Nothing known after ${ p.track.gap_after }</div>
@@ -95,10 +95,11 @@
                     <div class="ppl-fork"><i class="ti ti-alert-triangle"></i> ${ f.kind === 'position' ? 'Two places on one day' : (PROP[f.prop] || f.prop.replace(/_/g, ' ')) }, ${ f.from }${ f.to !== f.from ? ' to ' + f.to : '' }</div>
                     <div v-for="x in f.sides" :key="x.id" class="ppl-line ppl-side-row">
                         <span v-if="f.kind === 'position'" class="muted">${ PROP[x.prop] }</span>
-                        <span dir="auto">${ x.value }</span>
+                        <span dir="auto">${ x.value }<span v-if="x.time" class="muted">, ${ x.time.replace('-', ' to ') }</span></span>
                         <a v-if="x.href" :href="x.href" class="muted" dir="auto">${ x.file }</a>
                         <span v-else class="muted">no source</span>
                     </div>
+                    <div v-if="f.why" class="muted text-body-small">Raised because: ${ [...new Set(f.why.map(w => w.why))].join('; ') }.</div>
                 </div>
                 <contradiction-hunter :investigation="caseSel || ''"></contradiction-hunter>
             </div>

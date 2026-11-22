@@ -1,8 +1,9 @@
 """The case study "The witness who was never there" in fixed mode.
 
 The contradiction hunter's rules, run by acceptance/eval_agents.py on the planted
-case, offer the alibi, the two other real disagreements and the market trap among
-152 claims, and none of the planted non-contradictions. The numbers are pinned
+case, offer the alibi and the two other real disagreements among 152 claims, and
+neither the market trap (its times are known) nor any planted non-contradiction.
+The numbers are pinned
 here and in acceptance/cases/never-there/README.md; change both together."""
 
 import asyncio
@@ -44,21 +45,25 @@ class NeverThereTest(unittest.TestCase):
         self.assertEqual((len(spec["sources"]), len(spec["claims"])), (53, 152))
 
     def test_rules_offer_the_alibi_and_no_planted_non_contradiction(self):
+        """By the clock: her own 18:00 to 24:00 in Brindle Cross overlaps 21:52
+        and 22:07 on Tanner's Row. Her sister's 23:30 fits a 34 km drive after
+        22:07, so it is not a side, and Jo at the market at 09:40 and home from
+        18:00 is not raised at all."""
         offered = self.found["rule_candidates"]["candidates"]
-        self.assertEqual(len(offered), 4)
+        self.assertEqual(len(offered), 3)
         self.assertIn(
-            ["mara_jo.at", "mara_mq3.at", "mara_mq4.at", "mara_stmt.at"],
+            ["mara_mq3.at", "mara_mq4.at", "mara_stmt.at"],
             [c["claims"] for c in offered],
         )
         self.assertFalse(any(c["planted_non_contradiction"] for c in offered))
-        self.assertEqual(self.found["rule_candidates"]["judgment"], 1.0)
+        self.assertEqual(self.found["rule_candidates"]["judgment"], 0.0)
 
     def test_fixed_mode_scores(self):
         metrics = {k: v["mean"] for k, v in self.report["metrics"].items()}
         self.assertEqual(metrics["contradiction_precision"], 1.0)
         self.assertEqual(metrics["contradiction_recall"], 1.0)
-        # The fixed answer reports every candidate, the market trap too.
-        self.assertEqual(metrics["contradiction_trap_avoidance"], 0.0)
+        # The times are known, so the market trap is never offered.
+        self.assertEqual(metrics["contradiction_trap_avoidance"], 1.0)
         self.assertEqual(metrics["linker_false_merges"], 0)
         self.assertEqual(self.report["runs"][0]["linker"]["other_false_proposals"], 0)
         self.assertTrue(self.report["complete"])

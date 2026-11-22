@@ -106,10 +106,20 @@ def source(
 
 
 def claim(
-    key, record, prop, value, start=None, end=None, place=None, tier=None, after=None
+    key,
+    record,
+    prop,
+    value,
+    start=None,
+    end=None,
+    place=None,
+    tier=None,
+    after=None,
+    time=None,
 ):
     """`after`: text the quote follows, when the value first appears about
-    someone or somewhere else."""
+    someone or somewhere else. `time`: the time of day or range the source gives
+    for a place ("21:52", "18:00-24:00")."""
     CLAIMS.append(
         {
             "key": key,
@@ -121,6 +131,7 @@ def claim(
             "place": place,
             "tier": tier or "unconfirmed",
         }
+        | ({"time": time} if time else {})
         | ({"pin": {"text": value, "after": after}} if after else {})
     )
 
@@ -163,6 +174,7 @@ claim(
     DAY,
     place="brindle",
     tier="accepted",
+    time="18:00-24:00",
 )
 
 source(
@@ -180,7 +192,15 @@ record("jo_stmt", "jo", "jo")
 record("mara_jo", "jo", "mara")
 claim("jo_stmt.name", "jo_stmt", "name", "Jo Quill")
 claim("jo_stmt.born", "jo_stmt", "birth_date", "1978")
-claim("jo_stmt.at", "jo_stmt", "seen_at", "Brindle Cross", DAY, place="brindle")
+claim(
+    "jo_stmt.at",
+    "jo_stmt",
+    "seen_at",
+    "Brindle Cross",
+    DAY,
+    place="brindle",
+    time="18:00-24:00",
+)
 claim("mara_jo.name", "mara_jo", "name", "Mara Quill")
 claim(
     "mara_jo.at",
@@ -190,6 +210,7 @@ claim(
     DAY,
     place="brindle",
     after="My sister Mara Quill",
+    time="23:30",
 )
 
 # Her phone: the exhibit sheets the hunter reads, and the media they describe.
@@ -215,6 +236,7 @@ claim(
     "Tanner's Row, Larkhaven",
     DAY,
     place="tanners_row",
+    time="21:52",
 )
 source(
     "mq4",
@@ -238,6 +260,7 @@ claim(
     "the yard on Tanner's Row",
     DAY,
     place="tanners_row",
+    time="22:07",
 )
 source(
     "photo",
@@ -278,6 +301,7 @@ claim(
     DAY,
     place="market",
     after="to Jo Quill",
+    time="09:40",
 )
 
 # The night watchman: one place in two spellings, and a birth year that disagrees.
@@ -1083,8 +1107,9 @@ def acts() -> list[dict]:
             "story": "Extraction read where Mara says she was that evening, in "
             "Brindle Cross from six until past midnight, and where her sister says "
             "she arrived, at about half past eleven. The contradiction hunter sets "
-            "her places on 14 March side by side: Brindle Cross, and Tanner's Row "
-            "in the exhibit sheets. It proposes; nothing is decided.",
+            "her places on 14 March side by side by the clock: her own evening in "
+            "Brindle Cross overlaps 21:52 and 22:07 on Tanner's Row in the exhibit "
+            "sheets. It proposes; nothing is decided.",
             "shows": ["contradiction"],
             "sources": [],
             "steps": [

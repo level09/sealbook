@@ -368,6 +368,22 @@ class SeedCasesTest(Seeding):
         self.assertNotIn("planted", out)
         self.assertEqual(out["contradictions proposals"], 4)
         self.assertEqual(out["planted contradictions flagged"], 4)
+        async with ext.async_session_factory() as s:
+            report = await self.run_of(s, "contradictions", inv)
+        raised = [item.get("raised", []) for item in report["items"]]
+        # The alibi, by the clock, with the photograph's own time beside it.
+        [alibi] = [i for i in report["items"] if i.get("device")]
+        self.assertEqual(
+            alibi["raised"],
+            [
+                "at overlapping times, 18:00 to 24:00 and 21:52",
+                "at overlapping times, 18:00 to 24:00 and 22:07",
+            ],
+        )
+        self.assertEqual([d["time"] for d in alibi["device"]], ["21:52"])
+        # Jo's "all evening" was read without a time, so the market at 09:40 is
+        # still raised, and says why.
+        self.assertIn(["same day, times not stated"], raised)
         self.assertEqual([len(a["see"]) for a in out["acts"]], [2, 2, 2, 2, 1, 1, 2, 1])
         async with ext.async_session_factory() as s:
             self.assertEqual(await verify_db(s), [])

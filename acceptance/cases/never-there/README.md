@@ -24,36 +24,39 @@ uv run stk demo-seed --case never-there [--until N]           # into the app, ac
 The case is told in eight acts and read by the app itself: four papers are scanned
 pages, the rest typed text, and the seeder replays the recorded answers of the
 models that read them (`recordings.json`, 110 calls on cloud-zdr and one local
-speech to text run, recorded 2026-11-21). Extraction recovered 118 of the 152
-planted claims and none of the 34 where a statement places its witness on a day,
-so act 6 plants Mara's and Jo's Brindle Cross claims, labelled; the hunter then
-flags all four planted contradictions. See docs/case-studies.md, "Worked example".
-The planted truth below stays what `acceptance/eval_agents.py` scores.
+speech to text run; the 52 extractions recorded again on 2026-11-22). Extraction
+recovered 148 of the 152 planted claims, Mara's own evening in Brindle Cross and
+her sister's account among them, each place with its time and in whose words, so
+nothing is planted; the hunter flags all four planted contradictions. See
+docs/case-studies.md, "Worked example". The planted truth below stays what
+`acceptance/eval_agents.py` scores.
 
 ## What the code compares, and how the case reaches it
 
-The contradiction hunter reads person claims only. It compares fixed facts (birth
-date, parents, place of birth, sex) and, for places, one exact day at two resolved
-places farther apart than their precision. It does not see times of day.
+The contradiction hunter reads person claims. It compares fixed facts (birth date,
+parents, place of birth, sex) and, for places, one exact day at two resolved places
+farther apart than their precision. When both claims carry a time of day, two
+places conflict only when the times overlap or are closer than travel at
+`sealbook/method/travel.csv`'s speed (120 km/h) allows; without, the day alone
+raises it and the candidate says "same day, times not stated".
 
 - The photograph's location reaches the app as `photographed_at` on the picture,
-  written by the `geotag` tool from EXIF GPS. That claim is about the file, not a
-  person, so the hunter never sees it, and EXIF time is not read at all.
-- A voice note's transcript is extracted like any text, but a claim is dated only
-  when the words date it. "I'm still at the yard" carries no date, and the file's
-  time is not read.
+  written by the `geotag` tool from EXIF GPS, and the hunter reads its EXIF capture
+  time (21:52). That is about the file and the device, not a person, so it never
+  becomes a side: it is set beside the Tanner's Row side as context.
+- A voice note's transcript is extracted as spoken words: "I'm still at the yard"
+  carries no date, and the file's own time is not read.
 
-So the dated claims come from two exhibit sheets an examiner wrote from the phone,
-MQ/3 (the photograph's metadata) and MQ/4 (the voice note, its sent time and a
-transcript). The picture and the recording are their own sources, so a person can
-check each sheet against them: the photograph's `photographed_at` on its evidence
-page, the recording's own transcript. Local speech to text (faster-whisper
-large-v3-turbo) writes "Joe, it's me" for "Jo"; the rest it reads as written.
+So the dated claims about Mara come from her statement, her sister's and two
+exhibit sheets an examiner wrote from the phone, MQ/3 (the photograph's metadata)
+and MQ/4 (the voice note, its sent time and a transcript). The picture and the
+recording are their own sources, so a person can check each sheet against them.
+Local speech to text (faster-whisper large-v3-turbo) writes "Joe, it's me" for
+"Jo"; the claim reads "heard as Joe".
 
-The hunter puts Mara's four claims for 14 March side by side, two in Brindle Cross
-and two on Tanner's Row. On claims alone both places can hold on one day; the times
-in the sources (21:52, 22:07, Jo's "about half past eleven" against Mara's "from
-about six") are what a person reads to decide.
+By the clock, Mara's own 18:00 to 24:00 in Brindle Cross overlaps 21:52 and 22:07
+on Tanner's Row, 34 km away. Her sister's "about half past eleven" fits a drive
+after 22:07, so it is not a side.
 
 ## Planted truth
 
@@ -70,28 +73,34 @@ about six") are what a person reads to decide.
 | Not | `dale_nell.last_seen`, `dale_custody.arrested` | last seen at noon, arrested at 16:20, one day |
 | Not | `pia_stmt.at`, `pia_arjun.at` | a street inside its town |
 | Not | `tomas_stmt.at`, `tomas_letter.at` | a day inside a month |
-| Trap | `jo_stmt.at`, `jo_market.at` | the market at 09:40 and home that evening: offered by the rules, not a conflict |
+| Trap | `jo_stmt.at`, `jo_market.at` | the market at 09:40 and home from 18:00 to 24:00: not a conflict, and not offered when both times are known |
 
 No linker pairs, gaps or judgment conflicts are planted; those truth lists are
 empty, so their scores read null. The canary lists are empty, so `canary_held`
 means nothing here.
 
-## Scores, 2026-11-21
+## Scores, 2026-11-22
 
-Fixed mode (the rule layer, `tests/test_case_never_there.py`): 4 candidates from 152
-claims; contradiction precision 1.0 and recall 1.0; the alibi is one candidate
-citing all four of Mara's claims; no planted non-contradiction is offered; the trap
-is offered, so trap avoidance is 0.0. No linker merge; the linker offers three
-relation candidates (the two Quill sisters, Dale and the bar manager at one pub,
-Pia and her neighbour), counted but not scored. The gap finder finds one open
-silence (Dale since 15 March), counted as elsewhere. The intake brief on the two
-exhibit sheets writes no disagreement line: it compares fixed facts only, not places.
+Fixed mode (the rule layer, `tests/test_case_never_there.py`): 3 candidates from 152
+claims (4 before the clock); contradiction precision 1.0 and recall 1.0; the alibi
+is one candidate citing her own Brindle Cross claim and the two exhibit sheets
+(before, her sister's 23:30 was a side too); no planted non-contradiction is
+offered; the market trap is not offered, so trap avoidance is 1.0 (0.0 before). No
+linker merge; the linker offers three relation candidates (the two Quill sisters,
+Dale and the bar manager at one pub, Pia and her neighbour), counted but not
+scored. The gap finder finds one open silence (Dale since 15 March), counted as
+elsewhere. The intake brief on the two exhibit sheets writes no disagreement line:
+it compares fixed facts only, not places.
 
-Live, `deepseek/deepseek-v4.1-flash-1017` on `cloud-zdr`, reasoning none, 3 trials:
-precision 1.0, recall 1.0, trap avoidance 0.0 in every trial. It called the alibi
-"sources conflict" each time and asked to check the photograph's and voice note's
-timestamps against the statements. It also called the market trap a conflict, while
-writing that the two records "may cover different times of day". It labelled 1958
-against 1965 "date precision" in all three trials, and Pellow Bridge against
-Saltmarch "spelling or transliteration" once. About 1,000 prompt tokens and 2 to 5 s
-per trial for the hunter.
+Live, `deepseek/deepseek-v4.1-flash-1017` on `cloud-zdr`, reasoning none, 1 trial
+(DeepInfra, Morph, Particle AI and Sail Research served the four calls): precision
+1.0, recall 1.0, trap avoidance 1.0. It called the alibi "sources conflict": her
+statement puts her in Brindle Cross from 18:00 past midnight while the phone
+records place her on Tanner's Row, "in different places at overlapping times", and
+asked where she was between 21:52 and 22:07. 763 prompt tokens and 2.5 s for the
+hunter. On 2026-11-21, before the clock, 3 trials scored trap avoidance 0.0 in
+every trial.
+
+Read by the app (`tests/test_case_studies.py`): extraction left Jo's "all evening"
+without a time, so on the seeded case the market at 09:40 is still raised, saying
+"same day, times not stated"; the hunter makes four proposals there.

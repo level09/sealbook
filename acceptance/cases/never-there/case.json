@@ -800,7 +800,8 @@
       "from": "2026-03-14",
       "to": "2026-03-14",
       "place": "brindle",
-      "tier": "accepted"
+      "tier": "accepted",
+      "time": "18:00-24:00"
     },
     {
       "key": "jo_stmt.name",
@@ -830,7 +831,8 @@
       "from": "2026-03-14",
       "to": "2026-03-14",
       "place": "brindle",
-      "tier": "unconfirmed"
+      "tier": "unconfirmed",
+      "time": "18:00-24:00"
     },
     {
       "key": "mara_jo.name",
@@ -851,6 +853,7 @@
       "to": "2026-03-14",
       "place": "brindle",
       "tier": "unconfirmed",
+      "time": "23:30",
       "pin": {
         "text": "Brindle Cross",
         "after": "My sister Mara Quill"
@@ -874,7 +877,8 @@
       "from": "2026-03-14",
       "to": "2026-03-14",
       "place": "tanners_row",
-      "tier": "unconfirmed"
+      "tier": "unconfirmed",
+      "time": "21:52"
     },
     {
       "key": "mara_mq4.name",
@@ -894,7 +898,8 @@
       "from": "2026-03-14",
       "to": "2026-03-14",
       "place": "tanners_row",
-      "tier": "unconfirmed"
+      "tier": "unconfirmed",
+      "time": "22:07"
     },
     {
       "key": "jo_market.name",
@@ -915,6 +920,7 @@
       "to": "2026-03-14",
       "place": "market",
       "tier": "unconfirmed",
+      "time": "09:40",
       "pin": {
         "text": "Larkhaven market",
         "after": "to Jo Quill"
@@ -2584,7 +2590,7 @@
     {
       "title": "Two places on one night",
       "day": "2026-03-21",
-      "story": "Extraction read where Mara says she was that evening, in Brindle Cross from six until past midnight, and where her sister says she arrived, at about half past eleven. The contradiction hunter sets her places on 14 March side by side: Brindle Cross, and Tanner's Row in the exhibit sheets. It proposes; nothing is decided.",
+      "story": "Extraction read where Mara says she was that evening, in Brindle Cross from six until past midnight, and where her sister says she arrived, at about half past eleven. The contradiction hunter sets her places on 14 March side by side by the clock: her own evening in Brindle Cross overlaps 21:52 and 22:07 on Tanner's Row in the exhibit sheets. It proposes; nothing is decided.",
       "shows": [
         "contradiction"
       ],

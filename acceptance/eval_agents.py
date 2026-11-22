@@ -111,6 +111,7 @@ def load(path=CASE):
                 span=None,
                 tier=c["tier"],
                 sensitive=docs[sha[record["source"]]]["sensitive"],
+                time=c.get("time"),
             )
         )
         if c["place"]:
@@ -191,6 +192,8 @@ def harness(case, events, g, written, route: Route):
     for target, attr, new in (
         (read, "case", mock.AsyncMock(return_value=case)),
         (read, "incidents", mock.AsyncMock(return_value=[])),
+        # A planted case has no files, so no device's own capture place and time.
+        (read, "captures", mock.AsyncMock(return_value=[])),
         (read, "log_read", nothing),
         (read, "agent_for", mock.AsyncMock(return_value=SimpleNamespace(id=PRINCIPAL))),
         (read, "store", store),

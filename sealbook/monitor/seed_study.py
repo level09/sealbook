@@ -110,7 +110,8 @@ def value_of(c: dict) -> dict:
         return {"text": text, "lang": lang, "kind": c["event"]}
     if c["prop"] in (Prop.SEX, Prop.AGE):
         return {"text": text, "lang": lang, "norm": text.lower()}
-    return {"text": text, "lang": lang}
+    # A place's time of day, as extraction writes it.
+    return {"text": text, "lang": lang} | ({"time": c["time"]} if c.get("time") else {})
 
 
 def stand_in(spec: dict, key: str, claims: list[dict]) -> tuple[str, dict]:

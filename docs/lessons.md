@@ -880,3 +880,9 @@ covers in the text it was read from (`span_blob`).
   person was, by any account, with `time` and `account` on every fact; recovery
   went from 118 to 148 of 152 with no invented person on the extraction check.
   Re-record every case whose recordings hold an extraction when the prompt moves.
+- The contradiction hunter flagged Jo at the market at 09:40 and home that evening
+  like a broken alibi, in every live trial: `_apart` compared days and places, the
+  claims carried no time of day, and the photograph's capture time was never read.
+  Places now carry `time`, `monitor.data.apart_why` compares the clock against the
+  distance at `method/travel.csv`'s speed and says why a pair was raised, and a
+  photograph's own place and time sit beside a side as context about the device.

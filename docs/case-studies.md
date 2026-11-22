@@ -225,11 +225,13 @@ The planted truth stays what `acceptance/eval_agents.py` scores.
 `acceptance/cases/never-there/` is read by the app: every source is marked `read`,
 four papers (Mara's and Jo's statements, the exhibit sheets MQ/3 and MQ/4) are
 scanned pages from `make.py --scans`, and the other 47 sources stay typed text.
-The recording was made on 2026-11-21: 110 chat calls on cloud-zdr (5 OCR with
-`google/gemini-4-argon`, the four scans and the photograph; 52 extractions with
-`anthropic/claude-haiku-5.5`; 53 first passes with `google/gemini-3.8-flash`) and
-one local speech to text run (faster-whisper large-v3-turbo). Replay takes about
-12 seconds and calls nothing.
+The recording holds 110 chat calls on cloud-zdr (5 OCR with
+`google/gemini-4-argon`, the four scans and the photograph, and 53 first passes
+with `google/gemini-3.8-flash`, both recorded on 2026-11-21; 52 extractions with
+`anthropic/claude-haiku-5.5`, recorded again on 2026-11-22 after the extraction
+prompt began asking for whereabouts, so only those 52 calls ran) and one local
+speech to text run (faster-whisper large-v3-turbo). Replay takes about 12 seconds
+and calls nothing.
 
 | Act | Day | Shows | Steps | See |
 | --- | --- | --- | --- | --- |
@@ -238,33 +240,37 @@ one local speech to text run (faster-whisper large-v3-turbo). Replay takes about
 | 3 The photograph of the gate | 16 Mar | reading, search | the photo: geotag reads its EXIF place, the first pass says what it shows | the photo, `/search?q=gate` |
 | 4 The phone exhibits and the voice note | 20 Mar | reading | MQ/3, MQ/4, the voice note; speech to text, extraction, the intake brief | the voice note, MQ/3 |
 | 5 One woman in four papers | 21 Mar | same person | the linker; the analyst accepts its proposal for the two sheets and joins the planted clusters herself | Mara's page |
-| 6 Two places on one night | 21 Mar | contradiction | `planted` fallback for two claims, places, accepts, the contradiction hunter | Mara's page |
+| 6 Two places on one night | 21 Mar | contradiction | places, accepts, the contradiction hunter | Mara's page |
 | 7 A colleague checks the lead | 23 Mar | assignment, peer review | assign the sheets, ask, reply, marked updated | To do, MQ/4 |
 | 8 The conclusion | 25 Mar | conclusion, peer review | the signed conclusion and the reviewer's agreement | Overview |
 
 What the app read, against the planted truth (`tests/test_case_studies.py` pins it):
 
-- Extraction wrote 129 claims about people. 118 of the 152 planted claims were
-  recovered: every name, birth date, place of birth, occupation and the exhibit
-  sheets' dated places. The 34 it missed are all where a statement places its
-  witness on a day (`seen_at`, such as "I was at home on Tanner's Row"), Mara's
-  "drove to my sister Jo's house in Brindle Cross" among them, and Jo's "my sister
-  Mara Quill came to dinner at my house in Brindle Cross". The model wrote the
-  break-in as a reported event and the people's names, not where they were.
-- So the alibi does not arise from extracted claims alone. Act 6 plants the two
-  Brindle Cross claims from the case file, by their own run whose provenance reads
-  "planted-from-case.json" with the reason; the exhibit sheets' Tanner's Row claims
-  are the app's. With them the hunter flags all four planted contradictions in
-  three proposals: the alibi (one proposal for both pairs), Ivo Brandt's birth year
-  1958 against 1965 and Kofi Mensah's place of birth, those two entirely from
-  extracted claims. The market trap is not offered: Jo's evening claim was not
-  extracted either.
+- Extraction wrote 163 claims about people. 148 of the 152 planted claims were
+  recovered (118 before 2026-11-22, when the prompt asked only where someone "was
+  seen" and every first-person place was missed). Each place now carries the day,
+  the time of day or range when the text gives one and in whose words: Mara's own
+  "Brindle Cross", 18:00 to 24:00; her sister's "my house in Brindle Cross", 23:30,
+  about Mara; MQ/3's 21:52 and MQ/4's 22:07 on Tanner's Row; Jo at the market at
+  09:40. The four it missed: three witnesses who saw or heard something on
+  Tanner's Row without saying they stood there, and Mara at the gate on 13 March.
+- Nothing is planted: act 6 has no fallback. The hunter flags all four planted
+  contradictions in four proposals: the alibi by the clock (her own evening
+  overlaps 21:52 and 22:07, so both pairs are one proposal, and her sister's 23:30
+  fits a drive after 22:07, so it is not a side), with the photograph's own capture
+  time and place set beside the Tanner's Row side as context about the device;
+  Ivo Brandt's birth year; Kofi Mensah's place of birth. The fourth proposal is the
+  market trap: extraction read Jo's "all evening" without a time, so the day alone
+  raises it and it says "same day, times not stated".
 - The linker's rules proposed three things: the two exhibit sheets' Mara Quill as
   one person, Ruth Hollin's two papers as one, and one relation. Her statement and
   her sister's share only her name with the sheets, so no rule joins them; act 5
   has the analyst join the planted clusters herself, as her signed decision.
-- Speech to text heard "Joe, it's me" for "Jo", and extraction then wrote "Joe" as
-  a person named in the voice note, citing printed text for spoken words.
+- Speech to text heard "Joe, it's me" for "Jo". Extraction still writes "Joe" as
+  a person named in the voice note, but the claim rests on spoken words, not
+  printed text, and the name is marked heard, so the evidence page and Review read
+  "heard as Joe". The proposer of every replayed claim reads "Extraction, replayed
+  from a recording of 22 November 2026", with the model id in the detail.
 - The planted score from `acceptance/eval_agents.py` is unchanged and separate
   (`tests/test_case_never_there.py`).
 
@@ -385,9 +391,9 @@ Each case's own README holds its story, planted truth and score. What
 
 - **The witness who was never there** (`case-never-there`): read by the app in eight
   acts; see the worked example above. Mara Quill's person page sets her places on
-  14 March side by side under Sources disagree, with the exhibit titles carrying
-  21:52 and 22:07; two of those claims are planted, labelled, because extraction
-  did not propose them.
+  14 March side by side under Sources disagree, each with its time, and says why
+  they were raised: at overlapping times, 18:00 to 24:00 and 21:52, and 18:00 to
+  24:00 and 22:07. Every claim was read by the app.
 - **The name nobody wrote down** (`case-unwritten-name`): 14 sources and 651
   claims, 608 of them log lines pinned to their sheet cells. Each log line is its
   own mention joined to its driver, so Aron Vesk's page reads "86 records joined

@@ -76,11 +76,15 @@ export const ContradictionHunter = {
         <div v-for="(claim, n) in item.claims" :key="n" class="mb-1">
           <span dir="auto">{{ claim.field }}: {{ claim.value }}</span>
           <span v-if="claim.person">, for <a :href="'/people/' + claim.person" dir="auto">{{ claim.name || 'an unnamed person' }}</a></span>
-          <span v-if="claim.when" class="muted">, {{ claim.when }}</span>
+          <span v-if="claim.when" class="muted">, {{ claim.when }}<template v-if="claim.time"> at {{ claim.time }}</template></span>
           <a :href="claim.href" class="ms-2" dir="auto">{{ claim.source }}</a>
           <span v-if="claim.source_date" class="muted">, {{ claim.source_date }}</span>
           <span v-if="claim.decided" class="ppl-tag ms-2">Accepted by a reviewer</span>
         </div>
+        <p v-if="item.raised" class="muted mt-2">Raised because: {{ item.raised.join('; ') }}.</p>
+        <p v-for="d in item.device || []" :key="d.href + d.time" class="muted mt-1">
+          <a :href="d.href" dir="auto">{{ d.title }}</a>: the file's own metadata puts its device<template v-if="d.place"> at {{ d.place }}</template> at {{ d.time }}. That is where the device was, not who held it, and not an accepted fact about the person.
+        </p>
         <p class="mt-2" dir="auto">{{ item.why }}</p>
         <p class="mt-2" dir="auto">{{ item.question }}</p>
         <v-btn size="small" variant="text" prepend-icon="ti ti-copy" @click="copy(item.question)">Copy question</v-btn>
