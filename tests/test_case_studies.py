@@ -453,6 +453,16 @@ class SeedCasesTest(Seeding):
             self.assertEqual(mdata.answered(spoken)["how"], "recorded")
             c = await self.concluded(s, inv)
             self.assertEqual(len(c["rests_on"]), 2)
+            # Her own Brindle Cross claim, as extraction read it, is the account the
+            # conclusion contradicts: cited as what she said, not among what it
+            # rests on.
+            [said] = c["contradicts"]
+            [against] = await conclusions.against(s, [said])
+            self.assertEqual(
+                (against["value"], against["source"], against["state"]),
+                ("Brindle Cross", spec["sources"]["mara"]["title"], "stands"),
+            )
+            self.assertNotIn(said, c["rests_on"])
             # The colleague answered on the claim and marked the exhibits updated.
             updated = await s.scalar(
                 select(func.count()).where(Assignment.status == "done")

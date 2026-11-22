@@ -897,12 +897,14 @@
 
   /* Title, audience and counts, and what the copy leaves out, from the package itself. */
   function describe(files, manifest) {
-    const info = { title: null, audience: null, sentences: null, cited: null };
+    const info = { title: null, audience: null, sentences: null, cited: null, withheldTitles: [] };
     try {
       const brief = loadJSON(files.get("brief.json"), false);
       if (isDict(brief)) {
         info.title = isStr(brief.title) ? brief.title : null;
         info.audience = isStr(brief.audience) ? brief.audience : null;
+        const held = isDict(brief.files) && Array.isArray(brief.files.withheld) ? brief.files.withheld : [];
+        info.withheldTitles = held.filter((f) => isDict(f) && isStr(f.title)).map((f) => f.title);
         if (Array.isArray(brief.sentences)) {
           info.sentences = brief.sentences.length;
           info.cited = new Set(brief.sentences.flatMap((s) => (isDict(s) && Array.isArray(s.statements) ? s.statements : []))).size;
@@ -915,7 +917,11 @@
     for (const s of list("statements")) {
       if (!disclosed.has(s.commitment)) withheld[s.prop] = (withheld[s.prop] || 0) + 1;
     }
+    // A file the package withholds: its acquisition row carries a hash no shipped blob has.
+    const shipped = new Set(list("blobs").map((b) => b.sha256));
+    const withheldFiles = new Set(list("acquisitions").map((a) => a.blob_sha256).filter((s) => !shipped.has(s))).size;
     Object.assign(info, {
+      withheldFiles,
       statements: list("statements").length,
       acquisitions: list("acquisitions").length,
       runs: list("runs").length,

@@ -668,6 +668,16 @@ class PackageTests(unittest.TestCase):
         self.manifest["batches"][0]["root"] = "aa" * 32
         self.assert_problem("batch root")
 
+    def test_withheld_source_file_verifies_by_its_hash(self):
+        """A file the package withholds is named withheld, never a failure: its
+        hash stays in the chained acquisition row."""
+        self.manifest["blobs"] = []
+        (self.directory / "blobs/source").unlink()
+        result = self.assert_valid()
+        sha = self.manifest["acquisitions"][0]["blob_sha256"]
+        self.assertIn("1 source file withheld", result.stdout)
+        self.assertIn(sha, result.stdout)
+
     def test_missing_blob(self):
         self.manifest["blobs"][0]["file"] = "absent"
         self.assert_problem("file missing")

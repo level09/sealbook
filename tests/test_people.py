@@ -186,6 +186,26 @@ class ForksTest(unittest.TestCase):
         self.assertEqual({x["value"] for x in f["sides"]}, {"Aleppo", "Douma"})
         self.assertEqual({x["href"] for x in f["sides"]}, {"/evidence/abc"})
 
+    def test_fields_the_linker_weighs_compare_as_it_does(self):
+        """A year inside a full date, a father's name across scripts and a shorter
+        form of a name agree on the person page as they do for the linker
+        (`people.agreement`); two different full dates still disagree."""
+        pairs = [
+            ("birth_date", "1974", "1974-03-02"),
+            ("father_name", "Elias", "إلياس"),
+            ("name", "A. Qassar", "Adrian Kassar"),
+        ]
+        for prop, a, b in pairs:
+            facts = {prop: [self._row(prop, a), self._row(prop, b)]}
+            self.assertEqual(data._forks(facts, [], {}, {}), [], prop)
+        facts = {
+            "birth_date": [
+                self._row("birth_date", "1974-03-02"),
+                self._row("birth_date", "1974-08-19"),
+            ]
+        }
+        self.assertEqual(len(data._forks(facts, [], {}, {})), 1)
+
     def test_names_compare_normalised(self):
         rows = [
             self._row("occupation", "Pharmacist"),

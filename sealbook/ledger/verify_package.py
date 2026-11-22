@@ -52,6 +52,10 @@ the sha256 of its DER SubjectPublicKeyInfo, per line; every WebAuthn sig must
 use one).
 Without them the output lists signer fingerprints as self-asserted.
 
+A source file the package withholds (an acquisition whose blob is not in blobs, as
+for a sensitive file nobody signed to include) is listed as withheld, not a
+problem: its hash stays in the chained acquisition row.
+
 OK establishes package consistency, supplied signatures and anchor root bindings.
 It does not establish complete disclosure, that every statement was signed,
 passkey ownership, origins, relying parties or signer keys not pinned by flags,
@@ -409,6 +413,15 @@ def verify_package(
         ok.append(
             "rows, chain entries, batch proofs, blobs, documents, disclosed commitments and supplied signatures match"
         )
+        shipped = {blob["sha256"] for _, blob in records["blobs"]}
+        withheld = {row["blob_sha256"] for _, row in records["acquisitions"]} - shipped
+        if withheld:
+            n = len(withheld)
+            ok.append(
+                f"{n} source file{'s' if n != 1 else ''} withheld: "
+                f"{'their' if n != 1 else 'its'} SHA-256 in the chained acquisition "
+                f"rows still checks a copy: " + ", ".join(sorted(withheld))
+            )
         if signers and not (rp_id and origin and trusted is not None):
             ok.append(
                 "signer keys, origins and RP IDs are self-asserted (pin with "

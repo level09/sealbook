@@ -63,11 +63,26 @@
       <div v-for="i in d.items" :key="i.id" class="cd-item">
         <i :class="ICON[i.kind]" aria-hidden="true"></i>
         <div>
-          <a v-if="i.href" :href="i.href">${ i.text || 'An item no longer on record' }</a>
+          <span v-if="i.kind === 'match'"><a :href="i.sources[0].href"><bdi>${ i.sources[0].title }</bdi></a> and <a :href="i.sources[1].href"><bdi>${ i.sources[1].title }</bdi></a>: ${ i.match }, ${ i.strength }</span>
+          <a v-else-if="i.href" :href="i.href">${ i.text || 'An item no longer on record' }</a>
           <span v-else>${ i.text || 'An item no longer on record' }</span>
           <div v-if="i.about || i.source" class="s">${ [i.about, i.source].filter(Boolean).join('. ') }</div>
         </div>
         <span class="cd-state" :class="{gone: i.state !== 'stands'}">${ i.state === 'stands' ? 'accepted' : i.words }</span>
+      </div>
+    </section>
+
+    <section v-if="d.against.length" class="cd-panel" aria-labelledby="cd-h-against">
+      <h2 id="cd-h-against" class="text-title-large">The account this conclusion contradicts</h2>
+      <p class="cd-muted mt-n1">Cited as what was said, not as true. It does not count toward what the conclusion rests on.</p>
+      <div v-for="i in d.against" :key="i.id" class="cd-item">
+        <i class="ti ti-message-x" aria-hidden="true"></i>
+        <div>
+          <a v-if="i.href" :href="i.href">${ i.text || 'A claim no longer on record' }</a>
+          <span v-else>${ i.text || 'A claim no longer on record' }</span>
+          <div v-if="i.about || i.source" class="s">${ i.about || i.source }</div>
+        </div>
+        <span class="cd-state" :class="{gone: i.state !== 'stands'}">${ i.state === 'stands' ? (i.tier === 'accepted' ? 'accepted as said' : 'as said') : i.words }</span>
       </div>
     </section>
 
@@ -116,7 +131,7 @@ import {brokenLine, day, peerLine, plural, reveal, signing, statusLine} from '/s
 
 const boot = JSON.parse(document.getElementById('boot').textContent);
 const err = e => e.response?.data?.error || e.response?.data?.message || e.response?.data?.description || e.message;
-const ICON = {link: 'ti ti-link', finding: 'ti ti-chart-dots-3', claim: 'ti ti-quote', gone: 'ti ti-circle-off'};
+const ICON = {link: 'ti ti-link', finding: 'ti ti-chart-dots-3', claim: 'ti ti-quote', match: 'ti ti-copy', gone: 'ti ti-circle-off'};
 const VERSION = {standing: 'current', revised: 'revised', withdrawn: 'withdrawn', erased: 'erased'};
 
 window.app = Vue.createApp({

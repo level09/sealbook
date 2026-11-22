@@ -5,8 +5,9 @@ Candidates are built here, so the model only ever judges pairs that already shar
 something checkable: two records whose names are cross-script or partial matches
 and that agree on at least one other field (same person), a person placed at an
 incident's place and time (involved), two sources that name the same people
-(document relation), and two people named together who were held at one place at
-one time or share a family name and a parent (relation). The model says which hold,
+(document relation), and two people named together who were placed at one place
+at one time (cellmates when a side is a detention claim, else seen together) or
+share a family name and a parent (relation). The model says which hold,
 which claims carry each, and why; it may cite only the handles it was given.
 Nothing here accepts anything. An open, accepted or blocked link is never proposed
 again, and a rejected one only when its basis holds a claim the rejection did not
@@ -25,6 +26,7 @@ from sealbook.agents import read
 from sealbook.agents.read import Claim, Handles, claim_view, place_name, when
 from sealbook.ledger import write
 from sealbook.ledger.contracts import (
+    DETENTION_PROPS,
     DOCUMENT_RELATIONS,
     PERSON_RELATIONS,
     EvidenceKind,
@@ -45,15 +47,17 @@ from sealbook.sheets import dates
 
 TOOL = "link"
 AGENT = "Linker"
-PROMPT_VERSION = "linker-5"
+PROMPT_VERSION = "linker-6"
 CAP = 12  # candidates of each kind per run, strongest first
 PER_CALL = 4
 BUDGET_SECONDS = LEASE.total_seconds() - 90
 COMPARED = people_data.COMPARED
 # A difference here rules a same-person link out, whatever else agrees.
 CONTRADICTS = (Prop.BIRTH_DATE, Prop.FATHER_NAME, Prop.MOTHER_NAME)
-# Where a person was held at a time; branch membership and transfers do not count.
+# Where a person was at a time; branch membership and transfers do not count.
 HELD = (Prop.DETAINED_AT, Prop.SEEN_AT)
+# A pair placed together is cellmates only when one side is a detention claim
+# (DETENTION_PROPS); two sightings alone make people seen together, not held.
 PARENTS = (Prop.FATHER_NAME, Prop.MOTHER_NAME)
 KINDS = ("same_person", "involved", *DOCUMENT_RELATIONS, *PERSON_RELATIONS)
 
@@ -72,7 +76,9 @@ SYSTEM = (
     "For each candidate first write why in one sentence naming what agrees and what "
     "differs and list in basis the claim handles that carry it, then set kind "
     "(same_person for m and n, involved for v, contains or contained_in or related for "
-    "r, same_event for e, family or cellmate or command for x; for e propose only when "
+    "r, same_event for e, family or cellmate or command or seen_together for x, where "
+    "cellmate needs a side held in detention and two people only seen at one place "
+    "are seen_together; for e propose only when "
     "what both describe could be one event) and set propose to true only when its "
     f"claims support the link. Use only the data given. {read.DATA_ONLY}"
 )
@@ -386,8 +392,12 @@ def candidates(
             if y.prop in HELD and read.overlap(x, y) and _same_place(case, x, y)
         ]
         if shared_source and held:
-            hint, (x, y) = "cellmate", held[0]
-            rows.append({"field": "held", "a": view(x), "b": view(y)})
+            # A detention claim on a side, if any pair has one, makes cellmates.
+            jailed = [p for p in held if {p[0].prop, p[1].prop} & DETENTION_PROPS]
+            hint = "cellmate" if jailed else "seen_together"
+            x, y = (jailed or held)[0]
+            field = "held" if jailed else "seen together"
+            rows.append({"field": field, "a": view(x), "b": view(y)})
             basis += [x, y]
         else:
             last = lambda cs: {  # noqa: E731
@@ -554,11 +564,10 @@ def fixed_answer(p: dict) -> dict:
             basis = [v["h"] for r in c["people_in_both"] for v in (r["a"], r["b"])]
             kind = "related"
         else:
-            why = (
-                "Named together and held at one place at one time."
-                if c["hint"] == "cellmate"
-                else "Same family name and the same parent's name."
-            )
+            why = {
+                "cellmate": "Named together and held at one place at one time.",
+                "seen_together": "Named together and seen at one place at one time.",
+            }.get(c["hint"], "Same family name and the same parent's name.")
             basis = hs(c["a"]["names"], c["b"]["names"]) + [
                 v["h"] for r in c["together"] for v in (r["a"], r["b"])
             ]

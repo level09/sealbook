@@ -150,14 +150,15 @@ class Prop(enum.StrEnum):
     PHOTOGRAPHED_AT = "photographed_at"
     FILMED_AT = "filmed_at"
     # Two people or two documents related. Subject "person:<uuid>" with value
-    # {"person": "<uuid>", "kind": family|cellmate|command}, or "blob:<sha256>" with
+    # {"person": "<uuid>", "kind": family|cellmate|command|seen_together}, or "blob:<sha256>" with
     # {"blob": "<sha256>", "kind": contains|contained_in|related}; both carry
     # "basis" (statement refs) and optionally "why". Proposed by an agent, decided
     # by a person; never collapses source origins.
     RELATION = "relation"
     # A person's conclusion on a case (subject "case:<slug>"), value {"text": one
     # sentence, "lang", "standard": a key of method.standards(), "standard_label",
-    # "rests_on": [accepted statement ids], "people": ["person:<uuid>" the cited
+    # "rests_on": [accepted statement ids], optional "contradicts": [ids of claims,
+    # accepted or not, it finds against], "people": ["person:<uuid>" the cited
     # statements are about], "alternatives": [{"text", "why"}], "not_established":
     # [text], "gesture"}. Human authored and passkey signed, never by an agent; a
     # revision supersedes it, a withdrawal retracts it.
@@ -210,7 +211,12 @@ REPORT_KINDS = (
     "raid",
     "other",
 )
-PERSON_RELATIONS = ("family", "cellmate", "command")
+# "seen_together": placed at one place at one time with no detention claim on
+# either side; "cellmate" needs one of DETENTION_PROPS.
+DETENTION_PROPS = frozenset(
+    {Prop.DETAINED_AT, Prop.DETENTION_BRANCH, Prop.TRANSFERRED_TO}
+)
+PERSON_RELATIONS = ("family", "cellmate", "command", "seen_together")
 DOCUMENT_RELATIONS = ("contains", "contained_in", "related", "same_event")
 
 # Fields hashed into each chained row. Order is irrelevant (canonical JSON sorts

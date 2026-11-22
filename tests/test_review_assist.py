@@ -106,6 +106,33 @@ class FlagRules(unittest.TestCase):
         # Unresolved places never conflict on their spelling alone.
         self.assertEqual(assist.contradicted(mine, [apart], {}.get), [])
 
+    def test_two_places_on_one_day_are_compared_by_their_times(self):
+        """never-there: Tanner's Row at 21:52 and Brindle Cross, 34 km away. The card
+        compares by the times and the travel the contradiction hunter uses
+        (`monitor.data.apart_why`), not by the day alone."""
+        yard = place("Tanner's Row", -27.47652, -31.62154, 150)
+        brindle = place("Brindle Cross", -27.12133, -31.62, 2500)
+        mine = {**row(Prop.SEEN_AT, "Tanner's Row", Tier.UNCONFIRMED), "time": "21:52"}
+        evening = {**row(Prop.SEEN_AT, "Brindle Cross"), "time": "18:00-24:00"}
+        late = {**row(Prop.SEEN_AT, "Brindle Cross"), "time": "23:30"}
+        soon = {**row(Prop.SEEN_AT, "Brindle Cross"), "time": "22:00"}
+        places = {mine["id"]: yard}
+        places |= {r["id"]: brindle for r in (evening, late, soon)}
+        got = [assist.relation(mine, r, places.get) for r in (evening, late, soon)]
+        # Overlapping times conflict; 23:30 leaves 98 minutes for a 34 km drive, a
+        # later stop on one evening; 22:00 leaves 8, too few.
+        self.assertEqual(got, ["conflicts", "later", "conflicts"])
+        self.assertEqual(
+            assist.contradicted(mine, [evening, late, soon], places.get),
+            [evening, soon],
+        )
+        # Without times the day alone still raises it, as the hunter does.
+        untimed = row(Prop.SEEN_AT, "Brindle Cross")
+        places[untimed["id"]] = brindle
+        self.assertEqual(
+            assist.relation({**mine, "time": None}, untimed, places.get), "conflicts"
+        )
+
     def test_seen_in_other_places_at_other_times_is_a_timeline(self):
         # Seen in Aleppo on 3 Sep; in its quarter in July and mid September.
         city = place("Aleppo", 37.16, 36.20, 8000)

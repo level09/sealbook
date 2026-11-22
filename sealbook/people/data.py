@@ -60,6 +60,8 @@ CORROBORATING = (
 )
 # What the linker compares between two persons, and Review's card with it.
 COMPARED = (*CORROBORATING, Prop.SEX)
+# Every field the linker weighs, the name included: compared by `agreement`.
+WEIGHED = frozenset({Prop.NAME, *COMPARED})
 
 
 def pid(ref) -> str:
@@ -452,9 +454,16 @@ def disagreements(
     """Where sources disagree: different values for one prop over overlapping time,
     and days on which the person stands in two places at once. Places compare by
     resolved id and other values by normalised text, so two spellings of one place
-    or name never disagree. Each disagreement is listed once, with every side's
-    value and source; none is ever resolved."""
+    or name never disagree. A field the linker weighs compares as it does
+    (`agreement`: a year inside a full date, a name across scripts or in a shorter
+    form); `same_value` compares any other. Each disagreement is listed once, with
+    every side's value and source; none is ever resolved."""
     rows = {r["id"]: r for rs in facts.values() for r in rs}
+
+    def agrees(prop, a, b) -> bool:
+        if prop in WEIGHED:
+            return agreement(prop, [a], [b])[0] == "agree"
+        return bool(same_value and same_value(prop, a, b))
 
     def side(r):
         link = links.get(r["id"], {})
@@ -498,9 +507,7 @@ def disagreements(
         for i, a in enumerate(dated):
             for b in dated[i + 1 :]:
                 if key(a) == key(b) or (
-                    prop not in LOCATED
-                    and same_value
-                    and same_value(prop, a["display"], b["display"])
+                    prop not in LOCATED and agrees(prop, a["display"], b["display"])
                 ):
                     continue
                 if a["from"] and b["from"] and not _overlap(a, b):
@@ -851,6 +858,7 @@ async def erase(session: AsyncSession, ref, by, reason: str) -> dict:
                 Payload.value["members"].has_any(ids),
                 Payload.value["people"].has_any(refs),
                 Payload.value["rests_on"].has_any(ids),
+                Payload.value["contradicts"].has_any(ids),
             ),
         )
         .cte("linked", recursive=True)

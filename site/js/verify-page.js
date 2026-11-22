@@ -128,9 +128,11 @@
       parts.push(kinds.length
         ? `The values of ${kinds.map(([prop, n]) => plural(n, `${prop.replace(/_/g, " ")} statement`)).join(", ")} were withheld. Their salted commitments stay in the manifest, so the chain still verifies without them.`
         : "No statement value was withheld.");
-      parts.push(info.sourcesShipped
-        ? "The source files are included and were checked above."
-        : "The source files are not included. Their hashes stay in the file records.");
+      if (!info.sourcesShipped) parts.push("The source files are not included. Their hashes stay in the file records.");
+      else if (info.withheldFiles) {
+        const named = info.withheldTitles.length ? `: ${info.withheldTitles.join(", ")}` : "";
+        parts.push(`${plural(info.withheldFiles, "source file")} ${info.withheldFiles === 1 ? "was" : "were"} withheld${named}. Each hash stays in its file record, so a copy can still be checked. The other source files are included and were checked above.`);
+      } else parts.push("The source files are included and were checked above.");
       withheld.append(...parts.map((t) => h("p", { text: t })));
     }
     $("#withheld-card").hidden = !withheld.childElementCount;

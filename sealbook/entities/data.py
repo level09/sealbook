@@ -717,6 +717,7 @@ async def incident(db, user, ref: str) -> dict:
                         ],
                         v["month"],
                         v["features"],
+                        held=await findings.held_members(db, v.get("members")),
                     ),
                     "why": findings.why(fk.kind, v["features"]),
                     "band": findings.band(fk.kind, v["features"]),

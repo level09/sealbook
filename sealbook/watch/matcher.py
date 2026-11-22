@@ -88,12 +88,12 @@ def _key(text: str) -> str:
 
 
 def _same(prop: str, a: str, b: str) -> bool:
-    a, b = _key(a), _key(b)
-    if a == b:
-        return True
-    # A year-only register entry equals a full date at the coarser precision.
-    short, long = sorted((a, b), key=len)
-    return prop == Prop.BIRTH_DATE and bool(short) and long.startswith(short + "-")
+    """One field's two values agree. A field the linker weighs compares as it does
+    (`people.agreement`: a year inside a full date, a name across scripts); any
+    other by its normalised text."""
+    if prop in people.COMPARED:
+        return people.agreement(prop, [a], [b])[0] == "agree"
+    return _key(a) == _key(b)
 
 
 def corroborate(new: dict, watched: dict) -> dict | None:

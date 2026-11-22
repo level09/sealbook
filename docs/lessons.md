@@ -948,3 +948,37 @@ covers in the text it was read from (`span_blob`).
   handed the next clip to the worker's `process`, whose own session waited on that
   lock forever. Commit the seeding session before any call that opens its own
   session and appends, and run a long seed under `timeout` so a hang fails loudly.
+- A court package shipped every file its rows reached, sensitive ones included, with no
+  decision on record: the audience profiles decided props and "blobs or not", and
+  nothing in the build read the acquisition's sensitivity that every reading screen
+  masks by. A new path out of the app (an export, a package, an API) must ask the same
+  sensitivity question the screens ask, and default to withholding.
+
+- old-footage's conclusion, that a clip is a copy, could not cite the match it rested
+  on: `conclusions.citeable` knew claims, links and findings, and the package listed
+  `media_match` as never citable, so the seeder accepted the copies and cited two
+  captions instead. When a new decision type rests on evidence, list every kind of
+  accepted statement a person can sign and check the citer reaches each.
+
+- never-there's conclusion finds against Mara's own Brindle Cross claim but could
+  not name it: a citation had one meaning, "rests on", so citing the claim it
+  disproves would have read as resting on it, and the claim was left out. A
+  citation that can mean more than one thing needs its role stored with it
+  (`contradicts` beside `rests_on`), with each role's own standing rule.
+
+- The linker called the Quill sisters cellmates: its rule for people placed
+  together counted `seen_at` as being held, because one constant (`HELD`) served
+  both "where a person was" and "what makes a detention". The label now needs a
+  detention claim on a side (`DETENTION_PROPS`), and discovery's "held at" too.
+  When a rule widens what it gathers, check that every label drawn from it still
+  holds for the new members. The planted counts moved only in never-there (3
+  cellmate to 3 seen together) and unwritten-name (12 to 12); the default case's
+  one cellmate is a detention pair and stayed.
+
+- Review's card called Tanner's Row at 21:52 and Brindle Cross at 23:30 a conflict
+  while the contradiction hunter, reading the same claims, did not: the card asked
+  `places_apart` with no time, so the day alone decided, and the watch matcher and
+  the person page's disagreements each kept their own text comparison. The fix was
+  the 2026-11-22 lesson above applied again: views call `apart_why` and
+  `people.agreement`. Grep for every caller of a comparison when the agent's rule
+  gains an input (here, the time of day), not only the agent.
