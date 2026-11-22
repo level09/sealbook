@@ -445,7 +445,9 @@ async def find(db, query, f, *, types=TYPES, limit=8, embedding=None, revealed=(
                     "id": row["sha256"],
                     "sha256": row["sha256"],
                     "title": doc["title"],
-                    "subtitle": ", ".join(
+                    # A middle dot, as between the hit's other parts: a channel
+                    # name may hold a comma of its own.
+                    "subtitle": " · ".join(
                         x
                         for x in (_kind(doc), doc["date"], *map(origin, doc["origins"]))
                         if x
