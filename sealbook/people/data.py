@@ -7,6 +7,7 @@ import re
 import uuid
 from collections import Counter
 from datetime import UTC, datetime
+from functools import partial
 
 from sqlalchemy import (
     Text,
@@ -40,7 +41,7 @@ from sealbook.monitor.data import (
 from sealbook.monitor.filter import statement_clause
 from sealbook.packages.models import Package, Sentence
 from sealbook.places import normalise, resolve
-from sealbook.search.arabic import candidates, natural
+from sealbook.search.arabic import candidates, natural, same_keys
 
 # Silence between two dated points longer than this is shown as a gap.
 GAP_DAYS = 30
@@ -58,6 +59,8 @@ CORROBORATING = (
     Prop.PLACE_OF_BIRTH,
     Prop.DETENTION_BRANCH,
 )
+# What the linker compares between two persons, and Review's card with it.
+COMPARED = (*CORROBORATING, Prop.SEX)
 
 
 def pid(ref) -> str:
@@ -317,6 +320,51 @@ async def roster(
 NAME_ORDER = {Tier.ACCEPTED: 0, Tier.CORROBORATED: 1, Tier.UNCONFIRMED: 2}
 
 
+NAMES = {Prop.NAME, Prop.FATHER_NAME, Prop.MOTHER_NAME}
+ARABIC = re.compile(r"[\u0600-\u06ff]")
+
+
+def same_value(prop: str, a: str, b: str) -> bool:
+    """One field's two values name the same thing, as the linker counts it."""
+    if prop in NAMES and bool(ARABIC.search(a)) != bool(ARABIC.search(b)):
+        # Across scripts only consonant keys can compare (خالد, Khaled). Within one
+        # script the text decides, so Hasan and Husayn stay different names.
+        # ponytail: keys drop vowels, so حسن and Husayn match; needs a vowelled key.
+        return same_keys(a, b)
+    if prop in NAMES:
+        a, b = natural(a), natural(b)
+    a, b = normalise(a), normalise(b)
+    if a == b:
+        return True
+    return _year_of(prop, a, b)
+
+
+def _year_of(prop: str, a: str, b: str) -> bool:
+    # A year-only entry equals a full date at the coarser precision.
+    short, long = sorted((a, b), key=len)
+    return prop == Prop.BIRTH_DATE and bool(short) and long.startswith(short + "-")
+
+
+def agreement(prop: str, xs: list, ys: list) -> tuple[str, str | None]:
+    """Two people's values of one field, the one comparison the linker, Review's
+    card and Candidate duplicates use: ("agree", None); ("agree", "year only") when
+    the only match is a year against a full date in it; ("differ", None), also when
+    both sides state a full date and no full dates match, whatever the years say;
+    or ("unknown", None) when a side states nothing, shown as "cannot tell". A name
+    agrees when the linker's name match holds ("A. Qassar", "Adrian Kassar")."""
+    xs, ys = [x for x in xs if x], [y for y in ys if y]
+    if not (xs and ys):
+        return "unknown", None
+    same = candidates if prop == Prop.NAME else partial(same_value, prop)
+    hits = [(x, y) for x in xs for y in ys if same(x, y)]
+    if not hits:
+        return "differ", None
+    if not all(_year_of(prop, normalise(x), normalise(y)) for x, y in hits):
+        return "agree", None
+    full = [[v for v in side if len(normalise(v)) > 4] for side in (xs, ys)]
+    return ("differ", None) if all(full) else ("agree", "year only")
+
+
 def label_rank(name: str) -> tuple:
     """How well one spelling labels a person, best first: the most names longer
     than an initial ("Aron Vesk" before "A. Vesk"), then written in natural order
@@ -512,15 +560,23 @@ async def _duplicates(
     }
     out = []
     for person, c in sorted(found.items()):
-        agree, differ = [], []
+        agree, differ, year_only = [], [], []
         for prop in CORROBORATING:
-            ours = {k for _, p, pr, _, k in mine if pr == prop}
-            theirs = {
-                k for _, p, pr, _, k in values if pr == prop and p in c["members"]
-            }
-            if ours & theirs:
+            # The linker's rule: a year agrees with a full date in that year.
+            state, note = agreement(
+                prop,
+                [display(v, pr) for _, _, pr, v, _ in mine if pr == prop],
+                [
+                    display(v, pr)
+                    for _, p, pr, v, _ in values
+                    if pr == prop and p in c["members"]
+                ],
+            )
+            if state == "agree":
                 agree.append(str(prop))
-            elif ours and theirs:
+                if note:
+                    year_only.append(str(prop))
+            elif state == "differ":
                 differ.append(str(prop))
         out.append(
             {
@@ -528,6 +584,7 @@ async def _duplicates(
                 "names": _by_name(c["names"], shown),
                 "agree": agree,
                 "differ": differ,
+                "year_only": year_only,
                 "not_same": c["not_same"],
                 # A name match every other compared field contradicts reads as two
                 # people; it stays visible so twins are kept apart knowingly.

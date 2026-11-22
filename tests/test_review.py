@@ -39,11 +39,41 @@ from sealbook.ledger.models import (
 )
 from sealbook.ledger.write import append, record_acquisition, subject_head
 from sealbook.monitor import data
+from sealbook.review.queue import compare
 from sealbook.settings import Config
 from tests.passkey import SoftPasskey
 
 POSTGRES = make_url(Config.SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql"
 TEXT = "سجل الموقوفين\nالاسم: محمد\nالاسم: يوسف\nالاسم: أحمد\n"
+
+
+class CompareTest(unittest.TestCase):
+    """The identity card compares by the linker's rule, not by text."""
+
+    def row(self, prop, text, masked=False):
+        return {
+            "prop": prop,
+            "value": {"text": None if masked else text, "masked": masked},
+        }
+
+    def test_a_year_against_a_full_date_agrees_year_only(self):
+        [row] = compare(
+            [self.row("birth_date", "1974")], [self.row("birth_date", "1974-08-19")]
+        )
+        self.assertEqual((row["state"], row["note"]), ("agree", "year only"))
+
+    def test_each_value_once_and_cannot_tell_behind_a_mask(self):
+        a = [self.row("birth_date", "1974-03-02"), self.row("birth_date", "1974-03-02")]
+        [row] = compare(a, [self.row("birth_date", "1974-03-02")])
+        self.assertEqual((row["state"], len(row["a"])), ("agree", 1))
+        hidden = [
+            self.row("birth_date", "x", masked=True),
+            self.row("birth_date", "1980"),
+        ]
+        [row] = compare(a, hidden)
+        self.assertEqual(row["state"], "unknown")
+        [row] = compare(a, [])
+        self.assertEqual(row["state"], "unknown")
 
 
 @unittest.skipUnless(POSTGRES, "review needs Postgres (set SQLALCHEMY_DATABASE_URI)")

@@ -36,6 +36,7 @@ from sealbook.ledger.contracts import (
 from sealbook.ledger.models import Blob, Payload, Run, Statement, StatementTier
 from sealbook.ledger.queue import LEASE
 from sealbook.monitor.data import LOCATED
+from sealbook.people import data as people_data
 from sealbook.places import normalise, phrases, resolve
 from sealbook.search.arabic import candidates as name_match
 from sealbook.search.arabic import natural
@@ -48,14 +49,7 @@ PROMPT_VERSION = "linker-5"
 CAP = 12  # candidates of each kind per run, strongest first
 PER_CALL = 4
 BUDGET_SECONDS = LEASE.total_seconds() - 90
-COMPARED = (
-    Prop.BIRTH_DATE,
-    Prop.FATHER_NAME,
-    Prop.MOTHER_NAME,
-    Prop.PLACE_OF_BIRTH,
-    Prop.DETENTION_BRANCH,
-    Prop.SEX,
-)
+COMPARED = people_data.COMPARED
 # A difference here rules a same-person link out, whatever else agrees.
 CONTRADICTS = (Prop.BIRTH_DATE, Prop.FATHER_NAME, Prop.MOTHER_NAME)
 # Where a person was held at a time; branch membership and transfers do not count.
@@ -197,18 +191,23 @@ def candidates(
             ys = [c for c in people[b] if c.prop == prop]
             if not (xs and ys):
                 continue
-            hit = next(
-                (
-                    (x, y)
-                    for x in xs
-                    for y in ys
-                    if read.same_value(prop, x.text, y.text)
-                ),
-                None,
+            state, _ = people_data.agreement(
+                prop, [x.text for x in xs], [y.text for y in ys]
             )
-            if hit:
-                agree.append(hit)
-            else:
+            if state == "agree":
+                # Cite a pair that agrees at full precision when one does.
+                agree.append(
+                    min(
+                        (
+                            (x, y)
+                            for x in xs
+                            for y in ys
+                            if read.same_value(prop, x.text, y.text)
+                        ),
+                        key=lambda p: len(p[0].text) != len(p[1].text),
+                    )
+                )
+            elif state == "differ":
                 differ.append((xs[0], ys[0]))
         for prop in ("last_seen", "arrested_at", "detained_at", "seen_at"):
             xs = [c for c in people[a] if c.prop == prop]

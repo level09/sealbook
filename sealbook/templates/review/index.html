@@ -244,7 +244,7 @@
                 <tbody><tr v-for="row in claim.compare" :key="row.prop">
                   <th scope="row">${ label(row.prop) }</th>
                   <td v-for="side in [row.a, row.b]" dir="auto"><template v-for="(r, i) in side" :key="r.id"><br v-if="i"><span v-if="r.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ fmtDate(r.value.text) }</bdi></template><span v-if="!side.length" class="rv-muted">not stated</span></td>
-                  <td class="st" :class="row.state">${ row.state === 'unknown' ? 'cannot tell' : row.state }</td>
+                  <td class="st" :class="row.state">${ row.state === 'unknown' ? 'cannot tell' : row.state }<span v-if="row.note" class="rv-muted">, ${ row.note }</span></td>
                 </tr></tbody>
               </table>
               <div class="rv-sec" v-if="!claim.compare.length"><p class="rv-muted ma-0">The proposal names no statements to compare.</p></div>

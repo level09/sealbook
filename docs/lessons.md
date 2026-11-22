@@ -875,3 +875,10 @@ covers in the text it was read from (`span_blob`).
   "Aron Vesk" was in the cluster: `people.names` took each member's best name and
   then the member that sorted first by random id. Rank every member's spellings
   together (`people.label_rank`), and give a tie-break a meaning before an id.
+
+- Review's identity card read "1974" against "19 Aug 1974" as differ, and the
+  person page's Candidate duplicates did the same, while the linker counted them as
+  agreeing: each view had its own text or value-key comparison, and the card split
+  the cited claims by record, not by joined person. One function
+  (`people.agreement`, on `people.same_value`) now serves all three. A view that
+  explains an agent's decision must call the agent's comparison, not restate it.

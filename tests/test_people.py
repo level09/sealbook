@@ -122,6 +122,36 @@ async def _case(app) -> dict:
     return {k: data.pid(v) if k[0] == "P" else v for k, v in case.items()}
 
 
+class AgreementTest(unittest.TestCase):
+    """The one comparison the linker, Review's card and Candidate duplicates use."""
+
+    def test_a_year_agrees_with_a_full_date_in_it_and_says_so(self):
+        agree = data.agreement
+        self.assertEqual(
+            agree(Prop.BIRTH_DATE, ["1974"], ["1974-08-19"]), ("agree", "year only")
+        )
+        self.assertEqual(
+            agree(Prop.BIRTH_DATE, ["1974", "1974-03-02"], ["1974-03-02"]),
+            ("agree", None),
+        )
+        self.assertEqual(
+            agree(Prop.BIRTH_DATE, ["1975"], ["1974-08-19"]), ("differ", None)
+        )
+        self.assertEqual(agree(Prop.BIRTH_DATE, [], ["1974-08-19"]), ("unknown", None))
+        # Two full dates that differ are not saved by a year one side also gives.
+        self.assertEqual(
+            agree(Prop.BIRTH_DATE, ["1974", "1974-03-02"], ["1974-08-19"]),
+            ("differ", None),
+        )
+        self.assertEqual(agree(Prop.FATHER_NAME, ["إلياس"], ["Elias"]), ("agree", None))
+        self.assertEqual(
+            agree(Prop.NAME, ["A. Qassar"], ["Adrian Kassar"]), ("agree", None)
+        )
+        self.assertEqual(
+            agree(Prop.PLACE_OF_BIRTH, ["Torvane"], ["Velmora"]), ("differ", None)
+        )
+
+
 class ForksTest(unittest.TestCase):
     """Disagreements compare resolved places, never display text."""
 
