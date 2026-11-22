@@ -91,9 +91,12 @@ and hash are recorded with the run. Embeddings are leads for inspection, never
 identity merges or proof of corroboration. Changed or erased profiles are excluded
 from semantic results until the index is refreshed.
 
-Text passages, actor profiles and media share one 768-dimensional EmbeddingGemma 2
-space, served by Gemini Embedding 2 on OpenRouter's zero-retention route by default or EmbeddingGemma 2 on a private Ollama server, so one query can return passages, pages, frames
-and audio windows. The server must expose `/embeddings` and report the model it
+Text passages, actor profiles and media share one 768-dimensional space, served by
+OpenAI text-embedding-3-large on OpenRouter's zero-retention route by default or
+EmbeddingGemma 2 on a private Ollama server. The hosted default reads text only, so
+a query returns passages, pages and transcript lines, and a photo or clip through
+its first-pass description; EmbeddingGemma 2 (`EMBEDDING_MEDIA=image,audio`) also
+returns page images, frames and audio windows themselves. The server must expose `/embeddings` and report the model it
 served. Neither route falls back to the other. A changed model alias requires an
 explicit rebuild when reference vectors drift. These probes detect changes on a
 fixed non-sensitive sample, not every possible weight or tokenizer change.

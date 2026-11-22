@@ -263,7 +263,11 @@ with `google/gemini-3.8-flash`, both recorded on 2026-11-21; 52 extractions with
 prompt began asking for whereabouts, so only those 52 calls ran) and one hosted
 speech to text call (`elevenlabs/scribe-v2`, recorded on 2026-11-22 with the voice
 note's extraction and first pass, which read its new transcript; the counts did
-not move). Replay takes about 12 seconds and calls nothing.
+not move). Replay takes about 12 seconds and calls nothing. Replay pins the models
+recorded with it, so the cases still read with Argon and Gemini 3.8 Flash after the
+defaults moved to GPT-6.2 Sol and GPT-6 Luna on 2026-11-22, and their scores are
+unchanged. Recording them again on the new models is pending: the OpenRouter key
+reached its spending limit during the comparison.
 
 | Act | Day | Shows | Steps | See |
 | --- | --- | --- | --- | --- |

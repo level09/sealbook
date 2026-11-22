@@ -1,11 +1,14 @@
 # Local embedding model selection
 
-Since 2026-10-25 the default is Gemini Embedding 2 on OpenRouter's zero-retention route,
-one item per call (decisions.md); the research below, checked 2026-10-23, covers
-EmbeddingGemma 2 on a private Ollama server, which stays supported.
-One 768-dimensional space serves text passages, actor profiles and media; there
-is no separate text model. It has been measured on the synthetic set below, not
-on Syrian evidence.
+Since 2026-11-22 the default is OpenAI text-embedding-3-large on OpenRouter's
+zero-retention route, one item per call, reading text only (decisions.md, and the
+hosted comparison at the end of this page). From 2026-10-25 it was Gemini Embedding
+2, which has no zero-retention endpoint without Safety Retention any more. The
+research below, checked 2026-10-23, covers EmbeddingGemma 2 on a private Ollama
+server, which stays supported with `EMBEDDING_MEDIA=image,audio`.
+One 768-dimensional space serves text passages, actor profiles and, when the model
+reads them, media; there is no separate text model. It has been measured on the
+synthetic set below, not on Syrian evidence.
 
 | Candidate | Fit | Cost and limit |
 | --- | --- | --- |
@@ -95,6 +98,42 @@ audio-landmark tests independent: they measure reuse, not meaning.
 
 Confidence: high on modality and API fit and on this set's results; unproven on
 real handwritten records, field audio and archive scale.
+
+## Hosted embedding models with strict zero retention (2026-11-22)
+
+No embedding model with a zero-retention endpoint free of Safety Retention reads
+audio. Two read images, `perplexity/pplx-embed-v2-context-9b` and
+`amazon/titan-embed-image-v1`, and both refuse 768 dimensions (1024 or 2048, and
+1024, 384 or 256), which the vector columns hold; Perplexity also needs an
+`input_type` the app does not send. So the hosted default reads text, and media is
+found through what the app already derives and indexes: a photo's first-pass title
+and description, a scan's OCR text, a recording's transcript lines with their
+times. `acceptance/eval_retrieval.py` now runs the configured hosted model through
+the app's own call and replaces each medium the model does not read by that text,
+kept in `acceptance/retrieval/derived.json` (OCR and photo descriptions by Haiku
+5.5, transcripts by Scribe v2). The tone has no words, so its query is a miss for
+every text model. Same 36 queries, one run each:
+
+| Model | Recall@1 | Recall@5 | MRR | Negative top score (max) / positive mean | Median ms a call | USD per million tokens |
+| --- | --- | --- | --- | --- | --- | --- |
+| `openai/text-embedding-3-large` (Azure) | 0.94 | 0.97 | 0.95 | 0.38 / 0.61 | 484 | 0.13 |
+| `perplexity/pplx-embed-v2-context-9b`, photos read directly, 1024 dimensions | 0.94 | 0.97 | 0.95 | 0.35 / 0.49 | 423 | 0.12 |
+| `qwen/qwen3-embedding-8b` | 0.91 | 0.97 | 0.93 | 0.36 / 0.69 | 9136 | 0.01 |
+| `openai/text-embedding-3-small` | 0.91 | 0.97 | 0.93 | 0.38 / 0.54 | 415 | 0.02 |
+| `baai/bge-m3` | 0.88 | 0.97 | 0.90 | 0.49 / 0.64 | 493 | 0.01 |
+
+Every text and cross-language query was found first by all of them; the misses
+are speech queries (recall@1 0.6 on the five audio queries, one of them the tone).
+Unlike EmbeddingGemma 2 (0.67 against 0.80), text-embedding-3-large keeps the
+negative queries well below the right answers, though the search page's bands are
+still set from the gold set, not calibrated. BGE-M3 was served by two providers
+naming different models within one run, which the app's single-served-model check
+refuses. The EmbeddingGemma 2 prefixes (`task: search result | query: `) made no
+difference to text-embedding-3-large on this set, so the recipe keeps them.
+
+What is lost: a photo with no first pass (one no route was allowed to read), a
+sound with no words, and visual similarity that the words miss. Picture and sound
+fingerprints are unaffected; they find copies, not meaning.
 
 ## Speech to text model
 

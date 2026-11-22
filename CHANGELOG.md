@@ -28,6 +28,11 @@
   in one decision.
 - Models: Gemini 4 Argon for OCR, Gemini 3.8 Flash for the first pass
   (`ASSESS_MODEL`), Claude Haiku 5.5 as the zero-retention default.
+- Models since 2026-11-22: GPT-6.2 Sol for OCR, GPT-6 Luna for the first pass and
+  OpenAI text-embedding-3-large for search, because the Google models have no
+  zero-retention endpoint without Safety Retention. Search reads text only by
+  default (`EMBEDDING_MEDIA`); a server indexed with Gemini rebuilds with
+  `stk enrich --rebuild`.
 - stk 17.3.1: evidence runs are `uv run stk runner`; httpx2 and stk's netguard.
 - Docker Compose runs the runner, keeps evidence in a volume and serves TLS through
   Caddy.

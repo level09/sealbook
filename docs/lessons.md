@@ -1006,3 +1006,18 @@ covers in the text it was read from (`span_blob`).
   the 2026-11-22 lesson above applied again: views call `apart_why` and
   `people.agreement`. Grep for every caller of a comparison when the agent's rule
   gains an input (here, the time of day), not only the agent.
+
+## Hosted models without a strict zero-retention endpoint (2026-11-22)
+
+- Every live upload failed with 404 "No endpoints found matching your data policy"
+  while the demo kept working: the account is set to ZDR only, Google's
+  zero-retention endpoints all carry Safety Retention, and the cases replay
+  recorded answers, so nothing ran the configured models. `provider.zdr` passing
+  once is not a guarantee; `tests/test_zdr_models.py` now reads OpenRouter's public
+  endpoint list and fails when a configured hosted model has no endpoint with
+  `safety_retention: false`.
+- Measuring 19 OCR models and six first-pass models used the last USD 3.30 of the
+  key's USD 50 limit, after which every call answered 403, the cases could not be
+  re-recorded and the live test failed. Read `GET /api/v1/key` (`limit_remaining`,
+  which lags by minutes) before a comparison, run the cheap models first and the
+  dear ones on a subset, and keep enough for the recordings the choice forces.

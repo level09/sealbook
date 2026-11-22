@@ -162,8 +162,12 @@ class RunsTest(unittest.IsolatedAsyncioTestCase):
         self.enterContext(
             mock.patch.object(Config, "EMBEDDING_URL", "http://local.test")
         )
-        # These tests mock an Ollama-style /api/embed server.
+        # These tests mock an Ollama-style /api/embed server with a model that reads
+        # images and audio, as EmbeddingGemma 2 does.
         self.enterContext(mock.patch.object(Config, "EMBEDDING_ROUTE", "local"))
+        self.enterContext(
+            mock.patch.object(Config, "EMBEDDING_MEDIA", ("audio", "image"))
+        )
         url = self.enterContext(
             throwaway_database_url(Config.SQLALCHEMY_DATABASE_URI, sync=True)
         )

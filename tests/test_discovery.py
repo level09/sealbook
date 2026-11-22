@@ -13,6 +13,16 @@ def frame(bits, ms, quality=100):
 
 
 class DiscoveryTest(unittest.TestCase):
+    def setUp(self):
+        from unittest import mock
+
+        from sealbook.settings import Config
+
+        # Media windows are cut for a model that reads frames and sound.
+        self.enterContext(
+            mock.patch.object(Config, "EMBEDDING_MEDIA", ("audio", "image"))
+        )
+
     def test_chunks_point_to_exact_source_text(self):
         text = "الاسم: يوسف\n\nTransfer to Branch 999.\nLast seen in March."
         found = chunks(text, size=25)

@@ -107,9 +107,7 @@ async def report(db, f):
         else:
             state = "not_indexed"
         text_complete = text_ready.get(sha, 0) == text_total.get(sha, 0)
-        media_required = Config.EMBEDDING_MODEL and (
-            mime == "application/pdf" or mime.startswith(("image/", "audio/", "video/"))
-        )
+        media_required = Config.EMBEDDING_MODEL and embeddings.embeds(mime)
         media_step = steps.get(("embed", "segments"))
         media_complete = bool(
             media_step

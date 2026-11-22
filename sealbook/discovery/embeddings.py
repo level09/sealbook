@@ -28,13 +28,26 @@ def content(kind, data):
     return {kind: base64.b64encode(data).decode()}
 
 
+def embeds(mime: str) -> bool:
+    """Whether the embedding model reads this source's own media (EMBEDDING_MEDIA);
+    otherwise only the text derived from it is embedded."""
+    media = Config.EMBEDDING_MEDIA
+    if mime.startswith(("image/", "application/pdf")):
+        return "image" in media
+    if mime.startswith("video/"):
+        return bool(media)
+    return mime.startswith("audio/") and "audio" in media
+
+
 def probes():
+    """Text probes, then two of each media kind the model reads: distinct inputs of
+    one kind must give distinct vectors."""
     values = [QUERY_PREFIX + q for q in TEXT_PROBES]
-    for color in ("red", "blue"):
+    for color in ("red", "blue") if "image" in Config.EMBEDDING_MEDIA else ():
         buffer = io.BytesIO()
         Image.new("RGB", (64, 64), color).save(buffer, "PNG")
         values.append(content("image", buffer.getvalue()))
-    for hz in (440, 880):
+    for hz in (440, 880) if "audio" in Config.EMBEDDING_MEDIA else ():
         samples = (
             np.sin(np.arange(32000) * (2 * math.pi * hz / 16000)) * 12000
         ).astype("<i2")
@@ -56,7 +69,12 @@ def recipe():
         "endpoint": Config.EMBEDDING_URL
         if Config.EMBEDDING_ROUTE == "local"
         else "openrouter",
-        "preprocessing": "gemma2-v1;chunks1800;title-none-document;png1024;mono16k;audio30-hop25;frame3s",
+        # A model reading image and audio keeps the recipe, and so the space, it
+        # had before EMBEDDING_MEDIA existed.
+        "preprocessing": "gemma2-v1;chunks1800;title-none-document"
+        + (";png1024" if "image" in Config.EMBEDDING_MEDIA else "")
+        + (";mono16k;audio30-hop25" if "audio" in Config.EMBEDDING_MEDIA else "")
+        + (";frame3s" if "image" in Config.EMBEDDING_MEDIA else ""),
     }
 
 
@@ -85,8 +103,8 @@ async def bind_run(c, space):
     }
 
 
-# Gemini Embedding 2 on OpenRouter takes OpenAI-style input: a string, or a
-# content part with a data URL (checked 2026-10-25).
+# OpenRouter's embeddings endpoint takes OpenAI-style input: a string, or a content
+# part with a data URL for a model that reads media (checked 2026-10-25).
 PARALLEL = 8
 
 
@@ -232,10 +250,9 @@ async def call(db, inputs, model, transport=None, *, rebuild=False):
     values, measured, served, endpoint, response = await _post(
         inputs, probes(), model, transport
     )
-    if any(
-        np.allclose(measured[a], measured[b], atol=1e-7, rtol=0)
-        for a, b in ((2, 3), (4, 5))
-    ):
+    # Media probes come in pairs after the text probes.
+    pairs = range(len(TEXT_PROBES), len(measured), 2)
+    if any(np.allclose(measured[a], measured[a + 1], atol=1e-7, rtol=0) for a in pairs):
         raise ValueError("encoder ignored distinct image or audio reference inputs")
     key_hash = chain.sha256(chain.canon(settings))
     await db.execute(
