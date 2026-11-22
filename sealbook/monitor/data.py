@@ -249,7 +249,7 @@ def answered(run) -> dict:
         return {
             "how": "planted",
             "label": "Planted from the case file",
-            "detail": "copied from the case file, no model ran",
+            "detail": "no model ran",
         }
     if mark == "recorded":
         at = inputs.get("recorded_at")

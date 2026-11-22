@@ -300,8 +300,9 @@ async def _settle(Session, run_id):  # noqa: N803
             )
             if proposed:
                 notice = (
-                    "standing_match" if task.kind == "standing" else "agent_found",
-                    KINDS[task.kind][3],
+                    ("standing_match", f"{proposed} new match{'es' * (proposed != 1)}")
+                    if task.kind == "standing"
+                    else ("agent_found", KINDS[task.kind][3])
                 )
         else:
             task.failures += 1
@@ -329,11 +330,14 @@ async def _settle(Session, run_id):  # noqa: N803
             Event(run_id=run.id, seq=(seq or 0) + 1, stage="task_settled", counts={}),
         )
         if notice:
+            case = await db.scalar(
+                select(Case.name).where(Case.slug == task.investigation)
+            )
             await notifications.notify(
                 db,
                 task.user_id,
                 notice[0],
-                KINDS[task.kind][1],
+                f"{KINDS[task.kind][1]} in {case or task.investigation}",
                 notice[1],
                 f"{KINDS[task.kind][4]}?investigation={quote(task.investigation)}",
                 f"task:{task.id}",

@@ -8,6 +8,7 @@ from urllib.parse import quote
 
 from sqlalchemy import Text, cast, func, select, text
 
+from sealbook.cases.models import Case
 from sealbook.collaboration.models import Notification
 from sealbook.collaboration.notifications import notify
 from sealbook.ledger import queue
@@ -70,13 +71,20 @@ async def _finished(Session, run_id):  # noqa: N803
         ):
             return
         failed = counts.get("failed", 0)
+        files = await s.scalar(
+            select(func.count(func.distinct(Acquisition.blob_sha256))).where(
+                Acquisition.context["batch"].astext == batch
+            )
+        )
+        inv = acq.context.get("investigation")
+        case = inv and await s.scalar(select(Case.name).where(Case.slug == inv))
         await notify(
             s,
             owner,
             "intake_done",
-            "Intake finished",
-            f"{sum(counts.values())} runs done"
-            + (f", {failed} failed" if failed else ""),
+            f"Intake finished in {case}" if case else "Intake finished",
+            f"{files} file{'s' * (files != 1)} read"
+            + (f", {failed} reading{'s' * (failed != 1)} failed" if failed else ""),
             f"/sources?batch={quote(batch)}",
             subject,
         )

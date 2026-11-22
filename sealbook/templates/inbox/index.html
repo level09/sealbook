@@ -38,7 +38,7 @@
 <v-container fluid class="ibx-page py-4">
   <div class="ibx-head">
     <h1>Inbox</h1>
-    <p>Everything addressed to you: review requests, threads you are in, mentions, assigned work, decisions and finished intake.</p>
+    <p>Questions for you, replies in your threads, work handed to you and notices from the app.</p>
   </div>
   <v-alert v-if="error" type="error" density="compact" class="mb-3" closable @click:close="error = ''">${ error }</v-alert>
   <div class="ibx-chips" v-show="!(isMobile && pane)" role="group" aria-label="Filter">
@@ -121,7 +121,7 @@
       </template>
       <template v-else-if="cur">
         <div class="ibx-about"><v-icon :icon="cur.icon" size="22" class="ibx-muted"></v-icon>
-          <div class="t"><div class="text-body-small ibx-muted">${ cur.label }, ${ ago(cur.at) }</div><div><strong dir="auto">${ cur.n.title }</strong></div><div class="ibx-muted" dir="auto">${ cur.n.subtitle }</div>
+          <div class="t"><div><strong dir="auto">${ cur.n.title }</strong></div><div class="ibx-muted" dir="auto">${ cur.sub }, ${ ago(cur.at) }</div>
             <v-btn class="mt-2" size="small" color="primary" variant="flat" prepend-icon="ti ti-arrow-right" :href="cur.n.to">${ cur.n.kind === 'intake_done' ? 'Open the batch' : 'Open it' }</v-btn></div>
         </div>
         <div v-if="cur.n.kind === 'intake_done' && batchOf(cur.n)" class="pa-3"><intake-brief :batch="batchOf(cur.n)"></intake-brief></div>
@@ -210,6 +210,7 @@ window.app = Vue.createApp({
       const at = [req?.at, ...(req?.comments || []).map(c => c.at), ...notes.map(n => n.at)].filter(Boolean).sort().pop();
       const asked = req?.reviewer === ME, sent = req?.sender.id === ME, last = req?.comments.at(-1);
       const decided = notes.some(n => n.kind === 'decision') || (req && !PENDING.includes(req.proposal.tier));
+      const state = req && !PENDING.includes(req.proposal.tier) ? req.proposal.tier : decided ? 'decided' : '';
       const top = notes.find(n => !n.isSeen) || notes[0];
       const who = !req ? (top ? LABEL[top.kind] : 'Thread') : asked ? `${req.sender.name} asks you` : sent ? `You asked ${this.nameOf(req.reviewer)}` : `${req.sender.name} asked ${this.nameOf(req.reviewer)}`;
       const what = req ? this.sentence(req) : top?.subtitle;
@@ -218,7 +219,7 @@ window.app = Vue.createApp({
         unread: notes.some(n => !n.isSeen),
         icon: ICON[top && !top.isSeen ? top.kind : 'request'],
         title: last ? `${last.author}: ${last.text}` : req ? req.reason : top?.title,
-        sub: [top && !top.isSeen && top.kind !== 'assigned' ? LABEL[top.kind] : who, what, decided ? 'decided' : ''].filter(Boolean).join(', '),
+        sub: [top && !top.isSeen && top.kind !== 'assigned' ? LABEL[top.kind] : who, what, state].filter(Boolean).join(', '),
         tags: [asked && 'asked', sent && 'sent', (req?.comments.length || notes.some(n => ['mention', 'reply'].includes(n.kind))) && 'threads', decided && 'decisions'].filter(Boolean),
       };
     },
@@ -234,8 +235,8 @@ window.app = Vue.createApp({
       return {key: 'assignment:' + a.id, kind: 'assignment', a, at: a.at, unread: notes.some(n => !n.isSeen), icon: ICON.assignment, title: what, sub: `Assigned to you, ${a.priority} priority`, due: this.dueOf(a.status), href, notes, tags: ['work']};
     },
     noteRow(n) {
-      return {key: 'note:' + n.id, kind: 'note', n, at: n.at, notes: [n], unread: !n.isSeen, icon: ICON[n.kind] || 'ti ti-bell', label: LABEL[n.kind] || 'Notice',
-        title: n.title, sub: [LABEL[n.kind], n.subtitle].filter(Boolean).join(', '), tags: [{assigned: 'work', intake_done: 'intake', decision: 'decisions', mention: 'threads', reply: 'threads'}[n.kind]].filter(Boolean)};
+      return {key: 'note:' + n.id, kind: 'note', n, at: n.at, notes: [n], unread: !n.isSeen, icon: ICON[n.kind] || 'ti ti-bell',
+        title: n.title, sub: (n.subtitle || LABEL[n.kind] || '').replace(/\.$/, ''), tags: [{assigned: 'work', intake_done: 'intake', decision: 'decisions', mention: 'threads', reply: 'threads'}[n.kind]].filter(Boolean)};
     },
     // The needs API labels assigned work in one batch; page through it for the assignments only.
     async work() {

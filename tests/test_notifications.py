@@ -270,7 +270,7 @@ class NotificationTest(CollabCase):
             [n] = (await s.execute(select(Notification))).scalars().all()
         self.assertEqual(
             (n.user_id, n.kind, n.subtitle),
-            (self.ids["alice"], "intake_done", "2 runs done, 1 failed"),
+            (self.ids["alice"], "intake_done", "2 files read, 1 reading failed"),
         )
 
 
