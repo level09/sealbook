@@ -12,7 +12,8 @@ import re
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import case, select, true
+from sqlalchemy import Text, case, cast, func, select, true
+from sqlalchemy.orm import aliased
 from stk.user.models import User
 
 from sealbook import method
@@ -194,6 +195,7 @@ async def citeable(db, slug: str) -> dict:
             .order_by(Statement.recorded_at)
         )
     ).all()
+    matches = await _matches(db, slug)
     persons = {st.subject for st, _ in links} | {
         f"person:{v['person']}" for _, v in links
     }
@@ -249,11 +251,80 @@ async def citeable(db, slug: str) -> dict:
             }
             for st, v in found
         ],
+        "matches": matches,
     }
 
 
+async def _matches(db, slug: str) -> list[dict]:
+    """Accepted, current matches between two available files, one of them the
+    case's: the two sources by title, the kind and strength the fingerprints
+    measured, and who accepted it."""
+    accepter = aliased(Principal)
+    review, review_value = aliased(Statement), aliased(Payload)
+    other = Payload.value["blob"].astext
+    rows = (
+        await db.execute(
+            select(Statement, Payload.value, accepter.name, review_value.value)
+            .join(Payload, Payload.commitment == Statement.commitment)
+            .join(StatementTier, StatementTier.statement_id == Statement.id)
+            .join(
+                review,
+                (review.subject == func.concat("statement:", cast(Statement.id, Text)))
+                & (review.prop == Prop.REVIEW),
+            )
+            .join(review_value, review_value.commitment == review.commitment)
+            .join(accepter, accepter.id == review.author_id)
+            .where(
+                StatementTier.tier == Tier.ACCEPTED,
+                write.current_clause(),
+                Statement.prop == Prop.MEDIA_MATCH,
+                review_value.value["verdict"].astext == "accept",
+                mfilter.statement_clause({"investigation": slug, "time": None}),
+                available(mfilter.statement_blob()),
+                available(other),
+            )
+            .order_by(Statement.recorded_at, review.recorded_at.desc())
+        )
+    ).all()
+    shas = {st.subject.removeprefix("blob:") for st, *_ in rows} | {
+        v["blob"] for _, v, *_ in rows
+    }
+    ctx = await data.Context.load(db, blobs=shas)
+    out: dict[str, dict] = {}
+    for st, v, name, decided in rows:
+        if str(st.id) in out:
+            continue  # the latest accepting review names who accepted it
+        here, there = st.subject.removeprefix("blob:"), v["blob"]
+        kind, why, strength = evidence.copy_reason(v)
+        a, b = ctx.doc(here)["title"], ctx.doc(there)["title"]
+        as_ = (decided or {}).get("relationship")
+        out[str(st.id)] = {
+            "id": str(st.id),
+            "kind": "match",
+            "text": f"⁨{a}⁩ and ⁨{b}⁩: {kind}, {strength}",
+            "match": kind,
+            "strength": strength,
+            "why": why,
+            "sources": [
+                {"sha256": here, "title": a, "href": f"/evidence/{here}"},
+                {"sha256": there, "title": b, "href": f"/evidence/{there}"},
+            ],
+            "accepted_by": name,
+            "accepted_as": as_.replace("_", " ") if as_ else None,
+            "about": f"{why}. Accepted by {name}"
+            + (f" as {as_.replace('_', ' ')}" if as_ else ""),
+            "people": [],
+            "href": f"/evidence/{here}",
+        }
+    return list(out.values())
+
+
+# Each citeable kind and the list citeable() returns it in.
+KINDS = {"claim": "claims", "link": "links", "finding": "findings", "match": "matches"}
+
+
 def _flat(found: dict) -> dict[str, dict]:
-    return {i["id"]: i for k in ("claims", "links", "findings") for i in found[k]}
+    return {i["id"]: i for k in KINDS.values() for i in found[k]}
 
 
 # --- whether what it cited still stands ---------------------------------------------
@@ -275,6 +346,12 @@ async def cited(db, ids: list[str]) -> dict[str, str]:
                 write.current_clause().label("current"),
                 case(
                     (blob.is_(None), true()),
+                    # A match holds only while both files it joins do.
+                    (
+                        Statement.prop == Prop.MEDIA_MATCH,
+                        available(mfilter.source(blob))
+                        & available(Payload.value["blob"].astext),
+                    ),
                     else_=available(mfilter.source(blob)),
                 ).label("available"),
             )
@@ -306,26 +383,31 @@ async def hidden(db, ids: list[str]) -> list[dict]:
     uids = [uuid.UUID(i) for i in ids]
     rows = (
         await db.execute(
-            select(Statement.id, Payload.value)
+            select(Statement.prop, Payload.value)
             .join(Payload, Payload.commitment == Statement.commitment)
             .where(Statement.id.in_(uids))
         )
     ).all()
-    more = set()
-    for _, v in rows:
-        if isinstance(v, dict):
+    more, other = set(), set()
+    for prop, v in rows:
+        if prop == Prop.MEDIA_MATCH:
+            other.add(v["blob"])  # the second file a match joins
+        elif isinstance(v, dict):
             for r in [*(v.get("basis") or []), *(v.get("members") or [])]:
                 try:
                     more.add(uuid.UUID(str(r).removeprefix("statement:")))
                 except ValueError:
                     continue
-    shas = set(
-        await db.scalars(
-            select(mfilter.source(mfilter.statement_blob())).where(
-                Statement.id.in_(set(uids) | more),
-                mfilter.statement_blob().is_not(None),
+    shas = (
+        set(
+            await db.scalars(
+                select(mfilter.source(mfilter.statement_blob())).where(
+                    Statement.id.in_(set(uids) | more),
+                    mfilter.statement_blob().is_not(None),
+                )
             )
         )
+        | other
     )
     ctx = await data.Context.load(db, blobs=shas)
     return [
@@ -618,14 +700,14 @@ async def _case(db, slug):
 
 
 def _resolve(rests_on, known: dict[str, dict]) -> list[str]:
-    """Statement ids, or the words "links", "findings", "claims" for every
-    citeable item of that kind (what a seeder plants)."""
+    """Statement ids, or the words "links", "findings", "claims", "matches" for
+    every citeable item of that kind (what a seeder plants)."""
     if not isinstance(rests_on, list) or not rests_on:
-        raise ValueError("choose at least one accepted claim, link or finding")
+        raise ValueError("choose at least one accepted claim, link, match or finding")
     out = []
     for r in rests_on:
-        if r in ("links", "findings", "claims"):
-            out += [i for i, x in known.items() if x["kind"] + "s" == r]
+        if r in KINDS.values():
+            out += [i for i, x in known.items() if KINDS[x["kind"]] == r]
         else:
             out.append(str(r))
     out = list(dict.fromkeys(out))
@@ -636,8 +718,8 @@ def _resolve(rests_on, known: dict[str, dict]) -> list[str]:
     if missing := [i for i in out if i not in known]:
         raise ValueError(
             f"{len(missing)} of the chosen items "
-            f"{'is' if len(missing) == 1 else 'are'} not an accepted claim, link "
-            "or finding of this case"
+            f"{'is' if len(missing) == 1 else 'are'} not an accepted claim, link, "
+            "match or finding of this case"
         )
     return out
 

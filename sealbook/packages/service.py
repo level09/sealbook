@@ -83,21 +83,23 @@ async def _access(db: AsyncSession, user, subject: str, value: dict) -> None:
 # --- briefs ---------------------------------------------------------------------
 
 
-def factual_clause():
+def factual_clause(allow=()):
+    """Accepted or corroborated, current, and a fact; `allow` names props of
+    NOT_CITABLE that may stand anyway (a conclusion may rest on a media match)."""
     return (
         StatementTier.tier.in_([str(t) for t in FACTUAL]),
-        Statement.prop.not_in([str(p) for p in NOT_CITABLE]),
+        Statement.prop.not_in([str(p) for p in NOT_CITABLE if p not in allow]),
         current_clause(),
     )
 
 
-async def require_factual(db: AsyncSession, ids: list[uuid.UUID]) -> None:
+async def require_factual(db: AsyncSession, ids: list[uuid.UUID], allow=()) -> None:
     found = set(
         (
             await db.execute(
                 select(Statement.id)
                 .join(StatementTier, StatementTier.statement_id == Statement.id)
-                .where(Statement.id.in_(ids), *factual_clause())
+                .where(Statement.id.in_(ids), *factual_clause(allow))
             )
         ).scalars()
     )
@@ -234,10 +236,13 @@ async def collect(
     case conclusions (case_conclusions), carried with what they rest on;
     `decisions` the signed choices to include sensitive files (disclosures)."""
     own, rests = _sealed(opening or [])
-    facts = list(dict.fromkeys([*rests, *_cited_ids(brief)]))
+    cites = _cited_ids(brief)
     # A conclusion and the case status are records about the case, never a fact a
-    # sentence cites; what they rest on must be factual like any citation.
-    await require_factual(db, facts)
+    # sentence cites; what they rest on must be factual like any citation, and may
+    # be an accepted match between two files.
+    await require_factual(db, cites)
+    await require_factual(db, rests, allow={Prop.MEDIA_MATCH})
+    facts = list(dict.fromkeys([*rests, *cites]))
     cited = list(dict.fromkeys([*own, *facts, *decisions]))
     about = [f"statement:{i}" for i in cited]
     statements = list(
@@ -260,6 +265,17 @@ async def collect(
         for s in statements
         if s.subject.startswith("blob:") and s.id in cited
     }
+    # A match joins two files: the second one ships with the first.
+    if matched := [
+        s.commitment for s in statements if s.prop == Prop.MEDIA_MATCH and s.id in cited
+    ]:
+        shas |= set(
+            await db.scalars(
+                select(Payload.value["blob"].astext).where(
+                    Payload.commitment.in_(matched)
+                )
+            )
+        )
     # Text read from a PDF, scan or recording has no acquisition of its own: ship
     # the DERIVED_FROM statements back to the acquired file.
     frontier, seen = set(shas), {s.id for s in statements}

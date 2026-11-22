@@ -604,6 +604,191 @@ class ConclusionTest(unittest.IsolatedAsyncioTestCase):
                 await packages.collect(s, brief, opening)
             await s.rollback()
 
+    # --- a match between two files ------------------------------------------------
+
+    async def matched(self, verdict="accept"):
+        """Two clips of the case and the fingerprinter's same-recording proposal
+        between them, decided by the case's clerk."""
+        async with ext.async_session_factory() as s:
+            seed = Seeder(s)
+            seed.passkey, seed.credential_id, seed.cose = (
+                self.seed.passkey,
+                self.seed.credential_id,
+                self.seed.cose,
+            )
+            me = await principal_for_user(s, self.users["author"], "author")
+            for key, title in (("viral", "Viral clip"), ("original", "Weather video")):
+                blob = await blobs.put(
+                    s, f"clip {key}".encode(), "video/mp4", Config.BLOB_DIR
+                )
+                await record_acquisition(
+                    s,
+                    blob_sha256=blob.sha256,
+                    origin=f"channel:synthetic/{key}",
+                    collector_id=me.id,
+                    at=datetime.now(UTC),
+                    context={"investigation": CASE, "title": title},
+                    sensitivity="ordinary",
+                    doc_type="video",
+                )
+                seed.blobs[key] = blob.sha256
+            run = await seed.run(
+                await seed.principal("Synthetic fingerprinter"), "match", ["viral"]
+            )
+            match = await seed.say(
+                run,
+                "viral",
+                f"blob:{seed.blobs['viral']}",
+                Prop.MEDIA_MATCH,
+                {
+                    "blob": seed.blobs["original"],
+                    "kind": "media_similarity",
+                    "picture": None,
+                    "sound": {"aligned_landmarks": 41, "shared_landmarks": 52},
+                    "fingerprint": "ab" * 32,
+                },
+            )
+            await seed.done(run, 1)
+            await seed.review(self.human, match, verdict, "the sound lines up")
+            await s.commit()
+            self.clips = dict(seed.blobs)
+            return match
+
+    async def test_an_accepted_match_is_citeable_and_falls_like_any_item(self):
+        match = await self.matched()
+        client = await self.client()
+        got = await (
+            await client.get(f"/api/cases/conclusions/citeable?investigation={CASE}")
+        ).get_json()
+        [item] = got["matches"]
+        self.assertEqual((item["id"], item["kind"]), (str(match.id), "match"))
+        for words in ("Viral clip", "Weather video", "Same recording", "strong"):
+            self.assertIn(words, item["text"])
+        self.assertIn("41 of 52", item["why"])
+        self.assertEqual(item["accepted_by"], "clerk")
+
+        await self.write(
+            client,
+            text="The viral clip is a copy of the weather video.",
+            rests_on=[str(match.id)],
+        )
+        [c] = (await self.listing(client))["conclusions"]
+        self.assertTrue(c["stands"], c["broken"])
+        detail = await (
+            await client.get(f"/api/cases/conclusions/{c['id']}")
+        ).get_json()
+        [shown] = detail["items"]
+        self.assertEqual((shown["kind"], shown["state"]), ("match", "stands"))
+        self.assertIn("Weather video", shown["text"])
+
+        # A package carries the match and both files it joins.
+        async with ext.async_session_factory() as s:
+            brief = Brief(
+                title="Brief", audience="court", author_id=self.users["author"]
+            )
+            s.add(brief)
+            await s.flush()
+            bid = brief.id
+            s.add(
+                Sentence(
+                    brief_id=bid,
+                    ord=1,
+                    text="The vendor is named Ari Example.",
+                    statement_ids=[self.claims[("vendors", Prop.NAME)].id],
+                )
+            )
+            await s.commit()
+        async with ext.async_session_factory() as s:
+            brief = await s.get(Brief, bid)
+            rows = await packages.collect(
+                s, brief, await packages.case_conclusions(s, brief)
+            )
+            self.assertIn(match.id, rows["cited"])
+            shipped = {a.blob_sha256 for a in rows["acquisitions"]}
+            self.assertLessEqual(set(self.clips.values()), shipped)
+
+        # Rejected later, the conclusion no longer stands and cannot be sealed.
+        async with ext.async_session_factory() as s:
+            seed = Seeder(s)
+            seed.passkey, seed.credential_id, seed.cose = (
+                self.seed.passkey,
+                self.seed.credential_id,
+                self.seed.cose,
+            )
+            review = await s.scalar(
+                select(Statement).where(
+                    Statement.subject == f"statement:{match.id}",
+                    Statement.prop == Prop.REVIEW,
+                )
+            )
+            await seed.review(self.human, review, None, "undo", Prop.RETRACTION)
+            await seed.review(self.human, match, "reject", "two recordings")
+            await s.commit()
+            brief = await s.get(Brief, bid)
+            with self.assertRaisesRegex(Exception, "no longer stands"):
+                await packages.collect(
+                    s, brief, await packages.case_conclusions(s, brief)
+                )
+        [c] = (await self.listing(client))["conclusions"]
+        self.assertFalse(c["stands"])
+        self.assertEqual(c["broken"][0]["state"], "rejected")
+
+    async def test_an_open_match_is_not_citeable(self):
+        match = await self.matched(verdict=None)
+        async with ext.async_session_factory() as s:
+            self.assertEqual((await conclusions.citeable(s, CASE))["matches"], [])
+        status, body = await self.post(
+            await self.client(),
+            "/api/review/conclusions/options",
+            self.form(rests_on=[str(match.id)]),
+        )
+        self.assertEqual(status, 400, body)
+
+    async def test_the_seeder_cites_the_planted_copies(self):
+        """A case's `rests_on: ["copies:<source>"]` accepts the strong planted
+        matches joining that source to another file and cites them, so the
+        conclusion rests on the match, not only on captions."""
+        from types import SimpleNamespace
+
+        from sealbook.monitor.study import conclusion as step
+
+        match = await self.matched(verdict=None)
+        async with ext.async_session_factory() as s:
+            seed = Seeder(s)
+            seed.blobs = dict(self.clips)
+            human = await seed.analyst("Ines", CASE)
+            st = SimpleNamespace(
+                session=s,
+                s=seed,
+                inv=CASE,
+                analyst=human,
+                written={"vendors.name": self.claims[("vendors", Prop.NAME)]},
+                accepted=[self.claims[("vendors", Prop.NAME)]],
+                others={},
+                out={},
+                spec={
+                    "conclusion": {
+                        "text": "The viral clip is a copy of the weather video.",
+                        "standard": "clear_and_convincing",
+                        "rests_on": ["copies:viral,original", "vendors.name"],
+                        "alternatives": [{"text": "Two recordings", "why": "sound"}],
+                        "not_established": [],
+                    }
+                },
+            )
+            loaded = await s.get(Statement, match.id)
+            with mock.patch.object(
+                step, "copies", mock.AsyncMock(return_value=[loaded])
+            ):
+                await step.conclusion(st, {}, {})
+            got = await conclusions.listing(s, CASE)
+        [c] = got["conclusions"]
+        self.assertEqual(
+            sorted(c["rests_on"]),
+            sorted([str(match.id), str(self.claims[("vendors", Prop.NAME)].id)]),
+        )
+        self.assertTrue(c["stands"], c["broken"])
+
     async def test_seed_plants_a_signed_conclusion(self):
         async with ext.async_session_factory() as s:
             seed = Seeder(s)

@@ -948,3 +948,9 @@ covers in the text it was read from (`span_blob`).
   nothing in the build read the acquisition's sensitivity that every reading screen
   masks by. A new path out of the app (an export, a package, an API) must ask the same
   sensitivity question the screens ask, and default to withholding.
+
+- old-footage's conclusion, that a clip is a copy, could not cite the match it rested
+  on: `conclusions.citeable` knew claims, links and findings, and the package listed
+  `media_match` as never citable, so the seeder accepted the copies and cited two
+  captions instead. When a new decision type rests on evidence, list every kind of
+  accepted statement a person can sign and check the citer reaches each.

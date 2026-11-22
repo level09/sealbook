@@ -65,8 +65,10 @@ Keys the seeder reads beyond that shape, all optional:
   `sealbook/method/standards.csv`. Each `rests_on` item is a claim key, `"links"`
   (every accepted same-person link), `"same_person"` (the linker's proposals that
   join two records the truth plants as one person) or `"copies"` (the strong match
-  proposals inside the planted family of copies). Write an alternative without a
-  closing full stop: the page adds one.
+  proposals inside the planted family of copies, accepted and then cited, so the
+  conclusion rests on the match itself; `"copies:<key>"` keeps those joining that
+  source to another file and `"copies:<key>,<key>"` the match between two
+  sources). Write an alternative without a closing full stop: the page adds one.
 
 `truth` keys the case does not plant may be left out or empty. The scores that read
 them come out `null`, and so do their targets, instead of a failure. Same-person
@@ -90,9 +92,9 @@ analyst (Ines Halvorsen, an invented name) accepts exactly the items it rests on
 nothing else, signs the conclusion, which marks the case concluded, and a second
 analyst (Tomas Reyes) signs agreement as peer reviewer. In four-names the
 analyst declines the surveyor's proposal in act 7, with her reason; seed to
-`--until 6` to leave it open. The weak matches in old-footage stay for a person. A match proposal
-cannot be cited by a conclusion, so `"copies"` is accepted but not cited, and
-old-footage's conclusion cites the two posts' words beside it. In a worktree, set
+`--until 6` to leave it open. The weak matches in old-footage stay for a person. Since
+2026-11-22 `"copies"` cites the strong matches it accepts, and old-footage's
+conclusion rests on them beside the two posts' words. In a worktree, set
 `BLOB_DIR` to the main checkout's `instance/blobs` so the main server can read the
 files.
 
@@ -109,7 +111,7 @@ see `blobmeta.py`); audio and video `{"ms"}` pins are untried (claims quote the
 transcript instead); incidents, findings and assignments are seeded only where an
 act asks for them (unwritten-name seeds one accepted incident and one rejected
 finding); an act's `day` is the story's, while the ledger records
-seed time; a conclusion cannot cite a match proposal, nor cite a claim
+seed time; a conclusion cannot cite a claim
 as the one it contradicts (never-there's conclusion leaves her own Brindle Cross
 claim out). The old-footage case has no people, so its Stories and Case
 map stay empty.
@@ -436,7 +438,7 @@ by Tomas Reyes, with the case marked concluded:
 | One man, four names | The four desks' names are one man | Reasonable grounds to believe | 11 same-person links: the desks' 5 and the linker's 6 true proposals |
 | The witness who was never there | Mara Quill was at the yard on Tanner's Row that evening, not in Brindle Cross from six | Reasonable grounds to believe | The two exhibit sheets' claims, MQ/3 and MQ/4 |
 | The name nobody wrote down | Aron Vesk is named in no log for 73 days after the night Dana Kovar boarded his bus; a lead, not a finding about what he did | Reasonable suspicion | Both supervisor sightings and his last and next log lines |
-| The footage that was two years old | The clip shared as new is a copy of the 2024 video | Clear and convincing | The two posts' words; the strong matches are accepted but cannot be cited |
+| The footage that was two years old | The clip shared as new is a copy of the 2024 video | Clear and convincing | The strong matches between the clip and the 2024 video, and the two posts' words |
 
 The four-names conclusion cites the passport's link, so it stays hidden until a
 reader reveals that sensitive source, as the feature intends.

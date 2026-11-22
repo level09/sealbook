@@ -72,7 +72,7 @@
               <span v-if="i.about || i.source" class="s">${ [i.about, i.source].filter(Boolean).join('. ') }</span>
             </label>
           </template>
-          <p v-if="!total" class="cf-muted pa-3 mb-0">${ loaded ? 'Nothing in this case is accepted yet. Accept claims, links or findings in Review first.' : 'Loading what this case has accepted.' }</p>
+          <p v-if="!total" class="cf-muted pa-3 mb-0">${ loaded ? 'Nothing in this case is accepted yet. Accept claims, links, matches or findings in Review first.' : 'Loading what this case has accepted.' }</p>
         </div>
       </div>
 
@@ -154,11 +154,12 @@ window.app = Vue.createApp({
   computed: {
     slug() { return params.get('investigation') || this.caseSel; },
     groups() {
-      const f = this.found || {links: [], findings: [], claims: []}, q = this.q.toLowerCase();
+      const f = this.found || {links: [], findings: [], claims: [], matches: []}, q = this.q.toLowerCase();
       const keep = i => !q || `${i.text} ${i.about || ''} ${i.source || ''}`.toLowerCase().includes(q);
       return [
         {key: 'links', title: 'Same-person links', items: f.links.filter(keep)},
         {key: 'findings', title: 'Findings', items: f.findings.filter(keep)},
+        {key: 'matches', title: 'Matches between files', items: f.matches.filter(keep)},
         {key: 'claims', title: 'Claims', items: f.claims.filter(keep)},
       ];
     },
@@ -191,7 +192,7 @@ window.app = Vue.createApp({
       } catch (e) { this.error = err(e); }
       this.loadDrafts();
     },
-    known(id) { const f = this.found; return [...f.links, ...f.findings, ...f.claims].some(i => i.id === id); },
+    known(id) { const f = this.found; return [...f.links, ...f.findings, ...f.matches, ...f.claims].some(i => i.id === id); },
     async loadDrafts() {
       try { this.drafts = (await axios.get('/api/agents/conclusions', {params: {investigation: this.slug}})).data; }
       catch { this.drafts = null; }
