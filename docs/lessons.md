@@ -969,3 +969,11 @@ covers in the text it was read from (`span_blob`).
   holds for the new members. The planted counts moved only in never-there (3
   cellmate to 3 seen together) and unwritten-name (12 to 12); the default case's
   one cellmate is a detention pair and stayed.
+
+- Review's card called Tanner's Row at 21:52 and Brindle Cross at 23:30 a conflict
+  while the contradiction hunter, reading the same claims, did not: the card asked
+  `places_apart` with no time, so the day alone decided, and the watch matcher and
+  the person page's disagreements each kept their own text comparison. The fix was
+  the 2026-11-22 lesson above applied again: views call `apart_why` and
+  `people.agreement`. Grep for every caller of a comparison when the agent's rule
+  gains an input (here, the time of day), not only the agent.

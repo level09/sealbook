@@ -368,7 +368,7 @@
               <p v-if="!claim.related.length" class="rv-muted ma-0">None. This is the only claim of its kind${ claim.person ? ' for this person' : '' }.</p>
               <div v-for="r in claim.related" :key="r.id" class="rv-rel">
                 <span class="rv-sw" :class="['tier-' + r.tier, r.agent ? 'by-agent' : 'by-person']" :title="TIER[r.tier]"></span>
-                <span class="v" dir="auto"><span v-if="r.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ fmtDate(r.value.text) }</bdi><span class="rv-muted" v-if="r.from"> · ${ span(r.from, r.to) }</span></span>
+                <span class="v" dir="auto"><span v-if="r.value.masked" class="rv-mask" title="Sensitive. Shown after a logged reveal"><i class="ti ti-lock" aria-hidden="true"></i>hidden</span><bdi v-else>${ fmtDate(r.value.text) }</bdi><span class="rv-muted" v-if="r.from"> · ${ span(r.from, r.to) }${ r.time ? ', ' + r.time.replace('-', ' to ') : '' }</span></span>
                 <span class="st" :class="{differ: ['differs', 'conflicts'].includes(r.relation), quiet: ['earlier', 'later', 'same time'].includes(r.relation)}" :title="RELATION_TIP[r.relation] || null">${ r.relation || '' }</span>
                 <span class="m"><template v-if="r.source"><a :href="'/evidence/' + r.source.sha256"><bdi>${ r.source.file }</bdi></a>, ${ r.where.label }, </template>${ TIER[r.tier].toLowerCase() }, <actor-chip :actor="r.proposer" size="sm"></actor-chip></span>
               </div>

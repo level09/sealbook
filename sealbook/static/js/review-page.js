@@ -15,7 +15,7 @@ const api = axios.create({timeout: TIMEOUT});
 // A proposed relation reads as the question the reviewer answers.
 const RELATION_ASK = {family: 'Family?', cellmate: 'Cellmates?', seen_together: 'Seen together?', command: 'Command relation?', contains: 'Contains the other document?', contained_in: 'Excerpt of the other document?', related: 'Related documents?', same_event: 'Same event?'};
 // What each relation label means, as a tooltip (sealbook/review/assist.py relation()).
-const RELATION_TIP = {earlier: 'Before this claim: part of the timeline, not a disagreement', later: 'After this claim: part of the timeline, not a disagreement', 'same time': 'Overlapping dates; not enough to say both cannot be true', agrees: 'Same value, or a place inside the other', differs: 'Only one value can be true', conflicts: 'Places too far apart to both hold on the same day'};
+const RELATION_TIP = {earlier: 'Before this claim, or earlier the same day with time to travel: part of the timeline, not a disagreement', later: 'After this claim, or later the same day with time to travel: part of the timeline, not a disagreement', 'same time': 'Overlapping dates; not enough to say both cannot be true', agrees: 'Same value, or a place inside the other', differs: 'Only one value can be true', conflicts: 'Places too far apart for their times on the same day: the times overlap, leave too little time to travel, or are not stated'};
 const TIER = {unconfirmed: 'Unconfirmed', corroborated: 'Corroborated', accepted: 'Accepted', rejected: 'Rejected'};
 const BOXES = [{v: 'mine', t: 'Asked of me'}, {v: 'sent', t: 'Sent by me'}, {v: 'open', t: 'All open'}, {v: 'findings', t: 'Findings'}];
 const RELATIONSHIPS = [{title: 'Same recording', value: 'same_recording'}, {title: 'Contains the other recording', value: 'contains'}, {title: 'Excerpt of the other recording', value: 'contained_in'}, {title: 'Related event, different recording', value: 'related'}];
@@ -124,9 +124,16 @@ export function mount(boot) {
       decidable() {const c = this.claim; return !!c && c.can_review && ['unconfirmed', 'corroborated'].includes(c.tier) && c.prop !== 'finding';},
       correctable() {const c = this.claim; return !!c && CORRECTABLE.includes(c.prop) && c.span && ['unconfirmed', 'corroborated'].includes(c.tier) && !c.value.erased;},
       summary() {
+        // The header speaks for the box on screen, so it never says "nothing" beside a count.
         if (!this.loaded) return 'Loading';
-        const mine = this.counts.mine ?? 0, due = this.items.filter(i => i.due && i.due <= today()).length;
-        return mine ? `${plural(mine, 'claim')} waiting for your decision${this.box === 'mine' && due ? `, ${due} due today or overdue` : ''}` : 'Nothing is waiting for your decision';
+        const n = this.counts[this.box] ?? 0, mine = this.counts.mine ?? 0;
+        const due = this.items.filter(i => i.due && i.due <= today()).length;
+        return {
+          mine: () => mine ? `${plural(mine, 'claim')} waiting for your decision${due ? `, ${due} due today or overdue` : ''}` : 'Nothing is waiting for your decision',
+          sent: () => n ? `${plural(n, 'request')} you sent, still open` : 'Nothing you sent is open',
+          open: () => n ? `${plural(n, 'unconfirmed claim')} open in this case${mine ? `, ${mine} asked of you` : ''}` : 'No unconfirmed claims in this case',
+          findings: () => n ? `${plural(n, 'finding')} waiting for a decision` : 'No findings waiting',
+        }[this.box]();
       },
       emptyText() {
         return {mine: ['Nothing is waiting for you', 'When a colleague asks you to check a claim, or work is assigned to you, it appears here with its source.'],

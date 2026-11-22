@@ -741,22 +741,24 @@ def _apart(a: dict, b: dict) -> bool:
     return apart_why(a, b) is not None
 
 
+def place_point(prop: str, p, time: str | None = None) -> dict:
+    """A resolved place (a Place row) as `apart_why` reads it, with the claim's time
+    of day when it states one."""
+    return {
+        "place_id": str(p.id),
+        "place": "",
+        "prop": prop,
+        "lonlat": [float(p.lon), float(p.lat)] if p.lon is not None else None,
+        "precision_m": p.precision_m,
+        "time": time,
+    }
+
+
 def places_apart(prop: str, a, b) -> bool:
-    """Two resolved places (Place rows) that cannot both hold on one day, by the rule
-    above: a quarter and its city do not; two towns farther apart than their
-    precision do."""
-
-    def point(p):
-        lonlat = [float(p.lon), float(p.lat)] if p.lon is not None else None
-        return {
-            "place_id": str(p.id),
-            "place": "",
-            "prop": prop,
-            "lonlat": lonlat,
-            "precision_m": p.precision_m,
-        }
-
-    return _apart(point(a), point(b))
+    """Two resolved places (Place rows) that cannot both hold on one day, whatever
+    the time, by the rule above: a quarter and its city do not; two towns farther
+    apart than their precision do."""
+    return _apart(place_point(prop, a), place_point(prop, b))
 
 
 def _metres(a, b) -> float:

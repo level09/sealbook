@@ -21,7 +21,14 @@ from sealbook.discovery.models import Segment
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import Blob, Payload, Statement, StatementTier
 from sealbook.ledger.write import current_clause
-from sealbook.monitor.data import LOCATED, POSITION, places_apart
+from sealbook.monitor.data import (
+    LOCATED,
+    POSITION,
+    apart_why,
+    clock,
+    place_point,
+    places_apart,
+)
 from sealbook.people import data as people
 from sealbook.places import normalise, phrases, resolve
 from sealbook.review import queue
@@ -90,9 +97,12 @@ def relation(item: dict, r: dict, place_of) -> str | None:
     """How a claim of the same kind relates to `item`, for the reviewer. A one-value
     field agrees or differs. Anything dated is earlier, later or at the same time: a
     person seen in two places at two times is a timeline, not a disagreement. Two
-    positions conflict only on the same single day, with both places resolved and
-    farther apart than their precision (a quarter and its city agree). None when it
-    cannot be told (a masked or undated value). Pure."""
+    positions on the same single day, both places resolved, are compared as the
+    contradiction hunter compares them (`monitor.data.apart_why`): a quarter and
+    its city agree; two places farther apart conflict when their times of day
+    overlap or leave too little time to travel, or when a time is not stated;
+    otherwise the later one is later on that day. None when it cannot be told (a
+    masked or undated value). Pure."""
     prop, mine, theirs = item["prop"], item["value"]["text"], r["value"]["text"]
     if mine is None or theirs is None:
         return None
@@ -109,7 +119,12 @@ def relation(item: dict, r: dict, place_of) -> str | None:
     if prop in POSITION and a0 == a1 == b0 == b1:
         a, b = place_of(item["id"]), place_of(r["id"])
         if a and b:
-            return "conflicts" if places_apart(prop, a, b) else "agrees"
+            if not places_apart(prop, a, b):
+                return "agrees"
+            mine, theirs = item.get("time"), r.get("time")
+            if apart_why(place_point(prop, a, mine), place_point(prop, b, theirs)):
+                return "conflicts"
+            return "later" if clock(theirs) > clock(mine) else "earlier"
     return "same time"
 
 

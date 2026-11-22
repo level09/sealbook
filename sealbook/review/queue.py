@@ -458,6 +458,12 @@ async def rows(db, user, wanted: list[uuid.UUID]) -> list[dict]:
             "fields": [] if st.prop in data.PERSONAL else fields(value),
             "from": lo.isoformat() if lo else None,
             "to": hi.isoformat() if hi else None,
+            # The time of day a place held ("21:52", "18:00-24:00"), when stated.
+            "time": value.get("time")
+            if st.prop in data.LOCATED
+            and isinstance(value, dict)
+            and not shown(st.prop, value, source)["masked"]
+            else None,
             "inherited": st.valid_from is None and lo is not None,
             "tier": tier,
             "tier_reason": reason,

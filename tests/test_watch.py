@@ -56,6 +56,13 @@ class CorroborateTest(unittest.TestCase):
         )
         self.assertEqual(hit["name"], ["Yusuf Khalid al Ali", p1["spellings"][0]])
         self.assertEqual(hit["fields"], [{"prop": "birth_date", "value": "1991-03-14"}])
+        # A father's name agrees across scripts, as the linker counts it (Elias,
+        # إلياس on four-names' licence); the watch had compared text keys alone.
+        hit = corroborate(
+            {"name": ["Adrian Kassar"], "father_name": ["إلياس"]},
+            {"name": ["Adrian Kasar"], "father_name": ["Elias"]},
+        )
+        self.assertEqual(hit["fields"], [{"prop": "father_name", "value": "إلياس"}])
         # A full date never equals a different year.
         self.assertIsNone(
             corroborate(
