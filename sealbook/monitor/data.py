@@ -100,6 +100,7 @@ def _plural(n: int, one: str) -> str:
 RELATION_WORDS = {
     "family": "Family of another person",
     "cellmate": "Cellmate of another person",
+    "seen_together": "Seen together with another person",
     "command": "In a command relation with another person",
     "contains": "Contains another document",
     "contained_in": "An excerpt of another document",

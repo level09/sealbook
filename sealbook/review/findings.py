@@ -19,7 +19,7 @@ from sealbook.discovery import findings as discovery
 from sealbook.discovery.models import FindingKey
 from sealbook.discovery.service import available
 from sealbook.ledger import write
-from sealbook.ledger.contracts import Prop, StatementIn, Tier
+from sealbook.ledger.contracts import DETENTION_PROPS, Prop, StatementIn, Tier
 from sealbook.ledger.models import Blob, Payload, Principal, Statement, StatementTier
 from sealbook.ledger.offline_sigs import GESTURE_MAX
 from sealbook.monitor import data
@@ -49,19 +49,36 @@ def metres(m: int) -> str:
     return f"{m} m" if m < 1000 else f"{m / 1000:.1f} km".replace(".0 km", " km")
 
 
-def reason(kind: str, n: int, names: list[str], month: str, features=None) -> str:
+def reason(
+    kind: str, n: int, names: list[str], month: str, features=None, held=True
+) -> str:
     """The plain sentence a finding leads with. Shared presence of two reads "Both";
-    two places within reach name their distance and how precisely each is known."""
+    two places within reach name their distance and how precisely each is known.
+    "held" only when every member claim is a detention claim (`held_members`);
+    people only seen or arrested there are "placed"."""
     when = month_label(month)
     who = "Both" if kind == discovery.SHARED and n == 2 else f"{n} people"
+    verb = "held" if held else "placed"
     f = features or {}
     if "distance_m" in f and len(names) == 2:
         a, b = (metres(p) for p in f["precision_m"])
         return (
-            f"{who} held {metres(f['distance_m'])} apart, at {names[0]} and "
+            f"{who} {verb} {metres(f['distance_m'])} apart, at {names[0]} and "
             f"{names[1]}, in {when} (places known to within {a} and {b})"
         )
-    return f"{who} held at {names[0]} in {when}"
+    return f"{who} {verb} at {names[0]} in {when}"
+
+
+async def held_members(db, members) -> bool:
+    """Whether every member claim of a finding is a detention claim."""
+    props = set(
+        await db.scalars(
+            select(Statement.prop).where(
+                Statement.id.in_([uuid.UUID(str(m)) for m in members or ()])
+            )
+        )
+    )
+    return bool(props) and props <= DETENTION_PROPS
 
 
 def band(kind: str, features: dict) -> str:
@@ -205,6 +222,7 @@ async def queue(db, user, investigation: str | None, key: str | None = None):
                     names,
                     value["month"],
                     value["features"],
+                    held=all(members[m][0].prop in DETENTION_PROPS for m in ids),
                 ),
                 "why": why(fk.kind, value["features"]),
                 "band": band(fk.kind, value["features"]),

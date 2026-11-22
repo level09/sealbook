@@ -285,7 +285,9 @@ What the app read, against the planted truth (`tests/test_case_studies.py` pins 
   market trap: extraction read Jo's "all evening" without a time, so the day alone
   raises it and it says "same day, times not stated".
 - The linker's rules proposed three things: the two exhibit sheets' Mara Quill as
-  one person, Ruth Hollin's two papers as one, and one relation. Her statement and
+  one person, Ruth Hollin's two papers as one, and one relation: the Quill
+  sisters as seen together (cellmates until 2026-11-22, when two sightings in
+  one place still made a detention relation). Her statement and
   her sister's share only her name with the sheets, so no rule joins them; act 5
   has the analyst join the planted clusters herself, as her signed decision.
 - Speech to text heard "Joe, it's me" for "Jo". Extraction still writes "Joe" as

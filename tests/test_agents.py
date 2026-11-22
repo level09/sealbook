@@ -38,7 +38,7 @@ from sealbook.agents.read import FIXED, Claim, Handles
 from sealbook.cases import service as cases
 from sealbook.collaboration import intake
 from sealbook.collaboration.notifications import notify
-from sealbook.ledger.contracts import Prop, Route, Tier
+from sealbook.ledger.contracts import PERSON_RELATIONS, Prop, Route, Tier
 from sealbook.ledger.models import Blob, Principal, Run, Statement
 from sealbook.ledger.write import principal_for_user, record_acquisition, verify_db
 from sealbook.monitor.seed import Seeder
@@ -248,6 +248,45 @@ class ValidateTest(unittest.TestCase):
         # Two known airports never meet through "Damascus"; the vague report does.
         self.assertNotIn(("s1", "s2"), pairs)
         self.assertEqual(sorted(pairs), [("s1", "s3"), ("s2", "s3")])
+
+    def test_people_seen_together_are_not_cellmates(self):
+        """never-there: the Quill sisters, named in one statement and both placed in
+        Brindle Cross that evening, were proposed as cellmates. Only a detention
+        claim on a side makes the pair cellmates."""
+        day = date(2026, 3, 14)
+
+        def at(prop, person, name):
+            c = claim(prop, "Brindle Cross", person=person)
+            return dataclasses.replace(c, lo=day, hi=day), claim(
+                Prop.NAME, name, person=person
+            )
+
+        def kinds(*pairs):
+            claims = [c for p in pairs for c in p]
+            docs = {"s1": {"title": "s1", "doc_type": ""}}
+            out = linker.candidates(
+                read.Case("c", claims, docs, {}, {}), [], None, Handles()
+            )
+            answer = linker.fixed_answer({"candidates": out})["links"]
+            return [(c["hint"], c["together"][0]["field"]) for c in out], answer
+
+        hints, [link] = kinds(
+            at(Prop.SEEN_AT, "person:a", "Mara Quill"),
+            at(Prop.SEEN_AT, "person:b", "Jo Quill"),
+        )
+        self.assertEqual(hints, [("seen_together", "seen together")])
+        self.assertEqual(link["kind"], "seen_together")
+        self.assertNotIn("held", link["why"])
+        hints, [link] = kinds(
+            at(Prop.DETAINED_AT, "person:a", "Bassel Nader"),
+            at(Prop.SEEN_AT, "person:b", "Fadi Karam"),
+        )
+        self.assertEqual(hints, [("cellmate", "held")])
+        self.assertEqual(link["kind"], "cellmate")
+        schema = linker.SCHEMA["properties"]["links"]["items"]["properties"]
+        for allowed in (PERSON_RELATIONS, linker.ALLOWED["x"], schema["kind"]["enum"]):
+            self.assertIn("seen_together", allowed)
+        self.assertIn("seen_together", linker.SYSTEM)
 
     def test_linker_offers_a_bare_name_only_when_the_full_name_is_unshared(self):
         def case(*claims):
@@ -962,7 +1001,7 @@ class AgentRunTest(unittest.IsolatedAsyncioTestCase):
                 "text": f"Analysts accepted 1 of 2 decided proposals ({n - 2} open).",
                 "rows": [
                     {
-                        "label": "Version 5, the demo answer with no model",
+                        "label": "Version 6, the demo answer with no model",
                         "text": f"1 accepted, 1 rejected, {n - 2} open",
                     }
                 ],

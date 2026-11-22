@@ -623,7 +623,7 @@ SCENARIOS = [
             "After each batch the linker reads it against the case. Run it again "
             "with Find links on a person page or the evidence Intelligence panel.",
             "Open Review, All open. Each link reads as a question: Cellmates? "
-            "Related documents? In this incident?",
+            "Seen together? Related documents? In this incident?",
             "The claims it rests on show as cards with the reason.",
             "Accept or reject. What is already proposed or decided is not proposed "
             "again; a rejected link returns only with a claim the rejection did "
@@ -632,10 +632,12 @@ SCENARIOS = [
         "ai": [
             "Which candidate links hold and why. The candidates themselves come "
             "from rules: a name match plus an agreeing field, people named "
-            "together and held together, shared people across documents.",
+            "together and placed together (cellmates only when one was held), "
+            "shared people across documents.",
         ],
         "you": ["Every link. Nothing is accepted for you."],
-        "result": "Same person, cellmate, family, incident and document links, "
+        "result": "Same person, cellmate, seen together, family, incident and "
+        "document links, "
         "each signed by a person.",
         "links": [{"label": "All open claims in Review", "href": "/review?box=open"}],
         "needs": AGENTS_OFF,

@@ -322,6 +322,17 @@ def score_linker(spec, case, out, written, keys):
         "hard_same_person": rows(p["records"] for p in t.get("hard_same_person", [])),
         "traps": rows(p["records"] for p in t.get("traps", [])),
         "relations_written": sum(st.prop != Prop.SAME_AS for st in written),
+        "relations_by_kind": dict(
+            sorted(
+                Counter(
+                    st.value.get("kind", st.prop)
+                    if st.prop == Prop.RELATION
+                    else st.prop
+                    for st in written
+                    if st.prop != Prop.SAME_AS
+                ).items()
+            )
+        ),
         "candidates": out["candidates"],
         "deferred": out["deferred"],
         "valid": out["valid"],

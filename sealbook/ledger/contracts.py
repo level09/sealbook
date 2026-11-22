@@ -150,7 +150,7 @@ class Prop(enum.StrEnum):
     PHOTOGRAPHED_AT = "photographed_at"
     FILMED_AT = "filmed_at"
     # Two people or two documents related. Subject "person:<uuid>" with value
-    # {"person": "<uuid>", "kind": family|cellmate|command}, or "blob:<sha256>" with
+    # {"person": "<uuid>", "kind": family|cellmate|command|seen_together}, or "blob:<sha256>" with
     # {"blob": "<sha256>", "kind": contains|contained_in|related}; both carry
     # "basis" (statement refs) and optionally "why". Proposed by an agent, decided
     # by a person; never collapses source origins.
@@ -211,7 +211,12 @@ REPORT_KINDS = (
     "raid",
     "other",
 )
-PERSON_RELATIONS = ("family", "cellmate", "command")
+# "seen_together": placed at one place at one time with no detention claim on
+# either side; "cellmate" needs one of DETENTION_PROPS.
+DETENTION_PROPS = frozenset(
+    {Prop.DETAINED_AT, Prop.DETENTION_BRANCH, Prop.TRANSFERRED_TO}
+)
+PERSON_RELATIONS = ("family", "cellmate", "command", "seen_together")
 DOCUMENT_RELATIONS = ("contains", "contained_in", "related", "same_event")
 
 # Fields hashed into each chained row. Order is irrelevant (canonical JSON sorts

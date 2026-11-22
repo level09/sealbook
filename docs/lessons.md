@@ -960,3 +960,12 @@ covers in the text it was read from (`span_blob`).
   disproves would have read as resting on it, and the claim was left out. A
   citation that can mean more than one thing needs its role stored with it
   (`contradicts` beside `rests_on`), with each role's own standing rule.
+
+- The linker called the Quill sisters cellmates: its rule for people placed
+  together counted `seen_at` as being held, because one constant (`HELD`) served
+  both "where a person was" and "what makes a detention". The label now needs a
+  detention claim on a side (`DETENTION_PROPS`), and discovery's "held at" too.
+  When a rule widens what it gathers, check that every label drawn from it still
+  holds for the new members. The planted counts moved only in never-there (3
+  cellmate to 3 seen together) and unwritten-name (12 to 12); the default case's
+  one cellmate is a detention pair and stayed.

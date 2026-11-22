@@ -154,6 +154,7 @@ async def _finding_text(db, value: dict) -> str:
         names,
         str(window[0])[:7],
         value.get("features"),
+        held=await findings.held_members(db, value.get("members")),
     )
 
 

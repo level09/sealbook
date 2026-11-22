@@ -13,7 +13,7 @@ import {TIMEOUT, failure} from '/static/js/components/EvidenceViewer.js';
 const api = axios.create({timeout: TIMEOUT});
 
 // A proposed relation reads as the question the reviewer answers.
-const RELATION_ASK = {family: 'Family?', cellmate: 'Cellmates?', command: 'Command relation?', contains: 'Contains the other document?', contained_in: 'Excerpt of the other document?', related: 'Related documents?', same_event: 'Same event?'};
+const RELATION_ASK = {family: 'Family?', cellmate: 'Cellmates?', seen_together: 'Seen together?', command: 'Command relation?', contains: 'Contains the other document?', contained_in: 'Excerpt of the other document?', related: 'Related documents?', same_event: 'Same event?'};
 // What each relation label means, as a tooltip (sealbook/review/assist.py relation()).
 const RELATION_TIP = {earlier: 'Before this claim: part of the timeline, not a disagreement', later: 'After this claim: part of the timeline, not a disagreement', 'same time': 'Overlapping dates; not enough to say both cannot be true', agrees: 'Same value, or a place inside the other', differs: 'Only one value can be true', conflicts: 'Places too far apart to both hold on the same day'};
 const TIER = {unconfirmed: 'Unconfirmed', corroborated: 'Corroborated', accepted: 'Accepted', rejected: 'Rejected'};
