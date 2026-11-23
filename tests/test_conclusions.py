@@ -330,6 +330,10 @@ class ConclusionTest(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(st, 200)
         self.assertEqual((await self.listing())["status"]["reason"], "No lead left")
+        # The case list says so too, from one query over every case.
+        r = await client.get("/api/cases")
+        cases = {c["slug"]: c["status"] for c in (await r.get_json())["items"]}
+        self.assertEqual(cases[CASE], "closed")
         await self.sign(
             client,
             "/api/review/conclusions/status/options",

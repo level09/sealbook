@@ -126,6 +126,8 @@ export function mount(boot) {
       await this.loadCases();
       const reopen = new URLSearchParams(location.search).get('batch');
       if (reopen) await this.reopen(reopen);
+      // The case list's New case lands here: a case starts with its first evidence.
+      if (new URLSearchParams(location.search).has('new-case')) this.openNewCase();
       window.addEventListener('dragenter', this.onDragEnter);
       window.addEventListener('dragleave', this.onDragLeave);
       window.addEventListener('dragover', this.onDragOver);

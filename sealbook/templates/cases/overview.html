@@ -60,11 +60,47 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
 .ov-film:focus-visible { outline: 2px solid var(--agent); outline-offset: 3px; border-radius: 4px; }
 .ov-film .n { font-family: var(--mono); font-size: 12.5px; font-weight: 400; color: var(--ink-3); }
 @media (max-width: 599px) { .cc-facts > div { grid-template-columns: 1fr; gap: 0; } }
+/* No case chosen: every case, one row each, latest evidence first. */
+.cl-panel { overflow: hidden; }
+.cl-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 18px 20px; }
+.cl-head h1, .cl-head p { margin: 0; }
+.cl-head p { margin-top: 4px; }
+.cl-cols, .cl-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px 80px 80px 150px; gap: 16px; align-items: center; padding: 12px 20px; }
+.cl-cols { padding-block: 8px; border-top: 1px solid var(--line); }
+.cl-row { border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+.cl-row:hover, .cl-row:focus-visible { background: var(--wash); }
+.cl-row .t { font-weight: 600; }
+.cl-desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cl-n { font-variant-numeric: tabular-nums; }
+.cl-k { display: none; color: var(--ink-3); }
+@media (max-width: 759px) {
+  .cl-cols { display: none; }
+  .cl-row { grid-template-columns: 1fr auto; gap: 4px 12px; }
+  .cl-name { grid-column: 1 / -1; }
+  .cl-k { display: inline; }
+}
 </style>
 {% endblock %}
 {% block content %}
 <v-container fluid class="ov-page py-4">
-  <v-alert v-if="!caseSel" type="info" variant="tonal" density="compact">Pick a case in the sidebar to see where it stands.</v-alert>
+  <section v-if="!caseSel" class="ov-panel cl-panel" aria-labelledby="cl-h">
+    <header class="cl-head">
+      <div>
+        <h1 id="cl-h" class="text-headline-small">Cases</h1>
+        <p class="ov-muted text-body-medium">${ cases ? plural(cases.length, 'case') + ', latest evidence first. Open one to see where it stands.' : 'Loading the cases.' }</p>
+      </div>
+      <v-btn variant="outlined" prepend-icon="ti ti-folder-plus" href="/ingest/?new-case">New case</v-btn>
+    </header>
+    <div v-if="cases && cases.length" class="cl-cols ov-muted text-label-medium" aria-hidden="true"><span>Case</span><span>Status</span><span>Sources</span><span>People</span><span>Last evidence added</span></div>
+    <a v-for="c in sortedCases" :key="c.slug" class="cl-row" :href="'/cases/overview'" @click.prevent="openCase(c.slug)">
+      <span class="cl-name"><span class="t d-block" dir="auto">${ c.name }</span><span v-if="c.description" class="ov-muted text-body-small d-block cl-desc" dir="auto">${ c.description }</span></span>
+      <span><span class="cc-status" :class="STATUS[c.status].cls"><i :class="STATUS[c.status].icon" aria-hidden="true"></i>${ c.status === 'closed' ? 'Closed' : STATUS[c.status].label }</span></span>
+      <span class="cl-n"><span class="cl-k">Sources </span>${ c.sources.toLocaleString() }</span>
+      <span class="cl-n"><span class="cl-k">People </span>${ c.people.toLocaleString() }</span>
+      <span class="ov-muted">${ c.last_added ? day(c.last_added) : 'No evidence yet' }</span>
+    </a>
+    <p v-if="cases && !cases.length" class="ov-empty ov-muted mb-0">No cases yet. A case starts with its first evidence: New case, then add the files.</p>
+  </section>
   <v-alert v-if="error" type="error" density="compact">${ error }</v-alert>
   <a v-if="film" class="ov-film" :href="'/guide?t=' + film.at + '#film'"><i class="ti ti-player-play" aria-hidden="true"></i>Watch this case in the film <span class="n">${ clock(film.length) }</span></a>
 
@@ -192,8 +228,12 @@ const when = iso => new Date(iso).toLocaleString(undefined, {day: 'numeric', mon
 
 window.app = Vue.createApp({
   mixins: [layoutMixin, signing], delimiters: config.delimiters,
-  data: () => ({film: null, s: null, away: null, todo: null, cc: null, ask: null, error: '', reading: false, done: 0, TIERS, STATUS}),
+  data: () => ({cases: null, film: null, s: null, away: null, todo: null, cc: null, ask: null, error: '', reading: false, done: 0, TIERS, STATUS}),
   computed: {
+    sortedCases() {
+      const at = c => c.last_added || c.created_at || '';
+      return [...(this.cases || [])].sort((a, b) => at(b).localeCompare(at(a)) || a.name.localeCompare(b.name));
+    },
     itemTotal() { return this.s ? TIERS.reduce((n, t) => n + this.tierCount(t.k), 0) : 0; },
     // The standing conclusion whose citations the accepted count includes.
     restsOn() { return (this.cc?.conclusions || []).find(c => c.state !== 'erased' && c.rests_on?.length)?.rests_on.length || 0; },
@@ -244,7 +284,11 @@ window.app = Vue.createApp({
     ago(at) { const h = Math.round((Date.now() - new Date(at)) / 36e5); return h < 1 ? 'Just now' : h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`; },
     useCase() { this.load(); },
     async load() {
-      if (!this.caseSel) { this.s = null; this.cc = null; this.film = null; return; }
+      if (!this.caseSel) {
+        this.s = null; this.cc = null; this.film = null;
+        try { this.cases = (await axios.get('/api/cases')).data.items; this.error = ''; } catch (e) { this.error = err(e); }
+        return;
+      }
       const params = {investigation: this.caseSel};
       try {
         const {data} = await axios.get('/api/cases/overview', {params});

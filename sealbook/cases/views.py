@@ -24,7 +24,11 @@ def _json(payload, status=200):
 
 @bp_cases.get("")
 async def listing():
-    return _json({"items": await service.listing(g.db_session)})
+    status = await conclusions.statuses(g.db_session)
+    items = await service.listing(g.db_session)
+    return _json(
+        {"items": [c | {"status": status.get(c["slug"], "open")} for c in items]}
+    )
 
 
 @bp_cases.post("")

@@ -393,9 +393,8 @@
             openCase(c) {
                 this.switchCase(c);
                 if (this.staysOnCase) return;
-                // Every case together has no To do or Overview of its own (the rail's To do is that list), so it opens on the first case page.
-                const own = t => ['todo', 'overview'].includes(t?.badge);
-                if (c === 'all') { if (!this.caseTab || own(this.caseTab)) location.href = this.caseTabs.find(t => !own(t))?.to || '/todo'; }
+                // Every case together opens the case list, the Overview with no case chosen.
+                if (c === 'all') { if (!this.caseTab || ['todo', 'overview'].includes(this.caseTab.badge)) location.href = '/cases/overview'; }
                 else if (!this.caseTab) location.href = '/cases/overview';
             },
             loadNavCounts() {

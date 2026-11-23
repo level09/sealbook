@@ -447,6 +447,21 @@ async def status(db, slug: str) -> dict:
     )
 
 
+async def statuses(db) -> dict[str, str]:
+    """Each case's status by slug, in one query; a case with none is open."""
+    rows = await db.execute(
+        select(Statement.subject, Payload.value["status"].astext)
+        .join(StatementTier, StatementTier.statement_id == Statement.id)
+        .join(Payload, Payload.commitment == Statement.commitment)
+        .where(
+            Statement.prop == Prop.CASE_STATUS,
+            StatementTier.tier == Tier.ACCEPTED,
+        )
+        .order_by(Statement.recorded_at)
+    )
+    return {subject.removeprefix("case:"): s for subject, s in rows}
+
+
 async def history(db, slug: str) -> list[dict]:
     rows = (
         await db.execute(
