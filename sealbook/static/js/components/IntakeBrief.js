@@ -69,6 +69,12 @@ export const IntakeBrief = {
       this.busy = false;
     },
     pick(id) { this.version = id; this.load(); },
+    // Two people with one name are two records until someone links them; say so.
+    twins(key, line) {
+      if (key !== 'who') return 0;
+      const name = this.split(key, line.text)[0];
+      return this.brief.who.filter(l => this.split(key, l.text)[0] === name).length;
+    },
     isNew(text) { return /\bnew to\b/.test(text || ''); },
     // A counted line is "name, what is known" or "title: what it is": the name leads.
     split(key, text) {
@@ -89,7 +95,7 @@ export const IntakeBrief = {
     <template v-else>
       <header class="ib-top">
         <p class="ib-sum">{{ summary }}</p>
-        <v-btn :href="'/ingest/answer?batch=' + batch" size="small" variant="flat" color="primary" append-icon="ti ti-arrow-right">Read it as one answer</v-btn>
+        <v-btn :href="'/ingest/answer?batch=' + batch" size="small" variant="flat" color="primary" append-icon="ti ti-arrow-right">See what it added to the case</v-btn>
       </header>
       <div class="ib-tiles">
         <section v-for="s in tiles" :key="s.key" class="ib-tile">
@@ -98,7 +104,7 @@ export const IntakeBrief = {
             <li v-for="(line, i) in brief[s.key]" :key="i">
               <span v-if="line.locked.length" class="ib-lock"><i class="ti ti-lock" aria-hidden="true"></i> From a sensitive source. <a :href="line.href">Show it there</a></span>
               <component :is="line.href ? 'a' : 'span'" v-else :href="line.href" class="ib-item" :class="{fresh: isNew(line.text)}">
-                <b dir="auto">{{ split(s.key, line.text)[0] }}</b><span v-if="split(s.key, line.text)[1]" dir="auto">{{ split(s.key, line.text)[1] }}</span>
+                <b dir="auto">{{ split(s.key, line.text)[0] }}</b><span v-if="split(s.key, line.text)[1]" dir="auto">{{ split(s.key, line.text)[1] }}<template v-if="twins(s.key, line) > 1">, one of {{ twins(s.key, line) }} records with this name, not linked yet</template></span>
               </component>
             </li>
           </ul>

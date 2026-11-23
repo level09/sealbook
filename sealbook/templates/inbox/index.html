@@ -23,7 +23,11 @@
 .ibx-row .t2 { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ibx-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--new); flex: none; margin-top: 7px; }
 .ibx-about { padding: 12px; background: var(--raise); border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: flex-start; }
-.ibx-about .t { min-width: 0; flex: 1; }
+.ibx-ask { flex-direction: column; align-items: stretch; gap: 10px; }
+.ibx-what { font-size: 15px; font-weight: 650; margin: 0; }
+.ibx-claim { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.ibx-claim .t { min-width: 0; flex: 1; }
+.ibx-claim-line { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 14px; font-weight: 600; }
 .ibx-msg { padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .ibx-msg .who { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: 13px; }
 .ibx-msg .body { margin-top: 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -67,28 +71,28 @@
         <v-skeleton-loader v-if="!cur.req && !cur.failed" type="article"></v-skeleton-loader>
         <p v-else-if="!cur.req" class="pa-4 ibx-muted">${ cur.failed }</p>
         <template v-else>
-          <div class="ibx-about">
-            <media-thumb v-if="doc(cur.req)" :sha="doc(cur.req).sha256" :file="doc(cur.req).title" :href="srcHref(cur.req)" :caption="false" :width="isMobile ? 64 : 96" :height="isMobile ? 44 : 64"></media-thumb>
-            <div class="t">
-              <div class="text-body-small ibx-muted">Review request on a ${ cur.req.proposal.prop === 'finding' ? 'finding' : cur.req.proposal.prop === 'conclusion' ? 'conclusion' : 'claim' }</div>
-              <div><strong dir="auto">${ sentence(cur.req) }</strong>
-                <span class="r-chip ms-1" :class="'tier-' + cur.req.proposal.tier">${ cur.req.proposal.tier }</span></div>
-              <div class="text-body-small ibx-muted"><template v-if="doc(cur.req)">In <a :href="srcHref(cur.req)">${ doc(cur.req).title }</a><template v-if="spanLabel(cur.req.proposal.span)">, ${ spanLabel(cur.req.proposal.span) }</template>,</template>
-                proposed by <actor-chip v-if="cur.req.proposal.actor" :actor="{kind: cur.req.proposal.actor.kind, name: cur.req.proposal.actor.label, detail: cur.req.proposal.actor.detail}"></actor-chip></div>
-              <div class="d-flex ga-2 mt-2 flex-wrap">
-                <v-btn v-if="doc(cur.req)" size="small" variant="outlined" prepend-icon="ti ti-file-search" :href="srcHref(cur.req)">Open source</v-btn>
-                <v-btn v-if="cur.req.proposal.prop === 'conclusion'" size="small" variant="flat" color="primary" prepend-icon="ti ti-signature" :href="'/cases/conclusions/' + cur.req.proposal.id">Open the conclusion</v-btn>
-                <v-btn v-else size="small" :color="decidable(cur.req) ? 'primary' : undefined" :variant="decidable(cur.req) ? 'flat' : 'outlined'" prepend-icon="ti ti-checklist" :href="'/review?request=' + cur.req.id">${ decidable(cur.req) ? 'Decide in Review' : 'Open in Review' }</v-btn>
+          <div class="ibx-about ibx-ask">
+            <h2 class="ibx-what" dir="auto">${ askLine(cur.req) }</h2>
+            <div class="ibx-claim">
+              <media-thumb v-if="picture(cur.req)" :sha="doc(cur.req).sha256" :file="doc(cur.req).title" :href="srcHref(cur.req)" :caption="false" :width="isMobile ? 64 : 88" :height="isMobile ? 44 : 60"></media-thumb>
+              <div class="t">
+                <div class="ibx-claim-line"><span dir="auto"><template v-if="named(cur.req.proposal.subject_label)"><bdi>${ cur.req.proposal.subject_label }</bdi>: </template>${ sentence(cur.req) }</span>
+                  <span class="r-chip" :class="'tier-' + cur.req.proposal.tier">${ cur.req.proposal.tier }</span></div>
+                <div class="text-body-small ibx-muted"><template v-if="doc(cur.req)"><a :href="srcHref(cur.req)" dir="auto">${ doc(cur.req).title }</a><template v-if="spanLabel(cur.req.proposal.span)">, ${ spanLabel(cur.req.proposal.span) }</template></template><template v-if="cur.req.proposal.actor"><template v-if="doc(cur.req)"> · </template>${ byLine(cur.req.proposal.actor) }</template></div>
+                <div class="d-flex ga-3 mt-2 flex-wrap align-center">
+                  <v-btn v-if="cur.req.proposal.prop === 'conclusion'" size="small" variant="flat" color="primary" prepend-icon="ti ti-signature" :href="'/cases/conclusions/' + cur.req.proposal.id">Open the conclusion</v-btn>
+                  <v-btn v-else size="small" :color="decidable(cur.req) ? 'primary' : undefined" :variant="decidable(cur.req) ? 'flat' : 'outlined'" prepend-icon="ti ti-checklist" :href="'/review?request=' + cur.req.id">${ decidable(cur.req) ? 'Decide in Review' : 'Open in Review' }</v-btn>
+                  <a v-if="doc(cur.req)" class="text-body-small" :href="srcHref(cur.req)">Open the source</a>
+                </div>
               </div>
             </div>
           </div>
           <div class="ibx-msg">
-            <div class="who"><actor-chip :actor="{kind: 'human', name: cur.req.sender.name, role: 'asked for review'}" :you="cur.req.sender.id === me"></actor-chip><span class="ibx-muted text-body-small">${ ago(cur.req.at) }</span>
-              <v-chip size="x-small" color="warning" variant="outlined" prepend-icon="ti ti-user-plus">asks ${ cur.req.reviewer === me ? 'you' : nameOf(cur.req.reviewer) }</v-chip></div>
+            <div class="who"><strong>${ cur.req.sender.id === me ? 'You' : cur.req.sender.name }</strong><span class="ibx-muted text-body-small">${ ago(cur.req.at) }</span></div>
             <div class="body" dir="auto" v-html="mark(cur.req.reason)"></div>
           </div>
           <div v-for="m in cur.req.comments" :key="m.id" class="ibx-msg">
-            <div class="who"><actor-chip :actor="{kind: 'human', name: m.author, role: roleOf(m.author)}"></actor-chip><span class="ibx-muted text-body-small">${ ago(m.at) }</span></div>
+            <div class="who"><strong>${ m.author === myName ? 'You' : m.author }</strong><span v-if="roleOf(m.author) === 'reviewer' && m.author !== myName" class="ibx-muted text-body-small">reviewer</span><span class="ibx-muted text-body-small">${ ago(m.at) }</span></div>
             <div class="body" dir="auto" v-html="mark(m.text)"></div>
           </div>
           <div class="ibx-reply">
@@ -122,7 +126,7 @@
       <template v-else-if="cur">
         <div class="ibx-about"><v-icon :icon="cur.icon" size="22" class="ibx-muted"></v-icon>
           <div class="t"><div><strong dir="auto">${ cur.n.title }</strong></div><div class="ibx-muted" dir="auto">${ cur.sub }, ${ ago(cur.at) }</div>
-            <v-btn class="mt-2" size="small" color="primary" variant="flat" prepend-icon="ti ti-arrow-right" :href="cur.n.to">${ cur.n.kind === 'intake_done' ? 'Open the batch' : 'Open it' }</v-btn></div>
+            <v-btn class="mt-2" size="small" :color="cur.n.kind === 'intake_done' ? undefined : 'primary'" :variant="cur.n.kind === 'intake_done' ? 'outlined' : 'flat'" prepend-icon="ti ti-arrow-right" :href="cur.n.to">${ goLabel(cur.n) }</v-btn></div>
         </div>
         <div v-if="cur.n.kind === 'intake_done' && batchOf(cur.n)" class="pa-3"><intake-brief :batch="batchOf(cur.n)"></intake-brief></div>
       </template>
@@ -201,6 +205,23 @@ window.app = Vue.createApp({
       // First-strong isolates keep an Arabic value from reordering the words around it.
       return [this.prop(c.prop), v && ('\u2068' + v + '\u2069' + (c.when && !['birth_date', 'document_date'].includes(c.prop) ? ', ' + c.when : ''))].filter(Boolean).join(' ') || `${this.prop(c.prop)}${file ? ' in ' + file : ''}`;
     },
+    // What this thread is, as a sentence: who asked whom to check what.
+    askLine(req) {
+      const what = {finding: 'a finding', conclusion: 'a conclusion', same_as: 'a possible same person', media_match: 'a possible copy'}[req.proposal.prop] || 'a claim';
+      const asked = req.reviewer === ME ? 'you' : this.nameOf(req.reviewer);
+      return req.sender.id === ME ? `You asked ${asked} to check ${what}` : `${req.sender.name} asked ${asked} to check ${what}`;
+    },
+    // A notice's button says where it goes.
+    goLabel(n) {
+      const path = (n.to || '').split('?')[0];
+      if (n.kind === 'intake_done') return 'See the sources';
+      return {'/desk': 'See the matches on the Desk', '/people': 'Open People', '/places': 'Open Places', '/agents/': 'Open Agents', '/discover': 'Open Discover'}[path] || 'Open it';
+    },
+    // A subject's label is a name a person reads, never a placeholder like "person 9bf6fb".
+    named(label) { return !!label && !/^(person|blob|event|place) [0-9a-f]{4,}$/i.test(label); },
+    // A preview only when there is a picture to show.
+    picture(req) { const d = this.doc(req); return d && /\.(jpe?g|png|webp|gif|heic|tiff?|mp4|mov|webm|mkv|pdf)$/i.test(d.file || ''); },
+    byLine(a) { return a.kind === 'human' || !a.agent ? `proposed by ${a.label}` : a.detail ? `${a.label}, ${a.detail}` : a.label; },
     roleOf(name) { const r = this.cur?.req; return !r ? '' : name === r.sender.name ? 'requester' : name === this.nameOf(r.reviewer) || (r.reviewer === ME && name === this.myName) ? 'reviewer' : 'in the thread'; },
     doc(req) { return req.proposal.doc?.sha256 ? req.proposal.doc : null; },
     srcHref(req) { const d = this.doc(req), page = req.proposal.span?.page; return d ? `/evidence/${d.sha256}${page ? '?page=' + page : ''}` : null; },
