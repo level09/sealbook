@@ -566,7 +566,7 @@ def acts(sources):
             "day": "2026-06-03",
             "story": "The analyst opens the viral clip beside the 2024 video, "
             "plays them together and confirms each match between the copies "
-            "and the original as the same recording, with her reason and her "
+            "and the original as the same recording, with a reason and a "
             "passkey. The app proposed nothing between clips that are not the "
             "same footage, so there is nothing to decline. The muted, cropped, "
             "mirrored short matched nothing and stays unexplained.",
@@ -591,7 +591,7 @@ def acts(sources):
             "day": "2026-06-03",
             "story": "The analyst writes that the clip shared as new is the 2024 "
             "video, on the two posts' words beside the confirmed matches, names "
-            "the alternative she set aside and what is not established, and "
+            "the alternative set aside and what is not established, and "
             "signs it; a reviewer agrees.",
             "shows": ["conclusion", "peer review"],
             "sources": [],

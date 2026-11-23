@@ -1086,7 +1086,7 @@ def acts() -> list[dict]:
             "story": "The linker proposes that the Mara Quill of the two exhibit "
             "sheets is one person, and the analyst accepts it. Her own statement and "
             "her sister's name her with nothing else in common with the sheets, so "
-            "no rule proposes them; the analyst joins the four papers herself, as "
+            "no rule proposes them; the analyst joins the four papers by hand, as "
             "the desk joins each witness's papers.",
             "shows": ["same person"],
             "sources": [],
@@ -1123,9 +1123,9 @@ def acts() -> list[dict]:
         {
             "title": "A colleague checks the lead",
             "day": "2026-03-23",
-            "story": "The analyst assigns the two exhibit sheets to a colleague and "
-            "asks her to check the voice note's place against the sheet. She answers "
-            "on the claim and marks her work updated.",
+            "story": "The analyst assigns the two exhibit sheets to a colleague "
+            "with a request to check the voice note's place against the sheet. The "
+            "colleague answers on the claim and marks the work updated.",
             "shows": ["assignment", "peer review"],
             "sources": [],
             "steps": [

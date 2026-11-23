@@ -902,7 +902,7 @@ def acts():
             "title": "A person decides",
             "day": "2024-06-13",
             "story": "The analyst accepts the links between the desks and declines "
-            "the surveyor, with her reason: another birth date and another town.",
+            "the surveyor, with a reason: another birth date and another town.",
             "shows": ["same person"],
             "sources": [],
             "steps": [
@@ -929,7 +929,7 @@ def acts():
             "title": "The sealed package",
             "day": "2024-06-17",
             "story": "The analyst writes a brief that opens with the conclusion and "
-            "cites the claims she accepted on the papers. The rows are anchored, the "
+            "cites the claims accepted on the papers. The rows are anchored, the "
             "package is built and signed, both analysts attest it, and the offline "
             "checker verifies it with no database.",
             "shows": ["package"],
