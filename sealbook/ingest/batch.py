@@ -295,6 +295,20 @@ async def steps(
             )
         )
     if blob.mime in sheets.MIMES:
+        # Read without a mapping (a case file's planted claims): no columns to ask for.
+        read = [r for r in runs if r.tool in READ_TOOLS]
+        if version is None and read:
+            n = sum(claims.get(r.id, 0) for r in read)
+            return [
+                *out,
+                _step(
+                    "columns",
+                    "Columns mapped",
+                    "skipped",
+                    "Not needed: its rows were read without a column mapping.",
+                ),
+                await _run_step(db, "rows", "Rows read", read, _claims_words(n)),
+            ]
         if version is None:
             return [
                 *out,

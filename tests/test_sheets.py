@@ -379,6 +379,21 @@ class SheetFlowTest(unittest.IsolatedAsyncioTestCase):
         found = (await batch.source_steps(s, {sha: [sha]}))[sha]
         return {step["key"]: step["state"] for step in found}
 
+    async def test_sheet_read_without_mapping_asks_for_no_columns(self):
+        sha, _ = await self.sheet(V1)
+        async with ext.async_session_factory() as s, s.begin():
+            s.add(
+                Run(
+                    principal_id=self.agent.id,
+                    tool="extract",
+                    inputs={"blobs": [sha]},
+                    status="done",
+                )
+            )
+        async with ext.async_session_factory() as s:
+            state = await self.steps(s, sha)
+        self.assertEqual((state["columns"], state["rows"]), ("skipped", "done"))
+
     async def test_confirm_extract_and_second_version(self):
         sha, acq = await self.sheet(V1)
         client = await self.client()
