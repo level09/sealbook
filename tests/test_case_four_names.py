@@ -3,7 +3,7 @@
 The sheets go through the app's sheet intake with the case's column mapping, each
 row answered from the case file; the five scans are read by the app, replaying
 recorded answers. The linker's proposals wait for a person until act 7, where the
-analyst accepts the true ones and declines the surveyor with her reason. The last
+analyst accepts the true ones and declines the surveyor with a reason. The last
 act builds a package, signed with a demo certificate, and checks it offline.
 
 Anchoring here is the test path tests/test_packages.py uses (FakeAnchor: one real

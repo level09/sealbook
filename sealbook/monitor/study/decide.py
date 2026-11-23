@@ -1,6 +1,6 @@
 """Who is who, as a person settles it.
 
-- `decline`: the case analyst declines, signed with her reason `why`, each open
+- `decline`: the case analyst declines, signed with the reason `why`, each open
   same-person proposal that joins a record to one the case plants as someone else
   (truth `twins`), as the Review page's reject writes it. Nothing else is
   declined, and it is the person's decision: an act boundary before it leaves the

@@ -91,8 +91,8 @@ its fixed text, and the agents run on the fixed answer.
 | 6 April's logs, and nothing on him | 4 May | standing question | April's gate log and fuel receipts, the charge sheet and the bail record; the question wakes on 4 runs and reports no new match | Desk, April gate log |
 | 7 May and June: his name is back | 1 Jul | standing question | May and June logs; the question wakes on 2 runs and reports both: "A. Vesk" in the gate log, "VESK A" in the fuel receipts | Desk, May and June gate log |
 | 8 Seventy-three days with no name | 1 Jul | gap, timeline | the gap finder proposes 14 March to 26 May for Aron and the open silence for Dana | Aron's page, Stories |
-| 9 Who was at the depot that night | 2 Jul | discovery, map | the analyst accepts the 11 log lines of 14 March and the 3 last-seen accounts; discovery proposes a candidate incident (14 claims, 6 people) and a shared presence; she keeps 6 claims and 3 people (Dana injured party, Aron participant, Leon Abbot witness) as an incident and rejects the shared presence with a reason | Incidents, Case map |
-| 10 A colleague works the lead | 3 Jul | assignment, peer review | the owner assigns the May and June gate log and the gate book page to Noor Adeyemi, asks her about the 26 May line; she answers and marks both updated | Inbox, May and June gate log |
+| 9 Who was at the depot that night | 2 Jul | discovery, map | the analyst accepts the 11 log lines of 14 March and the 3 last-seen accounts; discovery proposes a candidate incident (14 claims, 6 people) and a shared presence; the analyst keeps 6 claims and 3 people (Dana injured party, Aron participant, Leon Abbot witness) as an incident and rejects the shared presence with a reason | Incidents, Case map |
+| 10 A colleague works the lead | 3 Jul | assignment, peer review | the owner assigns the May and June gate log and the gate book page to Noor Adeyemi with a question on the 26 May line; Noor answers and marks both updated | Inbox, May and June gate log |
 | 11 The conclusion | 6 Jul | conclusion, peer review | the signed conclusion and Tomas Reyes's agreement | Overview |
 
 Measured on 2026-11-21 (`tests/test_case_unwritten_name.py` pins them): the
@@ -128,7 +128,7 @@ What reads badly or is not shown honestly:
   Lind". The logs name the other drivers only by an initial, so no fuller name
   exists for them; his person page header lists every spelling.
 - The colleague's work shows on the gate log's page and the owner's Inbox, not on
-  the owner's To do, which only lists work assigned to her.
+  the owner's To do, which only lists work assigned to the owner.
 - The incident row reads "violation not categorised"; the step sets no category.
   The Case map and Stories headers name the case by its slug,
   `case-unwritten-name`.

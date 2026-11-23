@@ -10600,7 +10600,7 @@
   {
    "title": "A standing question on the driver",
    "day": "2026-04-02",
-   "story": "The analyst asks the case to tell her when Aron Vesk is named in a new record. Its first check reads what the case already holds: the papers that name him up to 12 March and the night of the 14th.",
+   "story": "The analyst asks the case to say when Aron Vesk is named in a new record. Its first check reads what the case already holds: the papers that name him up to 12 March and the night of the 14th.",
    "shows": [
     "standing question"
    ],
@@ -10757,7 +10757,7 @@
   {
    "title": "A colleague works the lead",
    "day": "2026-07-03",
-   "story": "The analyst assigns the May and June gate log and the gate book page to a colleague and asks her whether the driver named on 26 May is the Aron Vesk of the 22:40. She answers on the line and marks her work updated.",
+   "story": "The analyst assigns the May and June gate log and the gate book page to a colleague with a question: is the driver named on 26 May the Aron Vesk of the 22:40? The colleague answers on the line and marks the work updated.",
    "shows": [
     "assignment",
     "peer review"
@@ -10799,7 +10799,7 @@
   {
    "title": "The conclusion",
    "day": "2026-07-06",
-   "story": "The analyst writes what the case shows: a lead, not a finding about what he did. She cites the two sightings and his last and next log lines, sets aside leave and missed entries, names what is not established, and signs; a reviewer agrees.",
+   "story": "The analyst writes what the case shows: a lead, not a finding about what he did. It cites the two sightings and his last and next log lines, sets aside leave and missed entries and names what is not established; the analyst signs it and a reviewer agrees.",
    "shows": [
     "conclusion",
     "peer review"
