@@ -42,10 +42,15 @@ body.dark-mode .evp {
 .ev-side .v-btn { margin-inline-start: auto; color: inherit; }
 .ev.mapping { grid-auto-flow: row dense; }
 .ev.mapping > .ev-claims { grid-column: 1 / -1; }
+/* The column mapping takes the full row below; what agents read fills the rest of the top row. */
+.ev.mapping > .ev-intel { grid-column: 2 / -1; }
 .ev-panel { background: var(--e-panel); border: 1px solid var(--e-line); border-radius: 8px; overflow: hidden; }
 .ev-panel > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--e-line); min-height: 42px; flex-wrap: wrap; }
 .ev-panel > header .muted { font-size: 12px; }
+/* Pinned beside the claims only while it fits the window; taller, it scrolls with the page,
+   so no part of it is ever out of reach. */
 .ev-stick { position: sticky; top: 76px; }
+@media (max-height: 860px) { .ev-stick { position: static; } }
 
 .ev-conn { border-top: 1px solid var(--e-line); padding: 8px 8px 10px; }
 .ev-thumb { width: 116px; margin-inline-end: 8px; text-decoration: none; }

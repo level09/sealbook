@@ -112,6 +112,15 @@ export function mount(boot) {
       },
       ordered() {return this.groups.flatMap(g => g.claims);},
       pins() {return this.claims.filter(c => c.tier !== 'rejected' && c.value);},
+      // One chip per thing read, with how often: a gate log names one gate a hundred times.
+      pinGroups() {
+        const out = new Map();
+        for (const c of this.pins) {
+          const k = c.prop + '\u0000' + c.value;
+          if (out.has(k)) out.get(k).n++; else out.set(k, {c, n: 1});
+        }
+        return [...out.values()];
+      },
       marks() {return ['audio', 'video'].includes(this.it?.kind) ? this.it.copies.map(c => [c.here[0], Math.max(c.here[1], c.here[0] + 1000)]) : [];},
       otherCopy() {return this.other && this.it.copies.find(c => c.other === this.other.sha256);},
       // Why these two are beside each other, said once above both.
