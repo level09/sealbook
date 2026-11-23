@@ -305,6 +305,7 @@ class V0Acceptance(unittest.IsolatedAsyncioTestCase):
             "EMBEDDING_MODEL": None,
             # This scenario predates transcription; tests/test_speech.py covers it.
             "SPEECH_MODEL": "",
+            "TRANSCRIBE_MODEL": "",
             "OTS_CALENDARS": [CALENDAR],
             "TSA_URL": TSA,
             "PARTNER_ROOT_DIRS": [str(cls.partner)],
