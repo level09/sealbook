@@ -108,7 +108,22 @@ export function mount(boot) {
       groups() {
         const g = {};
         this.claims.filter(c => !PASS.includes(c.prop)).forEach(c => (g[c.subject] ||= []).push(c));
-        return Object.entries(g).map(([subject, claims]) => ({subject, claims, name: this.nameOf(subject)}));
+        const all = Object.entries(g).map(([subject, claims]) => ({subject, claims, name: this.nameOf(subject)}));
+        // A sheet writes one record per row: a log naming one driver a hundred times
+        // shows the first row, then the rest folded under one line.
+        const count = {};
+        all.forEach(x => count[x.name] = (count[x.name] || 0) + 1);
+        const out = [], seen = new Set();
+        for (const x of all) {
+          if (count[x.name] <= FOLD_PLACE) {out.push(x); continue;}
+          if (seen.has(x.name)) continue;
+          seen.add(x.name);
+          const rest = all.filter(y => y.name === x.name && y !== x);
+          const said = [...new Set(rest.flatMap(y => y.claims.map(c => `${prop(c.prop)}: ${c.value ?? MASKED}`)))];
+          out.push(x, {subject: `fold:${x.name}`, fold: true, name: x.name, claims: [], n: rest.length, said: said.slice(0, 2).join(', ') + (said.length > 2 ? ', and more' : '')});
+          if (this.unfolded[`name:${x.name}`]) out.push(...rest);
+        }
+        return out;
       },
       ordered() {return this.groups.flatMap(g => g.claims);},
       pins() {return this.claims.filter(c => c.tier !== 'rejected' && c.value);},
