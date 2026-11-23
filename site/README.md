@@ -11,7 +11,7 @@ Workers assets answer a Range request with the whole file and Chrome then cannot
 
 The form asks for an email and an optional note only. The page has a sticky header
 with chapter links and a Contents popover listing every section; section jumps are
-instant because demos grow as a smooth scroll passes them. Each tour section has a
+instant because demos grow as a smooth scroll passes them. Each section has a
 small shape diagram (`js/diagrams.js`).
 
 ## Regenerate data
@@ -76,9 +76,6 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
   the case's README or its test (`tests/test_case_*.py`) states; change them together.
   Each page and card says the case is fictional. `build_cases.sh` rebuilds their pictures
   and clips in `media/cases/` from the case files (needs ffmpeg).
-- `tour.html`: earlier demos on the old sample case, folded until opened or linked to,
-  including the eight exhibits that used to sit on the home page. Nothing on the home
-  page sends a newcomer there first; it is linked from Contents and the closing links.
 - `status.html`: what we learned, and the implemented, measured and planned lists read
   from `data/case.json`.
 - `verify.html`, `js/verify-package.js`, `js/verify-page.js`, `css/verify.css`: check a
@@ -87,15 +84,13 @@ Open http://localhost:8080. The page must be served; `fetch` does not work from 
   `tests/test_site_verify.py` runs every offline verifier case through both. It does not
   check the TSA CMS signature, the OpenTimestamps proof to Bitcoin, the C2PA claim or
   key pins, and lists those as not run.
-- `js/closing-motion.js`, `css/closing.css`: the home page's styles and motion, and the
-  tour's exhibit styles. Each exhibit's tag is stamped, the traditional line struck
+- `js/closing-motion.js`, `css/closing.css`: the home page's styles and motion. Each exhibit's tag is stamped, the traditional line struck
   through, and the Sealbook line rises; the verdict lights up as it scrolls; the mic
   drop's letters fall. GSAP 3.15 with ScrollTrigger and SplitText is self-hosted in
   `js/vendor/` (GreenSock standard license, free for this use). Reduced motion leaves the
   page still.
 - `media/walkthrough.*` and the six `media/board/*.jpg` stills of the old walkthrough are
-  no longer referenced by any page; the tour's exhibits still use some `media/board/`
-  stills as pictures.
+  no longer referenced by any page.
 
 ## Keep it true
 
@@ -111,7 +106,7 @@ script, notes or app code:
 
 ```sh
 rm -rf site/dist && mkdir -p site/dist/data
-cp -R site/index.html site/tour.html site/status.html site/verify.html site/cases site/favicon.svg site/og.png site/css site/js site/fonts site/media site/dist/
+cp -R site/_redirects site/index.html site/status.html site/verify.html site/cases site/favicon.svg site/og.png site/css site/js site/fonts site/media site/dist/
 cp site/data/case.json site/dist/data/
 cd site && npx wrangler@4 deploy
 ```
