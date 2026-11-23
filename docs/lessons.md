@@ -1025,3 +1025,9 @@ covers in the text it was read from (`span_blob`).
   GPT-6.2 Sol broke the never-there voice note sheet's lines differently from
   Argon, and Claude Haiku 5.5 then gave "the yard on Tanner's Row" no time twice
   in a row. Re-run the case tests after any OCR swap, not only after a prompt change.
+- 2026-11-23: the app font moved from Inter to IBM Plex Sans, the public site's face,
+  which has an Arabic companion. Adding Plex Sans Arabic with its own weight range
+  (400 for 100 to 449, 500 above) hid the Latin face in Chrome: `document.fonts` left
+  it unloaded and every Latin glyph fell back. Chrome joins `unicode-range` faces of a
+  family only when their weight descriptors match, so every face now repeats the same
+  two ranges, the variable Latin file listed under both.

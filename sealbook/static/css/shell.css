@@ -2,24 +2,18 @@
    palette. Tier is texture, who authored a value is hue (ink for people, violet for
    agents); the roles below add a quiet hue to tiers, states and entity kinds. Tokens
    follow monitor.css; the layout marks html and body .dark-mode. */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  /* optional: preloaded, so it is ready on first paint; never swaps and reflows later */
-  font-display: optional;
-  src: url('/static/fonts/inter-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-/* latin-ext: transliterated names (Ḥ, ā, ʿ) */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: optional;
-  src: url('/static/fonts/inter-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
+/* IBM Plex Sans, as on the public site (OFL): variable weight 100 to 700 (heavier asks get 700), latin and
+   latin-ext (transliterated names: Ḥ, ā, ʿ). optional: preloaded, so it is ready on first
+   paint and never swaps and reflows later. Plex Sans Arabic carries Arabic names and
+   quotes in the same voice; its static 500 serves every weight from 450 up. Every face
+   repeats the same two weight ranges: Chrome joins unicode-range faces only when their
+   weight descriptors match, so one odd range hides the others. */
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 100 449; font-display: optional; src: url('/static/fonts/plex-sans-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 450 900; font-display: optional; src: url('/static/fonts/plex-sans-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 100 449; font-display: optional; src: url('/static/fonts/plex-sans-latin-ext.woff2') format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 450 900; font-display: optional; src: url('/static/fonts/plex-sans-latin-ext.woff2') format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 100 449; font-display: optional; src: url('/static/fonts/plex-sans-arabic-400.woff2') format('woff2'); unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 450 900; font-display: optional; src: url('/static/fonts/plex-sans-arabic-500.woff2') format('woff2'); unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
 :root {
   --bg: #ecebe6; --panel: #fbfaf7; --raise: #f5f4f0; --line: #e0dfd9; --line-strong: #c6c5be;
   --ink: #1f2124; --ink-2: #4a4c50; --ink-3: #66696e;
@@ -133,7 +127,7 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 /* boot frame: same boxes as the mounted bar, rail, hint bar and bottom bar */
 .sb-boot > div { position: fixed; box-sizing: border-box; background: var(--panel); }
 .sb-boot-top { top: 0; left: 0; right: 0; height: 49px; border-bottom: 1px solid var(--line); z-index: 1; }
-.sb-boot .brand { position: absolute; left: 12px; top: 14px; height: 20px; display: flex; align-items: center; gap: 7px; font: 700 13px/1.5 'Inter', system-ui, sans-serif; letter-spacing: -.02em; color: var(--ink); }
+.sb-boot .brand { position: absolute; left: 12px; top: 14px; height: 20px; display: flex; align-items: center; gap: 7px; font: 700 13px/1.5 'IBM Plex Sans', system-ui, sans-serif; letter-spacing: -.02em; color: var(--ink); }
 .sb-boot-rail { top: 48px; left: 0; bottom: 0; width: 188px; border-right: 1px solid var(--line); }
 .sb-boot-hints { left: 188px; right: 0; bottom: 0; height: 30px; border-top: 1px solid var(--line); }
 .sb-boot-bottom { display: none; left: 0; right: 0; bottom: 0; height: 40px; box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px 1px rgba(0,0,0,.15); }

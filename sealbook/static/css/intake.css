@@ -102,7 +102,7 @@
 .ae .kind .ti { color: var(--source); font-size: 16px; }
 .ae .doc .v-field { font-size: 13px; }
 .ae .doc .sug { color: var(--agent); }
-.ae .sensbtn { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 9px; border-radius: 4px; font: 600 12px Inter, system-ui, sans-serif; cursor: pointer; border: 1px solid var(--line-strong); background: var(--panel); color: var(--ink-2); }
+.ae .sensbtn { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 9px; border-radius: 4px; font: 600 12px 'IBM Plex Sans', system-ui, sans-serif; cursor: pointer; border: 1px solid var(--line-strong); background: var(--panel); color: var(--ink-2); }
 .ae .sensbtn[aria-pressed="true"] { border-color: var(--sensitive-line); background: var(--sensitive-wash); color: var(--sensitive); }
 .ae .status { font-size: 12.5px; margin-top: 3px; display: flex; gap: 6px; align-items: flex-start; }
 .ae .status .ti { margin-top: 2px; flex: none; }
