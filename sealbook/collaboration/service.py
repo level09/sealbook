@@ -102,11 +102,14 @@ async def suggest(db, original, user, item):
 
     if original.prop not in EXTRACTED_PROPS:
         raise ValueError("corrections require a source-backed fact")
-    if await db.get(Payload, original.commitment) is None or not await db.scalar(
+    payload = await db.get(Payload, original.commitment)
+    if payload is None or not await db.scalar(
         select(available(Blob.sha256)).where(Blob.sha256 == original.span_blob)
     ):
         raise ValueError("an erased source cannot be used for a correction")
-    value = item.get("value")
+    # No value: the same words, pointed at where they are written (a reading the
+    # gate refused because it could not show its place).
+    value = item.get("value") or {k: payload.value.get(k) for k in ("text", "lang")}
     if (
         not isinstance(value, dict)
         or set(value) != {"text", "lang"}
@@ -124,6 +127,11 @@ async def suggest(db, original, user, item):
     )
     if not ok:
         raise ValueError(f"invalid source span: {why}")
+    if original.prop == Prop.REPORTS:
+        # The person corrects the words; the event's kind and place words stay.
+        value = {
+            k: v for k, v in payload.value.items() if k in ("kind", "place", "town")
+        } | value
     who = await write.principal_for_user(db, user.id, user.name or user.email)
     return await write.append(
         db,

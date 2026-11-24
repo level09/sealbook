@@ -499,6 +499,64 @@ class ReviewTest(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(status, 403)
 
+    async def test_a_reading_rejected_for_no_place_can_be_pointed_at(self):
+        """The gate refuses an event the reading could not place; a person marks
+        the words, and the same event goes to a colleague with its kind kept."""
+        words = "يوسف"
+        async with ext.async_session_factory() as s, s.begin():
+            run = Run(
+                principal_id=self.agent.id,
+                tool="extract",
+                inputs={"blobs": [self.sha]},
+                pubkey=self.key.public_key().public_bytes(
+                    Encoding.Raw, PublicFormat.Raw
+                ),
+            )
+            s.add(run)
+            await s.flush()
+            original = await append(
+                s,
+                StatementIn(
+                    subject=f"blob:{self.sha}",
+                    prop=Prop.REPORTS,
+                    value={"text": words, "lang": "ar", "kind": "other"},
+                    author_id=self.agent.id,
+                    run_id=run.id,
+                    span_blob=self.sha,
+                    span=None,
+                ),
+                sign=lambda h: {
+                    "kind": "ed25519",
+                    "sig": self.key.sign(h.encode()).hex(),
+                },
+            )
+        self.assertEqual(await self.tier(original.id), ("rejected", "no_span"))
+        reviewer = await self.colleague()
+        client = await self.client()
+        start = TEXT.index(words)
+        response = await client.post(
+            "/api/collaboration/suggestions",
+            headers=client.csrf,
+            json={
+                "item": {
+                    "statement": str(original.id),
+                    "span": {"start": start, "end": start + len(words)},
+                    "reviewer": reviewer,
+                    "reason": "I marked the words",
+                }
+            },
+        )
+        self.assertEqual(
+            response.status_code, 201, await response.get_data(as_text=True)
+        )
+        proposal = uuid.UUID((await response.get_json())["proposal"])
+        self.assertEqual((await self.tier(proposal))[0], "unconfirmed")
+        async with ext.async_session_factory() as s:
+            st = await s.get(Statement, proposal)
+            value = (await s.get(Payload, st.commitment)).value
+        self.assertEqual(st.supersedes, original.id)
+        self.assertEqual(value, {"text": words, "lang": "ar", "kind": "other"})
+
     async def test_invalid_correction_span_does_not_write_a_proposal(self):
         original = await self.propose(f"person:{uuid.uuid4()}", "محمد")
         client = await self.client()

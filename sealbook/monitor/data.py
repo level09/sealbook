@@ -497,6 +497,7 @@ class Context:
             "run_id": str(st.run_id) if st.run_id else None,
             "doc": doc,
             "span": st.span,
+            "span_blob": st.span_blob,
             "from": lo.isoformat() if lo else None,
             "to": hi.isoformat() if hi else None,
             "when": when(lo, hi),

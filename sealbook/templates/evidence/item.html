@@ -89,11 +89,13 @@
               <span class="ev-sw" aria-hidden="true"></span><span class="lbl">${ prop(c.prop) }</span>
               <span class="val"><span v-if="c.value && c.prop === 'name' && c.evidence?.includes('spoken')" class="muted">heard as </span><bdi v-if="c.value" dir="auto">${ c.value }</bdi><span v-else-if="c.erased" class="muted">erased</span><span v-else class="muted"><i class="ti ti-eye-off r-ink state-sensitive" aria-hidden="true"></i> masked, show the sensitive item to read</span></span>
               <span class="d-flex ga-1 align-center"><v-chip v-if="threadFor(c)" size="x-small" prepend-icon="ti ti-message" @click.stop="openThread(threadFor(c))">${ threadFor(c).comments + 1 }</v-chip><v-btn v-if="c.tier === 'accepted'" size="x-small" variant="text" prepend-icon="ti ti-certificate" :aria-label="'Proof of the decision on ' + prop(c.prop)" @click.stop="openProof(c)">Proof</v-btn></span>
-              <span class="meta">${ c.tier }, <span :class="{agent: c.actor.agent}"><i v-if="c.actor.agent && c.actor.kind !== 'import'" class="ti ti-robot" aria-hidden="true"></i> ${ byLabel(c) }</span><template v-if="c.span">, ${ spanLabel(c.span) }</template><template v-if="c.evidence?.length">, ${ evidenceWords(c.evidence) }</template></span>
+              <span class="meta">${ tierWords(c) }, <span :class="{agent: c.actor.agent}"><i v-if="c.actor.agent && c.actor.kind !== 'import'" class="ti ti-robot" aria-hidden="true"></i> ${ byLabel(c) }</span><template v-if="c.span">, ${ spanLabel(c.span) }</template><template v-if="c.evidence?.length">, ${ evidenceWords(c.evidence) }</template></span>
               <span v-if="sel === c.id" class="acts d-flex ga-1 flex-wrap mt-1">
                 <v-btn v-if="c.span" size="x-small" variant="outlined" prepend-icon="ti ti-focus-2" @click.stop="openSpan(c)">Show in source <v-kbd class="ms-1">Enter</v-kbd></v-btn>
                 <template v-if="canDecide(c)"><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-check" :loading="busy" @click.stop="decide(c, 'accept')">Accept <v-kbd class="ms-1">a</v-kbd></v-btn><v-btn size="x-small" variant="outlined" prepend-icon="ti ti-x" :loading="busy" @click.stop="decide(c, 'reject')">Reject <v-kbd class="ms-1">r</v-kbd></v-btn></template>
                 <v-btn v-if="threadFor(c) || c.tier === 'unconfirmed'" size="x-small" variant="outlined" prepend-icon="ti ti-message-question" @click.stop="askAbout(c)">${ threadFor(c) ? 'Comment' : 'Ask a colleague' } <v-kbd class="ms-1">c</v-kbd></v-btn>
+                <v-btn v-if="canLocate(c) && locating !== c.id" size="x-small" variant="outlined" prepend-icon="ti ti-text-scan-2" @click.stop="locateIn(c)">Show where it is written</v-btn>
+                <template v-if="canLocate(c) && locating === c.id"><v-btn size="x-small" color="primary" variant="flat" prepend-icon="ti ti-check" @mousedown.prevent @click.stop="useSelection(c)">Use these words</v-btn><v-btn size="x-small" variant="text" @click.stop="locating = null">Cancel</v-btn></template>
               </span>
             </div>
           </template>
@@ -227,9 +229,10 @@
 
     <research-drawer v-model="research" :scope="'blob:' + it.sha256" :case="it.investigation" :cases="caseList"></research-drawer>
     <v-dialog v-model="ask.open" max-width="440">
-      <v-card title="Ask a colleague">
+      <v-card :title="ask.span ? 'Send for a colleague to sign' : 'Ask a colleague'">
         <v-card-text>
           <p class="ev-note mb-3">${ aboutLabel(ask.statement) }</p>
+          <p v-if="ask.span" class="ev-note mb-3">Written in the source as <bdi dir="auto">“${ ask.quote }”</bdi>. Your claim points there and waits for your colleague's signature.</p>
           <v-select v-model="ask.reviewer" :items="analysts" item-title="name" item-value="id" label="Reviewer" class="mb-2"></v-select>
           <v-textarea v-model="ask.reason" label="What should they check?" rows="3" auto-grow></v-textarea>
         </v-card-text>

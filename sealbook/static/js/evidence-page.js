@@ -44,7 +44,7 @@ export function mount(boot) {
     data() {
       return {boot, masked: MASKED, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
         cursor: {list: 'claims', i: -1}, excerpt: null, threadId: null, thread: null, threadBusy: false, comment: '',
-        ask: {open: false, statement: null, reviewer: null, reason: '', busy: false}, analysts: [], relate: {open: false, row: null, value: 'same_recording'},
+        ask: {open: false, statement: null, reviewer: null, reason: '', busy: false, span: null, quote: ''}, analysts: [], locating: null, relate: {open: false, row: null, value: 'same_recording'},
         snack: {show: false, text: ''}, hov: null, proof: {open: false, claim: null, data: null, error: '', busy: false}, locations: [], people: [], viewers: {}, working: false, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
     },
     computed: {
@@ -348,17 +348,41 @@ export function mount(boot) {
         this.drawer = true; this.threadId = t?.id || null; this.thread = null;
         if (t?.visible) {this.threadBusy = true; try {this.thread = (await api.get(`/api/collaboration/requests/${t.id}`)).data;} catch (err) {this.say(message(err));} finally {this.threadBusy = false;}}
       },
+      // The gate refuses a reading that cannot show where it is written; that is no person's decision.
+      autoRejected(c) {return c.tier === 'rejected' && c.reason === 'no_span';},
+      tierWords(c) {return this.autoRejected(c) ? 'rejected automatically: the reading could not show where this is written' : c.tier;},
+      // A person can point at the words themselves, in the text on screen.
+      canLocate(c) {return this.autoRejected(c) && c.actor.agent && !!c.value && c.span_blob === this.it.sha256 && this.read?.text != null && this.it.kind !== 'web';},
+      locateIn(c) {this.locating = c.id; this.say('Select the words in the text, then press Use these words');},
+      async useSelection(c) {
+        const box = this.$refs.viewer?.$el.querySelector('.ev-txt'), sel = getSelection();
+        if (!box || !sel.rangeCount || sel.isCollapsed || !box.contains(sel.anchorNode) || !box.contains(sel.focusNode)) {this.say('Select the words in the text first'); return;}
+        const r = sel.getRangeAt(0), before = document.createRange();
+        before.setStart(box, 0); before.setEnd(r.startContainer, r.startOffset);
+        const raw = r.toString(), lead = raw.length - raw.trimStart().length;
+        const start = before.toString().length + lead, quote = raw.trim(), end = start + quote.length;
+        if (!quote || this.read.text.slice(start, end) !== quote) {this.say('That selection could not be placed in the text. Select it again'); return;}
+        if (!this.analysts.length) this.analysts = (await api.get('/api/collaboration/analysts')).data.items;
+        this.ask = {open: true, statement: c.id, reviewer: null, reason: 'The reading could not show where this is written. I marked the words.', busy: false, span: {start, end}, quote};
+      },
       async askAbout(r) {
         const t = r && this.threadFor(r);
         if (t) {await this.openThread(t); this.$nextTick(() => document.getElementById('ev-comment')?.focus()); return;}
         if (!r || !(r.statement || r.prop)) {this.say('Pick a claim or a proposal to ask about'); return;}
         if (r.tier !== 'unconfirmed') {this.say('Only pending proposals can be sent for review'); return;}
         if (!this.analysts.length) this.analysts = (await api.get('/api/collaboration/analysts')).data.items;
-        this.ask = {open: true, statement: r.statement || r.id, reviewer: null, reason: '', busy: false};
+        this.ask = {open: true, statement: r.statement || r.id, reviewer: null, reason: '', busy: false, span: null, quote: ''};
       },
       async sendAsk() {
         this.ask.busy = true;
-        try {await api.post('/api/collaboration/requests', {item: {statement: this.ask.statement, reviewer: this.ask.reviewer, reason: this.ask.reason}}); this.ask.open = false; this.say('Review requested. Your colleague is notified'); await this.refresh();}
+        const {statement, reviewer, reason, span} = this.ask;
+        try {
+          if (span) await api.post('/api/collaboration/suggestions', {item: {statement, reviewer, reason, span}});
+          else await api.post('/api/collaboration/requests', {item: {statement, reviewer, reason}});
+          this.ask.open = false; this.locating = null;
+          this.say(span ? 'Sent. It stays pending until your colleague signs it; the rejected reading is kept' : 'Review requested. Your colleague is notified');
+          await this.refresh();
+        }
         catch (err) {this.say(message(err));} finally {this.ask.busy = false;}
       },
       async sendComment() {
