@@ -27,6 +27,8 @@ const iso = t => `\u2068${t}\u2069`;
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 // A place more sources than this name folds behind one summary line.
 const FOLD_PLACE = 3;
+// A name on more rows than this shows its first row, the rest folded under one line.
+const FOLD_NAME = 3;
 // The words the Guide uses for each witness and receipt state.
 const WITNESS = {ots: 'OpenTimestamps', tsa: 'Time-stamp authority', partner: 'Partner copy'};
 const RECEIPT = {held: 'Receipt held', pending: 'Receipt held, waiting for Bitcoin', failed: 'Not sent yet, retried next run', unsent: 'Not sent yet'};
@@ -105,26 +107,28 @@ export function mount(boot) {
           : {title: 'Witnesses', detail: 'Not sent yet. They receive the batch root once the batch closes.', state: 'waiting'});
         return steps;
       },
-      groups() {
+      // A sheet writes one record per row: a log naming one driver a hundred times
+      // shows the first row, then the rest folded under one line. Built once per load;
+      // groups only applies what is open.
+      nameGroups() {
         const g = {};
         this.claims.filter(c => !PASS.includes(c.prop)).forEach(c => (g[c.subject] ||= []).push(c));
+        const byName = {};
         const all = Object.entries(g).map(([subject, claims]) => ({subject, claims, name: this.nameOf(subject)}));
-        // A sheet writes one record per row: a log naming one driver a hundred times
-        // shows the first row, then the rest folded under one line.
-        const count = {};
-        all.forEach(x => count[x.name] = (count[x.name] || 0) + 1);
-        const out = [], seen = new Set();
+        all.forEach(x => (byName[x.name] ||= []).push(x));
+        const out = [];
         for (const x of all) {
-          if (count[x.name] <= FOLD_PLACE) {out.push(x); continue;}
-          if (seen.has(x.name)) continue;
-          seen.add(x.name);
-          const rest = all.filter(y => y.name === x.name && y !== x);
+          const same = byName[x.name];
+          if (same.length <= FOLD_NAME) {out.push(x); continue;}
+          if (same[0] !== x) continue;
+          const rest = same.slice(1);
           const said = [...new Set(rest.flatMap(y => y.claims.map(c => `${prop(c.prop)}: ${c.value ?? MASKED}`)))];
-          out.push(x, {subject: `fold:${x.name}`, fold: true, name: x.name, claims: [], n: rest.length, said: said.slice(0, 2).join(', ') + (said.length > 2 ? ', and more' : '')});
-          if (this.unfolded[`name:${x.name}`]) out.push(...rest);
+          out.push(x, {subject: `fold:${x.name}`, fold: true, key: `name:${x.name}`, name: x.name, claims: [], n: rest.length, rest,
+            said: said.slice(0, 2).join(', ') + (said.length > 2 ? ', and more' : '')});
         }
         return out;
       },
+      groups() {return this.nameGroups.flatMap(x => x.fold && this.unfolded[x.key] ? [x, ...x.rest] : [x]);},
       ordered() {return this.groups.flatMap(g => g.claims);},
       pins() {return this.claims.filter(c => c.tier !== 'rejected' && c.value);},
       // One chip per thing read, with how often: a gate log names one gate a hundred times.
@@ -153,7 +157,7 @@ export function mount(boot) {
         const out = [], folded = new Set();
         for (const r of this.it.relations) {
           if (r.kind !== 'Same place' || r.sources <= FOLD_PLACE) {out.push(r); continue;}
-          if (!folded.has(r.place)) {folded.add(r.place); out.push({id: `fold:${r.place}`, fold: true, place: r.place, at_place: r.at_place, sources: r.sources});}
+          if (!folded.has(r.place)) {folded.add(r.place); out.push({id: `fold:${r.place}`, fold: true, key: r.place, place: r.place, at_place: r.at_place, sources: r.sources});}
           if (this.unfolded[r.place]) out.push({...r, nested: true});
         }
         return out;
@@ -223,7 +227,7 @@ export function mount(boot) {
         if (r.here_text || r.there_text) return r.why.replace(r.here_text || '\0', iso(r.here_text)).replace(r.there_text || '\0', iso(r.there_text));
         return r.why;
       },
-      fold(r) {this.unfolded = {...this.unfolded, [r.place]: !this.unfolded[r.place]};},
+      fold(r) {this.unfolded = {...this.unfolded, [r.key]: !this.unfolded[r.key]};},
       side(r) {return r.other ? `/evidence/${this.it.sha256}?with=${r.other}${r.there?.[0] != null ? '&at=' + r.there[0] : ''}` : null;},
       doc(sha) {return this.it.docs[sha] || {file: short(sha), title: short(sha)};},
       tierOf(r) {return r.tier;},

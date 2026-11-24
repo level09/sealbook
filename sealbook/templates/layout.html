@@ -127,19 +127,21 @@
             <v-menu v-if="railMini && caseList.length" location="end" offset="6">
                 <template #activator="{ props }"><v-list-item v-bind="props" v-tooltip:end="'Cases'" prepend-icon="ti ti-folders" title="Cases" aria-label="Cases" :active="!!caseTab && caseTab.badge !== 'todo'" color="primary"></v-list-item></template>
                 <v-list density="compact" class="sb-cases" min-width="220" max-width="300" aria-label="Cases">
-                    <v-list-item v-for="c in caseList" :key="c" class="sb-case" :title="caseName(c)" :active="(!!caseTab || staysOnCase) && caseSel === c" color="primary" @click="openCase(c)">
+                    <v-list-item v-for="c in caseList" :key="c" class="sb-case" :title="caseName(c)" :active="caseOn(c)" color="primary" @click="openCase(c)">
                         <template #prepend><span class="sb-mono" aria-hidden="true">${ caseMono(c) }</span></template>
                     </v-list-item>
                     <v-divider></v-divider>
-                    <v-list-item title="All cases" :active="!!caseTab && !caseSel && caseTab.badge !== 'todo'" color="primary" @click="openCase('all')"></v-list-item>
+                    <v-list-item class="sb-case" title="All cases" :active="allCasesOn" color="primary" @click="openCase('all')">
+                        <template #prepend><v-icon class="sb-mono sb-mono-all" icon="ti ti-layout-list" aria-hidden="true"></v-icon></template>
+                    </v-list-item>
                 </v-list>
             </v-menu>
             <template v-else>
             <v-list-subheader v-if="caseList.length" class="sb-sub"><v-icon icon="ti ti-folders"></v-icon>Cases</v-list-subheader>
-            <v-list-item v-for="c in caseList" :key="c" class="sb-case" :title="caseName(c)" :active="(!!caseTab || staysOnCase) && caseSel === c" color="primary" @click="openCase(c)" v-tooltip:end="{text: caseName(c), openDelay: 600}">
+            <v-list-item v-for="c in caseList" :key="c" class="sb-case" :title="caseName(c)" :active="caseOn(c)" color="primary" @click="openCase(c)" v-tooltip:end="{text: caseName(c), openDelay: 600}">
                 <template #prepend><span class="sb-mono" aria-hidden="true">${ caseMono(c) }</span></template>
             </v-list-item>
-            <v-list-item v-if="caseList.length" class="sb-case sb-all" title="All cases" :active="!!caseTab && !caseSel && caseTab.badge !== 'todo'" color="primary" @click="openCase('all')">
+            <v-list-item v-if="caseList.length" class="sb-case sb-all" title="All cases" :active="allCasesOn" color="primary" @click="openCase('all')">
                 <template #prepend><v-icon class="sb-mono sb-mono-all" icon="ti ti-layout-list" aria-hidden="true"></v-icon></template>
             </v-list-item>
             </template>
@@ -311,6 +313,8 @@
                 const path = location.pathname.replace(/\/$/, '');
                 return this.caseTabs.find(t => path === t.match) || null;
             },
+            // Every case together: the case list (Overview with no case chosen) or a tab across all cases.
+            allCasesOn() { return !this.caseSel && (this.caseTab ? this.caseTab.badge !== 'todo' : location.pathname.replace(/\/$/, '') === '/cases/overview'); },
             // Agents, following and export are not case tabs, yet they show one case at a time.
             staysOnCase() { return !!this.useCase && this.railItems.find(x => x.current)?.group === 'more'; },
             caseFacts() {
@@ -369,6 +373,7 @@
         methods: {
             // A case's name as people gave it; its slug is the key filters carry.
             caseName(slug) { return this.caseNames[slug] || slug; },
+            caseOn(c) { return (!!this.caseTab || this.staysOnCase) && this.caseSel === c; },
             // Two letters from the name's first words, skipping numbers and small words: "Branch 999 and Jdeideh" is BJ.
             caseMono(slug) {
                 const w = this.caseName(slug).split(/[\s,.-]+/).filter(x => /^\p{L}/u.test(x) && !/^(and|of|the|in|at|on)$/i.test(x));
@@ -405,8 +410,7 @@
                 this.switchCase(c);
                 if (this.staysOnCase) return;
                 // Every case together opens the case list, the Overview with no case chosen.
-                if (c === 'all') { if (!this.caseTab || ['todo', 'overview'].includes(this.caseTab.badge)) location.href = '/cases/overview'; }
-                else if (!this.caseTab) location.href = '/cases/overview';
+                if (!this.caseTab || (c === 'all' && ['todo', 'overview'].includes(this.caseTab.badge))) location.href = '/cases/overview';
             },
             loadNavCounts() {
                 axios.get('/api/nav/counts', {params: {investigation: this.caseSel || undefined}}).then(r => { this.navCounts = r.data; }).catch(() => {});

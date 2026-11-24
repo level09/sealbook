@@ -83,7 +83,7 @@
         </div>
         <div v-if="claims.length" role="listbox" aria-label="Claims, j and k to move">
           <template v-for="g in groups" :key="g.subject">
-            <button v-if="g.fold" type="button" class="ev-row ev-fold ev-namefold" :aria-expanded="!!unfolded['name:' + g.name]" @click="unfolded = {...unfolded, ['name:' + g.name]: !unfolded['name:' + g.name]}"><i class="ti" :class="unfolded['name:' + g.name] ? 'ti-chevron-down' : 'ti-chevron-right'" aria-hidden="true"></i> <span><strong>${ plural(g.n, 'more row') } naming <bdi dir="auto">${ g.name }</bdi></strong> <span class="muted">${ g.said }.</span></span></button>
+            <button v-if="g.fold" type="button" class="ev-row ev-fold ev-namefold" :aria-expanded="!!unfolded[g.key]" @click="fold(g)"><i class="ti" :class="unfolded[g.key] ? 'ti-chevron-down' : 'ti-chevron-right'" aria-hidden="true"></i> <span><strong>${ plural(g.n, 'more row') } naming <bdi dir="auto">${ g.name }</bdi></strong> <span class="muted">${ g.said }.</span></span></button>
             <div v-else class="ev-grp"><i v-if="g.subject.startsWith('person:')" class="ti ti-user r-tile is-person" aria-hidden="true"></i><a v-if="g.subject.startsWith('person:')" :href="'/people/' + g.subject.slice(7)" @click.stop><bdi dir="auto">${ g.name }</bdi></a><bdi v-else dir="auto">${ g.name }</bdi></div>
             <div v-for="c in g.claims" :key="c.id" class="ev-row ev-claim" role="option" :aria-selected="sel === c.id" :class="['tier-' + c.tier, c.actor.agent ? 'by-agent' : 'by-person', {sel: sel === c.id, hov: hov === c.id}]" tabindex="-1" :data-row="'claims:' + ordered.indexOf(c)" @click="pick(c.id)" @dblclick="openSpan(c)" @mouseenter="hov = c.id" @mouseleave="hov = null">
               <span class="ev-sw" aria-hidden="true"></span><span class="lbl">${ prop(c.prop) }</span>
@@ -140,8 +140,8 @@
           </v-tabs-window-item>
           <v-tabs-window-item value="rel">
             <template v-for="(r, i) in relations" :key="r.id">
-            <div v-if="r.fold" class="ev-row ev-rel ev-fold" :class="{sel: cursor.list === 'rel' && cursor.i === i}" tabindex="-1" :data-row="'rel:' + i" role="button" :aria-expanded="!!unfolded[r.place]" @click="focusRow('rel', i); fold(r)">
-              <i class="ti" :class="unfolded[r.place] ? 'ti-chevron-down' : 'ti-chevron-right'" aria-hidden="true"></i> <strong>Same place</strong> <span class="why">${ plural(r.sources, 'other source') } in this case name <bdi>${ r.at_place }</bdi></span></div>
+            <div v-if="r.fold" class="ev-row ev-rel ev-fold" :class="{sel: cursor.list === 'rel' && cursor.i === i}" tabindex="-1" :data-row="'rel:' + i" role="button" :aria-expanded="!!unfolded[r.key]" @click="focusRow('rel', i); fold(r)">
+              <i class="ti" :class="unfolded[r.key] ? 'ti-chevron-down' : 'ti-chevron-right'" aria-hidden="true"></i> <strong>Same place</strong> <span class="why">${ plural(r.sources, 'other source') } in this case name <bdi>${ r.at_place }</bdi></span></div>
             <div v-else class="ev-row ev-rel" :class="{sel: cursor.list === 'rel' && cursor.i === i, 'ev-folded': r.nested}" tabindex="-1" :data-row="'rel:' + i" @click="focusRow('rel', i)">
               <div class="d-flex ga-2"><media-thumb v-if="r.other" :locked="!doc(r.other).revealed" :sha="r.other" :kind="doc(r.other).kind" :file="doc(r.other).file" :caption="false" :width="72" :height="44"></media-thumb><div><strong>${ r.kind }</strong> <a v-if="r.other" :href="'/evidence/' + r.other">${ doc(r.other).title }</a><v-chip v-if="r.tier" size="x-small" color="agent" variant="tonal" class="ms-1">${ r.tier }</v-chip>
                 <div class="why">${ relWhy(r) }</div></div>

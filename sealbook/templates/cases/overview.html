@@ -67,11 +67,7 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
 .cl-head p { margin-top: 4px; }
 .cl-cols, .cl-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px 80px 80px 150px; gap: 16px; align-items: center; padding: 12px 20px; }
 .cl-cols { padding-block: 8px; border-top: 1px solid var(--line); }
-.cl-row { border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
-.cl-row:hover, .cl-row:focus-visible { background: var(--wash); }
-.cl-row .t { font-weight: 600; }
 .cl-desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cl-n { font-variant-numeric: tabular-nums; }
 .cl-k { display: none; color: var(--ink-3); }
 @media (max-width: 759px) {
   .cl-cols { display: none; }
@@ -92,11 +88,11 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
       <v-btn variant="outlined" prepend-icon="ti ti-folder-plus" href="/ingest/?new-case">New case</v-btn>
     </header>
     <div v-if="cases && cases.length" class="cl-cols ov-muted text-label-medium" aria-hidden="true"><span>Case</span><span>Status</span><span>Sources</span><span>People</span><span>Last evidence added</span></div>
-    <a v-for="c in sortedCases" :key="c.slug" class="cl-row" :href="'/cases/overview'" @click.prevent="openCase(c.slug)">
+    <a v-for="c in sortedCases" :key="c.slug" class="ov-row cl-row" href="/cases/overview" @click.prevent="openCase(c.slug)">
       <span class="cl-name"><span class="t d-block" dir="auto">${ c.name }</span><span v-if="c.description" class="ov-muted text-body-small d-block cl-desc" dir="auto">${ c.description }</span></span>
-      <span><span class="cc-status" :class="STATUS[c.status].cls"><i :class="STATUS[c.status].icon" aria-hidden="true"></i>${ c.status === 'closed' ? 'Closed' : STATUS[c.status].label }</span></span>
-      <span class="cl-n"><span class="cl-k">Sources </span>${ c.sources.toLocaleString() }</span>
-      <span class="cl-n"><span class="cl-k">People </span>${ c.people.toLocaleString() }</span>
+      <span><span class="cc-status" :class="STATUS[c.status].cls"><i :class="STATUS[c.status].icon" aria-hidden="true"></i>${ STATUS[c.status].short || STATUS[c.status].label }</span></span>
+      <span><span class="cl-k">Sources </span>${ c.sources.toLocaleString() }</span>
+      <span><span class="cl-k">People </span>${ c.people.toLocaleString() }</span>
       <span class="ov-muted">${ c.last_added ? day(c.last_added) : 'No evidence yet' }</span>
     </a>
     <p v-if="cases && !cases.length" class="ov-empty ov-muted mb-0">No cases yet. A case starts with its first evidence: New case, then add the files.</p>

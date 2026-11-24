@@ -8,7 +8,7 @@ export const day = iso => iso ? new Date(iso).toLocaleDateString(undefined, {day
 export const STATUS = {
   open: {label: 'Open', icon: 'ti ti-folder-open', cls: 'cc-open'},
   concluded: {label: 'Concluded', icon: 'ti ti-circle-check', cls: 'cc-done'},
-  closed: {label: 'Closed without a conclusion', icon: 'ti ti-folder-x', cls: 'cc-closed'},
+  closed: {label: 'Closed without a conclusion', short: 'Closed', icon: 'ti ti-folder-x', cls: 'cc-closed'},
 };
 
 /* "Concluded by Mira on 3 May 2024", "Reopened by ...: reason". */

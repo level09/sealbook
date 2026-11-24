@@ -295,21 +295,8 @@ async def steps(
             )
         )
     if blob.mime in sheets.MIMES:
-        # Read without a mapping (a case file's planted claims): no columns to ask for.
         read = [r for r in runs if r.tool in READ_TOOLS]
-        if version is None and read:
-            n = sum(claims.get(r.id, 0) for r in read)
-            return [
-                *out,
-                _step(
-                    "columns",
-                    "Columns mapped",
-                    "skipped",
-                    "Not needed: its rows were read without a column mapping.",
-                ),
-                await _run_step(db, "rows", "Rows read", read, _claims_words(n)),
-            ]
-        if version is None:
+        if version is None and not read:
             return [
                 *out,
                 _step(
@@ -328,16 +315,29 @@ async def steps(
                     "Starts once the columns are confirmed.",
                 ),
             ]
-        out.append(
-            _step(
-                "columns",
-                "Columns mapped",
-                "done",
-                f"Confirmed by a person as version {version.number} of the dataset.",
+        if version is None:
+            # Read without a mapping (a case file's planted claims): no columns to ask for.
+            out.append(
+                _step(
+                    "columns",
+                    "Columns mapped",
+                    "skipped",
+                    "Not needed: its rows were read without a column mapping.",
+                )
             )
-        )
-        rows = [r for r in runs if r.id == version.run_id]
-        counts = version.diff or {}
+            rows, counts = read, {}
+        else:
+            out.append(
+                _step(
+                    "columns",
+                    "Columns mapped",
+                    "done",
+                    f"Confirmed by a person as version {version.number} of the "
+                    "dataset.",
+                )
+            )
+            rows = [r for r in runs if r.id == version.run_id]
+            counts = version.diff or {}
         if rows:
             n = sum(claims.get(r.id, 0) for r in rows)
             out.append(await _run_step(db, "rows", "Rows read", rows, _claims_words(n)))

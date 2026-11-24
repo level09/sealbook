@@ -447,10 +447,10 @@ async def status(db, slug: str) -> dict:
     )
 
 
-async def statuses(db) -> dict[str, str]:
-    """Each case's status by slug, in one query; a case with none is open."""
-    rows = await db.execute(
-        select(Statement.subject, Payload.value["status"].astext)
+def _accepted_status(*cols):
+    """Accepted case status statements, oldest first: the one rule for a case's status."""
+    return (
+        select(*cols)
         .join(StatementTier, StatementTier.statement_id == Statement.id)
         .join(Payload, Payload.commitment == Statement.commitment)
         .where(
@@ -459,22 +459,22 @@ async def statuses(db) -> dict[str, str]:
         )
         .order_by(Statement.recorded_at)
     )
-    return {subject.removeprefix("case:"): s for subject, s in rows}
+
+
+async def statuses(db) -> dict[str, str]:
+    """Each case's status by slug, in one query; a case with none is open."""
+    rows = await db.execute(
+        _accepted_status(Statement.subject, Payload.value["status"].astext)
+    )
+    return {subject.removeprefix(ref("")): s for subject, s in rows}
 
 
 async def history(db, slug: str) -> list[dict]:
     rows = (
         await db.execute(
-            select(Statement, Payload.value, Principal.name)
-            .join(StatementTier, StatementTier.statement_id == Statement.id)
-            .join(Payload, Payload.commitment == Statement.commitment)
+            _accepted_status(Statement, Payload.value, Principal.name)
             .join(Principal, Principal.id == Statement.author_id)
-            .where(
-                Statement.subject == ref(slug),
-                Statement.prop == Prop.CASE_STATUS,
-                StatementTier.tier == Tier.ACCEPTED,
-            )
-            .order_by(Statement.recorded_at)
+            .where(Statement.subject == ref(slug))
         )
     ).all()
     return [
