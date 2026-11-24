@@ -152,12 +152,15 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
 .sb-rail .v-list-item__prepend > .v-list-item__spacer { width: 10px; }
 .sb-rail .v-list-item__prepend > .v-icon { font-size: 18px; }
 .sb-rail .v-list--nav .v-list-item { min-height: 34px; }
-/* A case is its name. No icon (every case had the same one), aligned under the labels
-   above, and two lines before it is cut, so "Branch 999 register" and "Branch 999 and
-   Jdeideh" read apart. */
-.sb-rail .sb-case { padding-inline-start: 38px; min-height: 30px; }
-.sb-rail .sb-case .v-list-item-title { font-size: 13px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; hyphens: none; color: var(--ink-2); }
+/* A case is a two-letter tile and its name on one line, nested under the Cases heading;
+   the full name shows on hover. The tile is neutral: kind hues mean person, place, source. */
+.sb-rail .sb-case { padding-inline-start: 18px; min-height: 30px; }
+.sb-rail .sb-case .v-list-item-title { font-size: 13px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); }
 .sb-rail .sb-case.v-list-item--active .v-list-item-title { color: var(--ink); }
+.sb-case .v-list-item__prepend > .v-list-item__spacer { width: 9px; }
+.sb-mono { display: inline-grid !important; place-items: center; width: 20px; height: 20px; flex: none; border-radius: 5px; background: var(--line); color: var(--ink-2) !important; font: 600 9.5px/1 var(--mono); letter-spacing: .02em; opacity: 1 !important; }
+.sb-mono-all.v-icon { font-size: 13px !important; background: transparent; border: 1px dashed var(--line-strong); }
+.v-list-item--active .sb-mono { background: rgb(var(--v-theme-primary)); color: rgb(var(--v-theme-on-primary)) !important; }
 .sb-rail .sb-all .v-list-item-title { color: var(--ink-3); }
 .sb-rail .sb-note { font: 500 10.5px/1.6 var(--mono); text-transform: uppercase; letter-spacing: .05em; padding: 0 5px; border: thin solid var(--line-strong); border-radius: 4px; color: var(--ink-2); }
 .sb-rail .sb-sub { min-height: 30px; margin-top: 6px; padding-inline-start: 8px !important; font-size: 13px; font-weight: 500; color: var(--ink-2); }
