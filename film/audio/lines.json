@@ -12,10 +12,10 @@
   "seconds": 1.786
  },
  "05": {
-  "key": "a48717d124b267c805de57b7cdf21a3c8250356ff1b86e74da844c4ca7273456",
-  "text": "A person approves or declines each one with a signature, and the record is sealed, so anyone can check it later.",
+  "key": "d571876c46593f1f8a641d507121c032ceb85fefd5c2d6f2a51111d0bacce5ce",
+  "text": "Nothing counts until a person approves or declines it with a signature. Then the record is sealed, so anyone can check it later.",
   "start": 0.0,
-  "seconds": 6.15
+  "seconds": 7.042
  },
  "06": {
   "key": "129c1fe0ddf7ebe12ae8b17d42e65e71cfd49843752c25baf2e03af69bfa4bae",
@@ -42,10 +42,10 @@
   "seconds": 7.101
  },
  "10": {
-  "key": "29ddb2c74897464379cae30f6ac7434dd9fdb77a1db40f26f406369be241dced",
-  "text": "The app proposed each link with the passage behind it. Fixed rules, with no AI model, found six of the six true links, and offered the surveyor too.",
-  "start": 0.078,
-  "seconds": 8.864
+  "key": "2b5c70775d1b0049afe893064c11579076c603f065ac023161b2775bff48b070",
+  "text": "AI read every page, the Arabic licence too, and pulled out each name, father and birth date. All six true links were found, each with the passage behind it. In a live test, the AI also set the surveyor aside on its own: born in another town.",
+  "start": 0.0,
+  "seconds": 16.866
  },
  "11": {
   "key": "2bd19b39bc4742e02befe5bbd5d51cb575d1dcebc47915d510db45a22f33e02e",
@@ -84,10 +84,10 @@
   "seconds": 8.447
  },
  "18": {
-  "key": "7da41402bbb6948e750a59f6877b8905c9ec9a998b5cebba6e35b21814daa124",
-  "text": "The machine reads more than a person can, and finds the links. A person approves every one.",
-  "start": 0.082,
-  "seconds": 5.664
+  "key": "11a83e8eb7f7f4f4afb1872938a480b48c0624b516a4ea57bb67ec5db3084288",
+  "text": "AI reads more than any team can. It sees what is buried in the mess. And a person signs every decision.",
+  "start": 0.0,
+  "seconds": 6.636
  },
  "07b": {
   "key": "163e83fd963695641ceee9635a7c2b88d51785458761481a16debd37376bca21",
@@ -144,10 +144,10 @@
   "seconds": 9.88
  },
  "14a": {
-  "key": "a0aee8cee4c5c72155123d392e2a0e09a10dac2d2d78d93e51505c52907de208",
-  "text": "The app reads every paper itself. On this scanned exhibit sheet, it reads the page, then pulls out who was where, boxed where it is written.",
-  "start": 0.07,
-  "seconds": 8.491
+  "key": "2decd0c75ad6644da430e6d46695f2ec3e021e77bd1271a001624b848ecd92f3",
+  "text": "AI reads every paper itself. On this scanned exhibit sheet, it reads the page, then pulls out who was where, boxed where it is written.",
+  "start": 0.0,
+  "seconds": 8.7
  },
  "14c": {
   "key": "b824f558ea8a31bda14a8d4d8460efecf43a4f105a2ea54f04b60cf7edac9501",
@@ -168,9 +168,9 @@
   "seconds": 1.485
  },
  "04b": {
-  "key": "e644d69df9db4fb903819ff96fa6be5d1007c8a5302bcacead667ed4c4a6e232",
-  "text": "The app reads all of it and proposes connections, each with the exact place it came from.",
+  "key": "75772e271af92d872ea816619182e6c1d6a10b35bdd0f4aca66269bf23e359f9",
+  "text": "AI reads all of it, scans, photos, recordings and spreadsheets, and finds connections a person would miss, each pinned to the exact place it came from.",
   "start": 0.0,
-  "seconds": 5.009
+  "seconds": 9.125
  }
 }

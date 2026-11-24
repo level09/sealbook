@@ -9,80 +9,80 @@ Sealbook works in three steps.
 00:00:12.890 --> 00:00:14.580
 You bring the material in.
 
-00:00:15.970 --> 00:00:21.180
-The app reads all of it and proposes connections, each with the exact place it came from.
+00:00:15.970 --> 00:00:25.290
+AI reads all of it, scans, photos, recordings and spreadsheets, and finds connections a person would miss, each pinned to the exact place it came from.
 
-00:00:21.980 --> 00:00:28.330
-A person approves or declines each one with a signature, and the record is sealed, so anyone can check it later.
+00:00:26.090 --> 00:00:33.330
+Nothing counts until a person approves or declines it with a signature. Then the record is sealed, so anyone can check it later.
 
-00:00:29.130 --> 00:00:31.760
+00:00:34.230 --> 00:00:36.860
 Four invented cases show how that helps.
 
-00:00:32.960 --> 00:00:40.850
+00:00:38.060 --> 00:00:45.950
 One: a freight company pays a supplier, a consultant, a guarantor and a ship agent. Four desks, four clean files.
 
-00:00:41.450 --> 00:00:50.300
+00:00:46.550 --> 00:00:55.400
 Are they four people, or one man under four names? The desks hold 14 sources and 1,445 rows.
 
-00:00:51.300 --> 00:00:57.340
+00:00:56.400 --> 00:01:02.440
 Kassar. Qassar. Khassar. Kasar. And on one licence, the name in Arabic.
 
-00:00:57.640 --> 00:01:04.940
+00:01:02.740 --> 00:01:10.040
 Four spellings, two alphabets, one man. And one who is not him: a surveyor with the same name, born elsewhere.
 
-00:01:05.740 --> 00:01:14.800
-The app proposed each link with the passage behind it. Fixed rules, with no AI model, found 6 of the 6 true links, and offered the surveyor too.
+00:01:10.840 --> 00:01:27.910
+AI read every page, the Arabic licence too, and pulled out each name, father and birth date. All six true links were found, each with the passage behind it. In a live test, the AI also set the surveyor aside on its own: born in another town.
 
-00:01:15.800 --> 00:01:21.710
+00:01:28.910 --> 00:01:34.820
 A person declines the surveyor, with a reason, and signs each decision with a passkey on their own device.
 
-00:01:22.710 --> 00:01:29.060
+00:01:35.820 --> 00:01:42.170
 The case closes on a conclusion, signed by a person and checked by a colleague: one man, under four names.
 
-00:01:30.860 --> 00:01:38.200
+00:01:43.970 --> 00:01:51.310
 Two: a workshop burns down at night. The bookkeeper says she spent the evening at her sister's, 34 kilometres away.
 
-00:01:38.800 --> 00:01:42.160
+00:01:51.910 --> 00:01:55.270
 Was she? There are 41 statements to read.
 
-00:01:42.960 --> 00:01:51.650
-The app reads every paper itself. On this scanned exhibit sheet, it reads the page, then pulls out who was where, boxed where it is written.
+00:01:56.070 --> 00:02:04.970
+AI reads every paper itself. On this scanned exhibit sheet, it reads the page, then pulls out who was where, boxed where it is written.
 
-00:01:52.750 --> 00:01:57.140
+00:02:06.070 --> 00:02:10.460
 It describes the photograph from her phone, and writes down the voice note she sent.
 
-00:01:58.140 --> 00:02:08.180
+00:02:11.460 --> 00:02:21.500
 Then it flags what does not fit: those two exhibits place her at the workshop at 21:52 and 22:07, while she says she was away from six.
 
-00:02:09.180 --> 00:02:16.850
+00:02:22.500 --> 00:02:30.170
 A person checks both against her statement and signs: she was at the yard on Tanner's Row that evening, not in Brindle Cross from six.
 
-00:02:18.950 --> 00:02:22.040
+00:02:32.270 --> 00:02:35.360
 Three: a flood video spreads as breaking news.
 
-00:02:22.840 --> 00:02:26.710
+00:02:36.160 --> 00:02:40.030
 Is it new? The tip line holds 36 clips that look alike.
 
-00:02:27.910 --> 00:02:36.550
+00:02:41.230 --> 00:02:49.870
 The app compares their sound and ties the viral clip to a video posted two years earlier. It had been cropped and mirrored, so the picture no longer matched.
 
-00:02:37.850 --> 00:02:44.720
+00:02:51.170 --> 00:02:58.040
 8 of 9 reposts were tied this way; one muted copy is missed. A person signs that the clip is old.
 
-00:02:47.320 --> 00:02:50.540
+00:03:00.640 --> 00:03:03.860
 Four: a nurse boards a night bus and is never seen again.
 
-00:02:51.940 --> 00:02:56.380
+00:03:05.260 --> 00:03:09.700
 Where do you look? The bus company's logs run to several hundred lines.
 
-00:02:57.980 --> 00:03:05.810
+00:03:11.300 --> 00:03:19.130
 A supervisor's statement says when the driver was last seen. From that night, the app finds 73 days in which no log names him.
 
-00:03:07.410 --> 00:03:17.490
+00:03:20.730 --> 00:03:30.810
 The conclusion, signed and checked by a colleague: Aron Vesk is named in no log for the next 73 days; this is a lead to follow, not a finding about what he did.
 
-00:03:20.890 --> 00:03:29.540
+00:03:34.210 --> 00:03:42.860
 Every decision is signed by a person, and the case is sealed. Here the first case's real package is checked in a browser, with nothing uploaded.
 
-00:03:30.940 --> 00:03:36.800
-The machine reads more than a person can, and finds the links. A person approves every one.
+00:03:44.760 --> 00:03:51.600
+AI reads more than any team can. It sees what is buried in the mess. And a person signs every decision.

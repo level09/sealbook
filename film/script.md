@@ -1,6 +1,6 @@
 # Script: four stories of how Sealbook helps
 
-218.8 seconds, 1920 x 1080, 30 fps, narrated at the voice's natural speed over a steady,
+233.6 seconds, 1920 x 1080, 30 fps, narrated at the voice's natural speed over a steady,
 quiet score. Written for a viewer who has never heard of the app. The narration is
 `narration.json`: each line has the pause before it, and `audio.py plan` turns the
 pauses into start times, the film's length and the picture's timing. `audio.py check`
@@ -28,62 +28,63 @@ drawn from a case file's data.
 | 1.0 | Investigators, journalists and lawyers share one problem: too much evidence to read, and a result nobody can later prove was not changed. | file: a pile of the cases' material |
 | 10.5 | Sealbook works in three steps. | type |
 | 12.89 | You bring the material in. | app: Sources |
-| 15.97 | The app reads all of it and proposes connections, each with the exact place it came from. | app: the agreement scan with its claims boxed |
-| 21.98 | A person approves or declines each one with a signature, and the record is sealed, so anyone can check it later. | app: the surveyor's rejected link; site: the checker's verdict on the four-names package |
-| 29.13 | Four invented cases show how that helps. | type: the four kinds of help |
+| 15.97 | AI reads all of it, scans, photos, recordings and spreadsheets, and finds connections a person would miss, each pinned to the exact place it came from. | app: the agreement scan with its claims boxed |
+| 26.09 | Nothing counts until a person approves or declines it with a signature. Then the record is sealed, so anyone can check it later. | app: the surveyor's rejected link; site: the checker's verdict on the four-names package |
+| 34.23 | Four invented cases show how that helps. | type: the four kinds of help |
 
 ## Story one: one person under several names, 32.8 to 90.7
 
 | At | Beat | Narration | Picture |
 | --- | --- | --- | --- |
-| 32.96 | situation | One: a freight company pays a supplier, a consultant, a guarantor and a ship agent. Four desks, four clean files. | file: the four desk documents, labelled |
-| 41.45 | question | Are they four people, or one man under four names? The desks hold 14 sources and 1,445 rows. | type: the question; app: Sources, under "14 sources and 1,445 rows" |
-| 51.3 | surfaced | Kassar. Qassar. Khassar. Kasar. And on one licence, the name in Arabic. | file: each name lifts off its document as it is spoken |
-| 57.64 | surfaced | Four spellings, two alphabets, one man. And one who is not him: a surveyor with the same name, born elsewhere. | file: the names beside one face (generated, labelled); the surveyor's register row in red |
-| 65.74 | surfaced | The app proposed each link with the passage behind it. Fixed rules, with no AI model, found 6 of the 6 true links, and offered the surveyor too. | app: an accepted proposal, pushed in to the licence card |
-| 75.8 | concluded | A person declines the surveyor, with a reason, and signs each decision with a passkey on their own device. | app: the surveyor's link, rejected; the birth date and birthplace rows marked |
-| 82.71 | concluded | The case closes on a conclusion, signed by a person and checked by a colleague: one man, under four names. | the conclusion sentence large |
+| 38.06 | situation | One: a freight company pays a supplier, a consultant, a guarantor and a ship agent. Four desks, four clean files. | file: the four desk documents, labelled |
+| 46.55 | question | Are they four people, or one man under four names? The desks hold 14 sources and 1,445 rows. | type: the question; app: Sources, under "14 sources and 1,445 rows" |
+| 56.4 | surfaced | Kassar. Qassar. Khassar. Kasar. And on one licence, the name in Arabic. | file: each name lifts off its document as it is spoken |
+| 62.74 | surfaced | Four spellings, two alphabets, one man. And one who is not him: a surveyor with the same name, born elsewhere. | file: the names beside one face (generated, labelled); the surveyor's register row in red |
+| 70.84 | surfaced | AI read every page, the Arabic licence too, and pulled out each name, father and birth date. All six true links were found, each with the passage behind it. In a live test, the AI also set the surveyor aside on its own: born in another town. | app: an accepted proposal, pushed in to the licence card |
+| 88.91 | concluded | A person declines the surveyor, with a reason, and signs each decision with a passkey on their own device. | app: the surveyor's link, rejected; the birth date and birthplace rows marked |
+| 95.82 | concluded | The case closes on a conclusion, signed by a person and checked by a colleague: one man, under four names. | the conclusion sentence large |
 
 ## Story two: a statement that does not fit, 90.7 to 138.8
 
 | At | Beat | Narration | Picture |
 | --- | --- | --- | --- |
-| 90.86 | situation | Two: a workshop burns down at night. The bookkeeper says she spent the evening at her sister's, 34 kilometres away. | file: the gate photograph |
-| 98.8 | question | Was she? There are 41 statements to read. | type: "Was she?" |
-| 102.96 | surfaced | The app reads every paper itself. On this scanned exhibit sheet, it reads the page, then pulls out who was where, boxed where it is written. | app: exhibit MQ/3 with its claim boxes, pushed in; the text read from it; the claim "Seen at Tanner's Row, Larkhaven" |
-| 112.75 | surfaced | It describes the photograph from her phone, and writes down the voice note she sent. | app: the photograph's first pass ("Broken wooden gate at night") and the voice note's transcript ("I'm still at the yard on Tanner's Row"), each marked |
-| 118.14 | surfaced | Then it flags what does not fit: those two exhibits place her at the workshop at 21:52 and 22:07, while she says she was away from six. | app: "Two places on one day" on her page; 21:52, 22:07 and her own 18:00 to 24:00 marked as spoken |
-| 129.18 | concluded | A person checks both against her statement and signs: she was at the yard on Tanner's Row that evening, not in Brindle Cross from six. | the conclusion sentence large |
+| 103.97 | situation | Two: a workshop burns down at night. The bookkeeper says she spent the evening at her sister's, 34 kilometres away. | file: the gate photograph |
+| 111.91 | question | Was she? There are 41 statements to read. | type: "Was she?" |
+| 116.07 | surfaced | AI reads every paper itself. On this scanned exhibit sheet, it reads the page, then pulls out who was where, boxed where it is written. | app: exhibit MQ/3 with its claim boxes, pushed in; the text read from it; the claim "Seen at Tanner's Row, Larkhaven" |
+| 126.07 | surfaced | It describes the photograph from her phone, and writes down the voice note she sent. | app: the photograph's first pass ("Broken wooden gate at night") and the voice note's transcript ("I'm still at the yard on Tanner's Row"), each marked |
+| 131.46 | surfaced | Then it flags what does not fit: those two exhibits place her at the workshop at 21:52 and 22:07, while she says she was away from six. | app: "Two places on one day" on her page; 21:52, 22:07 and her own 18:00 to 24:00 marked as spoken |
+| 142.5 | concluded | A person checks both against her statement and signs: she was at the yard on Tanner's Row that evening, not in Brindle Cross from six. | the conclusion sentence large |
 
 ## Story three: an old clip shared as new, 138.8 to 167.1
 
 | At | Beat | Narration | Picture |
 | --- | --- | --- | --- |
-| 138.95 | situation | Three: a flood video spreads as breaking news. | file: the shared clip, large |
-| 142.84 | question | Is it new? The tip line holds 36 clips that look alike. | type: "Is it new?"; file: twelve of the 36 clips |
-| 147.91 | surfaced | The app compares their sound and ties the viral clip to a video posted two years earlier. It had been cropped and mirrored, so the picture no longer matched. | file: the two clips side by side, the 2024 one flips as "mirrored" is spoken; app: the Copies row, 118 of 118 sound points, strong |
-| 157.85 | concluded | 8 of 9 reposts were tied this way; one muted copy is missed. A person signs that the clip is old. | the conclusion sentence large, with the 8 of 9 and the missed copy beneath |
+| 152.27 | situation | Three: a flood video spreads as breaking news. | file: the shared clip, large |
+| 156.16 | question | Is it new? The tip line holds 36 clips that look alike. | type: "Is it new?"; file: twelve of the 36 clips |
+| 161.23 | surfaced | The app compares their sound and ties the viral clip to a video posted two years earlier. It had been cropped and mirrored, so the picture no longer matched. | file: the two clips side by side, the 2024 one flips as "mirrored" is spoken; app: the Copies row, 118 of 118 sound points, strong |
+| 171.17 | concluded | 8 of 9 reposts were tied this way; one muted copy is missed. A person signs that the clip is old. | the conclusion sentence large, with the 8 of 9 and the missed copy beneath |
 
 ## Story four: a person who drops out of the record, 167.1 to 200.7
 
 | At | Beat | Narration | Picture |
 | --- | --- | --- | --- |
-| 167.32 | situation | Four: a nurse boards a night bus and is never seen again. | file: the bus depot (an edited Commons photograph) |
-| 171.94 | question | Where do you look? The bus company's logs run to several hundred lines. | type: the question; file: the gate book page, the 22:40 line with no driver marked |
-| 177.98 | surfaced | A supervisor's statement says when the driver was last seen. From that night, the app finds 73 days in which no log names him. | app: "No evidence for 73 days" on the driver's page; drawn: one tick per day the gate log names him, the gap shaded |
-| 187.41 | concluded | The conclusion, signed and checked by a colleague: Aron Vesk is named in no log for the next 73 days; this is a lead to follow, not a finding about what he did. | the conclusion sentence large, held 13.4 s |
+| 180.64 | situation | Four: a nurse boards a night bus and is never seen again. | file: the bus depot (an edited Commons photograph) |
+| 185.26 | question | Where do you look? The bus company's logs run to several hundred lines. | type: the question; file: the gate book page, the 22:40 line with no driver marked |
+| 191.3 | surfaced | A supervisor's statement says when the driver was last seen. From that night, the app finds 73 days in which no log names him. | app: "No evidence for 73 days" on the driver's page; drawn: one tick per day the gate log names him, the gap shaded |
+| 200.73 | concluded | The conclusion, signed and checked by a colleague: Aron Vesk is named in no log for the next 73 days; this is a lead to follow, not a finding about what he did. | the conclusion sentence large, held 13.4 s |
 
 ## Seal and close
 
 | At | Narration | Picture |
 | --- | --- | --- |
-| 200.89 | Every decision is signed by a person, and the case is sealed. Here the first case's real package is checked in a browser, with nothing uploaded. | site: the checker on the four-names package the seeded case built: "Every check that ran passed", 10 checks ran, 4 were not run on that page |
-| 210.94 | The machine reads more than a person can, and finds the links. A person approves every one. | type: the two claims |
+| 214.21 | Every decision is signed by a person, and the case is sealed. Here the first case's real package is checked in a browser, with nothing uploaded. | site: the checker on the four-names package the seeded case built: "Every check that ran passed", 10 checks ran, 4 were not run on that page |
+| 224.76 | AI reads more than any team can. It sees what is buried in the mess. And a person signs every decision. | type: the two claims |
 
 ## Limits the film keeps
 
-- Six of six true links, found by fixed rules with no model, and one false proposal, the
-  surveyor, which a person declines.
+- AI reads every page the links rest on, the Arabic licence included. In the seeded case
+  fixed rules propose the links: six of six true ones, and one false one, the surveyor,
+  which a person declines. In one live trial the model also set the surveyor aside itself.
 - The surveyor's decision is shown as the seeded analyst left it (rejected); the film
   shows no signing gesture, since the capture account has no passkey.
 - Never-there: what the app read was recorded on the live routes and is replayed when

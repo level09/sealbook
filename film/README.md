@@ -1,6 +1,6 @@
 # The case film
 
-A 218.8 second narrated film for a newcomer: who has the problem, what Sealbook is in
+A 233.6 second narrated film for a newcomer: who has the problem, what Sealbook is in
 three steps, then four invented cases, each told in the same four beats (the situation,
 the question, what the app surfaced, what the person concluded), and the seal. Story
 start times: 32.8, 90.7, 138.8 and 167.1 s. The shot list with the narration is
