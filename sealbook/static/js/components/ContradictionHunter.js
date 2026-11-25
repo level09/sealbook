@@ -3,13 +3,26 @@ import {KeepChecking} from '/static/js/components/KeepChecking.js';
 export const ContradictionHunter = {
   name: 'ContradictionHunter',
   components: {KeepChecking},
-  props: {investigation: {type: String, required: true}},
+  // people: on a person's page, only the items about these person ids.
+  props: {investigation: {type: String, required: true}, people: {type: Array, default: null}},
   data() { return {items: [], outcome: null, running: false, busy: false, note: '', timer: null, generation: 0}; },
   watch: {investigation: {immediate: true, handler() {
     clearTimeout(this.timer); this.generation++; this.items = []; this.outcome = null;
     this.running = false; this.busy = false; this.note = ''; this.load(this.generation);
   }}},
   beforeUnmount() { this.generation++; clearTimeout(this.timer); },
+  computed: {
+    shown() {
+      if (!this.people) return this.items;
+      const mine = new Set(this.people.map(p => String(p).replace(/^person:/, '')));
+      return this.items.filter(x => (x.people || []).some(p => mine.has(p)));
+    },
+    // A reason or question every item shares is said once, above the list.
+    common() {
+      const one = k => this.shown.length > 1 && this.shown.every(x => x[k] && x[k] === this.shown[0][k]) ? this.shown[0][k] : null;
+      return {why: one('why'), question: one('question')};
+    },
+  },
   methods: {
     async load(generation) {
       if (!this.investigation) return;
@@ -66,7 +79,11 @@ export const ContradictionHunter = {
     <p v-if="!investigation" class="muted mt-2">Choose a case to check.</p>
     <p v-if="running || note" class="muted mt-2" role="status">{{ running ? 'Reading the case for disagreements.' : note }}</p>
     <p v-if="outcome && !items.length" class="muted mt-2">{{ outcome.reason }}</p>
-    <article v-for="(item, i) in items" :key="i" class="mt-3">
+    <p v-else-if="people && items.length && !shown.length" class="muted mt-2">Nothing found about this person. The case has {{ items.length === 1 ? 'one disagreement' : items.length + ' disagreements' }} about others.</p>
+    <p v-if="common.why" class="mt-3" dir="auto">{{ common.why }} {{ common.question }}</p>
+    <ol v-if="shown.length" class="ch-list mt-2">
+    <li v-for="(item, i) in shown" :key="i">
+      <span class="ch-n" aria-hidden="true">{{ i + 1 }}</span><div class="ch-body">
       <template v-if="item.locked.length">
         <p class="muted">Open the sensitive source to reveal this question:</p>
         <a v-for="source in item.locked" :key="source.href" :href="source.href" class="me-2" dir="auto">{{ source.title }}</a>
@@ -85,10 +102,10 @@ export const ContradictionHunter = {
         <p v-for="d in item.device || []" :key="d.href + d.time" class="muted mt-1">
           <a :href="d.href" dir="auto">{{ d.title }}</a>: the file's own metadata puts its device<template v-if="d.place"> at {{ d.place }}</template> at {{ d.time }}. That is where the device was, not who held it, and not an accepted fact about the person.
         </p>
-        <p class="mt-2" dir="auto">{{ item.why }}</p>
-        <p class="mt-2" dir="auto">{{ item.question }}</p>
+        <p v-if="!common.why" class="mt-2" dir="auto">{{ item.why }}</p>
+        <p v-if="!common.question" class="mt-2" dir="auto">{{ item.question }}</p>
         <v-btn size="small" variant="text" prepend-icon="ti ti-copy" @click="copy(item.question)">Copy question</v-btn>
       </template>
-    </article>
+    </div></li></ol>
   </section>`,
 };

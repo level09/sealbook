@@ -300,6 +300,8 @@ async def story(db, user, lens: str, ref: str | None, f: dict) -> dict:
                 "prop": r["prop"],
                 "place": mapped["place"] if mapped else r["display"],
                 "place_id": str(resolved_place.id) if mapped else None,
+                # The place's own name, as the Places page shows it: a marker's label.
+                "place_name": resolved_place.name_ar if mapped else None,
                 "lonlat": mapped["lonlat"] if mapped else None,
                 "from": r["from"],
                 "to": r["to"] or r["from"],

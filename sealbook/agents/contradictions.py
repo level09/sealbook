@@ -491,6 +491,8 @@ async def show(db, user, investigation: str) -> dict:
             item
             | {
                 "locked": [],
+                # Who the item is about, so a person's page can keep only theirs.
+                "people": sorted({c.person.removeprefix("person:") for c in claims}),
                 "claims": [
                     {
                         "person": c.person.removeprefix("person:")

@@ -212,7 +212,7 @@ def _step(key: str, label: str, state: str, words: str, **more) -> dict:
 
 def _claims_words(n: int) -> str:
     if not n:
-        return "Read. No claims were proposed."
+        return "Read. No names, dates or places were proposed."
     return f"{n} claim{'' if n == 1 else 's'} proposed, waiting for review."
 
 

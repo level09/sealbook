@@ -2,7 +2,7 @@
 // With `sha`, only resemblances of that source, the other source named first.
 export const NoticerPanel = {
   name: 'NoticerPanel',
-  props: {investigation: {type: String, default: ''}, sha: {type: String, default: ''}, revealed: {type: Boolean, default: false}, limit: {type: Number, default: 0}},
+  props: {investigation: {type: String, default: ''}, sha: {type: String, default: ''}, revealed: {type: Boolean, default: false}, limit: {type: Number, default: 0}, copies: {type: Number, default: 0}},
   emits: ['changed'],
   data() { return {report: null, error: '', note: '', starting: false, timer: null, sending: '', gen: 0}; },
   computed: {
@@ -62,7 +62,7 @@ export const NoticerPanel = {
     <p v-if="note" role="status">{{ note }}</p>
     <p v-if="busy" aria-live="polite">Reading the case for resemblances.</p>
     <p v-if="report?.failed && !busy" role="alert">The last check could not finish. Try again.</p>
-    <p v-if="report && !report.items.length && !busy">{{ report.outcome?.reason || (sha ? 'Nothing found that resembles this source yet.' : 'No check yet. Press Check now to compare the whole case.') }}</p>
+    <p v-if="report && !report.items.length && !busy">{{ report.outcome?.reason || (sha ? (copies ? 'Nothing else resembles it. Its ' + (copies === 1 ? 'copy is' : copies + ' copies are') + ' under Copies.' : 'Nothing found that resembles this source yet.') : 'No check yet. Press Check now to compare the whole case.') }}</p>
     <article v-for="item in items" :key="item.key || item.href" class="mt-3">
       <p v-if="item.locked"><i class="ti ti-lock r-ink state-sensitive" aria-hidden="true"></i> {{ item.count === 1 ? 'One resemblance rests' : item.count + ' resemblances rest' }} on <a :href="item.href" dir="auto">{{ item.title }}</a>. Reveal it to read {{ item.count === 1 ? 'it' : 'them' }}.</p>
       <template v-else>

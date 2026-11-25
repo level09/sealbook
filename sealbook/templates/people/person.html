@@ -18,6 +18,13 @@
     .ppl-gap { margin: 4px 0 4px 6px; padding: 4px 8px; border-inline-start: 2px dashed var(--line-strong); color: var(--ink-3); }
     .ppl-side-row { cursor: default; }
     .ppl-fork { color: var(--fork); font-weight: 600; }
+    /* Contradictions: numbered, a hairline between them, as the evidence first pass. */
+    .ch-list { list-style: none; margin: 0; padding: 0; }
+    .ch-list > li { display: flex; gap: 8px; padding: 10px 0; }
+    .ch-list > li + li { border-top: 1px solid var(--line); }
+    .ch-n { flex: none; width: 14px; font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--ink-3); text-align: end; padding-top: 2px; }
+    .ch-body { flex: 1; min-width: 0; }
+    .ch-body > :first-child { margin-top: 0 !important; }
     .ppl-tag { font-size: 11px; padding: 0 6px; border-radius: 8px; border: 1px solid var(--line-strong); color: var(--ink-2); }
     .ppl-side { position: fixed; inset-block: var(--v-layout-top, 64px) 0; inset-inline-end: 0; width: min(420px, 100vw); background: var(--panel); border-inline-start: 1px solid var(--line); padding: 16px; overflow: auto; z-index: 5; }
     .ppl-side dl { display: grid; grid-template-columns: 110px 1fr; gap: 4px 8px; }
@@ -104,7 +111,7 @@
                     </div>
                     <div v-if="f.why" class="muted text-body-small">Raised because: ${ [...new Set(f.why.map(w => w.why))].join('; ') }.</div>
                 </div>
-                <contradiction-hunter :investigation="caseSel || ''"></contradiction-hunter>
+                <contradiction-hunter :investigation="caseSel || ''" :people="p.members"></contradiction-hunter>
             </div>
             <div class="ppl-card">
                 <h2>Candidate duplicates</h2>

@@ -94,7 +94,7 @@
         </template>
       </v-list>
       <v-empty-state v-if="loaded && !items.length" icon="ti ti-robot-off" title="No findings waiting">
-        <template #text>Discovery proposes people held at the same place and time, and candidate incidents, from accepted position claims at confirmed places. Run <code class="mono">uv run stk discover --investigation ${ caseSel || 'case-name' }</code> and the worker fills this queue.</template>
+        <template #text>Discovery proposes people held at the same place and time, and candidate incidents, from accepted position claims at confirmed places. An administrator starts it on the server, and its findings appear here.</template>
       </v-empty-state>
     </section>
 

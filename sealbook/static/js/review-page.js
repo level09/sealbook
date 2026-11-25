@@ -129,7 +129,7 @@ export function mount(boot) {
         const n = this.counts[this.box] ?? 0, mine = this.counts.mine ?? 0;
         const due = this.items.filter(i => i.due && i.due <= today()).length;
         return {
-          mine: () => mine ? `${plural(mine, 'claim')} waiting for your decision${due ? `, ${due} due today or overdue` : ''}` : 'Nothing is waiting for your decision',
+          mine: () => mine ? `${plural(mine, 'claim')} waiting for your decision${due ? `, ${due} due today or overdue` : ''}` : 'No colleague has asked you to decide a claim',
           sent: () => n ? `${plural(n, 'request')} you sent, still open` : 'Nothing you sent is open',
           open: () => n ? `${plural(n, 'unconfirmed claim')} open in this case${mine ? `, ${mine} asked of you` : ''}` : 'No unconfirmed claims in this case',
           findings: () => n ? `${plural(n, 'finding')} waiting for a decision` : 'No findings waiting',
@@ -430,6 +430,11 @@ export function mount(boot) {
         }
       } catch (err) {this.fail(err);}
       await this.load();
+      // Nothing asked of you but claims are open: open on those, so Review never
+      // says "nothing waiting" while To do counts work.
+      if (this.box === 'mine' && !this.selId && !new URLSearchParams(location.search).get('box') && !this.counts.mine && this.counts.open) {
+        this.box = 'open'; await this.load();
+      }
       // A deep-linked claim outside the box's first page still opens, and joins the list.
       if (this.selId && this.box !== 'findings' && !this.items.some(i => i.id === this.selId)) {
         try {const {data} = await api.get(`/api/review/claim/${this.selId}`); this.items.unshift(data);} catch (err) {this.fail(err);}

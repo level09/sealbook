@@ -237,8 +237,9 @@
 
           <h3 class="mb-1" id="check-one-claim">Check one claim yourself</h3>
           <p v-if="proofError" class="gd-empty">${ proofError }</p>
-          <p v-else-if="!proof" class="gd-empty">Loading a claim from ${ g.case }.</p>
-          <p v-else-if="!proof.claim" class="gd-empty">${ g.case } has no accepted, signed claim yet. Accept one in Review and come back.</p>
+          <p v-else-if="!caseList.includes(g.case)" class="gd-empty">The demo case is not on this server, so there is no claim to check here.</p>
+          <p v-else-if="!proof" class="gd-empty">Loading a claim from ${ caseName(g.case) }.</p>
+          <p v-else-if="!proof.claim" class="gd-empty">${ caseName(g.case) } has no accepted, signed claim yet. Accept one in Review and come back.</p>
           <template v-else>
             <p class="gd-who">A real accepted claim: <strong>${ propLabel(proof.claim.prop) }</strong> from <a :href="proof.claim.href">${ proof.claim.title }</a><span v-if="proof.claim.sensitive">, a sensitive source</span>. Your browser recomputes every hash below with WebCrypto. The value stays sealed: you see its commitment, never the value. Opening this check is logged like any read.</p>
             <div class="gd-check">

@@ -194,11 +194,12 @@ export const storyPage = boot => ({
     factual() { return this.points.filter(p => p.tier === 'accepted' || p.tier === 'corroborated'); },
     places() {
       // Numbered in order of first appearance: the sequence the markers show. One marker
-      // per resolved place, so Aleppo and حلب share it and both spellings label it.
+      // per resolved place, so Aleppo and حلب share it. It is labelled with the place's own
+      // name; every spelling the sources used is in its title.
       const out = new Map();
-      for (const p of this.ordered) if (p.lonlat && !out.has(p.place_id)) out.set(p.place_id, {n: out.size + 1, names: new Set(), lonlat: p.lonlat, points: []});
+      for (const p of this.ordered) if (p.lonlat && !out.has(p.place_id)) out.set(p.place_id, {n: out.size + 1, place: p.place_name || p.place, names: new Set(), lonlat: p.lonlat, points: []});
       for (const p of this.ordered) if (p.lonlat) { const pl = out.get(p.place_id); pl.names.add(p.place); pl.points.push(p); }
-      return [...out.values()].map(({names, ...pl}) => ({...pl, place: [...names].join(' / ')}));
+      return [...out.values()].map(({names, ...pl}) => ({...pl, spellings: [...names].join(' / ')}));
     },
     forkIds() { return new Set(this.rows.flatMap(r => r.points.filter(p => p.fork).map(p => p.id))); },
     entityHref() { return !this.ref ? null : this.lens === 'place' ? `/places/${this.ref}` : this.lens === 'incident' ? `/incidents/${this.ref.replace('incident:', '')}` : null; },
@@ -367,7 +368,7 @@ export const storyPage = boot => ({
         el.type = 'button';
         el.className = `st-mk tier-${best.tier} ${best.agent ? 'by-agent' : 'by-person'}${live.length ? '' : ' future'}${pl.points.some(p => this.forkIds.has(p.id)) ? ' fork' : ''}`;
         el.innerHTML = `<span class="d">${pl.n}</span><span class="l"><bdi>${esc(pl.place)}</bdi> (${live.length} of ${pl.points.length})</span>`;
-        el.title = `${pl.n}. ${pl.place}: ${pl.points.length} point${pl.points.length === 1 ? '' : 's'}`;
+        el.title = `${pl.n}. ${pl.place}: ${pl.points.length} point${pl.points.length === 1 ? '' : 's'}${pl.spellings !== pl.place ? `, written as ${pl.spellings}` : ''}`;
         el.setAttribute('aria-label', el.title);
         el.onclick = () => this.select(best);
         // Close places would print over each other: the second puts its label left, later ones step down.

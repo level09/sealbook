@@ -600,6 +600,10 @@ async def claim(db, user, sid: uuid.UUID) -> dict | None:
         {
             "id": str(run.id),
             "tool": run.tool,
+            # In words: what the run did and how it was answered; the model id
+            # stays only in the detail, as on the evidence page.
+            "work": data.run_label(run),
+            "detail": data.answered(run)["detail"],
             "route": run.route,
             "model_requested": run.model_requested,
             "model_served": run.model_served,

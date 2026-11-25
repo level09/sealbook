@@ -176,7 +176,8 @@
             <div class="case-title">
                 <div>
                     <h1 class="text-title-large">${ caseSel ? caseName(caseSel) : 'All cases' }</h1>
-                    <p v-if="caseFacts">${ caseFacts }</p>
+                    <p v-if="caseInfo?.description">${ caseInfo.description }</p>
+                    <p v-if="caseFacts" class="case-facts">${ caseFacts }</p>
                 </div>
                 <v-btn color="primary" variant="flat" prepend-icon="ti ti-upload" :href="caseSel ? '/ingest/?investigation=' + encodeURIComponent(caseSel) : '/ingest/'">${ caseSel ? 'Add evidence to this case' : 'Add evidence' }</v-btn>
             </div>
@@ -317,11 +318,12 @@
             allCasesOn() { return !this.caseSel && (this.caseTab ? this.caseTab.badge !== 'todo' : location.pathname.replace(/\/$/, '') === '/cases/overview'); },
             // Agents, following and export are not case tabs, yet they show one case at a time.
             staysOnCase() { return !!this.useCase && this.railItems.find(x => x.current)?.group === 'more'; },
+            // The counts go on their own line, under the case's description.
             caseFacts() {
                 const c = this.caseInfo;
                 if (!c) return '';
                 const n = (k, one) => `${c[k]} ${c[k] === 1 ? one : one === 'person' ? 'people' : one + 's'}`;
-                return [c.description, n('sources', 'source'), n('people', 'person'), c.last_added && `last added ${daysAgo(c.last_added)}`].filter(Boolean).join(', ');
+                return [n('sources', 'source'), n('people', 'person'), c.last_added && `last added ${daysAgo(c.last_added)}`].filter(Boolean).join(', ');
             },
             caseInfo() { return this.caseDetails.find(c => c.slug === this.caseSel) || null; },
             caseOptions() {

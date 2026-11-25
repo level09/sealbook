@@ -138,9 +138,10 @@ export const CaseTimeline = {
         return {...r, points, end};
       });
     },
-    // A band washes the span of its rows and outlines each member's row; its words go under the last member, where no earlier label is.
+    // A band washes the span of its rows and outlines each member's row; its words go under the last member, where no other label is.
     laid() {
-      const taken = [];
+      // Place names drawn above each point are taken first, so a band's words never land on one.
+      const taken = this.laidRows.flatMap((r, i) => r.points.filter(p => p.showTag).map(p => ({x: this.x(day(p.from)), y: this.rowY(i) - 19, w: textW(p.tag), h: 11})));
       return this.bands.map(b => {
         const ys = b.people.map(k => this.rows.findIndex(r => r.key === k)).filter(i => i >= 0);
         if (!ys.length) return null;
