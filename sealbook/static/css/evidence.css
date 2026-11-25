@@ -101,7 +101,7 @@ body.dark-mode .evp {
 @media (max-width: 1279px) { .ev:not(.side) { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); } .ev .ev-intel { grid-column: 1 / -1; } .ev-stick { position: static; } }
 @media (max-width: 959px) {
   .evp { padding: 12px 16px 72px; }
-  .ev, .ev.side { grid-template-columns: 1fr; }
+  .ev:not(.side), .ev.side { grid-template-columns: 1fr; }
   .ev-claim { grid-template-columns: 14px 1fr auto; }
   .ev-claim .lbl { grid-column: 2 / -1; font-size: 11.5px; color: var(--e-ink-3); }
   .ev-claim .val { grid-column: 2; }
