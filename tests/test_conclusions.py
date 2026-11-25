@@ -688,6 +688,37 @@ class ConclusionTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(tier, Tier.ACCEPTED)
         self.assertIsNone(st.run_id)
 
+    # --- chronology ------------------------------------------------------------------
+
+    async def test_chronology_lists_standing_claims_with_links_and_logs_it(self):
+        import io
+
+        from openpyxl import load_workbook
+
+        client = await self.client()
+        r = await client.get(f"/api/cases/chronology.xlsx?investigation={CASE}")
+        self.assertEqual(r.status_code, 200)
+        book = load_workbook(io.BytesIO(await r.get_data()))
+        rows = [
+            [c.value for c in row]
+            for sheet in book.worksheets
+            for row in sheet.iter_rows(min_row=2)
+        ]
+        # The accepted name is listed; claims nobody decided are not.
+        values = [row[4] for row in rows]
+        self.assertIn("Ari Example", values)
+        self.assertNotIn("A. Example", values)
+        cell = book["Undated"]["G2"]
+        self.assertTrue(cell.hyperlink.target.endswith(self.seed.blobs["vendors"]))
+        async with ext.async_session_factory() as s:
+            logged = await s.scalar(
+                select(Statement.id).where(
+                    Statement.subject == f"chronology:{CASE}",
+                    Statement.prop == Prop.ACCESS,
+                )
+            )
+        self.assertIsNotNone(logged)
+
     # --- packages ----------------------------------------------------------------
 
     async def test_package_opens_with_the_case_conclusion(self):

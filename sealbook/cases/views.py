@@ -4,7 +4,7 @@ import orjson
 from quart import Blueprint, Response, abort, g, render_template, request
 from quart_security import current_user
 
-from sealbook.cases import conclusions, overview, service
+from sealbook.cases import chronology, conclusions, overview, service
 from sealbook.collaboration.views import guard, no_store
 from sealbook.ledger.write import principal_for_user
 
@@ -71,6 +71,26 @@ async def case_overview():
     except service.Unknown:
         abort(404)
     return _json(await overview.overview(db, current_user, case.slug))
+
+
+@bp_cases.get("/chronology.xlsx")
+async def chronology_sheet():
+    """Accepted and corroborated claims in date order, as a spreadsheet."""
+    db = g.db_session
+    try:
+        case = await service.require(db, request.args.get("investigation"))
+    except service.Unknown:
+        abort(404)
+    body = await chronology.workbook(
+        db, current_user, case.slug, case.name, request.host_url
+    )
+    return Response(
+        body,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{case.slug}-chronology.xlsx"'
+        },
+    )
 
 
 # --- conclusions ---------------------------------------------------------------

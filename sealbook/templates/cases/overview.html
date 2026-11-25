@@ -170,7 +170,8 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
   <section v-if="s" class="ov-panel ov-stands" aria-labelledby="ov-h-stands">
     <header>
       <h2 id="ov-h-stands" class="text-title-large">Where this case stands</h2>
-      <span class="ov-muted">${ itemTotal ? plural(itemTotal, 'item') + ' on the record' : 'Nothing on the record yet' }, from ${ plural(s.sources.total, 'source') }</span>
+      <span class="ov-muted me-auto">${ itemTotal ? plural(itemTotal, 'item') + ' on the record' : 'Nothing on the record yet' }, from ${ plural(s.sources.total, 'source') }</span>
+      <v-btn v-if="itemTotal" :href="'/api/cases/chronology.xlsx?investigation=' + encodeURIComponent(caseSel)" size="small" variant="outlined" prepend-icon="ti ti-table-export" title="Accepted and corroborated claims in date order, each linked to its source. The download is logged.">Chronology, Excel</v-btn>
     </header>
     <div v-if="itemTotal" class="ov-bar" role="img" :aria-label="TIERS.map(t => tierCount(t.k) + ' ' + t.k).join(', ')">
       <span v-for="t in TIERS" v-show="tierCount(t.k)" :key="t.k" class="ov-tier" :class="t.k" :style="{flex: tierCount(t.k)}" :title="tierCount(t.k) + ' ' + t.k + ': ' + kindsText(t.k)"></span>
