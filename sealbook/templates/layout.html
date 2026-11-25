@@ -23,7 +23,7 @@
         <v-tooltip v-if="!isMobile" :text="(railMini ? 'Show the sidebar' : 'Hide the sidebar') + ' (Cmd B)'" location="bottom"><template #activator="{ props }"><v-icon-btn v-bind="props" class="sb-fold" :icon="railMini ? 'ti ti-layout-sidebar-left-expand' : 'ti ti-layout-sidebar-left-collapse'" variant="text" :aria-label="railMini ? 'Show the sidebar' : 'Hide the sidebar'" :aria-expanded="!railMini" @click="foldRail"></v-icon-btn></template></v-tooltip>
         <v-autocomplete v-if="isMobile" class="case-sw" :model-value="caseSel ?? 'all'" :items="caseOptions" density="compact" variant="outlined" hide-details auto-select-first prepend-inner-icon="ti ti-folder" :menu-props="{contentClass: 'case-sw-menu'}" aria-label="Switch investigation" @update:model-value="switchCase"></v-autocomplete>
         <form class="qbox" action="/search" role="search">
-            <v-text-field id="q" name="q" v-model="shellQ" density="compact" variant="outlined" hide-details prepend-inner-icon="ti ti-search" placeholder="Search names, hashes, passages, frames" aria-label="Search evidence, people, places and identifiers" autocomplete="off">
+            <v-text-field id="q" name="q" v-model="shellQ" density="compact" variant="outlined" hide-details prepend-inner-icon="ti ti-search" :placeholder="isMobile ? 'Search' : 'Search names, hashes, passages, frames'" aria-label="Search evidence, people, places and identifiers" autocomplete="off">
                 <template #append-inner><v-kbd>/</v-kbd></template>
             </v-text-field>
         </form>

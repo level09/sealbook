@@ -63,8 +63,11 @@ body.dark-mode .evp {
 .ev-row.sel, .ev-row:focus-visible { background: var(--e-wash); box-shadow: inset 2px 0 0 var(--e-ink); }
 /* A box pointed at on the image lights its row, and the other way round. */
 .ev-claim.hov:not(.sel) { background: var(--e-wash); }
-.ev-claim { display: grid; grid-template-columns: 14px 104px 1fr auto; gap: 2px 10px; align-items: baseline; padding: 6px 12px; border-top: 1px solid var(--e-line); }
+/* Thread and proof badges sit under the value, so a narrow column keeps the value's width. */
+.ev-claim { display: grid; grid-template-columns: 14px 104px minmax(0, 1fr); gap: 2px 10px; align-items: baseline; padding: 6px 12px; border-top: 1px solid var(--e-line); }
 .ev-claim .val { font-size: 14px; }
+.ev-claim .badges { grid-column: 3; }
+.ev-claim .badges:empty { display: none; }
 .ev-claim .meta, .ev-claim .acts { grid-column: 3 / -1; font-size: 11.5px; color: var(--e-ink-3); }
 .ev-grp { padding: 8px 12px 4px; font-weight: 600; display: flex; gap: 8px; align-items: baseline; background: var(--e-raise); border-top: 1px solid var(--e-line); }
 .ev-kv { display: grid; grid-template-columns: 108px 1fr; gap: 4px 10px; margin: 0; padding: 10px 12px; }
@@ -102,7 +105,8 @@ body.dark-mode .evp {
 @media (max-width: 959px) {
   .evp { padding: 12px 16px 72px; }
   .ev:not(.side), .ev.side { grid-template-columns: 1fr; }
-  .ev-claim { grid-template-columns: 14px 1fr auto; }
+  .ev-claim { grid-template-columns: 14px minmax(0, 1fr); }
+  .ev-claim .badges { grid-column: 2; }
   .ev-claim .lbl { grid-column: 2 / -1; font-size: 11.5px; color: var(--e-ink-3); }
   .ev-claim .val { grid-column: 2; }
   .ev-claim .meta, .ev-claim .acts { grid-column: 2 / -1; }

@@ -75,6 +75,8 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
   .cl-name { grid-column: 1 / -1; }
   .cl-k { display: inline; }
 }
+/* Phones: the action goes under its words, not beside them. */
+@media (max-width: 599px) { .ov-page .ov-row { grid-template-columns: minmax(0, 1fr); justify-items: start; } }
 </style>
 {% endblock %}
 {% block content %}

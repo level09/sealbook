@@ -11,7 +11,7 @@
       <v-text-field v-model="q" density="compact" hide-details clearable prepend-inner-icon="ti ti-search" placeholder="Name, in any spelling or script" aria-label="Search people by name" style="max-width: 360px; min-width: 220px" autofocus dir="auto" @click:clear="items = null"></v-text-field>
       <v-btn type="submit" size="small" color="primary" :loading="busy" :disabled="!(q || '').trim()">Search</v-btn>
     </form>
-    <v-data-table class="en-table" :headers="headers" :items="shown" item-value="person" density="compact" :items-per-page="50" :items-per-page-options="[25, 50, 100]" :hide-default-footer="shown.length <= 50" @click:row="(_, {item}) => location.href = '/people/' + item.person">
+    <v-data-table class="en-table" :headers="cols" :items="shown" item-value="person" density="compact" :items-per-page="50" :items-per-page-options="[25, 50, 100]" :hide-default-footer="shown.length <= 50" @click:row="(_, {item}) => location.href = '/people/' + item.person">
       <template #item.name="{ item }"><a :href="'/people/' + item.person" @click.stop><i class="ti ti-user r-tile is-person me-2" aria-hidden="true"></i><bdi v-if="item.name" dir="auto">${ item.name }</bdi><span v-else title="Name from a sensitive source; reveal it on the person page"><i class="ti ti-lock" aria-hidden="true"></i> Unnamed person</span></a><span v-if="item.hint" class="en-muted ms-2">${ item.hint }</span><span v-if="item.statements" class="en-muted">, ${ count(item.statements.length, 'matching name') }</span><span v-if="item.members > 1" class="en-muted">, joined from ${ item.members } records</span></template>
       <template #item.from="{ item }"><span v-if="item.from">${ item.from }${ item.to && item.to !== item.from ? ' to ' + item.to : '' }</span><span v-else class="en-muted">no dated claim</span></template>
       <template #no-data><v-empty-state icon="ti ti-user-off" :title="empty"></v-empty-state></template>
@@ -39,6 +39,7 @@
             },
             computed: {
                 shown() { return this.items === null ? this.everyone : this.items; },
+                cols() { return this.$vuetify.display.xs ? this.headers.filter(h => ['name', 'facts'].includes(h.key)) : this.headers; },
                 caption() {
                     return this.items === null
                         ? 'Everyone on record (' + this.everyone.length + ')'

@@ -223,6 +223,9 @@ body, .v-application { font-size: 13px; font-feature-settings: 'tnum', 'cv11'; }
   .case-sw .v-field__prepend-inner, .case-sw .v-field__append-inner { display: none; }
   .case-sw .v-field { font-size: 14px; }
   .qbox { flex: 1 1 auto; min-width: 0; }
+  /* The search box takes the free width; a spacer beside it would split it. */
+  .qbox + .v-spacer { display: none; }
+  .v-bottom-navigation .v-btn { flex: 1 1 0; min-width: 0; }
   .qbox .v-field__input { padding-inline: 4px; }
   .qbox .v-kbd, .sb-top .sb-pal-btn { display: none; }
   .sb-top .v-toolbar__content { gap: 6px; padding: 0 8px; }

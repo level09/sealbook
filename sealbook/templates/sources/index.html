@@ -33,7 +33,7 @@
 .src-tile.src-cur { outline: 2px solid rgb(var(--v-theme-primary)); border-radius: 6px; }
 .src-hints { display: flex; gap: 14px; flex-wrap: wrap; padding: 6px 12px; font-size: 12px; color: rgba(var(--v-theme-on-surface), .6); border-top: 1px solid var(--app-line); }
 .src-hints kbd { font: inherit; border: 1px solid var(--app-line-strong); border-radius: 4px; padding: 0 4px; margin-right: 4px; }
-@media (max-width: 600px) { .src-trunc { max-width: 180px; } .src-search { min-width: 0 !important; flex: 1 1 100%; max-width: none !important; } }
+@media (max-width: 600px) { .src-trunc, .src-pass .src-trunc { max-width: 180px; } .src-search { min-width: 0 !important; flex: 1 1 100%; max-width: none !important; } }
 </style>
 {% endblock %}
 {% block content %}

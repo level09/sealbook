@@ -6,13 +6,15 @@
 <style>
     .mon.ppl { height: auto; min-height: calc(100dvh - var(--v-layout-top, 64px)); display: block; overflow: visible; padding: 16px; }
     .ppl-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; }
-    @media (max-width: 900px) { .ppl-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { .ppl-grid { grid-template-columns: minmax(0, 1fr); } }
     .ppl-card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin-bottom: 16px; }
     .ppl-card h2 { font-size: 13px; font-weight: 600; margin: 0 0 8px; }
     .ppl-map { position: relative; height: 360px; border-radius: 4px; overflow: hidden; }
     .ppl-line { display: flex; gap: 8px; align-items: baseline; padding: 4px 6px; border-radius: 4px; cursor: pointer; width: 100%; text-align: start; background: none; border: 0; }
     .ppl-line:hover, .ppl-line:focus-visible { background: var(--wash); }
     .ppl-line .when { min-width: 92px; color: var(--ink-3); font-family: var(--mono); font-size: 12px; }
+    /* Phones: the source goes on its own line under the fact. */
+    @media (max-width: 599px) { .ppl-line { flex-wrap: wrap; } .ppl-line > a, .ppl-line > .muted:last-child { flex-basis: 100%; } }
     .ppl-gap { margin: 4px 0 4px 6px; padding: 4px 8px; border-inline-start: 2px dashed var(--line-strong); color: var(--ink-3); }
     .ppl-side-row { cursor: default; }
     .ppl-fork { color: var(--fork); font-weight: 600; }
