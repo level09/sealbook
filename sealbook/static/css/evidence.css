@@ -123,6 +123,17 @@ body.dark-mode .evp {
 .ev-pline .ev-pv.two { white-space: pre-line; unicode-bidi: plaintext; text-align: start; }
 .ev-pline .ev-at { flex: none; }
 .ev-pline.ev-line { color: var(--ink-2); }
+/* Description lines: numbered so a review can say "line 3", a hairline between them. */
+.ev-lines { list-style: none; margin: 0; padding: 0; }
+.ev-lines li + li { border-top: 1px solid var(--line); }
+.ev-lines .ev-pline { padding: 7px 6px; border-radius: 0; box-shadow: inset 2px 0 0 transparent; }
+.ev-lines .ev-pline.sel { background: var(--wash); box-shadow: inset 2px 0 0 var(--agent); color: var(--ink); }
+.ev-n { flex: none; width: 14px; font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--ink-3); text-align: end; }
+.ev-st { flex: none; width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--agent-line); align-self: center; }
+.ev-st.tier-accepted, .ev-st.tier-corroborated { background: var(--accepted); border-color: var(--accepted); }
+.ev-st.tier-rejected { background: var(--line-strong); border-color: var(--line-strong); }
+.ev-src { flex: none; font-size: 14px; color: var(--ink-3); opacity: .45; align-self: center; }
+.ev-pline:hover .ev-src, .ev-pline.sel .ev-src, .ev-pline:focus-visible .ev-src { opacity: 1; color: var(--agent); }
 .ev-pline:hover, .ev-pline:focus-visible, .ev-pline.hov { background: var(--wash); }
 .ev-pline:focus-visible, .ev-label:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 .ev-plab { font-size: 12px; color: var(--ink-3); }

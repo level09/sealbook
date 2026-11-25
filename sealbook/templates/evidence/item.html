@@ -73,13 +73,16 @@
               <button v-for="t in triage.kind" :key="t" type="button" class="ev-label seen" @click="openSpan(pass.triage)" @mouseenter="hov = pass.triage.id" @mouseleave="hov = null">${ t }</button></template>
             <button v-for="c in pass.alleged" :key="c.id" type="button" class="ev-label" :class="{hov: hov === c.id}" :title="'Alleged: the source says so and the item partly supports it. ' + at(c)" @click="openSpan(c)" @mouseenter="hov = c.id" @mouseleave="hov = null">${ c.value.replace(/^Alleged: (Type, )?/, '') }</button>
           </div>
-          <button v-for="c in pass.lines" :key="c.id" type="button" class="ev-pline ev-line" :class="{hov: hov === c.id}" @click="openSpan(c)" @mouseenter="hov = c.id" @mouseleave="hov = null"><span class="ev-pv">${ c.value ?? masked }</span><span class="ev-at">${ at(c) }</span></button>
+          <template v-if="pass.lines.length"><span class="ev-plab d-block mt-3 mb-1">What it shows</span>
+          <ol class="ev-lines">
+            <li v-for="(c, n) in pass.lines" :key="c.id"><button type="button" class="ev-pline ev-line" :class="{hov: hov === c.id, sel: sel === c.id}" :aria-label="'Line ' + (n + 1) + ', ' + (c.tier === 'unconfirmed' ? 'open' : c.tier) + '. Show where it rests'" @click="openSpan(c)" @mouseenter="hov = c.id" @mouseleave="hov = null"><span class="ev-n">${ n + 1 }</span><span class="ev-pv">${ c.value ?? masked }</span><span class="ev-at">${ at(c) }</span><span class="ev-st" :class="'tier-' + c.tier" :title="c.tier === 'unconfirmed' ? 'Open' : c.tier"></span><i class="ti ti-text-scan-2 ev-src" aria-hidden="true"></i></button></li>
+          </ol></template>
           <div v-if="pass.seen.length" class="d-flex flex-wrap ga-1 mt-2 align-center"><span class="ev-plab">Seen</span><button v-for="c in pass.seen" :key="c.id" type="button" class="ev-label seen" :class="{hov: hov === c.id}" title="Visible in the item; click to see where" @click="openSpan(c)" @mouseenter="hov = c.id" @mouseleave="hov = null">${ c.value.replace(/^Seen: /, '') }</button></div>
           <div v-if="pass.open.length" class="d-flex ga-2 flex-wrap mt-3">
-            <v-btn size="small" color="primary" prepend-icon="ti ti-signature" :loading="busy" @click="acceptPass">Accept the first pass</v-btn>
+            <v-btn size="small" color="primary" prepend-icon="ti ti-signature" :loading="busy" title="Signs every line still open. If some are wrong, decide them one at a time in the list below." @click="acceptPass">Accept the first pass</v-btn>
             <v-btn v-if="pass.triage" size="small" variant="outlined" prepend-icon="ti ti-users" @click="peerReview">${ threadFor(pass.triage) ? 'Review thread' : 'Send for peer review' }</v-btn>
           </div>
-          <p v-if="pass.open.length" class="muted text-body-small mt-2 mb-0">Click any line to see what it rests on. Accepting signs every line still open; decide one line at a time in the list below instead if some are wrong.</p>
+          <p v-if="pass.open.length" class="muted text-body-small mt-2 mb-0">Click a line to see its source. Accepting signs every open line.</p>
         </div>
         <div v-if="claims.length" role="listbox" aria-label="Claims, j and k to move">
           <template v-for="g in groups" :key="g.subject">
