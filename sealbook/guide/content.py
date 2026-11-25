@@ -554,6 +554,27 @@ SCENARIOS = [
         "links you to set one up.",
     },
     {
+        "id": "add-a-claim-you-read",
+        "area": "decide",
+        "title": "Add a claim the first pass missed",
+        "who": "You read something in a source that no claim says yet.",
+        "steps": [
+            "Open the source's page and select the words in its text, or in the "
+            "text read from a PDF page or a picture.",
+            "Press Add a claim from these words.",
+            "Pick the field, whom it is about or someone new, and a date if the "
+            "words give one.",
+            "Sign with your passkey. The claim points at the exact words you "
+            "selected and counts as accepted.",
+        ],
+        "ai": ["Nothing. You read the words and you sign."],
+        "you": ["The words, the field, the person and the date."],
+        "result": "A signed claim pinned to the characters you selected.",
+        "links": [{"label": "Sources", "href": "/sources"}],
+        "needs": "Reveal a sensitive source first. Transcripts and spreadsheet "
+        "cells do not offer this yet.",
+    },
+    {
         "id": "decide-together",
         "area": "decide",
         "title": "Ask a colleague and decide together",
@@ -725,6 +746,30 @@ SCENARIOS = [
         "needs": AGENTS_OFF,
     },
     {
+        "id": "ask-the-case",
+        "area": "agents",
+        "title": "Ask the case a question",
+        "who": "You want an answer from the whole case, not one source at a time.",
+        "steps": [
+            "Open the case Overview and write your question under Ask this case.",
+            "An agent reads every claim in the case and answers in two to six "
+            "sentences. Each sentence shows the sources it rests on.",
+            "Open N claims cited under a sentence to see each claim, and open a "
+            "source to check it there.",
+            "A sentence that rests on a sensitive source stays hidden until you "
+            "open that source; the look is logged.",
+            "One question runs at a time. Your last five stay on the page.",
+        ],
+        "ai": [
+            "The sentences and the claims they cite. A sentence that cites nothing "
+            "is dropped."
+        ],
+        "you": ["Whether the answer holds. Nothing in it is accepted."],
+        "result": "A short answer you can check claim by claim.",
+        "links": [{"label": "Case Overview", "href": "/cases/overview"}],
+        "needs": AGENTS_OFF,
+    },
+    {
         "id": "find-gaps",
         "area": "agents",
         "title": "Find silences in a record",
@@ -845,6 +890,26 @@ SCENARIOS = [
         ],
         "needs": "Erasure hides values and blocks derived copies; it does not yet "
         "delete stored bytes from disk.",
+    },
+    {
+        "id": "export-a-chronology",
+        "area": "share",
+        "title": "Take a case's chronology away",
+        "who": "You need the case in date order, outside Sealbook.",
+        "steps": [
+            "Open the case Overview and press Chronology, Excel.",
+            "The spreadsheet lists every accepted or corroborated claim in date "
+            "order: when, who, what, the value, the place and the source.",
+            "Each source links back to its page in Sealbook. Claims without a date "
+            "sit on a second sheet.",
+            "A value from a sensitive source you have not revealed is withheld. "
+            "The download is logged.",
+        ],
+        "ai": ["Nothing. Only claims a person accepted or sources corroborated."],
+        "you": ["Which case, and which sensitive sources to reveal first."],
+        "result": "An Excel file of the case in date order, each row linked to "
+        "its source.",
+        "links": [{"label": "Case Overview", "href": "/cases/overview"}],
     },
     {
         "id": "package-for-a-partner",

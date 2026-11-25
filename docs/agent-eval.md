@@ -563,6 +563,27 @@ roster's recorded leave is now a claim (`petra_roster.leave`); on the case witho
 it the routine rule flags Petra Coyle's 70 days (1 planted non-gap flagged, 3
 detected), which nothing in the record explained.
 
+## Competing accounts, 2026-11-25
+
+Can a model rank the true account of a case first from its claims alone? Each of
+the four local synthetic cases got its planted true account beside one or two
+rivals (`case-never-there`: the yard; `case-four-names`: one man;
+`case-unwritten-name`: gone; `case-old-footage`: old footage). Ask's screen kept the
+claims that bear on the accounts, then one call per account order listed, for each
+account, the claims that support it, the claims that contradict it, and what would
+settle it, without picking a winner. Accounts ranked by fewest contradictions, then
+most supports. Pass, set before the run: the true account first in at least 6 of 8
+runs (4 cases, 2 orders), and every citation resolving.
+
+Result: 5 of 8, and 9 citations that resolve to nothing, all in
+`case-unwritten-name` (671 claims). It fails both. The order the accounts were
+listed in changed the winner in `case-never-there` and `case-old-footage`. Where no
+claim contradicted either account the two tied, and the support count then favoured
+the account with more but weaker claims (old footage: 14 supports against 1).
+
+Decision: no ranked case-account page on this method. The "what would settle it"
+line read well in every run and is the part worth testing on its own.
+
 ## Known gaps
 
 - One synthetic case, 132 claims. The numbers say nothing about archive scale or

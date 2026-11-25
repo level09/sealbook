@@ -365,6 +365,21 @@ the statements kept when the finding was accepted, people carry their roles, the
 finding that built it is listed with its band, and the history groups the one
 gesture that signed it all. The analyst who signed it can undo it there.
 
+## Ask the case, add what was missed, take it away
+
+Open the Overview of `case-demo-02`. Under Ask this case, ask "Who was held at
+Branch 999, and when?". The answer comes back in a few sentences; notice that each sentence
+shows the sources it rests on and folds out the claims it cites, and that nothing in
+it is accepted. Asking needs the agent model; without it the panel says so.
+
+Open a text source and select a few words that no claim covers. Add a claim from
+these words asks for the field, the person and a date, then your passkey; the claim
+points at exactly those characters.
+
+Back on the Overview, Chronology, Excel downloads every accepted or corroborated
+claim in date order, each row linked to its source. Values from sensitive sources
+you have not revealed are withheld, and the download is logged.
+
 ## Package
 
 Open `/packages`. The family brief "Yousef Khaled Al-Ali and Lina Omar Al-Najjar:
