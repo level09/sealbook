@@ -19,7 +19,13 @@ from sealbook.discovery import findings as discovery
 from sealbook.discovery.models import FindingKey
 from sealbook.discovery.service import available
 from sealbook.ledger import write
-from sealbook.ledger.contracts import DETENTION_PROPS, Prop, StatementIn, Tier
+from sealbook.ledger.contracts import (
+    DETENTION_PROPS,
+    EXTRACTED_PROPS,
+    Prop,
+    StatementIn,
+    Tier,
+)
 from sealbook.ledger.models import Blob, Payload, Principal, Statement, StatementTier
 from sealbook.ledger.offline_sigs import GESTURE_MAX
 from sealbook.monitor import data
@@ -755,6 +761,9 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
             and props.get(_about(s.subject)) == Prop.CONCLUSION
         ):
             return f"withdraw the conclusion: {v['reason']}"
+        if s.prop in EXTRACTED_PROPS:
+            when = f", {data.when(s.valid_from, s.valid_to)}" if s.valid_from else ""
+            return f"{s.prop.replace('_', ' ')} \u201c{v['text']}\u201d{when}, from the words you selected"
         return f"undo {short(s.subject)}"
 
     return [

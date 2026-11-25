@@ -119,8 +119,8 @@
           <v-tabs-window-item value="read"><div class="pa-3">
             <div v-if="excerpt" class="mb-3"><p class="ev-note mb-1">Opened at the passage you searched for${ boot.segment.location.page ? ', page ' + boot.segment.location.page : '' }. Extracted text: check it against the original</p><div class="ev-tx" dir="auto">${ excerpt.before }<mark class="hit">${ excerpt.match }</mark>${ excerpt.after }</div></div>
             <p v-if="!it.revealed" class="ev-note">Show the sensitive item to read the text taken from it. Its values stay masked until then.</p>
-            <template v-else-if="it.kind === 'image'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text a model read from the image; check it against the scan</p><div class="ev-tx" dir="auto">${ p.text }</div></div></template><p v-else class="ev-note mb-2">Values were read per region of the image and each is boxed on it; no text was read from it. Point at a box or a value to see its pair.</p></template>
-            <template v-else-if="it.kind === 'pdf'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text layer, page ${ p.location.page }</p><div class="ev-tx" dir="auto">${ p.text }</div></div></template><p v-else class="ev-note">No text layer was read from this PDF.</p></template>
+            <template v-else-if="it.kind === 'image'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text a model read from the image; check it against the scan</p><div class="ev-tx" dir="auto" :data-blob="p.text_blob">${ p.text }</div></div></template><p v-else class="ev-note mb-2">Values were read per region of the image and each is boxed on it; no text was read from it. Point at a box or a value to see its pair.</p></template>
+            <template v-else-if="it.kind === 'pdf'"><template v-if="read?.passages.length"><div v-for="p in read.passages" :key="p.text_blob" class="mb-2"><p class="ev-note mb-1">Text layer, page ${ p.location.page }</p><div class="ev-tx" dir="auto" :data-blob="p.text_blob">${ p.text }</div></div></template><p v-else class="ev-note">No text layer was read from this PDF.</p></template>
             <template v-else-if="it.kind === 'audio'"><p class="ev-note mb-2">${ speechSaid }</p><div v-if="spoken.length" class="ev-tx" dir="auto"><div v-for="p in spoken" :key="p.text_blob"><a href="#" class="mono" @click.prevent="focusMs = p.location.ms[0]">${ ms(p.location.ms[0]) }</a> ${ p.text }</div></div></template>
             <template v-else-if="it.kind === 'video'"><p class="ev-note mb-2">${ speechSaid } On-screen text is not read as text. ${ plural(it.segments.filter(s => s.kind === 'frame').length, 'frame') } and ${ plural(it.segments.filter(s => s.kind === 'audio').length, 'audio window') } were embedded for search.</p>
               <div v-if="spoken.length" class="ev-tx mb-2" dir="auto"><div v-for="p in spoken" :key="p.text_blob"><a href="#" class="mono" @click.prevent="focusMs = p.location.ms[0]">${ ms(p.location.ms[0]) }</a> ${ p.text }</div></div>
@@ -241,6 +241,18 @@
           <v-textarea v-model="ask.reason" label="What should they check?" rows="3" auto-grow></v-textarea>
         </v-card-text>
         <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="ask.open = false">Cancel</v-btn><v-btn color="primary" variant="flat" :disabled="!ask.reviewer || !ask.reason.trim()" :loading="ask.busy" @click="sendAsk">Send request</v-btn></v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-btn v-if="handPick" class="ev-hand-pick" :style="{left: handPick.x + 'px', top: handPick.y + 'px'}" size="small" color="primary" variant="flat" prepend-icon="ti ti-text-plus" @mousedown.prevent @click="openHand">Add a claim from these words</v-btn>
+    <v-dialog v-model="hand.open" max-width="480">
+      <v-card title="Add a claim you read">
+        <v-card-text>
+          <p class="ev-note mb-3">Written in the source as <bdi dir="auto">“${ hand.quote }”</bdi>. The claim points at these words and is signed as yours, so it counts as accepted.</p>
+          <v-select v-model="hand.prop" :items="handFields" label="What the words give" class="mb-2" hide-details="auto"></v-select>
+          <v-select v-if="hand.prop && !handDocument" v-model="hand.person" :items="handPeople" label="About whom" class="mb-2" hide-details="auto"></v-select>
+          <v-text-field v-if="hand.prop && hand.prop !== 'birth_date' && hand.prop !== 'document_date'" v-model="hand.valid" label="When it held (optional)" placeholder="2013, 2013-09 or 2013-09-17" hide-details="auto"></v-text-field>
+        </v-card-text>
+        <v-card-actions><v-spacer></v-spacer><v-btn variant="text" @click="hand.open = false">Cancel</v-btn><v-btn color="primary" variant="flat" prepend-icon="ti ti-key" :disabled="!hand.prop" :loading="hand.busy" @click="signHand">Sign with passkey</v-btn></v-card-actions>
       </v-card>
     </v-dialog>
     <v-dialog v-model="relate.open" max-width="420">

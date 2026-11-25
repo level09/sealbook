@@ -641,6 +641,53 @@ class ConclusionTest(unittest.IsolatedAsyncioTestCase):
             (dropped["uncited"], dropped["unknown"], dropped["text"]), (1, 1, 1)
         )
 
+    # --- a claim read by hand -------------------------------------------------------
+
+    async def test_a_person_signs_a_claim_on_the_words_they_selected(self):
+        client = await self.client()
+        sha, body = self.seed.blobs["vendors"], TEXTS["vendors"]
+        start = body.index("Bel")
+        item = {
+            "sha": sha,
+            "blob": sha,
+            "start": start,
+            "end": start + 3,
+            "quote": "Bel",
+            "prop": "father_name",
+            "person": self.person["vendors"],
+            "valid": None,
+        }
+        # The words must be the stored text at those offsets.
+        code, _ = await self.post(
+            client, "/api/review/handclaim/options", item | {"quote": "Cor"}
+        )
+        self.assertEqual(code, 400)
+        # A person this source does not name is refused.
+        code, _ = await self.post(
+            client,
+            "/api/review/handclaim/options",
+            item | {"person": self.person["surveyors"]},
+        )
+        self.assertEqual(code, 400)
+        code, out = await self.sign(client, "/api/review/handclaim/options", item)
+        self.assertEqual(code, 200, out)
+        async with ext.async_session_factory() as s:
+            [made] = out["statements"]
+            st = await s.get(Statement, uuid.UUID(made["id"]))
+            tier = await s.scalar(
+                select(StatementTier.tier).where(StatementTier.statement_id == st.id)
+            )
+            value = await s.scalar(
+                select(Payload.value).where(Payload.commitment == st.commitment)
+            )
+        self.assertEqual((st.subject, st.prop), (self.person["vendors"], "father_name"))
+        self.assertEqual(
+            (st.span_blob, st.span), (sha, {"start": start, "end": start + 3})
+        )
+        self.assertEqual(value, {"text": "Bel", "lang": "und"})
+        self.assertEqual(tier, Tier.ACCEPTED)
+        self.assertIsNone(st.run_id)
+
     # --- packages ----------------------------------------------------------------
 
     async def test_package_opens_with_the_case_conclusion(self):

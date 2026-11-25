@@ -29,6 +29,11 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const FOLD_PLACE = 3;
 // A name on more rows than this shows its first row, the rest folded under one line.
 const FOLD_NAME = 3;
+// Fields a person may read off the text by hand, as the reader proposes them; the
+// document's own fields are about the document, the rest about a person.
+const HAND_DOCUMENT = ['document_type', 'document_date'];
+const HAND_FIELDS = ['name', 'birth_date', 'place_of_birth', 'father_name', 'mother_name', 'sex', 'age', 'occupation',
+  'arrested_at', 'detained_at', 'detention_branch', 'transferred_to', 'seen_at', 'last_seen', 'event', ...HAND_DOCUMENT];
 // Only a lead by meaning is hidden when weak; a weak fingerprint copy still shows.
 const weakLead = r => r.kind === 'Nearest by meaning' && r.strength === 'weak';
 // The words the Guide uses for each witness and receipt state.
@@ -47,6 +52,7 @@ export function mount(boot) {
       return {boot, masked: MASKED, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
         cursor: {list: 'claims', i: -1}, excerpt: null, threadId: null, thread: null, threadBusy: false, comment: '',
         ask: {open: false, statement: null, reviewer: null, reason: '', busy: false, span: null, quote: ''}, analysts: [], locating: null, relate: {open: false, row: null, value: 'same_recording'},
+        handPick: null, hand: {open: false, blob: null, start: 0, end: 0, quote: '', prop: null, person: 'new', valid: '', busy: false},
         snack: {show: false, text: ''}, hov: null, proof: {open: false, claim: null, data: null, error: '', busy: false}, locations: [], people: [], viewers: {}, working: false, unfolded: {}, showWeak: false, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
     },
     computed: {
@@ -130,6 +136,13 @@ export function mount(boot) {
         }
         return out;
       },
+      // Whom a claim read by hand may be about: the people this source names, or someone new.
+      handPeople() {
+        return [...this.nameGroups.filter(g => !g.fold && g.subject.startsWith('person:')).map(g => ({value: g.subject, title: g.name})),
+          {value: 'new', title: 'Someone this source has no record for yet'}];
+      },
+      handFields() {return HAND_FIELDS.map(f => ({value: f, title: prop(f)}));},
+      handDocument() {return HAND_DOCUMENT.includes(this.hand.prop);},
       groups() {return this.nameGroups.flatMap(x => x.fold && this.unfolded[x.key] ? [x, ...x.rest] : [x]);},
       ordered() {return this.groups.flatMap(g => g.claims);},
       pins() {return this.claims.filter(c => c.tier !== 'rejected' && c.value);},
@@ -359,6 +372,46 @@ export function mount(boot) {
       // A person can point at the words themselves, in the text on screen.
       canLocate(c) {return this.autoRejected(c) && c.actor.agent && !!c.value && c.span_blob === this.it.sha256 && this.read?.text != null && this.it.kind !== 'web';},
       locateIn(c) {this.locating = c.id; this.say('Select the words in the text, then press Use these words');},
+      // Selected words in the source's own text or in text read from it offer a claim
+      // the person reads themselves; offsets count the text exactly as the server stores it.
+      pickWords() {
+        clearTimeout(this.pickTimer);
+        this.pickTimer = setTimeout(() => {
+          const sel = getSelection();
+          this.handPick = null;
+          if (this.locating || this.hand.open || !sel.rangeCount || sel.isCollapsed || !this.read) return;
+          const r = sel.getRangeAt(0), node = r.commonAncestorContainer;
+          const box = (node.nodeType === 1 ? node : node.parentElement)?.closest('.ev-txt, .ev-tx[data-blob]');
+          if (!box || !box.contains(sel.anchorNode) || !box.contains(sel.focusNode)) return;
+          const blob = box.dataset.blob || this.it.sha256;
+          const text = box.dataset.blob ? this.read.passages.find(x => x.text_blob === blob)?.text : this.read.text;
+          if (text == null) return;
+          const before = document.createRange();
+          before.setStart(box, 0); before.setEnd(r.startContainer, r.startOffset);
+          const raw = r.toString(), lead = raw.length - raw.trimStart().length, quote = raw.trim();
+          const start = before.toString().length + lead, end = start + quote.length;
+          if (!quote || quote.length > 500 || text.slice(start, end) !== quote) return;
+          const at = r.getBoundingClientRect();
+          this.handPick = {blob, start, end, quote, x: Math.max(8, Math.min(at.left, innerWidth - 200)), y: Math.min(at.bottom + 6, innerHeight - 48)};
+        }, 120);
+      },
+      openHand() {
+        const p = this.handPick, people = this.handPeople;
+        this.hand = {open: true, ...p, prop: null, person: people.length > 1 ? people[0].value : 'new', valid: '', busy: false};
+        this.handPick = null;
+      },
+      async signHand() {
+        const h = this.hand;
+        h.busy = true;
+        try {
+          await attest({sha: this.it.sha256, blob: h.blob, start: h.start, end: h.end, quote: h.quote, prop: h.prop,
+            person: this.handDocument ? null : h.person, valid: h.valid.trim() || null}, '/api/review/handclaim/options');
+          h.open = false;
+          getSelection().removeAllRanges();
+          this.say('Your claim is added, signed with your passkey');
+          await this.refresh();
+        } catch (err) {this.say(err.message);} finally {h.busy = false;}
+      },
       async useSelection(c) {
         const box = this.$refs.viewer?.$el.querySelector('.ev-txt'), sel = getSelection();
         if (!box || !sel.rangeCount || sel.isCollapsed || !box.contains(sel.anchorNode) || !box.contains(sel.focusNode)) {this.say('Select the words in the text first'); return;}
@@ -435,6 +488,8 @@ export function mount(boot) {
     async mounted() {
       if (location.pathname.startsWith('/evidence/segments/')) history.replaceState(null, '', `/evidence/${boot.sha}?segment=${boot.segment.id}${boot.segment.span ? `&start=${boot.segment.span.start}&end=${boot.segment.span.end}` : ''}`);
       document.addEventListener('keydown', this.key);
+      document.addEventListener('selectionchange', this.pickWords);
+      addEventListener('scroll', () => {this.handPick = null;}, {capture: true, passive: true});
       await this.load();
       if (this.it) this.follow();
       // A colleague's change to this item reloads it; their tab open on it shows here.

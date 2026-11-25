@@ -22,7 +22,7 @@ from sealbook.ledger import attest, offline_sigs, write
 from sealbook.ledger.contracts import Event, Prop, Refused, StatementIn
 from sealbook.ledger.models import Acquisition, RunEvent, Statement, StatementTier
 from sealbook.monitor import data
-from sealbook.review import events, findings, firstpass, queue, todo
+from sealbook.review import events, findings, firstpass, handclaim, queue, todo
 
 review = Blueprint("review", __name__)
 
@@ -566,6 +566,13 @@ async def first_pass_accept():
     return await _planned(
         lambda db, who: firstpass.plan(db, current_user, item.get("sha"), who)
     )
+
+
+@review.post("/api/review/handclaim/options")
+async def hand_claim():
+    """A claim the person reads off a source's text themselves, signed as theirs."""
+    item = await _item()
+    return await _planned(lambda db, who: handclaim.plan(db, current_user, item, who))
 
 
 @review.post("/api/review/firstpass/imported/options")

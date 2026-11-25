@@ -160,3 +160,5 @@ body.dark-mode .evp {
 .ev-n-del { color: var(--negative); text-decoration: line-through; text-decoration-thickness: 1px; }
 .ev-n-note { color: var(--ink-2); font-style: italic; }
 .ev-label.seen { border-style: solid; color: var(--ink); }
+/* Selected words in the text offer a claim the person reads themselves. */
+.ev-hand-pick { position: fixed; z-index: 2400; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
