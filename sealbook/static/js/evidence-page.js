@@ -29,6 +29,8 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const FOLD_PLACE = 3;
 // A name on more rows than this shows its first row, the rest folded under one line.
 const FOLD_NAME = 3;
+// Only a lead by meaning is hidden when weak; a weak fingerprint copy still shows.
+const weakLead = r => r.kind === 'Nearest by meaning' && r.strength === 'weak';
 // The words the Guide uses for each witness and receipt state.
 const WITNESS = {ots: 'OpenTimestamps', tsa: 'Time-stamp authority', partner: 'Partner copy'};
 const RECEIPT = {held: 'Receipt held', pending: 'Receipt held, waiting for Bitcoin', failed: 'Not sent yet, retried next run', unsent: 'Not sent yet'};
@@ -45,7 +47,7 @@ export function mount(boot) {
       return {boot, masked: MASKED, it: null, other: null, read: null, otherRead: null, error: '', readError: '', otherReadError: '', tab: 'read', drawer: false, sel: null,
         cursor: {list: 'claims', i: -1}, excerpt: null, threadId: null, thread: null, threadBusy: false, comment: '',
         ask: {open: false, statement: null, reviewer: null, reason: '', busy: false, span: null, quote: ''}, analysts: [], locating: null, relate: {open: false, row: null, value: 'same_recording'},
-        snack: {show: false, text: ''}, hov: null, proof: {open: false, claim: null, data: null, error: '', busy: false}, locations: [], people: [], viewers: {}, working: false, unfolded: {}, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
+        snack: {show: false, text: ''}, hov: null, proof: {open: false, claim: null, data: null, error: '', busy: false}, locations: [], people: [], viewers: {}, working: false, unfolded: {}, showWeak: false, busy: false, research: false, pdfPage: boot.segment?.location?.page || boot.page || null, focusMs: boot.segment?.location?.ms?.[0] ?? null};
     },
     computed: {
       claims() {return this.it ? this.it.claims.map(c => ({...c, label: prop(c.prop), value: this.read?.values?.[c.id] ?? c.display})) : [];},
@@ -146,16 +148,19 @@ export function mount(boot) {
       besideWhy() {
         const c = this.otherCopy;
         if (c) return `${c.kind}: ${c.why}.` + (this.it.kind !== 'image' ? ` A at ${ms(c.here[0])}, B at ${ms(c.there[0])}.` : '');
-        const r = this.relations.find(x => x.other === this.other.sha256);
+        const r = this.it.relations.find(x => x.other === this.other.sha256);
         if (!r) return 'Opened together. Each side marks its own claims.';
         return `${r.kind}${/[?.]$/.test(r.kind) ? '' : '.'} ${this.relWhy(r, 'in A', 'in B')}`;
       },
       otherAt() {return this.boot.at ?? this.otherCopy?.there?.[0] ?? null;},
       otherMarks() {const c = this.otherCopy; return c ? [[c.there[0], Math.max(c.there[1], c.there[0] + 1000)]] : this.otherAt != null ? [[this.otherAt, this.otherAt + 2000]] : [];},
+      // Leads by meaning from 0.30 on almost never shared a person when measured, so
+      // they wait behind a toggle instead of sitting beside real links.
+      weakLeads() {return (this.it?.relations || []).filter(weakLead).length;},
       relations() {
         if (!this.it) return [];
         const out = [], folded = new Set();
-        for (const r of this.it.relations) {
+        for (const r of this.it.relations.filter(r => this.showWeak || !weakLead(r))) {
           if (r.kind !== 'Same place' || r.sources <= FOLD_PLACE) {out.push(r); continue;}
           if (!folded.has(r.place)) {folded.add(r.place); out.push({id: `fold:${r.place}`, fold: true, key: r.place, place: r.place, at_place: r.at_place, sources: r.sources});}
           if (this.unfolded[r.place]) out.push({...r, nested: true});
@@ -165,7 +170,7 @@ export function mount(boot) {
       connections() {
         if (!this.it) return [];
         const seen = new Set();
-        return [...this.it.copies, ...this.it.relations].filter(r => r.other && r.other !== this.it.sha256 && !seen.has(r.other + r.kind) && seen.add(r.other + r.kind))
+        return [...this.it.copies, ...this.it.relations].filter(r => !weakLead(r) && r.other && r.other !== this.it.sha256 && !seen.has(r.other + r.kind) && seen.add(r.other + r.kind))
           .map(r => ({key: r.other + r.kind, kind: r.kind === 'Nearest by meaning' ? 'Similar meaning' : r.kind, o: this.it.docs[r.other], href: this.side(r)}));
       },
       work() {return this.it?.work.assignment;},

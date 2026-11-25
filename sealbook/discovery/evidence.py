@@ -46,10 +46,11 @@ from sealbook.places import resolve
 from sealbook.settings import Config
 from sealbook.sheets.parse import MIMES as SHEETS
 
-# ponytail: strength bands carried over from the approved mockup, not calibrated
-# against labelled pairs. Replace with measured cut-offs once reviewers have
-# decided enough copies and leads to fit them.
-NEAR_CLOSE, NEAR_MODERATE = 0.25, 0.4
+# Bands for a lead by meaning, measured on the demo's synthetic cases (2026-11-25,
+# 336 leads, see docs/decisions.md): under 0.20 about half the pairs name the same
+# person, 0.20 to 0.30 about one in five, from 0.30 none. They hold for the active
+# embedding model only; measure again when it changes.
+NEAR_CLOSE, NEAR_POSSIBLE = 0.20, 0.30
 SOUND_STRONG_LANDMARKS = 4
 SAME_PERSON_STRONG_BASIS = 5
 # ponytail: nearest neighbours for at most this many segments of the item (one
@@ -187,7 +188,7 @@ def where(kind: str, location: dict) -> str:
 def band(distance: float) -> str:
     if distance < NEAR_CLOSE:
         return "close"
-    return "moderate" if distance < NEAR_MODERATE else "weak"
+    return "possible" if distance < NEAR_POSSIBLE else "weak"
 
 
 async def family(db, sha: str) -> list[str]:
@@ -627,7 +628,7 @@ def lead(kind, location, source, their_kind, theirs, d, mine=None, other=None):
         why = f"Here: {here}. There: {there}."
     else:
         why = (
-            f"{where(kind, location)} here is close to "
+            f"Retrieved by meaning: {where(kind, location)} here and "
             f"{where(their_kind, theirs)} there. A lead, not a match."
         )
     return {

@@ -70,6 +70,8 @@ WEIGHT = {
     "close": 2,
     "moderate": 1,
 }
+# A lead by meaning under NEAR_ALONE may stand alone; under NEAR_LEAD it only adds.
+NEAR_ALONE, NEAR_LEAD = 0.25, 0.4
 KINDS = (
     "same event",
     "same person",
@@ -334,13 +336,15 @@ def candidates(g: Seen, focus: set[str]) -> list[dict]:
             if p and p not in cand["passages"][side]:
                 cand["passages"][side].append(p)
 
-    # (a) by meaning, labelled as the weaker lead the evidence page calls it
+    # (a) by meaning. The Noticer keeps its own cut-offs: the evidence page's
+    # measured bands were not evaluated as a candidate policy, and a model judges
+    # every pair here anyway.
     for a in focus:
         for p in g.near.get(a, []):
             kind, location, b, their_kind, theirs, d = p["row"]
-            band = evidence.band(d)
-            if band == "weak":
+            if d >= NEAR_LEAD:
                 continue
+            band = "close" if d < NEAR_ALONE else "moderate"
             add(
                 a,
                 b,

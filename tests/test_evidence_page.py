@@ -306,10 +306,15 @@ class RelationRowsTest(unittest.TestCase):
         row = evidence.lead("text", {}, "b" * 64, "text", {}, 0.21637)
         self.assertEqual(
             row["why"],
-            "a passage here is close to a passage there. A lead, not a match.",
+            "Retrieved by meaning: a passage here and a passage there. A lead, not a match.",
         )
         self.assertNotIn("0.2", row["why"])
-        self.assertEqual((row["strength"], row["distance"]), ("close", 0.2164))
+        self.assertEqual((row["strength"], row["distance"]), ("possible", 0.2164))
+        # The measured bands: close under 0.20, possible to 0.30, weak from there.
+        self.assertEqual(
+            [evidence.band(d) for d in (0.19, 0.2, 0.29999, 0.3)],
+            ["close", "possible", "possible", "weak"],
+        )
         # Readable passages are quoted instead, so the reader sees what is alike.
         quoted = evidence.lead(
             "text", {}, "b" * 64, "text", {}, 0.2, "held at Branch 999", "الفرع 999"

@@ -111,7 +111,7 @@
         <v-tabs v-model="tab" density="compact" grow color="primary">
           <v-tab value="read">Read <span class="ms-1 muted">${ pins.length }</span></v-tab>
           <v-tab value="dups">Copies <span class="ms-1 muted">${ it.copies.length }</span></v-tab>
-          <v-tab value="rel">Relations <span class="ms-1 muted">${ it.relations.length }</span></v-tab>
+          <v-tab value="rel">Relations <span class="ms-1 muted">${ it.relations.length - weakLeads }</span></v-tab>
           <v-tab value="meta">Metadata</v-tab>
         </v-tabs>
         <v-divider></v-divider>
@@ -157,7 +157,8 @@
                 <v-btn v-if="r.other && r.other !== it.sha256" size="x-small" variant="outlined" prepend-icon="ti ti-layout-columns" :href="side(r)">Side by side</v-btn></div>
             </div>
             </template>
-            <v-empty-state v-if="!relations.length" icon="ti ti-affiliate" title="No relations yet" text="Same person proposals, places resolved here and nearest items by meaning appear once this source is indexed."></v-empty-state>
+            <v-btn v-if="weakLeads" class="ma-3" size="small" variant="text" :prepend-icon="showWeak ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" @click="showWeak = !showWeak">${ showWeak ? 'Hide weaker leads' : 'Weaker leads by meaning (' + weakLeads + ')' }</v-btn>
+            <v-empty-state v-if="!relations.length && !weakLeads" icon="ti ti-affiliate" title="No relations yet" text="Same person proposals, places resolved here and nearest items by meaning appear once this source is indexed."></v-empty-state>
           </v-tabs-window-item>
           <v-tabs-window-item value="meta">
             <dl class="ev-kv">

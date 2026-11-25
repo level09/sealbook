@@ -118,6 +118,24 @@ what the case accepted and the claims that do not fit; the model words them, cit
 handles only, and a misfit it leaves out is kept in the rules' words, because arguing
 against a conclusion must not depend on the model's choice.
 
+## Leads by meaning on the evidence page (2026-11-25)
+
+The page lists up to six other sources nearest in meaning, however far. In a small
+case about one subject every source has a nearest neighbour, so unrelated sources
+showed as "moderate" leads beside real links. The bands are now measured, not
+guessed. On the demo's six `case-demo-*` cases (336 leads, active spaces
+`gemini-embedding-2` and `text-embedding-3-large`, both 768 dimensions), the share
+of leads whose two sources name the same canonical person was 54% under 0.20
+cosine distance, 26% from 0.20 to 0.25, 16% from 0.25 to 0.30, and 0% of 43 from
+0.30. These are shared-person rates, not relevance probabilities: the proxy misses
+same-event links, the data is synthetic, and the proxy failed on the four story
+cases (no shared person across 664 leads), which were left out. The page calls a
+lead close under 0.20 and possible to 0.30, and puts weaker ones behind a
+"Weaker leads" toggle; other relation kinds are unchanged. The Noticer keeps its
+own cut-offs (0.25 alone, 0.40 as a supporting signal) until it is measured as a
+candidate policy. Measure again when an embedding space changes; separating OCR,
+descriptions and direct text, and cross-language pairs, is the next evaluation.
+
 ## Decisions still open
 
 The model/server choice is approved, implemented and measured on the synthetic
