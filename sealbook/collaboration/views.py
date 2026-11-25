@@ -2,10 +2,8 @@ import re
 import uuid
 from datetime import UTC, date, datetime, timedelta
 
-import orjson
 from quart import (
     Blueprint,
-    Response,
     abort,
     g,
     make_response,
@@ -13,7 +11,7 @@ from quart import (
     request,
     session,
 )
-from quart_security import auth_required, current_user
+from quart_security import current_user
 from sqlalchemy import select
 from stk.user.models import User
 
@@ -22,45 +20,32 @@ from sealbook.ledger import write
 from sealbook.ledger.contracts import Prop, Refused
 from sealbook.ledger.models import Payload, Principal, Statement
 from sealbook.monitor.stream import shared
+from sealbook.web import json_response, protect
 
 bp = Blueprint("collaboration", __name__)
 
 
-@bp.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ("analyst", "admin")):
-        abort(403)
-
-
-@bp.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def output(value, status=200):
-    return Response(orjson.dumps(value), status=status, content_type="application/json")
+protect(bp)
 
 
 @bp.errorhandler(ValueError)
 async def invalid(exc):
-    return output({"error": str(exc)}, 400)
+    return json_response({"error": str(exc)}, 400)
 
 
 @bp.errorhandler(Refused)
 async def refused(exc):
-    return output({"error": exc.reason}, 409)
+    return json_response({"error": exc.reason}, 409)
 
 
 @bp.errorhandler(PermissionError)
 async def forbidden(exc):
-    return output({"error": str(exc)}, 403)
+    return json_response({"error": str(exc)}, 403)
 
 
 @bp.errorhandler(LookupError)
 async def missing(exc):
-    return output({"error": str(exc)}, 404)
+    return json_response({"error": str(exc)}, 404)
 
 
 @bp.get("/review")
@@ -78,7 +63,7 @@ async def analysts():
     users = (
         await g.db_session.execute(select(User).where(User.active.is_(True)))
     ).scalars()
-    return output(
+    return json_response(
         {
             "items": [
                 {"id": u.id, "name": u.name or u.email}
@@ -111,12 +96,12 @@ async def inbox():
         await db.execute(q.order_by(Statement.recorded_at.desc()).limit(100))
     ).scalars()
     items = [await service.task(db, sid, current_user) for sid in list(ids)]
-    return output({"items": items})
+    return json_response({"items": items})
 
 
 @bp.get("/api/collaboration/requests/<uuid:rid>")
 async def detail(rid):
-    return output(await service.task(g.db_session, rid, current_user))
+    return json_response(await service.task(g.db_session, rid, current_user))
 
 
 @bp.post("/api/collaboration/requests")
@@ -143,7 +128,7 @@ async def create():
     await live.work(db, [proposal.subject], current_user.id)
     await db.commit()
     await service.assigned(db, reviewer, row.id, proposal.id)
-    return output({"id": str(row.id), "proposal": str(proposal.id)}, 201)
+    return json_response({"id": str(row.id), "proposal": str(proposal.id)}, 201)
 
 
 @bp.post("/api/collaboration/requests/<uuid:rid>/comments")
@@ -153,7 +138,7 @@ async def comment(rid):
     found = await service.comment(db, rid, current_user, text)
     await db.commit()
     await service.comment_notices(db, rid, found, current_user, text)
-    return output({"message": "Comment added"}, 201)
+    return json_response({"message": "Comment added"}, 201)
 
 
 async def _body():
@@ -172,7 +157,7 @@ def _int(name, default=None):
 async def notification_list():
     raw = request.args.get("before")
     before = notifications.parse_cursor(raw) if raw else None
-    return output(
+    return json_response(
         await notifications.listing(
             g.db_session,
             current_user.id,
@@ -192,7 +177,7 @@ async def notification_read():
         ids = notifications.parse_ids(item["ids"])
     else:
         raise ValueError("send ids or all")
-    return output(
+    return json_response(
         {"unread": await notifications.mark_read(g.db_session, current_user.id, ids)}
     )
 
@@ -215,7 +200,7 @@ async def _assignment_body() -> dict:
 
 @bp.post("/api/assignments/bulk")
 async def assign_bulk():
-    return output(
+    return json_response(
         await assignments.bulk(g.db_session, current_user, await _assignment_body()),
         201,
     )
@@ -223,7 +208,7 @@ async def assign_bulk():
 
 @bp.patch("/api/assignments/<uuid:aid>")
 async def assign_update(aid):
-    return output(
+    return json_response(
         await assignments.update(
             g.db_session, current_user, aid, await _assignment_body()
         )
@@ -232,7 +217,7 @@ async def assign_update(aid):
 
 @bp.get("/api/assignments")
 async def assign_list():
-    return output(
+    return json_response(
         await assignments.listing(
             g.db_session,
             request.args.get("investigation"),
@@ -246,14 +231,14 @@ async def assign_list():
 
 @bp.get("/api/assignments/workload")
 async def assign_workload():
-    return output(
+    return json_response(
         await assignments.workload(g.db_session, request.args.get("investigation"))
     )
 
 
 @bp.get("/api/analysts")
 async def analyst_picker():
-    return output(
+    return json_response(
         await assignments.analysts(g.db_session, request.args.get("investigation"))
     )
 

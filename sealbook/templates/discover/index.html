@@ -304,7 +304,7 @@ window.app = Vue.createApp({
     keepPerson(g, on) { const ids = g.claims.map(m => m.statement); this.keep = on ? [...new Set([...this.keep, ...ids])] : this.keep.filter(i => !ids.includes(i)); },
     stLabel(s) { return LABELS[s.prop] || human(s.prop); },
     say(text) { this.snack = {show: true, text}; },
-    fail(err) { this.error = err.response?.data?.error || err.response?.data?.description || err.message; },
+    fail(err) { this.error = apiError(err); },
     pick(id) { this.curId = id; const u = new URL(location); u.searchParams.set('f', id); history.replaceState(null, '', u); },
     togglePick(id) { this.picked = this.picked.includes(id) ? this.picked.filter(x => x !== id) : [...this.picked, id]; },
     useCase() { this.picked = []; this.load(); },

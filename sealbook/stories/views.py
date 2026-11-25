@@ -3,40 +3,24 @@
 import uuid
 
 import orjson
-from quart import Blueprint, Response, abort, g, render_template, request
-from quart_security import auth_required, current_user
+from quart import Blueprint, abort, g, render_template, request
+from quart_security import current_user
 from sqlalchemy import select
 
 from sealbook.discovery.evidence import granted
-from sealbook.ledger.write import principal_for_user
+from sealbook.ledger.write import principal_of
 from sealbook.monitor import filter as mfilter
-from sealbook.monitor.views import ROLES
 from sealbook.packages.service import PROFILES
 from sealbook.people import data as people
 from sealbook.stories import data
 from sealbook.stories.models import SavedStory
+from sealbook.web import json_response, protect
 
 bp_stories = Blueprint("stories", __name__)
 QUERY = ("lens", "ref", "investigation", "from", "to")
 
 
-@bp_stories.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@bp_stories.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(bp_stories)
 
 
 def _filter(args) -> dict:
@@ -72,7 +56,7 @@ async def story():
     except LookupError as exc:
         abort(404, description=str(exc))
     await shown(db, found)
-    return _json(found)
+    return json_response(found)
 
 
 async def shown(db, found: dict) -> None:
@@ -82,9 +66,7 @@ async def shown(db, found: dict) -> None:
     for p in found["points"]:
         # Sensitive and not revealed in this session: the client must not ask for it.
         p["locked"] = p.pop("sensitive_source", False) and not granted(p["source"])
-    who = await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    who = await principal_of(db, current_user)
     for row in found["rows"]:
         view = {"person": row["key"].removeprefix("person:"), "track": row}
         await people.log_view(db, view, who.id)
@@ -98,7 +80,7 @@ async def saved():
         .where(SavedStory.user_id == current_user.id)
         .order_by(SavedStory.created_at.desc())
     )
-    return _json(
+    return json_response(
         {
             "items": [
                 {"id": str(s.id), "query": s.query, "at": s.created_at.isoformat()}
@@ -128,7 +110,7 @@ async def save():
         found = SavedStory(user_id=current_user.id, query=query)
         db.add(found)
         await db.commit()
-    return _json({"id": str(found.id), "query": found.query})
+    return json_response({"id": str(found.id), "query": found.query})
 
 
 @bp_stories.delete("/api/stories/saved/<uuid:sid>")
@@ -139,4 +121,4 @@ async def unsave(sid: uuid.UUID):
         abort(404)
     await db.delete(found)
     await db.commit()
-    return _json({"deleted": str(sid)})
+    return json_response({"deleted": str(sid)})

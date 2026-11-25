@@ -39,7 +39,7 @@ export const NoticerPanel = {
         await this.load();
       } catch (e) {
         if (e.response?.data?.reason === 'busy') await this.load();
-        else this.note = e.response?.data?.message || 'Could not start looking for resemblances.';
+        else this.note = apiError(e, 'Could not start looking for resemblances.');
       } finally { this.starting = false; }
     },
     other(item) { return this.sha && item.there.href === '/evidence/' + this.sha ? item.here : item.there; },
@@ -50,7 +50,7 @@ export const NoticerPanel = {
         await axios.post('/api/agents/notice/link', {item: {run: item.run, key: item.key}});
         item.link = 'proposed';
         this.note = 'Link proposed. It waits for review.';
-      } catch (e) { this.note = e.response?.data?.message || 'Could not propose this link. Try again.'; }
+      } catch (e) { this.note = apiError(e, 'Could not propose this link. Try again.'); }
       finally { this.sending = ''; }
     },
   },

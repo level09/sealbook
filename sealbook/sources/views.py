@@ -1,37 +1,31 @@
 """Sources: the dense, server-paged table of every acquired source in a case."""
 
-import orjson
-from quart import Blueprint, Response, abort, g, render_template, request
+from quart import Blueprint, abort, g, render_template, request
 from quart_security import current_user
 
-from sealbook.collaboration.views import guard, no_store
 from sealbook.discovery.evidence import granted
 from sealbook.ingest import batch
 from sealbook.ledger.contracts import Refused
 from sealbook.sources import data, review
+from sealbook.web import json_response, protect
 
 bp = Blueprint("sources", __name__)
-bp.before_request(guard)
-bp.after_request(no_store)
-
-
-def output(value, status=200):
-    return Response(orjson.dumps(value), status=status, content_type="application/json")
+protect(bp)
 
 
 @bp.errorhandler(ValueError)
 async def invalid(exc):
-    return output({"message": str(exc)}, 400)
+    return json_response({"message": str(exc)}, 400)
 
 
 @bp.errorhandler(PermissionError)
 async def forbidden(exc):
-    return output({"message": str(exc)}, 403)
+    return json_response({"message": str(exc)}, 403)
 
 
 @bp.errorhandler(Refused)
 async def refused(exc):
-    return output({"message": exc.reason}, 409)
+    return json_response({"message": exc.reason}, 409)
 
 
 def _filter() -> dict:
@@ -63,16 +57,16 @@ async def listing():
         r["next"] = (
             {k: nxt[k] for k in ("state", "chip", "label", "words")} if nxt else None
         )
-    return output(found)
+    return json_response(found)
 
 
 @bp.get("/api/sources/ids")
 async def ids():
-    return output(await data.ids(g.db_session, _filter()))
+    return json_response(await data.ids(g.db_session, _filter()))
 
 
 @bp.post("/api/sources/review")
 async def request_review():
     item = ((await request.get_json(silent=True)) or {}).get("item") or {}
     out = await review.request(g.db_session, current_user, item)
-    return output(out, 200 if "proposals" in out else 201)
+    return json_response(out, 200 if "proposals" in out else 201)

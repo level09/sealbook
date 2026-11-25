@@ -1,6 +1,5 @@
 """The monitor's shared filter: {"investigation": str | null, "time": [from, to] | null},
-kept in the URL as JSON. Parsing and SQL compilation live here only, so the filter
-AST compiler (sealbook/search/filter.py) can replace this module whole.
+kept in the URL as JSON.
 
 Every panel row hangs off a blob (acquisitions, run inputs, statement spans), so the
 filter compiles to one predicate over a blob sha256. A statement with its own valid

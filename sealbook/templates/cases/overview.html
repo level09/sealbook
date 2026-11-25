@@ -244,7 +244,7 @@ const TIERS = [{k: 'accepted', s: 'accepted, signed by a person'}, {k: 'corrobor
 // What a case holds, in the words a reader uses; a case with no people still has these.
 const KINDS = [['claims', 'claim', 'claims'], ['links', 'link between records', 'links between records'], ['findings', 'finding', 'findings'], ['matches', 'copy match', 'copy matches']];
 const listed = parts => parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts.at(-1) : parts[0] || '';
-const err = e => e.response?.data?.message || e.response?.data?.description || e.message;
+const err = apiError;
 const when = iso => new Date(iso).toLocaleString(undefined, {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
 
 window.app = Vue.createApp({

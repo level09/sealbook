@@ -11,6 +11,11 @@ from dataclasses import dataclass, field
 from datetime import date
 
 
+def statement_id(ref: str) -> uuid.UUID:
+    """The id in a `statement:<uuid>` subject."""
+    return uuid.UUID(ref.removeprefix("statement:"))
+
+
 class Tier(enum.StrEnum):
     UNCONFIRMED = "unconfirmed"
     CORROBORATED = "corroborated"
@@ -21,13 +26,6 @@ class Tier(enum.StrEnum):
 class PrincipalKind(enum.StrEnum):
     HUMAN = "human"
     AGENT = "agent"
-
-
-class RunStatus(enum.StrEnum):
-    QUEUED = "queued"
-    RUNNING = "running"
-    DONE = "done"
-    FAILED = "failed"
 
 
 class Route(enum.StrEnum):

@@ -17,8 +17,8 @@ from sealbook.ledger.contracts import EXTRACTED_PROPS, Event
 from sealbook.ledger.models import Acquisition, Blob, Run, RunEvent, Statement
 from sealbook.ledger.write import emit
 from sealbook.monitor import filter as mfilter
-from sealbook.monitor.views import ROLES
 from sealbook.settings import Config
+from sealbook.web import ROLES
 
 log = logging.getLogger(__name__)
 # kind: (tool, agent name, wakes on evidence, notice when it proposes, page)
@@ -62,7 +62,7 @@ KINDS = {
 # Runs that make a source comparable by meaning or by picture and sound without
 # writing claims; they wake only the noticer.
 MEDIA_TOOLS = ("embed", "fingerprint")
-ACTIVE = ("queued", "running")
+ACTIVE = read.ACTIVE
 
 
 class AccessLost(PermissionError):

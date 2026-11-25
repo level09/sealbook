@@ -38,7 +38,7 @@ const BAYANAT = /\.(json|zip)$/i;
 
 const plural = (n, one, many) => `${n} ${n === 1 ? one : (many || one + 's')}`;
 const size = n => n > 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.max(0.1, n / 1e3).toFixed(1)} KB`;
-const err = e => e.response?.data?.message || e.response?.data?.description || e.message;
+const err = apiError;
 
 function kindOf(name, mime) {
   if (SHEET.test(name) || /csv|spreadsheetml/.test(mime)) return 'sheet';

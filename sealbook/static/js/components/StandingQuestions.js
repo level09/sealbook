@@ -19,13 +19,13 @@ export const StandingQuestions = {
         }));
         if (investigation !== this.investigation) return;
         this.results = results; this.error = '';
-      } catch (e) { this.error = e.response?.data?.description || e.message; }
+      } catch (e) { this.error = apiError(e); }
       this.timer = setTimeout(() => this.load(), 4000);
     },
     async act(url, method, item) {
       this.busy = true;
       try { await axios({url, method, data: {item}}); await this.load(); }
-      catch (e) { this.error = e.response?.data?.message || e.response?.data?.description || e.message; }
+      catch (e) { this.error = apiError(e); }
       this.busy = false;
     },
     async ask() {

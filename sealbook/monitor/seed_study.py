@@ -47,7 +47,7 @@ from sealbook.ledger.models import (
     Statement,
     StatementTier,
 )
-from sealbook.ledger.write import principal_for_user
+from sealbook.ledger.write import principal_of
 from sealbook.monitor import seed_flows as flows
 from sealbook.monitor.seed import Seeder, seeded
 from sealbook.monitor.seed_full import users
@@ -318,9 +318,7 @@ async def _play(session, app, spec, root, acts, until, tape) -> dict:
         owner=owner,
         analyst=await colleague(s, inv, *ANALYST),
         extractor=await system_agent(session, "extractor"),
-        collector=await principal_for_user(
-            session, owner.id, owner.name or owner.email
-        ),
+        collector=await principal_of(session, owner),
         batch=str(uuid.uuid4()) if spec.get("batch") else None,
         # Where the files came from, named as a reader would say it.
         channel=f"channel:Case study: {story['title']}",

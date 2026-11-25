@@ -226,7 +226,7 @@ window.app = Vue.createApp({
     doc(req) { return req.proposal.doc?.sha256 ? req.proposal.doc : null; },
     srcHref(req) { const d = this.doc(req), page = req.proposal.span?.page; return d ? `/evidence/${d.sha256}${page ? '?page=' + page : ''}` : null; },
     decidable(req) { return req.can_review && PENDING.includes(req.proposal.tier); },
-    fail(err) { this.error = err.response?.data?.error || err.response?.data?.description || err.message; },
+    fail(err) { this.error = apiError(err); },
     threadRow(id, req, notes) {
       const at = [req?.at, ...(req?.comments || []).map(c => c.at), ...notes.map(n => n.at)].filter(Boolean).sort().pop();
       const asked = req?.reviewer === ME, sent = req?.sender.id === ME, last = req?.comments.at(-1);
@@ -327,7 +327,7 @@ window.app = Vue.createApp({
     },
     async fetchThread(r) {
       try { r.req = (await axios.get('/api/collaboration/requests/' + r.id)).data; r.failed = null; }
-      catch (err) { r.failed = err.response?.status === 403 ? 'This thread is private to its sender, reviewer and admins.' : (err.response?.data?.error || err.message); }
+      catch (err) { r.failed = err.response?.status === 403 ? 'This thread is private to its sender, reviewer and admins.' : (apiError(err)); }
     },
     batchOf(n) { return (/[?&]batch=([0-9a-f-]{36})/.exec(n.to || '') || [])[1] || null; },
     back() { this.pane = false; history.replaceState(null, '', '/inbox'); },

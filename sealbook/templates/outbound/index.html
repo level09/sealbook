@@ -166,7 +166,7 @@
                         }});
                         Object.assign(this, {items: data.items, total: data.total, perPage: data.per_page, today: data.today});
                     } catch (e) {
-                        this.error = {show: true, text: e.response?.data?.message || e.message};
+                        this.error = {show: true, text: apiError(e)};
                     } finally { this.loaded = true; }
                 },
             },

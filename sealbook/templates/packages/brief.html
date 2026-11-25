@@ -172,7 +172,7 @@
             },
             methods: {
                 fail(e) {
-                    this.error = {show: true, text: e.response?.data?.message || e.response?.data?.error || e.message};
+                    this.error = {show: true, text: apiError(e)};
                 },
                 toggle(id) {
                     const ids = this.draft.statement_ids;
@@ -192,7 +192,7 @@
                         this.brief = data;
                         this.reset();
                     } catch (e) {
-                        this.refusal = e.response?.data?.message || e.message;
+                        this.refusal = apiError(e);
                     } finally { this.busy = false; }
                 },
                 async build() {

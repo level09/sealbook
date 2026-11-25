@@ -26,8 +26,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sealbook import blobs, speech
 from sealbook.agents import read, tasks
 from sealbook.agents.approximate import approximate
-from sealbook.agents.brief import brief
 from sealbook.agents.ask import ask
+from sealbook.agents.brief import brief
 from sealbook.agents.conclude import conclude
 from sealbook.agents.contradictions import contradictions
 from sealbook.agents.gaps import gaps
@@ -589,17 +589,7 @@ async def _describe(c: Ctx, blob: Blob, parts) -> None:
     derived = await blobs.put(
         c.s, "\n".join(lines).encode(), "text/plain; charset=utf-8", Config.BLOB_DIR
     )
-    await write.append(
-        c.s,
-        StatementIn(
-            subject=f"blob:{derived.sha256}",
-            prop=Prop.DERIVED_FROM,
-            value={"blob": blob.sha256},
-            author_id=c.run.principal_id,
-            run_id=c.run.id,
-        ),
-        sign=c.sign,
-    )
+    await write.derived_from(c, derived, blob)
     await discovery.queue(
         c.s, c.acq, derived.mime, blob_sha256=derived.sha256, kind="description"
     )
@@ -660,17 +650,7 @@ async def ocr(c: Ctx) -> str | None:
     derived = await blobs.put(
         c.s, text.encode(), "text/plain; charset=utf-8", Config.BLOB_DIR
     )
-    await write.append(
-        c.s,
-        StatementIn(
-            subject=f"blob:{derived.sha256}",
-            prop=Prop.DERIVED_FROM,
-            value={"blob": blob.sha256},
-            author_id=c.run.principal_id,
-            run_id=c.run.id,
-        ),
-        sign=c.sign,
-    )
+    await write.derived_from(c, derived, blob)
     await c.emit("statements_written", written=1, chars=len(text))
     # Extraction has its own policy row, so it may run on another route than OCR.
     if c.run.inputs.get("extract_model"):

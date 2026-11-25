@@ -30,6 +30,7 @@ from sealbook.ledger.contracts import (
     Refused,
     StatementIn,
     Tier,
+    statement_id,
 )
 from sealbook.ledger.gate import gate, resolve
 from sealbook.ledger.models import (
@@ -95,6 +96,11 @@ async def principal_for_user(
     session.add(principal)
     await session.flush()
     return principal
+
+
+async def principal_of(session: AsyncSession, user) -> Principal:
+    """`principal_for_user` for a user row: the principal is named by name or email."""
+    return await principal_for_user(session, user.id, user.name or user.email)
 
 
 # --- statements ---------------------------------------------------------------
@@ -456,7 +462,7 @@ async def project(session: AsyncSession, st: Statement) -> None:
     if st.prop in (Prop.REVIEW, Prop.RETRACTION) and st.subject.startswith(
         "statement:"
     ):
-        about = uuid.UUID(st.subject.removeprefix("statement:"))
+        about = statement_id(st.subject)
         targets.add(about)
         # Retracting a review changes the verdict on the statement it reviewed.
         reviewed = await session.get(Statement, about)
@@ -465,7 +471,7 @@ async def project(session: AsyncSession, st: Statement) -> None:
             and reviewed.prop == Prop.REVIEW
             and reviewed.subject.startswith("statement:")
         ):
-            targets.add(uuid.UUID(reviewed.subject.removeprefix("statement:")))
+            targets.add(statement_id(reviewed.subject))
     if st.span_blob:
         value_key = (
             select(Payload.value_key)
@@ -654,3 +660,18 @@ async def verify_db(session: AsyncSession) -> list[str]:
         if chain.commitment(salt, value) != commitment:
             problems.append(f"payload {commitment} does not match its commitment")
     return problems
+
+
+async def derived_from(c, child, source) -> None:
+    """Record in run `c` that blob `child` was made from blob `source`."""
+    await append(
+        c.s,
+        StatementIn(
+            subject=f"blob:{child.sha256}",
+            prop=Prop.DERIVED_FROM,
+            value={"blob": source.sha256},
+            author_id=c.run.principal_id,
+            run_id=c.run.id,
+        ),
+        sign=c.sign,
+    )

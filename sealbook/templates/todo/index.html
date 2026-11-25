@@ -197,14 +197,14 @@ window.app = Vue.createApp({
     async load() {
       const params = {investigation: this.caseSel || undefined};
       try { this.d = (await axios.get('/api/todo', {params})).data; }
-      catch (err) { this.error = err.response?.data?.description || err.message; }
+      catch (err) { this.error = apiError(err); }
       // The two blocks around the list are extras: the list stands without them.
       axios.get('/api/agents/briefs', {params}).then(r => { this.brief = r.data.items[0] || null; }).catch(() => { this.brief = null; });
       axios.get('/api/desk/changes', {params: {...params, per_page: 5}}).then(r => { this.did = r.data.items; this.since = r.data.since; this.basis = r.data.basis; }).catch(() => { this.did = []; });
     },
     async briefRead() {
       try { await axios.post('/api/notifications/read', {item: {ids: [this.brief.notification]}}); this.load(); }
-      catch (err) { this.error = err.response?.data?.error || err.message; }
+      catch (err) { this.error = apiError(err); }
     },
     tryFirst(f) { if (!this.tried.includes(f.title)) { this.tried.push(f.title); kept('sb-first-tried', this.tried); } },
     dismissFirst() { this.hideFirst = true; kept('sb-first-hide', true); },

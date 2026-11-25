@@ -1,4 +1,3 @@
-import uuid
 from datetime import UTC, datetime
 
 from sqlalchemy import select
@@ -7,7 +6,14 @@ from stk.user.models import User
 from sealbook.collaboration.notifications import admins, mentioned, notify, short
 from sealbook.ledger import write
 from sealbook.ledger.blobmeta import span_check
-from sealbook.ledger.contracts import EXTRACTED_PROPS, Prop, Refused, StatementIn, Tier
+from sealbook.ledger.contracts import (
+    EXTRACTED_PROPS,
+    Prop,
+    Refused,
+    StatementIn,
+    Tier,
+    statement_id,
+)
 from sealbook.ledger.models import Blob, Payload, Principal, Statement, StatementTier
 from sealbook.monitor import data
 
@@ -85,7 +91,7 @@ async def request_review(db, proposal, user, reviewer_id, reason):
     # check_reviewer never lets an author decide their own statement.
     if (await db.get(Principal, proposal.author_id)).user_id == reviewer_id:
         raise ValueError("choose an analyst who did not write it")
-    who = await write.principal_for_user(db, user.id, user.name or user.email)
+    who = await write.principal_of(db, user)
     return await write.append(
         db,
         StatementIn(
@@ -132,7 +138,7 @@ async def suggest(db, original, user, item):
         value = {
             k: v for k, v in payload.value.items() if k in ("kind", "place", "town")
         } | value
-    who = await write.principal_for_user(db, user.id, user.name or user.email)
+    who = await write.principal_of(db, user)
     return await write.append(
         db,
         StatementIn(
@@ -162,7 +168,7 @@ async def task(db, request_id, user):
         "admin"
     ):
         raise PermissionError("review request is private to its participants")
-    proposal_id = uuid.UUID(row.subject.removeprefix("statement:"))
+    proposal_id = statement_id(row.subject)
     proposal = await data.card(db, proposal_id)
     statement = await db.get(Statement, proposal_id)
     try:
@@ -251,7 +257,7 @@ async def comment(db, request_id, user, text):
     found = await task(db, request_id, user)
     if not isinstance(text, str) or not text.strip() or len(text) > 4000:
         raise ValueError("comment must contain 1 to 4000 characters")
-    who = await write.principal_for_user(db, user.id, user.name or user.email)
+    who = await write.principal_of(db, user)
     await write.append(
         db,
         StatementIn(

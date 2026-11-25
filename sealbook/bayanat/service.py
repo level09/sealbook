@@ -14,14 +14,14 @@ import uuid
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
-from sqlalchemy import func, select
+from sqlalchemy import select
 
 from sealbook import blobs
 from sealbook.bayanat import export
 from sealbook.ingest import service as ingest
 from sealbook.ledger import chain, write
-from sealbook.ledger.contracts import ASSESSED_PROPS, Prop, StatementIn, Tier
-from sealbook.ledger.models import Acquisition, Blob, Run, Statement, StatementTier
+from sealbook.ledger.contracts import Prop, StatementIn
+from sealbook.ledger.models import Acquisition, Blob, Run
 from sealbook.method import alleged_labels, observed_labels
 from sealbook.settings import Config
 
@@ -238,16 +238,3 @@ async def confirm(db, acq: Acquisition, blob: Blob, person) -> dict:
         db, run, output_hash=chain.sha256(chain.canon([str(s.id) for s in written]))
     )
     return {"run": str(run.id), "batch": batch, "counts": counts}
-
-
-async def open_proposals(db, run_id: uuid.UUID) -> int:
-    return await db.scalar(
-        select(func.count())
-        .select_from(Statement)
-        .join(StatementTier, StatementTier.statement_id == Statement.id)
-        .where(
-            Statement.run_id == run_id,
-            Statement.prop.in_(ASSESSED_PROPS),
-            StatementTier.tier == Tier.UNCONFIRMED,
-        )
-    )

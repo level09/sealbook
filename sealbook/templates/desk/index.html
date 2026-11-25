@@ -135,7 +135,7 @@ window.app = Vue.createApp({
     },
     async briefRead() {
       try { await axios.post('/api/notifications/read', {item: {ids: [this.brief.notification]}}); this.loadBrief(); }
-      catch (err) { this.error = err.response?.data?.error || err.message; }
+      catch (err) { this.error = apiError(err); }
     },
     plural, human,
     chips(r) {
@@ -154,7 +154,7 @@ window.app = Vue.createApp({
     useCase() { for (const k of ['chg', 'ev']) { this[k].page = 1; this.load(k); } this.loadWaiting(); },
     async loadWaiting() {
       try { this.waiting = (await axios.get('/api/todo', {params: {investigation: this.caseSel || undefined}})).data.total; }
-      catch (err) { this.error = err.response?.data?.description || err.message; }
+      catch (err) { this.error = apiError(err); }
     },
     async load(key, opts) {
       const t = this[key];
@@ -169,7 +169,7 @@ window.app = Vue.createApp({
         if (key === 'chg') { this.since = data.since; this.basis = data.basis; }
         if (key === 'ev') this.recentTotal = data.total;
       } catch (err) {
-        this.error = err.response?.data?.error || err.response?.data?.description || err.message;
+        this.error = apiError(err);
       } finally { if (seq === t.seq) t.loading = false; }
     },
     onKey(e) {

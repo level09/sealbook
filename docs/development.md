@@ -154,6 +154,8 @@ Sync click commands wrapping `asyncio.run()` (`stk.cli.base.run_async`). Quart C
 - `stk/portal/` - protected dashboard (blueprint-level `@auth_required`)
 - `stk/websocket.py` - WebSocket blueprint (releases DB session early for long-lived connections)
 
+Sealbook's own blueprints share `sealbook/web.py`: `protect(bp)` lets in analysts and admins only and marks every answer `private, no-store`; `json_response(payload, status)` writes JSON. The person behind a signed-in user is `ledger.write.principal_of(db, current_user)`. An agent queues its run with `agents.read.new_run` and lists them with `read.runs_of`.
+
 ### Auth (quart-security)
 
 `SQLAlchemyUserDatastore` with session factory callable (`lambda: g.db_session`). Key decorators: `@auth_required("session")`, `@roles_required('admin')`.
@@ -212,7 +214,8 @@ Vue 3 + Vuetify loaded from static files (no build step). **Options API** (`data
 - **Icons:** Tabler Icons (`ti ti-pencil`, `ti ti-plus`, etc.), NOT Material Design Icons
 - **Server data:** Pass via `<script type="application/json" id="...">{{ data|tojson|safe }}</script>` placed in `{% block js %}`, never in `{% block content %}`: Vue strips `<script>` tags inside the `#app` mount element, so `getElementById(...)` returns null.
 - **Navigation:** Rail entries are `app.navigation.append({...})` in each extension's `init_app` (`title`, `icon`, `to`, `match`, optional `badge` naming a key of `/api/nav/counts`, `role: 'admin'` for access control). The layout reads them through stk's `app_navigation()`, without stk's Dashboard and Account sections
-- **JSON responses:** List endpoints use `orjson` via `import orjson as json` and `Response(json.dumps(data), content_type="application/json")`
+- **JSON responses:** Sealbook endpoints return `json_response(...)` from `sealbook/web.py` (orjson)
+- **Request errors:** `apiError(e, fallback)` in `static/js/sealbook.js` turns a failed axios call into the server's words
 - **Request body:** Frontend sends mutations as `{item: {...}}`, extract with `json_data.get("item", {})`
 - **Template globals:** Vue template expressions cannot see page globals (a `const labels = {...}` in a script is undefined inside `${...}` and directives). Expose shared helpers with `app.config.globalProperties.labels = labels` before mount. The production Vue build fails such lookups silently (the cell renders nothing, columns shift), so `stk smoke` cannot catch it; check the rendered table.
 

@@ -169,7 +169,7 @@ const app = createApp({
       try {
         this.result = (await axios.post('/api/search', {item: {query: this.q.trim(), filter: {investigation: this.investigation, time: null}}})).data;
         this.cursor = 0;
-      } catch (err) { this.error = err.response?.data?.message || err.response?.data?.error || err.message; }
+      } catch (err) { this.error = apiError(err); }
       finally { this.busy = false; }
     },
     key(e) {

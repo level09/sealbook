@@ -7,9 +7,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from urllib.parse import quote, urlsplit
 
-import orjson
-from quart import Blueprint, Response, abort, g, render_template, request, url_for
-from quart_security import auth_required, current_user
+from quart import Blueprint, abort, g, render_template, request, url_for
+from quart_security import current_user
 from sqlalchemy import func, select
 
 from sealbook.cases import conclusions
@@ -19,14 +18,14 @@ from sealbook.discovery import service as discovery
 from sealbook.discovery.models import FindingKey
 from sealbook.guide.views import first_cards
 from sealbook.ledger import attest, offline_sigs, write
-from sealbook.ledger.contracts import Event, Prop, Refused, StatementIn
+from sealbook.ledger.contracts import Event, Prop, Refused, StatementIn, statement_id
 from sealbook.ledger.models import Acquisition, RunEvent, Statement, StatementTier
 from sealbook.monitor import data
 from sealbook.review import events, findings, firstpass, handclaim, queue, todo
+from sealbook.web import guard, json_response
 
 review = Blueprint("review", __name__)
 
-ROLES = ("analyst", "admin")
 TTL = 300
 
 # Prepared statements waiting for their passkey assertion, keyed by (user, hash):
@@ -54,21 +53,11 @@ class Gesture:
     hashes: list[str]
 
 
-@review.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+review.before_request(guard)
 
 
 def _refused(exc: Refused):
-    return _json({"error": exc.reason}, 409)
+    return json_response({"error": exc.reason}, 409)
 
 
 def safe_next(target: str | None) -> str | None:
@@ -90,7 +79,7 @@ def _no_passkey():
         else None
     )
     setup = url_for("security.wan_register")
-    return _json(
+    return json_response(
         {
             "error": "Decisions are signed with your passkey. You have not set one up yet.",
             "reason": "no_passkey",
@@ -107,10 +96,6 @@ async def passkey_gate(db):
     if await attest.registered(db, current_user):
         return None
     return _no_passkey()
-
-
-def _about(subject: str) -> uuid.UUID:
-    return uuid.UUID(subject.removeprefix("statement:"))
 
 
 async def _refuse_accept(db, sid: uuid.UUID, value: dict) -> None:
@@ -150,7 +135,7 @@ async def _statement_in(db, item: dict, author: uuid.UUID) -> StatementIn:
             st = await _target(db, uuid.UUID(item["undo"]), Prop.REVIEW)
             try:
                 await collaboration.check_reviewer(
-                    db, await db.get(Statement, _about(st.subject)), current_user
+                    db, await db.get(Statement, statement_id(st.subject)), current_user
                 )
             except PermissionError as exc:
                 abort(403, description=str(exc))
@@ -218,7 +203,7 @@ async def stage(db, s: StatementIn):
         "summary": _summary(s),
         "hash": prepared.hash,
     }
-    return _json({"hash": prepared.hash, "options": opts, "rows": [row]})
+    return json_response({"hash": prepared.hash, "options": opts, "rows": [row]})
 
 
 def _summary(s: StatementIn) -> str:
@@ -255,7 +240,7 @@ async def stage_gesture(db, gesture: str, statements: list[StatementIn]):
     rows = await findings.describe(db, statements)
     _hold(digest, Gesture(gesture, statements, hashes), prepared)
     await db.commit()
-    return _json(
+    return json_response(
         {
             "hash": digest,
             "options": opts,
@@ -269,9 +254,7 @@ async def stage_gesture(db, gesture: str, statements: list[StatementIn]):
 async def options():
     db = g.db_session
     item = (await request.get_json())["item"]
-    who = await write.principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    who = await write.principal_of(db, current_user)
     try:
         s = await _statement_in(db, item, who.id)
     except Refused as exc:
@@ -310,21 +293,21 @@ async def _recheck(db, s: StatementIn) -> None:
     holds, since the subject may have moved while the passkey prompt was open."""
     if not s.subject.startswith("statement:"):
         return
-    checked = await db.get(Statement, _about(s.subject))
+    checked = await db.get(Statement, statement_id(s.subject))
     if s.prop == Prop.REVIEW or (
         s.prop == Prop.RETRACTION and checked.prop == Prop.REVIEW
     ):
         target = (
             checked
             if s.prop == Prop.REVIEW
-            else await db.get(Statement, _about(checked.subject))
+            else await db.get(Statement, statement_id(checked.subject))
         )
         try:
             await collaboration.check_reviewer(db, target, current_user)
         except PermissionError as exc:
             abort(403, description=str(exc))
     if s.prop == Prop.REVIEW and s.value["verdict"] == "accept":
-        await _refuse_accept(db, _about(s.subject), s.value)
+        await _refuse_accept(db, statement_id(s.subject), s.value)
 
 
 async def _finding_state(db, target: Statement, label: str) -> None:
@@ -346,9 +329,9 @@ async def _after(db, s: StatementIn, stmt: Statement) -> Statement | None:
     the statement it reviews, and that person's actor profile."""
     if not s.subject.startswith("statement:"):
         return None
-    about = await db.get(Statement, _about(s.subject))
+    about = await db.get(Statement, statement_id(s.subject))
     if s.prop == Prop.RETRACTION and about.prop == Prop.REVIEW:
-        target = await db.get(Statement, _about(about.subject))
+        target = await db.get(Statement, statement_id(about.subject))
         label = "review_undone"
     elif s.prop == Prop.RETRACTION:
         target, label = about, "retracted"
@@ -368,7 +351,7 @@ async def commit():
     item = (await request.get_json())["item"]
     pending = PENDING.pop((current_user.id, item["hash"]), None)
     if pending is None or pending[0] < time.monotonic():
-        return _json({"error": "review expired, start it again"}, 409)
+        return json_response({"error": "review expired, start it again"}, 409)
     _, s, prepared = pending
     many = isinstance(s, Gesture)
     statements, preps = (s.statements, prepared) if many else ([s], [prepared])
@@ -409,7 +392,7 @@ async def commit():
     for t in {t.id: t for t in targets if t}.values():
         await collaboration.reviewed(db, t.id)
     if many:
-        return _json(
+        return json_response(
             {
                 "gesture": s.id,
                 "statements": [
@@ -418,7 +401,7 @@ async def commit():
                 ],
             }
         )
-    return _json(
+    return json_response(
         {"statement": str(target.id), "review": str(written[0].id), "tier": tier}
     )
 
@@ -427,17 +410,13 @@ async def commit():
 
 
 def _private(payload, status=200):
-    r = _json(payload, status)
+    r = json_response(payload, status)
     r.headers["Cache-Control"] = "no-store"
     return r
 
 
 async def _who(db):
-    return (
-        await write.principal_for_user(
-            db, current_user.id, current_user.name or current_user.email
-        )
-    ).id
+    return (await write.principal_of(db, current_user)).id
 
 
 async def _planned(make):
@@ -446,11 +425,11 @@ async def _planned(make):
     try:
         gesture, statements = await make(db, await _who(db))
     except ValueError as exc:
-        return _json({"error": str(exc)}, 400)
+        return json_response({"error": str(exc)}, 400)
     except LookupError as exc:
-        return _json({"error": str(exc)}, 404)
+        return json_response({"error": str(exc)}, 404)
     except PermissionError as exc:
-        return _json({"error": str(exc)}, 403)
+        return json_response({"error": str(exc)}, 403)
     return await stage_gesture(db, gesture, statements)
 
 
@@ -685,7 +664,7 @@ async def review_queue():
             db, current_user, request.args.get("box", "mine"), investigation
         )
     except ValueError as exc:
-        return _json({"error": str(exc)}, 400)
+        return json_response({"error": str(exc)}, 400)
     return _private(
         {
             "items": await queue.rows(db, current_user, wanted),

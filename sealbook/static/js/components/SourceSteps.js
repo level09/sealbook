@@ -17,7 +17,7 @@ export const STEP = {
   skipped: {word: 'not needed', icon: 'ti ti-minus'},
 };
 export const LIVE = ['queued', 'running'];
-const err = e => e.response?.data?.message || e.response?.data?.description || e.message;
+const err = apiError;
 
 export const SourceSteps = {
   props: {item: {type: Object, required: true}},

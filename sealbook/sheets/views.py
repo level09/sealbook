@@ -3,33 +3,27 @@ rules: a sensitive sheet needs the logged reveal, any other logs a view."""
 
 import uuid
 
-import orjson
-from quart import Blueprint, Response, abort, g, request
+from quart import Blueprint, abort, g, request
 from quart_security import current_user
 
-from sealbook.collaboration.views import guard, no_store
 from sealbook.discovery import evidence
 from sealbook.ledger import write
 from sealbook.ledger.models import Acquisition
 from sealbook.sheets import parse, service
+from sealbook.web import json_response, protect
 
 bp = Blueprint("sheets", __name__)
-bp.before_request(guard)
-bp.after_request(no_store)
-
-
-def output(value, status=200):
-    return Response(orjson.dumps(value), status=status, content_type="application/json")
+protect(bp)
 
 
 @bp.errorhandler(service.Conflict)
 async def conflict(exc):
-    return output({"message": str(exc)}, 409)
+    return json_response({"message": str(exc)}, 409)
 
 
 @bp.errorhandler(ValueError)
 async def invalid(exc):
-    return output({"message": str(exc)}, 400)
+    return json_response({"message": str(exc)}, 400)
 
 
 async def _sheet_blob(sha: str):
@@ -39,7 +33,7 @@ async def _sheet_blob(sha: str):
     if blob.mime not in parse.MIMES:
         abort(415, description="This source is not a sheet")
     if not await evidence.viewable(g.db_session, sha, current_user):
-        return blob, output(
+        return blob, json_response(
             {
                 "message": "Reveal this sheet before reading it",
                 "reason": "reveal_required",
@@ -74,16 +68,14 @@ async def preview(acq_id):
         int(request.args.get("sheet", "1")),
     )
     if out.pop("asked"):
-        person = await write.principal_for_user(
-            g.db_session, current_user.id, current_user.name or current_user.email
-        )
+        person = await write.principal_of(g.db_session, current_user)
         await service.log_asked(
             g.db_session,
             person,
             f"blob:{acq.blob_sha256}",
             (acq.context or {}).get("investigation"),
         )
-    return output(out)
+    return json_response(out)
 
 
 @bp.post("/api/sheets/<uuid:acq_id>/diff")
@@ -91,7 +83,7 @@ async def diff(acq_id):
     acq, blob, refused = await _acquisition(acq_id)
     if refused:
         return refused
-    return output(
+    return json_response(
         service.plan_out(await service.plan(g.db_session, acq, blob, await _item()))
     )
 
@@ -101,12 +93,10 @@ async def confirm(acq_id):
     acq, blob, refused = await _acquisition(acq_id)
     if refused:
         return refused
-    person = await write.principal_for_user(
-        g.db_session, current_user.id, current_user.name or current_user.email
-    )
+    person = await write.principal_of(g.db_session, current_user)
     out = await service.confirm(g.db_session, acq, blob, await _item(), person)
     await g.db_session.commit()
-    return output(out)
+    return json_response(out)
 
 
 @bp.get("/api/sheets/<uuid:acq_id>/proposals")
@@ -114,7 +104,7 @@ async def proposals(acq_id):
     acq, blob, refused = await _acquisition(acq_id)
     if refused:
         return refused
-    return output(await service.proposals(g.db_session, acq, blob))
+    return json_response(await service.proposals(g.db_session, acq, blob))
 
 
 @bp.get("/api/evidence/<sha>/sheet")
@@ -127,4 +117,4 @@ async def sheet(sha):
     number = int(request.args.get("sheet", "1"))
     if not 1 <= number <= len(sheets):
         abort(404)
-    return output(service.table(sheets, number, limit=parse.MAX_ROWS))
+    return json_response(service.table(sheets, number, limit=parse.MAX_ROWS))

@@ -43,7 +43,7 @@ export const signing = {
     plural,
     human: s => (s || '').replaceAll('_', ' '),
     say(text) { this.snack = {show: true, text}; },
-    fail(err) { return err.response?.data?.error || err.response?.data?.description || err.message; },
+    fail(err) { return apiError(err); },
     async stage(item, start, title, after) {
       this.signBusy = true;
       try { this.staged = {data: await prepare(item, start), title, after}; }

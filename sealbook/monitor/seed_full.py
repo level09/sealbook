@@ -31,7 +31,7 @@ from sealbook.ingest.service import agent_run, ingest_bytes, system_agent
 from sealbook.ledger.contracts import EvidenceKind as E
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import Acquisition, Statement, StatementTier
-from sealbook.ledger.write import principal_for_user, record_acquisition
+from sealbook.ledger.write import principal_for_user, principal_of, record_acquisition
 from sealbook.monitor import seed_flows as flows
 from sealbook.monitor.seed import P1, P2, Seeder, locate, seeded
 from sealbook.packages import service as packages
@@ -542,7 +542,7 @@ async def add_recordings(session, app) -> str:
     s = Seeder(session)
     s.case = CASE
     owner = (await users(session, app))[0]
-    mine = await principal_for_user(session, owner.id, owner.name or owner.email)
+    mine = await principal_of(session, owner)
     extractor = await system_agent(session, "extractor")
     heard = await family_recordings(s, mine, extractor, LLM)
     await flows.agents(session, owner, [heard], question=False)
@@ -673,7 +673,7 @@ async def seed_full(session, app) -> dict:
             collector = field if origin.startswith("device:") else importer
             data = src.encode() if key == "appeal" else (ROOT / src).read_bytes()
             await intake(s, key, data, mime, origin, collector, doc_type, sens, {})
-        mine = await principal_for_user(session, owner.id, owner.name or owner.email)
+        mine = await principal_of(session, owner)
         # Brought in by the owner as one intake batch: a cell roster and a published
         # statement that put four people at Branch 999 in July 2013.
         batch = {"batch": str(uuid.uuid4())}

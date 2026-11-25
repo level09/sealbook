@@ -214,7 +214,7 @@ export const storyPage = boot => ({
   methods: {
     fmtDay, fmtSpan,
     say(text) { this.snackText = text; this.snack = true; },
-    fail(err) { return err.response?.data?.description || err.response?.data?.message || err.message; },
+    fail(err) { return apiError(err); },
     // A place or incident belongs to one case: after a switch, or with none named, show the case's first.
     async settle() {
       await this.loadPickers();

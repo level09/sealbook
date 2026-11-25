@@ -3,38 +3,21 @@ index with unresolved names, and the evidence table behind each."""
 
 import uuid
 
-import orjson
-from quart import Blueprint, Response, abort, g, render_template, request
-from quart_security import auth_required, current_user
+from quart import Blueprint, abort, g, render_template, request
+from quart_security import current_user
 
 from sealbook.entities import data
-from sealbook.ledger.write import principal_for_user
-from sealbook.monitor.views import ROLES
+from sealbook.ledger.write import principal_of
 from sealbook.people import data as people
 from sealbook.places import suggest
+from sealbook.web import json_response, protect
 
 bp_entities = Blueprint("entities", __name__)
 PER_PAGE = 25
 MAX_PAGE = 100
 
 
-@bp_entities.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@bp_entities.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(bp_entities)
 
 
 def _filter() -> dict:
@@ -62,9 +45,7 @@ def _paging(default_sort: str) -> dict:
 
 async def _log(db, story: dict) -> None:
     """The story view's record: one access statement per person row it showed."""
-    who = await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    who = await principal_of(db, current_user)
     for row in story["rows"]:
         view = {"person": row["key"].removeprefix("person:"), "track": row}
         await people.log_view(db, view, who.id)
@@ -79,7 +60,7 @@ async def _evidence(ids: list[str]):
         )
     except ValueError as exc:
         abort(400, description=str(exc))
-    return _json(found)
+    return json_response(found)
 
 
 @bp_entities.get("/places")
@@ -90,7 +71,9 @@ async def places_page():
 @bp_entities.get("/api/places/table")
 async def places_table():
     try:
-        return _json(await data.place_table(g.db_session, _filter(), _paging("claims")))
+        return json_response(
+            await data.place_table(g.db_session, _filter(), _paging("claims"))
+        )
     except ValueError as exc:
         abort(400, description=str(exc))
 
@@ -100,7 +83,7 @@ async def places_unresolved():
     db, f = g.db_session, _filter()
     items = await data.unresolved(db, f)
     await suggest.annotate(db, current_user, items, f["investigation"])
-    return _json({"items": items})
+    return json_response({"items": items})
 
 
 @bp_entities.get("/places/<uuid:place_id>")
@@ -118,7 +101,7 @@ async def place_view(place_id):
     except LookupError as exc:
         abort(404, description=str(exc))
     await _log(db, found["story"])
-    return _json(found)
+    return json_response(found)
 
 
 @bp_entities.get("/api/places/<uuid:place_id>/evidence")
@@ -143,7 +126,7 @@ async def incident_index_data():
     rows = await data.incident_list(
         g.db_session, request.args.get("investigation") or None
     )
-    return _json({"items": rows})
+    return json_response({"items": rows})
 
 
 @bp_entities.get("/api/incidents/<uuid:incident_id>")
@@ -154,7 +137,7 @@ async def incident_view(incident_id: uuid.UUID):
     except LookupError as exc:
         abort(404, description=str(exc))
     await _log(db, found["story"])
-    return _json(found)
+    return json_response(found)
 
 
 @bp_entities.get("/api/incidents/<uuid:incident_id>/evidence")

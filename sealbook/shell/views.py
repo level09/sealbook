@@ -5,7 +5,7 @@ from quart_security import auth_required, current_user, roles_required
 
 from sealbook.collaboration import notifications
 from sealbook.review import todo
-from sealbook.review.views import ROLES
+from sealbook.web import ROLES
 
 # stk's users blueprint is admin-only; these pages are for every analyst.
 bp_account = Blueprint("account", __name__)

@@ -7,7 +7,7 @@ from sqlalchemy import select
 from stk.cli.base import console, run_async
 from stk.user.models import User
 
-from sealbook.ledger.write import principal_for_user
+from sealbook.ledger.write import principal_of
 
 
 @click.command("erase")
@@ -27,7 +27,7 @@ def erase_cmd(ref, reason, email):
             ).scalar()
             if user is None:
                 raise click.ClickException(f"no user {email}")
-            who = await principal_for_user(session, user.id, user.name or user.email)
+            who = await principal_of(session, user)
             try:
                 return await erase(session, ref, who.id, reason)
             except (ValueError, LookupError) as exc:

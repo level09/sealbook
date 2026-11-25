@@ -306,7 +306,7 @@ async def detail(db, user, key: str) -> dict | None:
 
 async def log_view(db, user, g: dict) -> Statement:
     """Opening a group is a use of its posts' reports and links: one access record."""
-    who = await write.principal_for_user(db, user.id, user.name or user.email)
+    who = await write.principal_of(db, user)
     return await write.append(
         db,
         StatementIn(

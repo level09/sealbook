@@ -326,7 +326,7 @@ export const caseMapPage = boot => ({
   },
   methods: {
     fmtDay, fmtSpan, placeName, placeBoth, isoDay: iso,
-    fail(err) { return err.response?.data?.description || err.response?.data?.message || err.message; },
+    fail(err) { return apiError(err); },
     useCase() { this.load(); },
     async load() {
       this.stop(); this.selected = null; this.ask = {from: null, to: null, busy: false, answer: null}; this.error = '';

@@ -11,8 +11,6 @@ sees handles, never ids, and every sentence it writes must cite or is dropped.""
 
 from __future__ import annotations
 
-from sqlalchemy import select, text
-
 from sealbook.agents import brief, contradictions, linker, read, tasks
 from sealbook.cases import conclusions
 from sealbook.discovery.evidence import granted
@@ -300,15 +298,7 @@ def validate(answer, cands, h, claims) -> tuple[list, dict]:
 
 
 async def runs(db, investigation: str) -> list[Run]:
-    return list(
-        await db.scalars(
-            select(Run)
-            .where(
-                Run.tool == TOOL, Run.inputs["investigation"].astext == investigation
-            )
-            .order_by(Run.created_at.desc(), Run.id)
-        )
-    )
+    return await read.runs_of(db, TOOL, investigation=investigation)
 
 
 async def conclude(c) -> str:
@@ -366,23 +356,15 @@ async def conclude(c) -> str:
 
 
 async def queue(db, investigation: str, user_id: int, model: str) -> Run:
-    await db.execute(
-        text("select pg_advisory_xact_lock(hashtextextended(:k, 0))"),
-        {"k": f"conclude:{investigation}"},
+    return await read.new_run(
+        db,
+        TOOL,
+        AGENT,
+        user_id,
+        model,
+        {"investigation": investigation},
+        busy="Conclusions for this case are already being drafted.",
     )
-    if any(r.status in ("queued", "running") for r in await runs(db, investigation)):
-        raise ValueError("Conclusions for this case are already being drafted.")
-    agent = await read.agent_for(db, AGENT, user_id)
-    run = Run(
-        principal_id=agent.id,
-        tool=TOOL,
-        route=Config.AGENT_ROUTE,
-        model_requested=model,
-        inputs={"investigation": investigation, "for_user": user_id},
-    )
-    db.add(run)
-    await db.flush()
-    return run
 
 
 def _value(c) -> str:
@@ -400,7 +382,7 @@ async def show(db, user, investigation: str) -> dict:
     words. A draft whose accepted items no longer stand, or whose claims are gone,
     is left out; one resting on an unrevealed sensitive source is locked."""
     found = await runs(db, investigation)
-    pending = next((r for r in found if r.status in ("queued", "running")), None)
+    pending = next((r for r in found if r.status in read.ACTIVE), None)
     result = {
         "items": [],
         "outcome": None,

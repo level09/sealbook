@@ -89,7 +89,7 @@
                     } catch (e) { this.fail(e); }
                 },
                 fail(e) {
-                    this.error = {show: true, text: e.response?.data?.message || e.message};
+                    this.error = {show: true, text: apiError(e)};
                 },
                 async reload() {
                     const {data} = await axios.get('/api/watch', {params: {investigation: this.caseSel || undefined}});

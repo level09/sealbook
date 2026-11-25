@@ -116,9 +116,7 @@ async def search(st, act, args) -> None:
             k = key_of.get(item["sha256"])
             if k and k not in keys:
                 keys.append(k)
-    who = await write.principal_for_user(
-        st.session, st.owner.id, st.owner.name or st.owner.email
-    )
+    who = await write.principal_of(st.session, st.owner)
     await write.append(
         st.session,
         StatementIn(

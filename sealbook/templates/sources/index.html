@@ -227,7 +227,7 @@ window.app = Vue.createApp({
     c2Text: s => ({valid: 'C2PA credentials valid', invalid: 'C2PA credentials invalid', absent: 'No content credentials', unchecked: 'C2PA not checked', unknown: 'C2PA result erased'}[s]),
     c2Icon: s => ({valid: 'ti ti-shield-check text-success', invalid: 'ti ti-shield-x text-error', absent: 'ti ti-shield-off src-muted', unknown: 'ti ti-shield-question src-muted'}[s] || 'ti ti-minus src-muted'),
     openUrl: r => `/evidence/${r.sha256}`,
-    fail(err) { this.error = err.response?.data?.description || err.response?.data?.error || err.response?.data?.message || err.message; },
+    fail(err) { this.error = apiError(err); },
     say(text) { this.snackText = text; this.snack = true; },
     saveCols() { store.set('sources-cols-2', this.cols); },
     rowProps({item, index}) { return {class: index === this.cursor ? 'src-cur' : '', 'data-sha': item.sha256}; },

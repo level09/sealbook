@@ -277,7 +277,7 @@ async def transcribe(c) -> str:
         child = await blobs.put(
             c.s, seg["text"].encode(), "text/plain; charset=utf-8", Config.BLOB_DIR
         )
-        await _derived(c, child, blob)
+        await write.derived_from(c, child, blob)
         await discovery.queue(
             c.s,
             c.acq,
@@ -461,20 +461,6 @@ def lines_of(data: dict, offset_ms: int) -> list[dict]:
     return lines
 
 
-async def _derived(c, child, source):
-    await write.append(
-        c.s,
-        StatementIn(
-            subject=f"blob:{child.sha256}",
-            prop=Prop.DERIVED_FROM,
-            value={"blob": source.sha256},
-            author_id=c.run.principal_id,
-            run_id=c.run.id,
-        ),
-        sign=c.sign,
-    )
-
-
 async def _lines(c, parts):
     lines = []
     for sha in parts:
@@ -496,7 +482,7 @@ async def _finish(c, source, lines):
     transcript = await blobs.put(
         c.s, text.encode(), "text/plain; charset=utf-8", Config.BLOB_DIR
     )
-    await _derived(c, transcript, source)
+    await write.derived_from(c, transcript, source)
     await c.emit("statements_written", written=1, chars=len(text), lines=len(lines))
     if c.run.inputs.get("extract_model"):
         c.s.add(

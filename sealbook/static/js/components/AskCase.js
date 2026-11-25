@@ -32,7 +32,7 @@ export const AskCase = {
         const reason = e.response?.data?.reason;
         this.note = reason === 'off' ? 'Questions need the agents model. Ask an administrator to set it up.' :
           reason === 'busy' ? 'Your last question is still being answered.' :
-          e.response?.data?.description || 'The question could not be sent. Try again.';
+          apiError(e, 'The question could not be sent. Try again.');
       }
       if (generation === this.generation) this.load(generation);
     },

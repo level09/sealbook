@@ -7,7 +7,7 @@
    app.component('case-suggestion', CaseSuggestion);
    <case-suggestion :batch="batchId" @created="onCaseCreated"></case-suggestion> */
 const n = (k, word, many = word + 's') => `${k} ${k === 1 ? word : many}`;
-const err = e => e.response?.data?.message || e.response?.data?.description || e.message;
+const err = apiError;
 
 export const CaseSuggestion = {
   name: 'CaseSuggestion',

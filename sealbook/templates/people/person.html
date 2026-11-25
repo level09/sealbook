@@ -222,7 +222,7 @@ const app = createApp({
     async revealAll() {
       try {
         this.revealed = (await axios.post(`/api/people/${boot.person}/reveal`, {})).data.values;
-      } catch (e) { this.error = e.response?.data?.message || e.message; }
+      } catch (e) { this.error = apiError(e); }
     },
     words(props, yearOnly = []) { return props.map(x => x.replace(/_/g, ' ') + (yearOnly.includes(x) ? ' (year only)' : '')).join(', '); },
     who(person) { return this.p.names[person] || 'Unnamed person'; },

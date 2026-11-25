@@ -22,7 +22,7 @@ export const KeepChecking = {
         if (value) await axios.post('/api/agents/tasks', {item: {investigation: this.investigation, kind: this.kind}});
         else await axios.patch('/api/agents/tasks/' + this.task.id, {item: {enabled: false}});
         await this.load();
-      } catch (e) { this.note = e.response?.data?.message || 'Could not change this. Try again.'; }
+      } catch (e) { this.note = apiError(e, 'Could not change this. Try again.'); }
       finally { this.saving = false; }
     },
   },

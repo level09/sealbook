@@ -7,7 +7,7 @@ from pathlib import Path
 
 import orjson
 from quart import Blueprint, Response, abort, g, request, send_file
-from quart_security import auth_required, current_user
+from quart_security import current_user
 from sqlalchemy import select
 
 from sealbook.discovery.service import available
@@ -16,11 +16,11 @@ from sealbook.ledger.models import Payload, Principal, Statement, StatementTier
 from sealbook.ledger.write import current_clause
 from sealbook.maps import cli, tiles
 from sealbook.monitor import filter as mfilter
-from sealbook.monitor.views import ROLES
 from sealbook.people import data as people
 from sealbook.places import boundaries
 from sealbook.settings import Config
 from sealbook.stories import data as stories
+from sealbook.web import guard
 
 bp_maps = Blueprint("maps", __name__)
 MAX_ZOOM = 18
@@ -28,11 +28,7 @@ CACHE = tiles.Cache()
 SHA = re.compile(r"[0-9a-f]{64}")
 
 
-@bp_maps.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
+bp_maps.before_request(guard)
 
 
 @bp_maps.after_request

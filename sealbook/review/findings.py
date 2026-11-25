@@ -25,6 +25,7 @@ from sealbook.ledger.contracts import (
     Prop,
     StatementIn,
     Tier,
+    statement_id,
 )
 from sealbook.ledger.models import Blob, Payload, Principal, Statement, StatementTier
 from sealbook.ledger.offline_sigs import GESTURE_MAX
@@ -41,10 +42,6 @@ INCIDENT_REF = re.compile(r"incident:[0-9a-f-]{36}")
 # signed gesture (offline_sigs.GESTURE_MAX).
 MAX_KEPT = (GESTURE_MAX - 3) // 2
 EXCERPT = 60  # characters of context either side of a span
-
-
-def _iso(value) -> str | None:
-    return value.isoformat() if value else None
 
 
 def month_label(month: str) -> str:
@@ -265,7 +262,7 @@ async def queue(db, user, investigation: str | None, key: str | None = None):
 async def log_view(db, user, finding: dict) -> Statement:
     """Opening a finding is a use of its members: one access record on the finding
     listing them, which is also what ends "new since you last looked"."""
-    who = await write.principal_for_user(db, user.id, user.name or user.email)
+    who = await write.principal_of(db, user)
     return await write.append(
         db,
         StatementIn(
@@ -640,9 +637,7 @@ async def undo(db, user, gesture: str, only: list[str] | None, author) -> list:
         if r.prop == Prop.REVIEW:
             await check_reviewer(
                 db,
-                await db.get(
-                    Statement, uuid.UUID(r.subject.removeprefix("statement:"))
-                ),
+                await db.get(Statement, statement_id(r.subject)),
                 user,
             )
     return [
@@ -672,10 +667,6 @@ STATUS_WORDS = {
 }
 
 
-def _about(subject: str) -> uuid.UUID:
-    return uuid.UUID(subject.removeprefix("statement:"))
-
-
 async def describe(db, statements: list[StatementIn]) -> list[dict]:
     """Each statement of a gesture as a reviewer reads it before signing."""
     places = await _places(
@@ -696,7 +687,7 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
     )
 
     reviewed = [
-        _about(s.subject)
+        statement_id(s.subject)
         for s in statements
         if s.prop in (Prop.REVIEW, Prop.RETRACTION)
     ]
@@ -736,7 +727,7 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
             return f"{what}: {v['category']}"
         if s.prop == Prop.REVIEW:
             why_ = f": {v['reason']}" if v.get("reason") else ""
-            what = REVIEWED.get(props.get(_about(s.subject)), "the claim")
+            what = REVIEWED.get(props.get(statement_id(s.subject)), "the claim")
             return f"{v['verdict']} {what}{why_}"
         if s.prop == Prop.CONCLUSION:
             n, k = len(v["rests_on"]), len(v.get("contradicts") or [])
@@ -758,7 +749,7 @@ async def describe(db, statements: list[StatementIn]) -> list[dict]:
             return f"{STATUS_WORDS[v['status']]}: {v['reason']}"
         if (
             s.prop == Prop.RETRACTION
-            and props.get(_about(s.subject)) == Prop.CONCLUSION
+            and props.get(statement_id(s.subject)) == Prop.CONCLUSION
         ):
             return f"withdraw the conclusion: {v['reason']}"
         if s.prop in EXTRACTED_PROPS:

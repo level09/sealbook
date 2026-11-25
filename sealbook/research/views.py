@@ -3,16 +3,15 @@ progress, and the per-case switches (admin)."""
 
 import re
 
-import orjson
 from quart import Blueprint, Response, abort, g, request
-from quart_security import auth_required, current_user
+from quart_security import current_user
 
 from sealbook.cases import service as cases
 from sealbook.ingest import batch as batches
 from sealbook.ingest.service import DOC_TYPES
-from sealbook.ledger.write import principal_for_user
-from sealbook.monitor.views import ROLES
+from sealbook.ledger.write import principal_of
 from sealbook.research import queries, service, store
+from sealbook.web import json_response, protect
 
 bp_research = Blueprint("research", __name__, url_prefix="/api/research")
 SCOPE = re.compile(
@@ -21,27 +20,11 @@ SCOPE = re.compile(
 )
 
 
-@bp_research.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@bp_research.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(bp_research)
 
 
 def _refuse(reason: str, status=409, code="refused"):
-    return _json({"reason": code, "message": reason}, status)
+    return json_response({"reason": code, "message": reason}, status)
 
 
 async def _item() -> dict:
@@ -63,14 +46,14 @@ async def _scope(item) -> str:
 
 
 async def _who():
-    return await principal_for_user(
-        g.db_session, current_user.id, current_user.name or current_user.email
-    )
+    return await principal_of(g.db_session, current_user)
 
 
 @bp_research.get("/status")
 async def status():
-    return _json(await service.status(g.db_session, request.args.get("investigation")))
+    return json_response(
+        await service.status(g.db_session, request.args.get("investigation"))
+    )
 
 
 @bp_research.post("/queries")
@@ -83,7 +66,7 @@ async def propose():
         found = await queries.propose(db, scope, await service.blocked(db))
     except LookupError:
         abort(404)
-    return _json({"queries": found, "kinds": queries.KINDS})
+    return json_response({"queries": found, "kinds": queries.KINDS})
 
 
 @bp_research.post("/search")
@@ -109,7 +92,7 @@ async def search():
     except service.Refusal as exc:
         return _refuse(str(exc))
     await db.commit()
-    return _json(out)
+    return json_response(out)
 
 
 @bp_research.get("/thumb/<cid>")
@@ -146,7 +129,7 @@ async def capture():
     except ValueError as exc:
         abort(400, description=str(exc))
     await db.commit()
-    return _json(out)
+    return json_response(out)
 
 
 @bp_research.get("/batch/<uuid:batch>")
@@ -155,7 +138,9 @@ async def progress(batch):
     captures = await service.capture_status(db, str(batch))
     if not captures:
         abort(404)
-    return _json({"captures": captures, "intake": await batches.status(db, str(batch))})
+    return json_response(
+        {"captures": captures, "intake": await batches.status(db, str(batch))}
+    )
 
 
 @bp_research.post("/case")
@@ -172,4 +157,4 @@ async def case():
     who = await _who()
     await service.set_case(g.db_session, investigation, who.id, **flags)
     await g.db_session.commit()
-    return _json(await service.status(g.db_session, investigation))
+    return json_response(await service.status(g.db_session, investigation))

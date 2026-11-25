@@ -3,9 +3,8 @@ place in the chain. The proof sends hashes and the chained row, never a value.""
 
 from datetime import UTC, datetime
 
-import orjson
-from quart import Blueprint, Response, abort, g, render_template, request
-from quart_security import auth_required, current_user
+from quart import Blueprint, abort, g, render_template, request
+from quart_security import current_user
 from sqlalchemy import Text, cast, select
 
 from sealbook.anchor.proof import statement_proof
@@ -22,28 +21,12 @@ from sealbook.ledger.models import (
     Statement,
     StatementTier,
 )
-from sealbook.monitor.views import ROLES
+from sealbook.web import json_response, protect
 
 bp_guide = Blueprint("guide", __name__)
 
 
-@bp_guide.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@bp_guide.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(bp_guide)
 
 
 async def first_cards(db) -> list[dict]:
@@ -104,9 +87,7 @@ async def _example(db, investigation: str) -> Statement | None:
 
 async def _log_view(db, st: Statement) -> None:
     """One access record per reader, claim and login session, as the brief logs."""
-    me = await write.principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    me = await write.principal_of(db, current_user)
     key = view_session()
     subject = f"statement:{st.id}"
     seen = await db.scalar(
@@ -146,9 +127,9 @@ async def proof():
         abort(400, description="investigation is required")
     st = await _example(db, investigation)
     if st is None:
-        return _json({"claim": None})
+        return json_response({"claim": None})
     await _log_view(db, st)
     entry = await db.scalar(
         select(Chain).where(Chain.kind == "statement", Chain.ref == str(st.id))
     )
-    return _json(await statement_proof(db, st, entry))
+    return json_response(await statement_proof(db, st, entry))

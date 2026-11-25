@@ -16,7 +16,6 @@ from sealbook.discovery.models import (
 )
 from sealbook.discovery.text import folded
 from sealbook.ledger import chain, write
-from sealbook.ledger.contracts import Prop, StatementIn
 from sealbook.ledger.models import Run
 from sealbook.settings import Config
 
@@ -202,17 +201,7 @@ async def pdf(c):
         child = await blobs.put(
             c.s, text.encode(), "text/plain; charset=utf-8", Config.BLOB_DIR
         )
-        await write.append(
-            c.s,
-            StatementIn(
-                subject=f"blob:{child.sha256}",
-                prop=Prop.DERIVED_FROM,
-                value={"blob": blob.sha256},
-                author_id=c.run.principal_id,
-                run_id=c.run.id,
-            ),
-            sign=c.sign,
-        )
+        await write.derived_from(c, child, blob)
         await queue(
             c.s,
             c.acq,

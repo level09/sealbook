@@ -2,9 +2,8 @@
 
 import re
 
-import orjson
-from quart import Blueprint, Response, abort, g, render_template, request
-from quart_security import auth_required, current_user
+from quart import Blueprint, abort, g, render_template, request
+from quart_security import current_user
 from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -14,32 +13,16 @@ from sealbook.monitor.data import Context, mask
 from sealbook.people import data as people
 from sealbook.watch import matcher
 from sealbook.watch.models import Watch
+from sealbook.web import json_response, protect
 
 bp_watch = Blueprint("watch", __name__)
 
-ROLES = ("analyst", "admin")
 PERSON = re.compile(
     r"person:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 )
 
 
-@bp_watch.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@bp_watch.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(bp_watch)
 
 
 async def _cells(db, subjects: set[str]) -> dict[tuple[str, str], dict]:
@@ -168,7 +151,7 @@ async def page():
 
 @bp_watch.get("/api/watch")
 async def items():
-    return _json(
+    return json_response(
         {
             "items": await feed(
                 g.db_session,
@@ -199,7 +182,7 @@ async def watch():
         .on_conflict_do_nothing(constraint="uq_watch_user_person")
     )
     await db.commit()
-    return _json({"person": person}, 201)
+    return json_response({"person": person}, 201)
 
 
 @bp_watch.delete("/api/watch/<path:person>")
@@ -211,4 +194,4 @@ async def unwatch(person):
     if not gone.rowcount:
         abort(404)
     await db.commit()
-    return _json({"person": person})
+    return json_response({"person": person})

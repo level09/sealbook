@@ -1,36 +1,19 @@
 """Case map page and its reads. Every read that shows people's claims leaves the
 access record a story read leaves."""
 
-import orjson
-from quart import Blueprint, Response, abort, g, render_template, request
-from quart_security import auth_required, current_user
+from quart import Blueprint, abort, g, render_template, request
+from quart_security import current_user
 
 from sealbook.casemap import data
-from sealbook.ledger.write import principal_for_user
-from sealbook.monitor.views import ROLES
+from sealbook.ledger.write import principal_of
 from sealbook.people import data as people
 from sealbook.stories.views import shown
+from sealbook.web import json_response, protect
 
 bp_casemap = Blueprint("casemap", __name__)
 
 
-@bp_casemap.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@bp_casemap.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(bp_casemap)
 
 
 def _case() -> str:
@@ -52,7 +35,7 @@ async def case_map():
     db = g.db_session
     view, _ = await data.build(db, current_user, _case())
     await shown(db, view)
-    return _json(view)
+    return json_response(view)
 
 
 @bp_casemap.get("/api/case-map/path")
@@ -66,9 +49,7 @@ async def connect():
         )
     except LookupError as exc:
         abort(404, description=str(exc))
-    who = await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    who = await principal_of(db, current_user)
     seen: dict[str, list] = {}
     for step in found["steps"]:
         for node in step["nodes"]:
@@ -78,9 +59,9 @@ async def connect():
         await people.log_access(db, person, "view", sorted(set(ids)), who.id)
     await db.commit()
     found.pop("view")
-    return _json(found)
+    return json_response(found)
 
 
 @bp_casemap.get("/api/case-map/news")
 async def news():
-    return _json({"items": await data.news(g.db_session, _case())})
+    return json_response({"items": await data.news(g.db_session, _case())})

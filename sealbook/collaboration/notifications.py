@@ -12,6 +12,7 @@ from stk.user.models import User
 from stk.websocket import broadcast
 
 from sealbook.collaboration.models import NOTIFICATION_KINDS, Notification
+from sealbook.ledger.contracts import statement_id
 
 MAX_LIMIT = 100
 MAX_IDS = 500
@@ -62,11 +63,7 @@ async def describe(db, subjects) -> dict[str, str]:
     from sealbook.ledger.models import Statement
     from sealbook.sources.data import _blob
 
-    ids = {
-        uuid.UUID(s.removeprefix("statement:"))
-        for s in subjects
-        if s and s.startswith("statement:")
-    }
+    ids = {statement_id(s) for s in subjects if s and s.startswith("statement:")}
     if not ids:
         return {}
     first = {
@@ -78,9 +75,7 @@ async def describe(db, subjects) -> dict[str, str]:
         )
     }
     target = {
-        i: uuid.UUID(r.subject.removeprefix("statement:"))
-        if r.prop == Prop.REVIEW_REQUEST
-        else i
+        i: statement_id(r.subject) if r.prop == Prop.REVIEW_REQUEST else i
         for i, r in first.items()
     }
     claims = {

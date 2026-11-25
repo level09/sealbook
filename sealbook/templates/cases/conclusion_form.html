@@ -155,7 +155,7 @@ import {plural, signing} from '/static/js/conclusions.js';
 
 const boot = JSON.parse(document.getElementById('boot').textContent);
 const params = new URLSearchParams(location.search);
-const err = e => e.response?.data?.error || e.response?.data?.message || e.response?.data?.description || e.message;
+const err = apiError;
 const pause = ms => new Promise(r => setTimeout(r, ms));
 
 window.app = Vue.createApp({

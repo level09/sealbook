@@ -46,7 +46,7 @@ window.app = Vue.createApp({
     useCase() { this.load(); },
     async load() {
       try { this.items = (await axios.get('/api/incidents', {params: {investigation: this.caseSel || undefined}})).data.items; }
-      catch (err) { this.error = err.response?.data?.description || err.message; }
+      catch (err) { this.error = apiError(err); }
     },
   },
   mounted() { this.load(); },

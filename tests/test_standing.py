@@ -142,7 +142,7 @@ class StandingPassTest(unittest.IsolatedAsyncioTestCase):
                 read, "case", new_callable=mock.AsyncMock, return_value=case
             ),
             mock.patch.object(
-                standing, "runs", new_callable=mock.AsyncMock, return_value=[]
+                tasks, "runs", new_callable=mock.AsyncMock, return_value=[]
             ),
             mock.patch.object(
                 read, "ask", new_callable=mock.AsyncMock, side_effect=ask

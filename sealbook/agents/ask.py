@@ -12,8 +12,6 @@ from __future__ import annotations
 import re
 import time
 
-from sqlalchemy import select, text
-
 from sealbook.agents import brief, read, standing, tasks
 from sealbook.discovery.evidence import granted
 from sealbook.ledger.contracts import Tier
@@ -228,45 +226,22 @@ async def ask(c) -> str:
 
 
 async def runs(db, investigation: str, user_id: int) -> list[Run]:
-    return list(
-        await db.scalars(
-            select(Run)
-            .where(
-                Run.tool == TOOL,
-                Run.inputs["investigation"].astext == investigation,
-                Run.inputs["for_user"].as_integer() == user_id,
-            )
-            .order_by(Run.created_at.desc(), Run.id)
-            .limit(KEEP)
-        )
+    return await read.runs_of(
+        db, TOOL, KEEP, investigation=investigation, for_user=user_id
     )
 
 
 async def queue(db, investigation: str, user_id: int, question: str, model: str) -> Run:
-    await db.execute(
-        text("select pg_advisory_xact_lock(hashtextextended(:k, 0))"),
-        {"k": f"ask:{investigation}:{user_id}"},
+    return await read.new_run(
+        db,
+        TOOL,
+        AGENT,
+        user_id,
+        model,
+        {"investigation": investigation, "question": question},
+        busy="Your last question is still being answered.",
+        one_per={"investigation": investigation, "for_user": user_id},
     )
-    if any(
-        r.status in ("queued", "running")
-        for r in await runs(db, investigation, user_id)
-    ):
-        raise ValueError("Your last question is still being answered.")
-    agent = await read.agent_for(db, AGENT, user_id)
-    run = Run(
-        principal_id=agent.id,
-        tool=TOOL,
-        route=Config.AGENT_ROUTE,
-        model_requested=model,
-        inputs={
-            "investigation": investigation,
-            "for_user": user_id,
-            "question": question,
-        },
-    )
-    db.add(run)
-    await db.flush()
-    return run
 
 
 async def show(db, user, investigation: str) -> dict:
@@ -345,5 +320,5 @@ async def show(db, user, investigation: str) -> dict:
             await brief.log_view(db, user, run, sorted(set(shown)))
     return {
         "items": items,
-        "busy": any(i["status"] in ("queued", "running") for i in items),
+        "busy": any(i["status"] in read.ACTIVE for i in items),
     }

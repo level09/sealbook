@@ -63,7 +63,7 @@
                     try {
                         this.briefs = (await axios.get('/api/packages/briefs', {params: {investigation: this.caseSel || undefined}})).data.items;
                     } catch (e) {
-                        this.error = {show: true, text: e.response?.data?.message || e.message};
+                        this.error = {show: true, text: apiError(e)};
                     } finally { this.loaded = true; }
                 },
                 async create() {
@@ -72,7 +72,7 @@
                         const {data} = await axios.post('/api/packages/briefs', {item: {title: this.title, audience: this.audience}});
                         window.location = '/packages/brief/' + data.id;
                     } catch (e) {
-                        this.error = {show: true, text: e.response?.data?.message || e.message};
+                        this.error = {show: true, text: apiError(e)};
                     } finally { this.busy = false; }
                 },
             },

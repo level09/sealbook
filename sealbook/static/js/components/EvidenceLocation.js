@@ -43,7 +43,7 @@ export const EvidenceLocation = {
     try {
       this.items = (await axios.get(`/api/map/evidence/${this.sha}/locations`)).data.items;
     } catch (err) {
-      this.error = err.response?.data?.description || 'Location could not be read';
+      this.error = apiError(err, 'Location could not be read');
       return;
     }
     if (this.items.length) this.$nextTick(() => this.draw());

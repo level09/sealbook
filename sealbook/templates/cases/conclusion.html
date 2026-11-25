@@ -130,7 +130,7 @@
 import {brokenLine, day, peerLine, plural, reveal, signing, statusLine} from '/static/js/conclusions.js';
 
 const boot = JSON.parse(document.getElementById('boot').textContent);
-const err = e => e.response?.data?.error || e.response?.data?.message || e.response?.data?.description || e.message;
+const err = apiError;
 const ICON = {link: 'ti ti-link', finding: 'ti ti-chart-dots-3', claim: 'ti ti-quote', match: 'ti ti-copy', gone: 'ti ti-circle-off'};
 const VERSION = {standing: 'current', revised: 'revised', withdrawn: 'withdrawn', erased: 'erased'};
 

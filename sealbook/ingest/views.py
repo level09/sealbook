@@ -14,9 +14,9 @@ from sealbook.ingest import service
 from sealbook.ingest import suggest as suggestions
 from sealbook.ledger import write
 from sealbook.ledger.contracts import Sensitivity
-from sealbook.monitor.views import ROLES
 from sealbook.sheets import mapping, parse
 from sealbook.sheets import service as sheets
+from sealbook.web import ROLES
 
 _C2PA_FAILED = (
     "The C2PA credentials check could not run on this file, so it was not added. "

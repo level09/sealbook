@@ -2,9 +2,8 @@
 
 import uuid
 
-import orjson
 from quart import Blueprint, Response, abort, current_app, g, render_template, request
-from quart_security import auth_required, current_user
+from quart_security import current_user
 from sqlalchemy import select
 
 from sealbook.ledger.contracts import Refused
@@ -13,29 +12,12 @@ from sealbook.monitor import data
 from sealbook.monitor.filter import statement_clause
 from sealbook.packages import service
 from sealbook.packages.models import Brief, Package
+from sealbook.web import json_response, protect
 
 packages = Blueprint("packages", __name__)
 
-ROLES = ("analyst", "admin")
 
-
-@packages.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@packages.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(packages)
 
 
 async def _item() -> dict:
@@ -198,7 +180,7 @@ async def briefs():
                 "manifest_sha256": p.manifest_sha256,
             }
         )
-    return _json(
+    return json_response(
         {
             "items": [
                 {
@@ -230,13 +212,13 @@ async def create_brief():
     brief = Brief(title=title, audience=audience, author_id=current_user.id)
     g.db_session.add(brief)
     await g.db_session.commit()
-    return _json({"id": str(brief.id)})
+    return json_response({"id": str(brief.id)})
 
 
 @packages.get("/api/packages/factual")
 async def factual():
     rows = await data.statement_rows(g.db_session, *service.factual_clause())
-    return _json({"items": rows})
+    return json_response({"items": rows})
 
 
 @packages.post("/api/packages/briefs/<uuid:bid>/sentences")
@@ -254,7 +236,7 @@ async def save_sentence(bid):
         )
     )
     await g.db_session.commit()
-    return _json(await _brief(await _get(Brief, bid)))
+    return json_response(await _brief(await _get(Brief, bid)))
 
 
 @packages.post("/api/packages/briefs/<uuid:bid>/build")
@@ -264,7 +246,9 @@ async def build(bid):
         service.build(g.db_session, brief, current_user, current_app.config)
     )
     await g.db_session.commit()
-    return _json({"id": str(package.id), "manifest_sha256": package.manifest_sha256})
+    return json_response(
+        {"id": str(package.id), "manifest_sha256": package.manifest_sha256}
+    )
 
 
 @packages.post("/api/packages/briefs/<uuid:bid>/disclose")
@@ -285,7 +269,7 @@ async def disclose(bid):
 @packages.post("/api/packages/<uuid:pid>/attest/options")
 async def attest_options(pid):
     package = await _get(Package, pid)
-    return _json(
+    return json_response(
         await _refusing(service.attest_options(g.db_session, current_user, package))
     )
 
@@ -298,7 +282,9 @@ async def attest(pid):
         service.add_attestation(g.db_session, current_user, package, credential)
     )
     await g.db_session.commit()
-    return _json(_package(package, await service.attesters(g.db_session, package)))
+    return json_response(
+        _package(package, await service.attesters(g.db_session, package))
+    )
 
 
 @packages.post("/api/packages/<uuid:pid>/finalize")
@@ -310,7 +296,9 @@ async def finalize(pid):
         )
     )
     await g.db_session.commit()
-    return _json(_package(package, await service.attesters(g.db_session, package)))
+    return json_response(
+        _package(package, await service.attesters(g.db_session, package))
+    )
 
 
 @packages.get("/packages/<uuid:pid>/download")

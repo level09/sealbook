@@ -60,7 +60,7 @@
                 async loadAll() {
                     try {
                         this.everyone = (await axios.get('/api/people', {params: {investigation: this.caseSel || undefined}})).data.items;
-                    } catch (e) { this.error = {show: true, text: e.response?.data?.message || e.message}; }
+                    } catch (e) { this.error = {show: true, text: apiError(e)}; }
                 },
                 async search() {
                     const q = (this.q || '').trim();
@@ -72,7 +72,7 @@
                         this.asked = q;
                         history.replaceState(null, '', `?q=${encodeURIComponent(q)}`);
                     } catch (e) {
-                        this.error = {show: true, text: e.response?.data?.message || e.message};
+                        this.error = {show: true, text: apiError(e)};
                     } finally { this.busy = false; }
                 },
             },

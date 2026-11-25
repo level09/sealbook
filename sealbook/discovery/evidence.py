@@ -96,7 +96,7 @@ async def viewable(db, sha: str, user) -> bool:
         text("select pg_advisory_xact_lock(hashtextextended(:k, 0))"),
         {"k": f"evidence-view:{user.id}"},
     )
-    who = await write.principal_for_user(db, user.id, user.name or user.email)
+    who = await write.principal_of(db, user)
     key = view_session()
     seen = await db.scalar(
         select(Statement.id)

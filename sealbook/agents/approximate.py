@@ -9,7 +9,7 @@ import asyncio
 import time
 import uuid
 
-from sqlalchemy import select, text
+from sqlalchemy import select
 
 from sealbook.agents import brief, read, tasks
 from sealbook.discovery.evidence import granted
@@ -207,15 +207,7 @@ def validate(answer, cands, h, norms_of) -> tuple[list, dict]:
 
 
 async def runs(db, investigation: str) -> list[Run]:
-    return list(
-        await db.scalars(
-            select(Run)
-            .where(
-                Run.tool == TOOL, Run.inputs["investigation"].astext == investigation
-            )
-            .order_by(Run.created_at.desc(), Run.id)
-        )
-    )
+    return await read.runs_of(db, TOOL, investigation=investigation)
 
 
 async def outputs(db, investigation: str) -> list[tuple[Run, dict]]:
@@ -322,23 +314,15 @@ async def approximate(c) -> str:
 
 
 async def queue(db, investigation: str, user_id: int, model: str) -> Run:
-    await db.execute(
-        text("select pg_advisory_xact_lock(hashtextextended(:k, 0))"),
-        {"k": f"approximate:{investigation}"},
+    return await read.new_run(
+        db,
+        TOOL,
+        AGENT,
+        user_id,
+        model,
+        {"investigation": investigation},
+        busy="The place finder is already reading this case.",
     )
-    if any(r.status in ("queued", "running") for r in await runs(db, investigation)):
-        raise ValueError("The place finder is already reading this case.")
-    agent = await read.agent_for(db, AGENT, user_id)
-    run = Run(
-        principal_id=agent.id,
-        tool=TOOL,
-        route=Config.AGENT_ROUTE,
-        model_requested=model,
-        inputs={"investigation": investigation, "for_user": user_id},
-    )
-    db.add(run)
-    await db.flush()
-    return run
 
 
 async def suggestions(db, user, items, investigation: str | None) -> dict[str, dict]:

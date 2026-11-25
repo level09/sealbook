@@ -15,7 +15,6 @@ from sealbook.discovery import embeddings
 from sealbook.discovery.indexing import continue_run, progress, store
 from sealbook.discovery.models import Segment
 from sealbook.ledger import write
-from sealbook.ledger.contracts import Prop, StatementIn
 from sealbook.settings import Config
 
 
@@ -194,17 +193,7 @@ async def index(c):
             Config.BLOB_DIR,
         )
         if artifact.sha256 != blob.sha256:
-            await write.append(
-                c.s,
-                StatementIn(
-                    subject=f"blob:{artifact.sha256}",
-                    prop=Prop.DERIVED_FROM,
-                    value={"blob": blob.sha256},
-                    author_id=c.run.principal_id,
-                    run_id=c.run.id,
-                ),
-                sign=c.sign,
-            )
+            await write.derived_from(c, artifact, blob)
         inputs.append(
             embeddings.content(
                 "audio" if item["kind"] == "audio" else "image", item["data"]

@@ -716,7 +716,7 @@ async def log_view(db, user, slug: str, ids: list[str]) -> None:
     the case: who read which conclusions and the claims under them."""
     if not ids:
         return
-    me = await write.principal_for_user(db, user.id, user.name or user.email)
+    me = await write.principal_of(db, user)
     key = evidence.view_session()
     shown = sorted(set(ids))
     seen = await db.scalar(

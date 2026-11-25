@@ -25,7 +25,7 @@ from sealbook.ingest.service import system_agent
 from sealbook.ledger.contracts import EvidenceKind as E
 from sealbook.ledger.contracts import Prop, Tier
 from sealbook.ledger.models import Payload, Statement, StatementTier
-from sealbook.ledger.write import principal_for_user
+from sealbook.ledger.write import principal_of
 from sealbook.monitor import seed_flows as flows
 from sealbook.monitor.seed import Seeder, seeded
 from sealbook.monitor.seed_full import COMMONS, ROOT, intake, users
@@ -931,9 +931,7 @@ async def seed_case(s, session, case_id, case, ctx) -> dict:
     await ensure_case(session, case_id, name=case["name"], description=case["title"])
     owner, analysts, senior, reviewer, extractor, importer = ctx
     mine = [owner, *analysts]
-    principals = [
-        await principal_for_user(session, u.id, u.name or u.email) for u in mine
-    ]
+    principals = [await principal_of(session, u) for u in mine]
     batch = {"batch": str(uuid.uuid4())}
     docs = {d[0]: d for d in case["docs"]}
     for i, doc in enumerate(case["docs"]):

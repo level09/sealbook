@@ -6,7 +6,7 @@
    until a person confirms it. */
 
 const plural = (n, one, many) => `${n} ${n === 1 ? one : (many || one + 's')}`;
-const err = e => e.response?.data?.message || e.response?.data?.description || e.message;
+const err = apiError;
 
 // The per-item state SheetColumns works on.
 export const sheetState = name => ({peek: null, map: {}, ok: {}, why: {}, sug: {}, open: true, dataset: null, datasetName: name.replace(/\.[^.]+$/, ''), busy: false, error: '', needReveal: false});

@@ -1,26 +1,20 @@
 """The Desk: home for a signed-in analyst. Same access rule as the sources it reads."""
 
-import orjson
-from quart import Blueprint, Response, g, render_template, request
+from quart import Blueprint, g, render_template, request
 from quart_security import current_user
 
-from sealbook.collaboration.views import guard, no_store
 from sealbook.desk import data
 from sealbook.discovery.evidence import granted
 from sealbook.sources import data as sources
+from sealbook.web import json_response, protect
 
 bp = Blueprint("desk", __name__)
-bp.before_request(guard)
-bp.after_request(no_store)
-
-
-def output(value, status=200):
-    return Response(orjson.dumps(value), status, content_type="application/json")
+protect(bp)
 
 
 @bp.errorhandler(ValueError)
 async def invalid(exc):
-    return output({"error": str(exc)}, 400)
+    return json_response({"error": str(exc)}, 400)
 
 
 def _args():
@@ -41,12 +35,12 @@ async def page():
 
 @bp.get("/api/desk/changes")
 async def changes():
-    return output(await data.changes(g.db_session, current_user, *_args()))
+    return json_response(await data.changes(g.db_session, current_user, *_args()))
 
 
 @bp.get("/api/desk/needs")
 async def needs():
-    return output(await data.needs(g.db_session, current_user, *_args()))
+    return json_response(await data.needs(g.db_session, current_user, *_args()))
 
 
 @bp.get("/api/desk/recent")
@@ -56,4 +50,4 @@ async def recent():
     for r in found["items"]:
         # As on Sources: without a held reveal the tile stays locked and asks nothing.
         r["revealed"] = granted(r["sha256"]) or not r["sensitive"]
-    return output(found)
+    return json_response(found)

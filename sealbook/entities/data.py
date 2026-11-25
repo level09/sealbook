@@ -17,7 +17,7 @@ from sealbook.collaboration.service import signed_off
 from sealbook.discovery.evidence import REVIEW_PROPS, granted, threads
 from sealbook.discovery.models import FindingKey
 from sealbook.discovery.service import available
-from sealbook.ledger.contracts import Prop, Tier
+from sealbook.ledger.contracts import Prop, Tier, statement_id
 from sealbook.ledger.models import (
     Acquisition,
     Blob,
@@ -40,10 +40,6 @@ EVIDENCE_SORTS = ("claims", "tier", "title")
 PLACE_SORTS = ("name", "kind", "governorate", "claims", "people", "sources", "last")
 NEARBY_M = 5000
 SAMPLE = 20  # claims shown per unresolved name
-
-
-def _place_ref(place_id) -> str:
-    return f"place:{place_id}"
 
 
 def _pid(ref: str) -> uuid.UUID:
@@ -658,7 +654,7 @@ async def incident(db, user, ref: str) -> dict:
                 )
             )
         ).scalars()
-        fids = [uuid.UUID(s.removeprefix("statement:")) for s in reviews]
+        fids = [statement_id(s) for s in reviews]
         # Accepted same-event links: the incident was built from a group of posts.
         links = (
             await db.execute(

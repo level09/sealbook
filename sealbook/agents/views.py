@@ -7,9 +7,8 @@ import re
 import uuid
 from datetime import UTC, datetime
 
-import orjson
-from quart import Blueprint, Response, abort, g, request
-from quart_security import auth_required, current_user
+from quart import Blueprint, abort, g, request
+from quart_security import current_user
 from sqlalchemy import select
 
 from sealbook.agents import (
@@ -29,10 +28,10 @@ from sealbook.agents.models import AgentTask
 from sealbook.agents.read import RULES, read_output
 from sealbook.collaboration.models import Notification
 from sealbook.ledger.models import Acquisition, Blob, Run, Statement
-from sealbook.ledger.write import principal_for_user
+from sealbook.ledger.write import principal_of
 from sealbook.monitor import filter as mfilter
-from sealbook.monitor.views import ROLES
 from sealbook.settings import Config
+from sealbook.web import json_response, protect
 
 bp_agents = Blueprint("agents", __name__, url_prefix="/api/agents")
 SCOPE = re.compile(
@@ -57,23 +56,7 @@ def missing() -> list[str]:
     ]
 
 
-@bp_agents.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@bp_agents.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(bp_agents)
 
 
 async def _item() -> dict:
@@ -87,43 +70,45 @@ def _batch(raw) -> str:
         abort(400, description="batch must be an intake batch id")
 
 
+async def _find_case(db, slug):
+    """The case, or 404."""
+    from sealbook.cases import service as cases
+
+    try:
+        return await cases.require(db, slug)
+    except cases.Unknown:
+        abort(404)
+
+
+async def _slug(db, slug):
+    return (await _find_case(db, slug)).slug
+
+
 @bp_agents.post("/contradictions")
 async def find_contradictions():
-    from sealbook.cases.service import Unknown, require
-
     db = g.db_session
     investigation = (await _item()).get("investigation")
     if not isinstance(investigation, str) or not investigation.strip():
         abort(400, description="Choose a case to check.")
-    try:
-        case = await require(db, investigation)
-    except Unknown:
-        abort(404)
+    case = await _find_case(db, investigation)
     if gap := missing():
-        return _json({"reason": "off", "missing": gap}, 409)
-    await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+        return json_response({"reason": "off", "missing": gap}, 409)
+    await principal_of(db, current_user)
     try:
         run = await contradictions.queue(
             db, case.slug, current_user.id, Config.AGENT_MODEL
         )
     except ValueError as exc:
-        return _json({"reason": "busy", "message": str(exc)}, 409)
+        return json_response({"reason": "busy", "message": str(exc)}, 409)
     await db.commit()
-    return _json({"run": str(run.id)}, 202)
+    return json_response({"run": str(run.id)}, 202)
 
 
 @bp_agents.get("/contradictions")
 async def read_contradictions():
-    from sealbook.cases.service import Unknown, require
-
     db = g.db_session
-    try:
-        case = await require(db, request.args.get("investigation"))
-    except Unknown:
-        abort(404)
-    return _json(await contradictions.show(db, current_user, case.slug))
+    case = await _find_case(db, request.args.get("investigation"))
+    return json_response(await contradictions.show(db, current_user, case.slug))
 
 
 @bp_agents.get("/contradictions/runs/<uuid:rid>")
@@ -135,41 +120,29 @@ async def contradiction_status(rid):
         "admin"
     ):
         abort(404)
-    return _json({"status": run.status})
+    return json_response({"status": run.status})
 
 
 @bp_agents.post("/conclusions")
 async def draft_conclusions():
-    from sealbook.cases.service import Unknown, require
-
     db = g.db_session
-    try:
-        case = await require(db, (await _item()).get("investigation"))
-    except Unknown:
-        abort(404)
+    case = await _find_case(db, (await _item()).get("investigation"))
     if gap := missing():
-        return _json({"reason": "off", "missing": gap}, 409)
-    await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+        return json_response({"reason": "off", "missing": gap}, 409)
+    await principal_of(db, current_user)
     try:
         run = await conclude.queue(db, case.slug, current_user.id, Config.AGENT_MODEL)
     except ValueError as exc:
-        return _json({"reason": "busy", "message": str(exc)}, 409)
+        return json_response({"reason": "busy", "message": str(exc)}, 409)
     await db.commit()
-    return _json({"run": str(run.id)}, 202)
+    return json_response({"run": str(run.id)}, 202)
 
 
 @bp_agents.get("/conclusions")
 async def read_conclusion_drafts():
-    from sealbook.cases.service import Unknown, require
-
     db = g.db_session
-    try:
-        case = await require(db, request.args.get("investigation"))
-    except Unknown:
-        abort(404)
-    return _json(await conclude.show(db, current_user, case.slug))
+    case = await _find_case(db, request.args.get("investigation"))
+    return json_response(await conclude.show(db, current_user, case.slug))
 
 
 @bp_agents.get("/conclusions/runs/<uuid:rid>")
@@ -181,76 +154,59 @@ async def conclusion_draft_status(rid):
         "admin"
     ):
         abort(404)
-    return _json({"status": run.status, "error": run.error})
+    return json_response({"status": run.status, "error": run.error})
 
 
 @bp_agents.post("/ask")
 async def ask_case():
     """Ask a case a question now; the answer arrives as a run to follow."""
-    from sealbook.cases.service import Unknown, require
 
     db = g.db_session
     item = await _item()
     question = item.get("question")
     if not isinstance(question, str) or not 3 <= len(question.strip()) <= 500:
         abort(400, description="Write a question of 3 to 500 characters.")
-    try:
-        case = await require(db, item.get("investigation"))
-    except Unknown:
-        abort(404)
+    case = await _find_case(db, item.get("investigation"))
     if gap := missing():
-        return _json({"reason": "off", "missing": gap}, 409)
-    await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+        return json_response({"reason": "off", "missing": gap}, 409)
+    await principal_of(db, current_user)
     try:
         run = await ask.queue(
             db, case.slug, current_user.id, question.strip(), Config.AGENT_MODEL
         )
     except ValueError as exc:
-        return _json({"reason": "busy", "message": str(exc)}, 409)
+        return json_response({"reason": "busy", "message": str(exc)}, 409)
     await db.commit()
-    return _json({"run": str(run.id)}, 202)
+    return json_response({"run": str(run.id)}, 202)
 
 
 @bp_agents.get("/ask")
 async def read_answers():
-    from sealbook.cases.service import Unknown, require
-
     db = g.db_session
-    try:
-        case = await require(db, request.args.get("investigation"))
-    except Unknown:
-        abort(404)
-    return _json(await ask.show(db, current_user, case.slug))
+    case = await _find_case(db, request.args.get("investigation"))
+    return json_response(await ask.show(db, current_user, case.slug))
 
 
 @bp_agents.post("/approximate")
 async def find_approximate():
     """Ask the place finder to suggest approximate places for one case's names."""
-    from sealbook.cases.service import Unknown, require
 
     db = g.db_session
     investigation = (await _item()).get("investigation")
     if not isinstance(investigation, str) or not investigation.strip():
         abort(400, description="Choose a case to read.")
-    try:
-        case = await require(db, investigation)
-    except Unknown:
-        abort(404)
+    case = await _find_case(db, investigation)
     if gap := missing():
-        return _json({"reason": "off", "missing": gap}, 409)
-    await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+        return json_response({"reason": "off", "missing": gap}, 409)
+    await principal_of(db, current_user)
     try:
         run = await approximate.queue(
             db, case.slug, current_user.id, Config.AGENT_MODEL
         )
     except ValueError as exc:
-        return _json({"reason": "busy", "message": str(exc)}, 409)
+        return json_response({"reason": "busy", "message": str(exc)}, 409)
     await db.commit()
-    return _json({"run": str(run.id)}, 202)
+    return json_response({"run": str(run.id)}, 202)
 
 
 @bp_agents.get("/approximate/runs/<uuid:rid>")
@@ -265,7 +221,7 @@ async def approximate_status(rid):
         out = read_output(await g.db_session.get(Blob, run.output_hash))["outcome"]
     elif run.status == "failed":
         out = {"proposed": 0, "reason": tasks.failure_reason(run.error)}
-    return _json({"status": run.status, "outcome": out})
+    return json_response({"status": run.status, "outcome": out})
 
 
 @bp_agents.get("/brief")
@@ -277,7 +233,7 @@ async def read_brief():
         )
     except LookupError:
         abort(404)
-    return _json(out | {"missing": missing()})
+    return json_response(out | {"missing": missing()})
 
 
 @bp_agents.get("/answer")
@@ -298,7 +254,9 @@ async def read_answer():
         if batch is None:
             abort(404)
     try:
-        return _json(await answer.show(g.db_session, current_user, _batch(batch)))
+        return json_response(
+            await answer.show(g.db_session, current_user, _batch(batch))
+        )
     except LookupError:
         abort(404)
 
@@ -314,18 +272,16 @@ async def regenerate():
         .limit(1)
     ):
         abort(404)
-    if any(r.status in ("queued", "running") for r in await brief.runs(db, batch)):
-        return _json(
+    if any(r.status in tasks.ACTIVE for r in await brief.runs(db, batch)):
+        return json_response(
             {"reason": "busy", "message": "A new version is being written."}, 409
         )
-    await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    await principal_of(db, current_user)
     # With the agents off the brief is written by its rules alone.
     model = RULES if missing() else Config.AGENT_MODEL
     run = await brief.queue(db, batch, current_user.id, model)
     await db.commit()
-    return _json({"run": str(run.id)}, 202)
+    return json_response({"run": str(run.id)}, 202)
 
 
 @bp_agents.get("/briefs")
@@ -357,7 +313,7 @@ async def unread():
         items.append(
             shown | {"notification": str(n.id), "at": n.created_at.isoformat()}
         )
-    return _json({"items": items, "missing": missing()})
+    return json_response({"items": items, "missing": missing()})
 
 
 @bp_agents.post("/link")
@@ -371,44 +327,34 @@ async def find_links():
     if investigation is None:
         abort(404)
     if gap := missing():
-        return _json({"reason": "off", "missing": gap}, 409)
-    await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+        return json_response({"reason": "off", "missing": gap}, 409)
+    await principal_of(db, current_user)
     run = await linker.queue(
         db, investigation, current_user.id, Config.AGENT_MODEL, focus=scope
     )
     await db.commit()
-    return _json({"run": str(run.id)}, 202)
+    return json_response({"run": str(run.id)}, 202)
 
 
 @bp_agents.get("/gaps")
 async def read_gaps():
     from sealbook.agents import gaps
-    from sealbook.cases import service as cases
 
-    try:
-        case = await cases.require(g.db_session, request.args.get("investigation"))
-    except cases.Unknown:
-        abort(404)
-    return _json(await gaps.show(g.db_session, current_user, case.slug))
+    case = await _find_case(g.db_session, request.args.get("investigation"))
+    return json_response(await gaps.show(g.db_session, current_user, case.slug))
 
 
 @bp_agents.post("/gaps")
 async def find_gaps():
     from sealbook.agents import gaps
-    from sealbook.cases import service as cases
 
     db = g.db_session
     investigation = (await _item()).get("investigation")
     if not isinstance(investigation, str) or not investigation.strip():
         abort(400, description="Choose a case to find gaps.")
-    try:
-        case = await cases.require(db, investigation)
-    except cases.Unknown:
-        abort(404)
+    case = await _find_case(db, investigation)
     if missing():
-        return _json(
+        return json_response(
             {
                 "reason": "off",
                 "message": "Gap finder needs an agent model. Ask an administrator to enable it.",
@@ -416,43 +362,34 @@ async def find_gaps():
             409,
         )
     if any(
-        r.status in ("queued", "running")
+        r.status in tasks.ACTIVE
         for r in await gaps.runs(db, case.slug, current_user.id)
     ):
-        return _json(
+        return json_response(
             {"reason": "busy", "message": "Gap finder is reading this case."}, 409
         )
-    await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    await principal_of(db, current_user)
     run = await gaps.queue(db, case.slug, current_user.id, Config.AGENT_MODEL)
     await db.commit()
-    return _json({"run": str(run.id)}, 202)
-
-
-async def _required_case(db, slug):
-    from sealbook.cases import service as cases
-
-    try:
-        return (await cases.require(db, slug)).slug
-    except cases.Unknown:
-        abort(404)
+    return json_response({"run": str(run.id)}, 202)
 
 
 @bp_agents.get("/overview")
 async def agents_overview():
     """Every agent working for this person in the case, and their recent runs."""
     db = g.db_session
-    investigation = await _required_case(db, request.args.get("investigation"))
-    return _json(await overview.overview(db, current_user, investigation, missing()))
+    investigation = await _slug(db, request.args.get("investigation"))
+    return json_response(
+        await overview.overview(db, current_user, investigation, missing())
+    )
 
 
 @bp_agents.get("/notice")
 async def read_notice():
     db = g.db_session
-    investigation = await _required_case(db, request.args.get("investigation"))
+    investigation = await _slug(db, request.args.get("investigation"))
     sha = request.args.get("sha") or None
-    return _json(await noticer.show(db, current_user, investigation, sha))
+    return json_response(await noticer.show(db, current_user, investigation, sha))
 
 
 @bp_agents.post("/notice")
@@ -462,9 +399,9 @@ async def check_notice():
     investigation = (await _item()).get("investigation")
     if not isinstance(investigation, str) or not investigation.strip():
         abort(400, description="Choose a case to check.")
-    investigation = await _required_case(db, investigation)
+    investigation = await _slug(db, investigation)
     if missing():
-        return _json(
+        return json_response(
             {
                 "reason": "off",
                 "message": "The noticer needs an agent model. Ask an administrator to set it up.",
@@ -475,15 +412,13 @@ async def check_notice():
         r.status in tasks.ACTIVE
         for r in await noticer.runs(db, investigation, current_user.id)
     ):
-        return _json(
+        return json_response(
             {"reason": "busy", "message": "The noticer is reading this case."}, 409
         )
-    await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    await principal_of(db, current_user)
     run = await noticer.queue(db, investigation, current_user.id, Config.AGENT_MODEL)
     await db.commit()
-    return _json({"run": str(run.id)}, 202)
+    return json_response({"run": str(run.id)}, 202)
 
 
 @bp_agents.post("/notice/link")
@@ -498,16 +433,14 @@ async def propose_notice_link():
     if not isinstance(key, str):
         abort(400, description="Choose a resemblance.")
     db = g.db_session
-    await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    await principal_of(db, current_user)
     try:
         statement = await noticer.propose(db, current_user, rid, key)
     except LookupError:
         abort(404)
     except noticer.NotProposed as exc:
-        return _json({"message": str(exc)}, 409)
-    return _json({"statement": statement}, 201)
+        return json_response({"message": str(exc)}, 409)
+    return json_response({"statement": statement}, 201)
 
 
 async def _case(db, scope: str) -> str | None:
@@ -549,7 +482,7 @@ async def run_status(rid):
         if run.status == "done" and run.output_hash
         else {}
     )
-    return _json(
+    return json_response(
         {
             "id": str(run.id),
             "tool": run.tool,
@@ -598,9 +531,7 @@ async def create_task():
         abort(
             400, description="The check interval must be a positive number of seconds."
         )
-    await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    await principal_of(db, current_user)
     if kind != "standing":
         # One standing check per person, case and agent: asking again resumes it.
         task = await db.scalar(
@@ -616,7 +547,7 @@ async def create_task():
             task.enabled, task.paused_reason, task.failures = True, None, 0
             task.next_at = datetime.now(UTC)
             await db.commit()
-            return _json({"id": str(task.id)}, 200)
+            return json_response({"id": str(task.id)}, 200)
     task = AgentTask(
         user_id=current_user.id,
         investigation=investigation,
@@ -627,7 +558,7 @@ async def create_task():
     )
     db.add(task)
     await db.commit()
-    return _json({"id": str(task.id)}, 201)
+    return json_response({"id": str(task.id)}, 201)
 
 
 @bp_agents.get("/tasks")
@@ -665,7 +596,7 @@ async def list_tasks():
                 "matches": out["outcome"]["proposed"] if out else None,
             }
         )
-    return _json({"items": items, "off": bool(missing())})
+    return json_response({"items": items, "off": bool(missing())})
 
 
 @bp_agents.post("/tasks/<uuid:tid>/run")
@@ -674,18 +605,18 @@ async def check_task(tid):
     db = g.db_session
     run = await db.get(Run, task.last_run_id) if task.last_run_id else None
     if run and run.status in tasks.ACTIVE:
-        return _json({"message": "This is already being checked."}, 409)
+        return json_response({"message": "This is already being checked."}, 409)
     if not task.enabled or task.paused_reason:
-        return _json({"message": "Resume this before checking it."}, 409)
+        return json_response({"message": "Resume this before checking it."}, 409)
     if missing():
-        return _json(
+        return json_response(
             {"message": "Agents are off until the agent model is set up."},
             409,
         )
     await tasks.wake(db, task.id, f"manual:{uuid.uuid4()}", "manual", {})
     task.next_at = datetime.now(UTC)
     await db.commit()
-    return _json({"state": "checking"}, 202)
+    return json_response({"state": "checking"}, 202)
 
 
 @bp_agents.patch("/tasks/<uuid:tid>")
@@ -699,11 +630,11 @@ async def toggle_task(tid):
         task.paused_reason, task.failures = None, 0
         task.next_at = datetime.now(UTC)
     await g.db_session.commit()
-    return _json({"enabled": task.enabled})
+    return json_response({"enabled": task.enabled})
 
 
 @bp_agents.get("/tasks/<uuid:tid>")
 async def read_task(tid):
     if (await _owned_task(tid)).kind != "standing":
         abort(404)
-    return _json(await standing.show(g.db_session, current_user, tid))
+    return json_response(await standing.show(g.db_session, current_user, tid))

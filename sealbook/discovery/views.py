@@ -9,7 +9,6 @@ import httpx2
 import orjson
 from quart import (
     Blueprint,
-    Response,
     abort,
     current_app,
     g,
@@ -24,7 +23,6 @@ from sqlalchemy import select
 
 from sealbook import blobs
 from sealbook.bayanat import export as bayanat_export
-from sealbook.collaboration.views import guard, no_store
 from sealbook.discovery import coverage, embeddings, evidence, media, service
 from sealbook.discovery.models import Segment
 from sealbook.ingest import batch
@@ -45,19 +43,15 @@ from sealbook.monitor import filter as mfilter
 from sealbook.people import data as people_data
 from sealbook.runs.routes import RouteError
 from sealbook.settings import Config
+from sealbook.web import json_response, protect
 
 bp = Blueprint("discovery", __name__)
-bp.before_request(guard)
-bp.after_request(no_store)
-
-
-def output(value, status=200):
-    return Response(orjson.dumps(value), status=status, content_type="application/json")
+protect(bp)
 
 
 @bp.errorhandler(Refused)
 async def refused(exc):
-    return output({"message": exc.reason}, 409)
+    return json_response({"message": exc.reason}, 409)
 
 
 @bp.get("/evidence")
@@ -125,9 +119,7 @@ async def search():
     # documents and media keep the per-segment shape of the current evidence page.
     documents = [row for row in hits if "span" in row]
     media_hits = [row for row in hits if "segment" in row and "span" not in row]
-    who = await write.principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    who = await write.principal_of(db, current_user)
     await write.append(
         db,
         StatementIn(
@@ -145,7 +137,7 @@ async def search():
         ),
     )
     await db.commit()
-    return output(
+    return json_response(
         {
             "results": hits,
             "people": people,
@@ -162,7 +154,7 @@ async def index_coverage():
         f = mfilter.parse(request.args.get("filter"))
     except ValueError as exc:
         abort(400, description=str(exc))
-    return output(await coverage.report(g.db_session, f))
+    return json_response(await coverage.report(g.db_session, f))
 
 
 async def source_segment(sid):
@@ -245,7 +237,7 @@ async def source_detail(sha):
     found = await evidence.item(g.db_session, sha, current_user)
     if found is None:
         abort(404)
-    return output(found)
+    return json_response(found)
 
 
 @bp.get("/api/evidence/<sha>/read")
@@ -255,7 +247,7 @@ async def source_read(sha):
         abort(404)
     if not await evidence.viewable(g.db_session, sha, current_user):
         abort(403, description="Reveal this source before reading it")
-    return output(await evidence.content_read(g.db_session, sha, blob))
+    return json_response(await evidence.content_read(g.db_session, sha, blob))
 
 
 def _read(run, where_ran) -> dict:
@@ -304,7 +296,7 @@ async def statement_proof(sid):
         select(Batch).where(Batch.first_seq == b["first_seq"])
     )
     held = {a["kind"]: a["state"] for a in b["anchors"]}
-    return output(
+    return json_response(
         out
         | {
             "read": run and _read(run, where_ran),
@@ -353,7 +345,7 @@ async def excerpt(sid):
         abort(404)
     blob = await g.db_session.get(Blob, row.text_sha256)
     source = (await asyncio.to_thread(blobs.read, blob, Config.BLOB_DIR)).decode()
-    return output(
+    return json_response(
         {
             "before": source[max(row.start, span["start"] - 160) : span["start"]],
             "match": source[span["start"] : span["end"]],
@@ -407,7 +399,7 @@ async def analyse(sha):
     if not read["queued"]:
         said += f" {read['reason']}"
     await db.commit()
-    return output({"runs": queued, "processing": read, "message": said}, 202)
+    return json_response({"runs": queued, "processing": read, "message": said}, 202)
 
 
 @bp.get("/api/evidence/matches")
@@ -452,7 +444,7 @@ async def matches():
             )
         ).all()
     )
-    return output(
+    return json_response(
         {
             "items": [
                 {
@@ -507,9 +499,7 @@ async def media_blob(sha):
 async def reveal(sha):
     await media_blob(sha)
     db = g.db_session
-    who = await write.principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    who = await write.principal_of(db, current_user)
     await write.append(
         db,
         StatementIn(
@@ -525,7 +515,7 @@ async def reveal(sha):
     }
     grants[sha] = int(time.time()) + 3600
     session["evidence_previews"] = dict(list(grants.items())[-8:])
-    return output({"url": f"/api/evidence/{sha}/content"})
+    return json_response({"url": f"/api/evidence/{sha}/content"})
 
 
 @bp.get("/api/evidence/<sha>/content")

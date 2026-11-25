@@ -21,6 +21,7 @@ from sealbook.ledger.contracts import (
     Refused,
     StatementIn,
     Tier,
+    statement_id,
 )
 from sealbook.ledger.models import (
     Acquisition,
@@ -614,7 +615,7 @@ async def read(db: AsyncSession, caller: Caller, args: dict) -> dict:
     elif target == "history":
         result = await _history(db, ref)
     elif ref.startswith("statement:"):
-        result = await _fetch_statement(db, uuid.UUID(ref.removeprefix("statement:")))
+        result = await _fetch_statement(db, statement_id(ref))
     elif ref.startswith("blob:"):
         result = await _fetch_blob(db, ref.removeprefix("blob:"))
     else:
@@ -698,7 +699,7 @@ async def propose_identity(db: AsyncSession, caller: Caller, args: dict) -> dict
     person, other = args["person"], args["other"]
     if person == other:
         raise ToolError("person and other are the same mention")
-    ids = [uuid.UUID(b.removeprefix("statement:")) for b in args["basis"]]
+    ids = [statement_id(b) for b in args["basis"]]
     basis = (
         await db.execute(
             select(Statement.id, Statement.subject, Statement.prop, StatementTier.tier)

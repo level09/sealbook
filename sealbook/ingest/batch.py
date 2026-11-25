@@ -31,7 +31,6 @@ from sealbook.sheets import parse as sheets
 from sealbook.sheets.models import DatasetVersion
 from sealbook.sources.data import title
 
-STAGES = ("hashed", "c2pa", "read", "fingerprint", "embed", "linked")
 READ_TOOLS = ("ocr", "extract", "transcribe", "pdf", "extract_sheet")
 STAGE_OF = {
     "c2pa_verify": "c2pa",

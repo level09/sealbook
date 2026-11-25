@@ -24,6 +24,7 @@ from sealbook.ledger.contracts import (
     PRIVATE_PROPS,
     Prop,
     Tier,
+    statement_id,
 )
 from sealbook.ledger.models import (
     Acquisition,
@@ -991,7 +992,7 @@ async def _basis(db: AsyncSession, st: Statement) -> dict:
     )
     if not refs:
         return {"ok": False, "note": "no basis statements named"}
-    ids = [uuid.UUID(r.removeprefix("statement:")) for r in refs]
+    ids = [statement_id(r) for r in refs]
     tiers = dict(
         (
             await db.execute(

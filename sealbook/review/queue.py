@@ -15,7 +15,13 @@ from stk.user.models import User
 from sealbook.collaboration.models import Assignment
 from sealbook.discovery import evidence
 from sealbook.discovery.models import FindingKey, Segment
-from sealbook.ledger.contracts import ASSESSED_PROPS, PRIVATE_PROPS, Prop, Tier
+from sealbook.ledger.contracts import (
+    ASSESSED_PROPS,
+    PRIVATE_PROPS,
+    Prop,
+    Tier,
+    statement_id,
+)
 from sealbook.ledger.models import (
     Blob,
     Payload,
@@ -29,6 +35,7 @@ from sealbook.monitor import data
 from sealbook.monitor import filter as mfilter
 from sealbook.people import data as people
 from sealbook.review import assist, findings
+from sealbook.sheets.parse import letter
 
 BOXES = ("mine", "sent", "open")
 PENDING = (Tier.UNCONFIRMED, Tier.CORROBORATED)
@@ -47,14 +54,6 @@ QUIET = {"at", "gesture", "basis", "lang", "fingerprint", "why"}
 def _ms(v: int) -> str:
     s = round(v / 1000)
     return f"{s // 60:02d}:{s % 60:02d}"
-
-
-def _col(n: int) -> str:
-    out = ""
-    while n:
-        n, r = divmod(n - 1, 26)
-        out = chr(65 + r) + out
-    return out
 
 
 def _ref(v) -> str:
@@ -89,7 +88,7 @@ def where(span, sha, source, segments, timelines) -> dict:
         return {"label": f"{_ms(a)} to {_ms(b)}", "ms": [a, b]}
     if "row" in span:
         return {
-            "label": f"row {span['row']}, cell {_col(span['column'])}{span['row']}",
+            "label": f"row {span['row']}, cell {letter(span['column'])}{span['row']}",
             "row": span["row"],
         }
     if "start" in span:
@@ -203,7 +202,7 @@ async def ids(db, user, box: str, investigation: str | None) -> list[uuid.UUID]:
         asg = asg.where(Assignment.assigned_by == user.id)
     found = {r[0]: r[1] for r in await db.execute(req.limit(LIMIT))}
     for subject, at in await db.execute(asg.limit(LIMIT)):
-        found.setdefault(uuid.UUID(subject.removeprefix("statement:")), at)
+        found.setdefault(statement_id(subject), at)
     if not found:
         return []
     keep = (
@@ -545,7 +544,7 @@ async def _basis_ids(db, st: Statement, value) -> list[uuid.UUID]:
     if not refs and st.run_id:
         run = await db.get(Run, st.run_id)
         refs = (run.inputs or {}).get("basis") if run else None
-    return [uuid.UUID(r.removeprefix("statement:")) for r in refs or []]
+    return [statement_id(r) for r in refs or []]
 
 
 def compare(a: list[dict], b: list[dict]) -> list[dict]:
@@ -775,4 +774,4 @@ async def for_request(db, rid: uuid.UUID) -> uuid.UUID | None:
             Statement.id == rid, Statement.prop == Prop.REVIEW_REQUEST
         )
     )
-    return uuid.UUID(subject.removeprefix("statement:")) if subject else None
+    return statement_id(subject) if subject else None

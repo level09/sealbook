@@ -248,7 +248,6 @@ export function mount(boot) {
       fold(r) {this.unfolded = {...this.unfolded, [r.key]: !this.unfolded[r.key]};},
       side(r) {return r.other ? `/evidence/${this.it.sha256}?with=${r.other}${r.there?.[0] != null ? '&at=' + r.there[0] : ''}` : null;},
       doc(sha) {return this.it.docs[sha] || {file: short(sha), title: short(sha)};},
-      tierOf(r) {return r.tier;},
       async load() {
         this.error = '';
         try {

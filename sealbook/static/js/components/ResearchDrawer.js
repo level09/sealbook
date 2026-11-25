@@ -62,7 +62,7 @@ export const ResearchDrawer = {
     investigation() { this.loadStatus(); },
   },
   methods: {
-    fail(e) { return e.response?.data?.message || e.response?.data?.description || e.message; },
+    fail(e) { return apiError(e); },
     async start() {
       this.investigation = this.case && this.case !== 'all' ? this.case : (this.caseItems.length === 1 ? this.caseItems[0] : '');
       await this.loadStatus();

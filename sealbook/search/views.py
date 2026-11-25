@@ -17,7 +17,6 @@ from quart import (
 )
 from quart_security import current_user
 
-from sealbook.collaboration.views import guard, no_store
 from sealbook.discovery import embeddings, service
 from sealbook.ledger import write
 from sealbook.ledger.contracts import Prop, StatementIn
@@ -25,10 +24,10 @@ from sealbook.monitor import data
 from sealbook.monitor import filter as mfilter
 from sealbook.search import find
 from sealbook.settings import Config
+from sealbook.web import protect
 
 bp = Blueprint("search", __name__)
-bp.before_request(guard)
-bp.after_request(no_store)
+protect(bp)
 
 
 @bp.get("/search")
@@ -97,9 +96,7 @@ async def search():
         embedding=embedding,
         revealed=revealed,
     )
-    who = await write.principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    who = await write.principal_of(db, current_user)
     await write.append(
         db,
         StatementIn(

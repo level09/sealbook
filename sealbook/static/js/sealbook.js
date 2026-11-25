@@ -74,3 +74,9 @@ function propTitle(p) {
   const w = propWord(p);
   return w.charAt(0).toUpperCase() + w.slice(1);
 }
+/* What a failed request says, in words. The app answers an error with one of these
+   fields (stk with message); `fallback` stands in when the server said nothing. */
+function apiError(e, fallback) {
+  const d = e.response?.data;
+  return d?.error || d?.message || d?.description || fallback || e.message;
+}

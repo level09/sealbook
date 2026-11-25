@@ -3,19 +3,18 @@
 import uuid
 from decimal import Decimal, InvalidOperation
 
-import orjson
-from quart import Blueprint, Response, abort, g, request
-from quart_security import auth_required, current_user
+from quart import Blueprint, abort, g, request
+from quart_security import current_user
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from sealbook.ledger.contracts import Tier
 from sealbook.ledger.models import StatementTier
-from sealbook.ledger.write import principal_for_user
-from sealbook.monitor.views import ROLES
+from sealbook.ledger.write import principal_for_user, principal_of
 from sealbook.places import boundaries, normalise, resolve
 from sealbook.places.models import AdminArea, Place, PlaceKind, PlaceName, point
 from sealbook.review.views import stage, stage_gesture
+from sealbook.web import json_response, protect
 
 bp_places = Blueprint("places", __name__)
 
@@ -24,23 +23,7 @@ LON, LAT = (35.7, 42.4), (32.3, 37.4)
 MAX_M = 50_000  # the widest radius an approximate place may carry
 
 
-@bp_places.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@bp_places.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(bp_places)
 
 
 def _governorate(p: Place) -> str | None:
@@ -82,7 +65,7 @@ async def listing():
             q.options(selectinload(Place.governorate), selectinload(Place.admin1))
         )
     ).scalars()
-    return _json(
+    return json_response(
         {"items": [_row(p, counts.get(p.id, 0), _governorate(p)) for p in places]}
     )
 
@@ -147,7 +130,9 @@ async def create():
     await boundaries.assign_new(db, [place])
     area = await db.get(AdminArea, place.admin1_id) if place.admin1_id else None
     await db.commit()
-    return _json(_row(place, 0, (area.name_ar or area.name_en) if area else None), 201)
+    return json_response(
+        _row(place, 0, (area.name_ar or area.name_en) if area else None), 201
+    )
 
 
 async def _link(db, item, who):
@@ -187,9 +172,7 @@ async def confirm():
         abort(400, description="item needs statement and place ids")
     # ponytail: a confirmation cannot be undone yet (review undo covers reviews only);
     # add retraction of a located_at in the review flow when analysts need to change one.
-    who = await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    who = await principal_of(db, current_user)
     links = item.get("links") if isinstance(item, dict) else None
     if links is None:
         return await stage(db, await _link(db, item, who.id))

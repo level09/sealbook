@@ -626,17 +626,7 @@ def _shape(kind: str, cited: list[Claim], a: str, b: str) -> dict | None:
 
 
 async def runs(db, investigation: str, user_id: int) -> list[Run]:
-    return list(
-        await db.scalars(
-            select(Run)
-            .where(
-                Run.tool == TOOL,
-                Run.inputs["investigation"].astext == investigation,
-                Run.inputs["for_user"].as_integer() == user_id,
-            )
-            .order_by(Run.created_at.desc(), Run.id.desc())
-        )
-    )
+    return await read.runs_of(db, TOOL, investigation=investigation, for_user=user_id)
 
 
 async def reported(db, investigation: str, user_id: int) -> set[str]:
@@ -788,18 +778,10 @@ async def notice(c) -> str:
     )
 
 
-async def queue(db, investigation: str, user_id: int, model=None) -> Run:
-    agent = await read.agent_for(db, AGENT, user_id)
-    run = Run(
-        principal_id=agent.id,
-        tool=TOOL,
-        route=Config.AGENT_ROUTE,
-        model_requested=model or Config.AGENT_MODEL,
-        inputs={"investigation": investigation, "for_user": user_id},
+async def queue(db, investigation: str, user_id: int, model: str) -> Run:
+    return await read.new_run(
+        db, TOOL, AGENT, user_id, model, {"investigation": investigation}
     )
-    db.add(run)
-    await db.flush()
-    return run
 
 
 # --- reading it back ----------------------------------------------------------------

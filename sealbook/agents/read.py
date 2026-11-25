@@ -17,7 +17,7 @@ from datetime import UTC, date, datetime
 import orjson
 from jsonschema import Draft202012Validator
 from PIL import Image
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from sealbook import blobs
 from sealbook.collaboration.notifications import PROP as FIELD
@@ -30,7 +30,14 @@ from sealbook.ledger.contracts import (
     StatementIn,
     Tier,
 )
-from sealbook.ledger.models import Blob, Payload, Principal, Statement, StatementTier
+from sealbook.ledger.models import (
+    Blob,
+    Payload,
+    Principal,
+    Run,
+    Statement,
+    StatementTier,
+)
 from sealbook.monitor import filter as mfilter
 from sealbook.monitor.data import LOCATED, PERSONAL, Context, display
 from sealbook.people import data as people
@@ -590,6 +597,53 @@ async def report(db, found: list) -> tuple:
 
 
 # --- who runs it ------------------------------------------------------------------
+
+
+ACTIVE = ("queued", "running")
+
+
+async def runs_of(db, tool: str, limit: int | None = None, **inputs) -> list[Run]:
+    """Runs of `tool` whose inputs hold these values, newest first."""
+    match = [
+        Run.inputs[k].as_integer() == v
+        if isinstance(v, int)
+        else Run.inputs[k].astext == v
+        for k, v in inputs.items()
+    ]
+    return list(
+        await db.scalars(
+            select(Run)
+            .where(Run.tool == tool, *match)
+            .order_by(Run.created_at.desc(), Run.id)
+            .limit(limit)
+        )
+    )
+
+
+async def new_run(
+    db, tool, agent, user_id, model, inputs, *, busy=None, one_per=None, route=None
+) -> Run:
+    """Queue a run of `tool` by `agent` acting for this person. With `busy`, one at a
+    time per `one_per` (default `inputs`): a second raises ValueError(busy)."""
+    if busy:
+        scope = one_per or inputs
+        await db.execute(
+            text("select pg_advisory_xact_lock(hashtextextended(:k, 0))"),
+            {"k": ":".join([tool, *map(str, scope.values())])},
+        )
+        if any(r.status in ACTIVE for r in await runs_of(db, tool, **scope)):
+            raise ValueError(busy)
+    principal = await agent_for(db, agent, user_id)
+    run = Run(
+        principal_id=principal.id,
+        tool=tool,
+        route=route or Config.AGENT_ROUTE,
+        model_requested=model,
+        inputs={**inputs, "for_user": user_id},
+    )
+    db.add(run)
+    await db.flush()
+    return run
 
 
 async def agent_for(db, name: str, user_id: int) -> Principal:

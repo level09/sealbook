@@ -10,7 +10,7 @@ from sealbook.agents import brief, read, tasks
 from sealbook.agents.models import AgentTask, AgentWake
 from sealbook.agents.read import Handles, claim_view
 from sealbook.discovery.evidence import granted
-from sealbook.ledger.models import Blob, Run, Statement
+from sealbook.ledger.models import Blob, Statement
 from sealbook.ledger.queue import LEASE
 from sealbook.people import data as people
 from sealbook.settings import Config
@@ -116,16 +116,6 @@ def fixed_answer(payload):
     return {"matches": matches}
 
 
-async def runs(db, task_id):
-    return list(
-        await db.scalars(
-            select(Run)
-            .where(Run.tool == TOOL, Run.inputs["task"].astext == str(task_id))
-            .order_by(Run.created_at.desc(), Run.id)
-        )
-    )
-
-
 async def standing(c):
     started = time.monotonic()
     await tasks.check_access(c.s, c.run)
@@ -149,7 +139,7 @@ async def standing(c):
         ids.update(uuid.UUID(i) for w in wakes for i in w.payload.get("claims", []))
         selected = [claim for claim in case.claims if claim.id in ids]
     seen = set()
-    for previous in await runs(c.s, task.id):
+    for previous in await tasks.runs(c.s, task):
         if previous.status == "done":
             old = read.read_output(await c.s.get(Blob, previous.output_hash))
             seen.update(match_key(m["claims"]) for m in old["matches"])
@@ -268,7 +258,7 @@ async def show(db, user, task_id):
     task = await db.get(AgentTask, task_id)
     if task is None or not await tasks.can_read(db, user.id, task.investigation):
         raise LookupError("This question is not available.")
-    found = await runs(db, task.id)
+    found = await tasks.runs(db, task)
     run = next((r for r in found if r.status == "done"), None)
     result = {
         "question": task.spec["question"],

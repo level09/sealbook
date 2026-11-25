@@ -42,7 +42,7 @@ window.app = createApp({mixins:[layoutMixin], delimiters:config.delimiters,
   methods: {
     useCase(v) {this.investigation=v; this.loadMatches();},
     filter() {return {investigation:this.investigation,time:null};},
-    fail(err) {this.error=err.response?.data?.error || err.response?.data?.message || err.message;},
+    fail(err) {this.error=apiError(err);},
     documentUrl(doc) {return '/evidence/segments/'+doc.segment+'?start='+doc.span.start+'&end='+doc.span.end;},
     async search() {this.busy=true; this.error=''; try {const {data}=await axios.post('/api/evidence/search',{item:{query:this.query,mode:this.semantic?'hybrid':'keyword',filter:this.filter()}}); this.documents=data.documents; this.people=data.people; this.mediaHits=data.media; this.searched=true; await this.loadCoverage();} catch(err) {this.fail(err);} finally {this.busy=false;}},
     async loadCoverage(){this.coverage=(await axios.get('/api/evidence/coverage',{params:{filter:JSON.stringify(this.filter())}})).data;},

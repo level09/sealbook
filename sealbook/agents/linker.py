@@ -42,7 +42,6 @@ from sealbook.people import data as people_data
 from sealbook.places import normalise, phrases, resolve
 from sealbook.search.arabic import candidates as name_match
 from sealbook.search.arabic import natural, same_keys
-from sealbook.settings import Config
 from sealbook.sheets import dates
 
 TOOL = "link"
@@ -900,15 +899,5 @@ async def link(c) -> str:
 
 
 async def queue(db, investigation: str, user_id: int, model: str, focus=None) -> Run:
-    agent = await read.agent_for(db, AGENT, user_id)
-    run = Run(
-        principal_id=agent.id,
-        tool=TOOL,
-        route=Config.AGENT_ROUTE,
-        model_requested=model,
-        inputs={"investigation": investigation, "for_user": user_id}
-        | ({"focus": focus} if focus else {}),
-    )
-    db.add(run)
-    await db.flush()
-    return run
+    inputs = {"investigation": investigation} | ({"focus": focus} if focus else {})
+    return await read.new_run(db, TOOL, AGENT, user_id, model, inputs)

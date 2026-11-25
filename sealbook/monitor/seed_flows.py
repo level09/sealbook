@@ -295,7 +295,7 @@ async def transcript(
         child = await blobs.put(
             s.s, seg["text"].encode(), "text/plain; charset=utf-8", Config.BLOB_DIR
         )
-        await speech._derived(c, child, blob)
+        await write.derived_from(c, child, blob)
         await discovery.queue(
             s.s,
             acq,

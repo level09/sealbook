@@ -4,10 +4,8 @@ filter), the shared reads other pages use, and the live stream."""
 import uuid
 from datetime import UTC, datetime
 
-import orjson
 from quart import (
     Blueprint,
-    Response,
     abort,
     g,
     make_response,
@@ -17,42 +15,23 @@ from quart import (
     session,
     url_for,
 )
-from quart_security import auth_required, current_user
+from quart_security import current_user
 from sqlalchemy import func, select
 
 from sealbook.cases.models import Case
 from sealbook.ledger.contracts import PRIVATE_PROPS, Prop, StatementIn
 from sealbook.ledger.models import Payload, RunEvent, Statement
-from sealbook.ledger.write import append, principal_for_user
+from sealbook.ledger.write import append, principal_of
 from sealbook.monitor import data
 from sealbook.monitor import filter as mfilter
 from sealbook.monitor.stream import events, shared
 from sealbook.places import resolve
+from sealbook.web import json_response, protect
 
 monitor = Blueprint("monitor", __name__)
 
-# ponytail: any analyst or admin sees every investigation; per-investigation access
-# groups replace this check once the ledger has an access model.
-ROLES = ("analyst", "admin")
 
-
-@monitor.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@monitor.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(monitor)
 
 
 def _filter() -> dict:
@@ -93,7 +72,9 @@ async def page():
 async def investigations():
     """Case switcher options for the top bar on every page, with each case's name."""
     names = dict((await g.db_session.execute(select(Case.slug, Case.name))).all())
-    return _json({"items": await data.investigations(g.db_session), "names": names})
+    return json_response(
+        {"items": await data.investigations(g.db_session), "names": names}
+    )
 
 
 @monitor.get("/api/monitor/panels")
@@ -113,7 +94,7 @@ async def panels():
     await _named(db, rows if rows is everything else rows + everything)
     located = [uuid.UUID(r["id"]) for r in rows if r["prop"] in data.LOCATED]
     places = await resolve.resolved(db, located, f["investigation"])
-    return _json(
+    return json_response(
         {
             "filter": mfilter.dump(f),
             "last_event_id": last_event_id,
@@ -147,7 +128,7 @@ async def _page(page):
         if isinstance(r, dict) and "subject_label" in r
     ]
     await _named(g.db_session, rows)
-    return _json(page)
+    return json_response(page)
 
 
 @monitor.get("/api/monitor/document/<sha>")
@@ -182,7 +163,7 @@ async def statements():
     except ValueError as exc:
         abort(400, description=str(exc))
     rows = await data.statement_rows(g.db_session, *where, order=Statement.recorded_at)
-    return _json({"items": await _named(g.db_session, rows)})
+    return json_response({"items": await _named(g.db_session, rows)})
 
 
 @monitor.post("/api/monitor/reveal")
@@ -210,9 +191,7 @@ async def reveal():
         subject, result = f"blob:{item['blob']}", {"text": page["text"]}
     else:
         abort(400, description="reveal a statement or a blob")
-    who = await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    who = await principal_of(db, current_user)
     # The time makes each reveal its own statement: the idempotency key ignores the
     # author, so two analysts' identical reveals would otherwise collapse into one.
     await append(
@@ -225,7 +204,7 @@ async def reveal():
         ),
     )
     await db.commit()
-    return _json(result)
+    return json_response(result)
 
 
 @monitor.get("/monitor/stream")

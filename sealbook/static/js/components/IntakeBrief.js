@@ -60,12 +60,12 @@ export const IntakeBrief = {
         this.data = data; this.error = '';
         if (!this.version && data.version) this.version = data.version.id;
         if (data.pending) this.timer = setTimeout(() => this.load(), 4000);
-      } catch (e) { this.error = e.response?.data?.description || e.message; }
+      } catch (e) { this.error = apiError(e); }
     },
     async regenerate() {
       this.busy = true;
       try { await axios.post('/api/agents/brief', {item: {batch: this.batch}}); this.version = null; await this.load(); }
-      catch (e) { this.error = e.response?.data?.message || e.response?.data?.description || e.message; }
+      catch (e) { this.error = apiError(e); }
       this.busy = false;
     },
     pick(id) { this.version = id; this.load(); },

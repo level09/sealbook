@@ -4,28 +4,18 @@ timestamp requests, which carry a hash and no case."""
 
 import orjson
 from quart import Blueprint, Response, abort, g, render_template, request
-from quart_security import auth_required, current_user
+from quart_security import current_user
 from sqlalchemy import select
 
 from sealbook.agents.tasks import can_read
 from sealbook.cases.models import Case
-from sealbook.monitor.views import ROLES
 from sealbook.outbound import data
+from sealbook.web import protect
 
 bp_outbound = Blueprint("outbound", __name__)
 
 
-@bp_outbound.before_request
-@auth_required("session")
-async def guard():
-    if not any(current_user.has_role(r) for r in ROLES):
-        abort(403)
-
-
-@bp_outbound.after_request
-async def no_store(response):
-    response.headers["Cache-Control"] = "private, no-store"
-    return response
+protect(bp_outbound)
 
 
 async def readable(db) -> set[str] | None:

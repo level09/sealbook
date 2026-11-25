@@ -1,32 +1,23 @@
 """Case list, creation and a case's Overview. Analysts and admins only."""
 
-import orjson
 from quart import Blueprint, Response, abort, g, render_template, request
 from quart_security import current_user
 
 from sealbook.cases import chronology, conclusions, overview, service
-from sealbook.collaboration.views import guard, no_store
-from sealbook.ledger.write import principal_for_user
+from sealbook.ledger.write import principal_of
+from sealbook.web import json_response, protect
 
 bp_cases = Blueprint("cases", __name__, url_prefix="/api/cases")
-bp_cases.before_request(guard)
-bp_cases.after_request(no_store)
+protect(bp_cases)
 bp_case_pages = Blueprint("case_pages", __name__)
-bp_case_pages.before_request(guard)
-bp_case_pages.after_request(no_store)
-
-
-def _json(payload, status=200):
-    return Response(
-        orjson.dumps(payload), status=status, content_type="application/json"
-    )
+protect(bp_case_pages)
 
 
 @bp_cases.get("")
 async def listing():
     status = await conclusions.statuses(g.db_session)
     items = await service.listing(g.db_session)
-    return _json(
+    return json_response(
         {"items": [c | {"status": status.get(c["slug"], "open")} for c in items]}
     )
 
@@ -35,9 +26,7 @@ async def listing():
 async def create():
     item = ((await request.get_json(silent=True)) or {}).get("item") or {}
     db = g.db_session
-    who = await principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    who = await principal_of(db, current_user)
     try:
         case = await service.create(
             db,
@@ -48,14 +37,14 @@ async def create():
         )
     except (service.Taken, service.Close) as exc:
         reason = "taken" if isinstance(exc, service.Taken) else "close"
-        return _json(
+        return json_response(
             {"reason": reason, "message": str(exc), "match": service.row(exc.match)},
             409,
         )
     except ValueError as exc:
-        return _json({"reason": "invalid", "message": str(exc)}, 400)
+        return json_response({"reason": "invalid", "message": str(exc)}, 400)
     await db.commit()
-    return _json({"item": service.row(case)}, 201)
+    return json_response({"item": service.row(case)}, 201)
 
 
 @bp_case_pages.get("/cases/overview")
@@ -70,7 +59,7 @@ async def case_overview():
         case = await service.require(db, request.args.get("investigation"))
     except service.Unknown:
         abort(404)
-    return _json(await overview.overview(db, current_user, case.slug))
+    return json_response(await overview.overview(db, current_user, case.slug))
 
 
 @bp_cases.get("/chronology.xlsx")
@@ -129,13 +118,13 @@ async def conclusion_list():
     ]
     await conclusions.log_view(db, current_user, slug, shown)
     await db.commit()
-    return _json(out)
+    return json_response(out)
 
 
 @bp_cases.get("/conclusions/citeable")
 async def conclusion_citeable():
     db = g.db_session
-    return _json(await conclusions.citeable(db, await _slug(db)))
+    return json_response(await conclusions.citeable(db, await _slug(db)))
 
 
 @bp_cases.get("/conclusions/<uuid:cid>")
@@ -153,4 +142,4 @@ async def conclusion_detail(cid):
             [c["id"], *c["rests_on"], *c["contradicts"]],
         )
         await db.commit()
-    return _json(out)
+    return json_response(out)

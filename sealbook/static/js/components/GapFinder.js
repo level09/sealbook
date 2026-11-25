@@ -48,7 +48,7 @@ export const GapFinder = {
         await this.load();
       } catch (e) {
         if (e.response?.data?.reason === 'busy') await this.load();
-        else this.error = e.response?.data?.message || 'Could not start gap finder.';
+        else this.error = apiError(e, 'Could not start gap finder.');
       } finally { this.starting = false; }
     },
     async search(item, query) {

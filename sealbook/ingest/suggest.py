@@ -263,7 +263,7 @@ async def record(db, user, batch: str, target: str, chosen: list[str]) -> dict:
         raise ValueError("These sources are already in that case.")
     if not await tasks.can_read(db, user.id, target):
         raise LookupError("There is no case by that name you can open.")
-    collector = await write.principal_for_user(db, user.id, user.name or user.email)
+    collector = await write.principal_of(db, user)
     there = set(
         await db.scalars(
             select(Acquisition.blob_sha256).where(

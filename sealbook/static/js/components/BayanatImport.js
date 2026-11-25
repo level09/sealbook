@@ -5,7 +5,7 @@
 import {attest} from '/static/js/monitor/passkey.js';
 
 const plural = (n, one, many) => `${n} ${n === 1 ? one : (many || one + 's')}`;
-const err = e => e.response?.data?.message || e.response?.data?.description || e.message;
+const err = apiError;
 
 export const BayanatImport = {
   props: {it: {type: Object, required: true}},

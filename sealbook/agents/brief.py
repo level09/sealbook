@@ -26,7 +26,7 @@ from sealbook.discovery.evidence import granted, kind_of, view_session
 from sealbook.discovery.models import FindingKey
 from sealbook.discovery.service import available
 from sealbook.ledger import write
-from sealbook.ledger.contracts import Prop, StatementIn, Tier
+from sealbook.ledger.contracts import Prop, StatementIn, Tier, statement_id
 from sealbook.ledger.models import (
     Acquisition,
     Blob,
@@ -41,7 +41,6 @@ from sealbook.people.data import label_rank
 from sealbook.places import normalise, resolve
 from sealbook.research.service import blocked
 from sealbook.review.findings import month_label
-from sealbook.settings import Config
 
 TOOL = "brief"
 AGENT = "Intake brief"
@@ -247,8 +246,7 @@ async def gather(db, batch: str, user_id: int) -> dict:
         "links": [
             (sid, subject, value)
             for sid, subject, value in pending_links
-            if {uuid.UUID(b.removeprefix("statement:")) for b in value.get("basis", [])}
-            & ids
+            if {statement_id(b) for b in value.get("basis", [])} & ids
         ],
         "blocked": investigation in await blocked(db),
         "candidates": {
@@ -829,18 +827,11 @@ async def invisible(db, sections: dict) -> set[str]:
 
 
 async def queue(db, batch: str, user_id: int, model: str) -> Run:
-    agent = await read.agent_for(db, AGENT, user_id)
-    run = Run(
-        principal_id=agent.id,
-        tool=TOOL,
-        # Rules call no model; they run on this server.
-        route="local" if model == read.RULES else Config.AGENT_ROUTE,
-        model_requested=model,
-        inputs={"batch": batch, "for_user": user_id},
+    # Rules call no model; they run on this server.
+    route = "local" if model == read.RULES else None
+    return await read.new_run(
+        db, TOOL, AGENT, user_id, model, {"batch": batch}, route=route
     )
-    db.add(run)
-    await db.flush()
-    return run
 
 
 def _cost(run: Run, out: dict | None) -> dict:
@@ -863,20 +854,14 @@ def _cost(run: Run, out: dict | None) -> dict:
 
 
 async def runs(db, batch: str) -> list[Run]:
-    return list(
-        await db.scalars(
-            select(Run)
-            .where(Run.tool == TOOL, Run.inputs["batch"].astext == batch)
-            .order_by(Run.created_at.desc(), Run.id)
-        )
-    )
+    return await read.runs_of(db, TOOL, batch=batch)
 
 
 async def show(db, user, batch: str, version: str | None = None) -> dict:
     """The brief as this reader may see it, plus its versions and cost."""
     found = await runs(db, batch)
     done = [r for r in found if r.status == "done"]
-    pending = next((r for r in found if r.status in ("queued", "running")), None)
+    pending = next((r for r in found if r.status in read.ACTIVE), None)
     run = next((r for r in done if str(r.id) == version), done[0] if done else None)
     out = None
     if run is not None:
@@ -951,7 +936,7 @@ async def log_view(db, user, run: Run | None, ids: list[str], subject=None) -> N
     """One access record per reader, brief version and login session, naming the
     claims whose values the brief showed. A page with no run of its own (a batch's
     answer) names its `subject` instead."""
-    me = await write.principal_for_user(db, user.id, user.name or user.email)
+    me = await write.principal_of(db, user)
     key = view_session()
     subject = subject or f"brief:{run.id}"
     seen = await db.scalar(

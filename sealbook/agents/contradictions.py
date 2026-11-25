@@ -6,8 +6,6 @@ import asyncio
 import time
 import uuid
 
-from sqlalchemy import select, text
-
 from sealbook.agents import brief, linker, read, tasks
 from sealbook.discovery.evidence import granted
 from sealbook.ledger.contracts import Tier
@@ -289,15 +287,7 @@ def validate(answer, cands, h, claims) -> tuple[list, dict]:
 
 
 async def runs(db, investigation: str) -> list[Run]:
-    return list(
-        await db.scalars(
-            select(Run)
-            .where(
-                Run.tool == TOOL, Run.inputs["investigation"].astext == investigation
-            )
-            .order_by(Run.created_at.desc(), Run.id)
-        )
-    )
+    return await read.runs_of(db, TOOL, investigation=investigation)
 
 
 async def reported(db, investigation: str) -> set:
@@ -414,30 +404,20 @@ async def contradictions(c) -> str:
 
 
 async def queue(db, investigation: str, user_id: int, model: str) -> Run:
-    await db.execute(
-        text("select pg_advisory_xact_lock(hashtextextended(:k, 0))"),
-        {"k": f"contradictions:{investigation}"},
+    return await read.new_run(
+        db,
+        TOOL,
+        AGENT,
+        user_id,
+        model,
+        {"investigation": investigation},
+        busy="A colleague is already checking this case for contradictions.",
     )
-    if any(r.status in ("queued", "running") for r in await runs(db, investigation)):
-        raise ValueError(
-            "A colleague is already checking this case for contradictions."
-        )
-    agent = await read.agent_for(db, AGENT, user_id)
-    run = Run(
-        principal_id=agent.id,
-        tool=TOOL,
-        route=Config.AGENT_ROUTE,
-        model_requested=model,
-        inputs={"investigation": investigation, "for_user": user_id},
-    )
-    db.add(run)
-    await db.flush()
-    return run
 
 
 async def show(db, user, investigation: str) -> dict:
     found = await runs(db, investigation)
-    pending = next((r for r in found if r.status in ("queued", "running")), None)
+    pending = next((r for r in found if r.status in read.ACTIVE), None)
     run, out = await read.report(db, found)
     result = {
         "items": [],

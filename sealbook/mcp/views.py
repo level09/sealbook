@@ -185,9 +185,7 @@ async def consent():
     if not oauth.role_scopes(current_user):
         return await _refuse("Your account has no role that permits agent access.", 403)
     db = g.db_session
-    human = await write.principal_for_user(
-        db, current_user.id, current_user.name or current_user.email
-    )
+    human = await write.principal_of(db, current_user)
     agent = Principal(
         kind=PrincipalKind.AGENT, name=pending["client_name"], on_behalf_of=human.id
     )

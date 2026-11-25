@@ -9,11 +9,11 @@ from quart import Blueprint, Response, abort, g, request, send_file
 from sqlalchemy import select
 
 from sealbook import blobs
-from sealbook.collaboration.views import guard, output
 from sealbook.discovery import evidence, service
 from sealbook.ledger.models import Blob, Run
 from sealbook.monitor.data import Context
 from sealbook.settings import Config
+from sealbook.web import guard, json_response
 
 bp = Blueprint("thumbs", __name__)
 bp.before_request(guard)
@@ -122,7 +122,7 @@ async def describe(sha):
     m = await manifest(sha, missing_ok=True)
     if m is None:
         return Response(status=204)
-    return output(
+    return json_response(
         {
             "kind": m["kind"],
             "version": m["version"],

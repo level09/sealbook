@@ -32,7 +32,11 @@ from sealbook.ledger.models import (
     Statement,
     StatementTier,
 )
-from sealbook.ledger.write import append, current_clause, principal_for_user
+from sealbook.ledger.write import (
+    append,
+    current_clause,
+    principal_of,
+)
 from sealbook.monitor.filter import source, statement_blob
 from sealbook.packages.models import Brief, Package, Sentence
 
@@ -73,7 +77,7 @@ def _now() -> str:
 
 
 async def _access(db: AsyncSession, user, subject: str, value: dict) -> None:
-    who = await principal_for_user(db, user.id, user.name or user.email)
+    who = await principal_of(db, user)
     await append(
         db,
         StatementIn(subject=subject, prop=Prop.ACCESS, value=value, author_id=who.id),
@@ -356,7 +360,7 @@ DISCLOSE = "disclose"
 async def decisions(db: AsyncSession, brief: Brief, user) -> dict[str, dict]:
     """The signed decisions of `user` to include sensitive files in this brief's
     package for its audience, by acquired file."""
-    who = await principal_for_user(db, user.id, user.name or user.email)
+    who = await principal_of(db, user)
     rows = await db.execute(
         select(Statement, Payload.value)
         .join(Payload, Payload.commitment == Statement.commitment)
@@ -431,7 +435,7 @@ async def plan_disclose(db: AsyncSession, brief: Brief, user, chosen) -> list:
         raise Refused("choose the sensitive files to include")
     rows = await collect(db, brief, await case_conclusions(db, brief))
     reached = {f["sha256"]: f for f in await files(db, brief, rows, user)}
-    who = await principal_for_user(db, user.id, user.name or user.email)
+    who = await principal_of(db, user)
     out = []
     for sha in dict.fromkeys(map(str, chosen)):
         f = reached.get(sha)
@@ -837,7 +841,7 @@ async def add_attestation(
     db: AsyncSession, user, package: Package, credential: dict
 ) -> Statement:
     _live(package)
-    who = await principal_for_user(db, user.id, user.name or user.email)
+    who = await principal_of(db, user)
     await _lock(db, package)
     if any(a["principal"] == str(who.id) for a in await attesters(db, package)):
         raise Refused("you already attested this package; a second person must")
@@ -882,7 +886,7 @@ async def finalize(db: AsyncSession, user, package: Package, blob_dir: str) -> N
         raise Refused("two different people must attest the manifest hash")
     manifest = await _manifest(db, package, blob_dir)
     await _require_anchored(db, [e["seq"] for e in manifest["chain"]])
-    who = await principal_for_user(db, user.id, user.name or user.email)
+    who = await principal_of(db, user)
     await append(
         db,
         StatementIn(
