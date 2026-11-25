@@ -59,6 +59,7 @@ SENT = {
     "notice": "Two sources, to say why they resemble each other",
     "approximate": "Passages naming a place, to suggest where it is",
     "conclude": "Accepted links and findings of a case, to draft conclusions",
+    "ask": "Claims across a case, to answer a question asked now",
 }
 TASK = {
     "ocr": "reading text",
@@ -77,6 +78,7 @@ TASK = {
     "notice": "the noticer",
     "approximate": "the place finder",
     "conclude": "the conclusion drafter",
+    "ask": "questions asked of a case",
 }
 ROUTE = {
     "local": "This server",

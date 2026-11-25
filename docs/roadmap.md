@@ -219,8 +219,8 @@ say.
   names, dates and places it read. The Agents page already says this for links.
 - A way back into Bayanat: an accepted item sent out as a Bayanat bulletin, so the two
   systems stay in step. Import exists; export does not.
-- Ask the case a question now, with a cited answer. Standing questions answer on a
-  schedule; there is no immediate box.
+- Ask the case a question now, with a cited answer. Done 2026-11-25: Ask this case on
+  the Overview, see [status](status.md).
 - An Arabic interface. The evidence is Arabic; every label is English.
 - The family brief made usable: its builder lists claims as hashes and ids, not by
   person and source (seen 2026-11-11), and a package needs a signing certificate the

@@ -15,6 +15,7 @@ from sqlalchemy import select
 from sealbook.agents import (
     answer,
     approximate,
+    ask,
     brief,
     conclude,
     contradictions,
@@ -181,6 +182,47 @@ async def conclusion_draft_status(rid):
     ):
         abort(404)
     return _json({"status": run.status, "error": run.error})
+
+
+@bp_agents.post("/ask")
+async def ask_case():
+    """Ask a case a question now; the answer arrives as a run to follow."""
+    from sealbook.cases.service import Unknown, require
+
+    db = g.db_session
+    item = await _item()
+    question = item.get("question")
+    if not isinstance(question, str) or not 3 <= len(question.strip()) <= 500:
+        abort(400, description="Write a question of 3 to 500 characters.")
+    try:
+        case = await require(db, item.get("investigation"))
+    except Unknown:
+        abort(404)
+    if gap := missing():
+        return _json({"reason": "off", "missing": gap}, 409)
+    await principal_for_user(
+        db, current_user.id, current_user.name or current_user.email
+    )
+    try:
+        run = await ask.queue(
+            db, case.slug, current_user.id, question.strip(), Config.AGENT_MODEL
+        )
+    except ValueError as exc:
+        return _json({"reason": "busy", "message": str(exc)}, 409)
+    await db.commit()
+    return _json({"run": str(run.id)}, 202)
+
+
+@bp_agents.get("/ask")
+async def read_answers():
+    from sealbook.cases.service import Unknown, require
+
+    db = g.db_session
+    try:
+        case = await require(db, request.args.get("investigation"))
+    except Unknown:
+        abort(404)
+    return _json(await ask.show(db, current_user, case.slug))
 
 
 @bp_agents.post("/approximate")

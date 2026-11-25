@@ -27,6 +27,7 @@ from sealbook import blobs, speech
 from sealbook.agents import read, tasks
 from sealbook.agents.approximate import approximate
 from sealbook.agents.brief import brief
+from sealbook.agents.ask import ask
 from sealbook.agents.conclude import conclude
 from sealbook.agents.contradictions import contradictions
 from sealbook.agents.gaps import gaps
@@ -726,6 +727,7 @@ TOOLS: dict[str, Callable[[Ctx], Awaitable[str | None]]] = {
     "notice": notice,
     "approximate": approximate,
     "conclude": conclude,
+    "ask": ask,
 }
 
 

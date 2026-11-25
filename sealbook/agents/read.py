@@ -407,7 +407,14 @@ def cite_only(schema, cites: list[str]):
 
 
 async def ask(
-    c, name: str, system: str, payload: dict, schema: dict, fixed, check=None
+    c,
+    name: str,
+    system: str,
+    payload: dict,
+    schema: dict,
+    fixed,
+    check=None,
+    reasoning: str | None = None,
 ) -> dict:
     """One structured call on the run's route, or the fixed answer when the run asked
     for the demo model or for rules (no model set up). Returns {"answer", "valid", "seconds", tokens}; an answer
@@ -433,7 +440,7 @@ async def ask(
         "temperature": 0,
         # Thinking models spend the context (and minutes) deliberating on any route;
         # the answer here is a short structured judgement over what we hand them.
-        "reasoning_effort": Config.AGENT_REASONING,
+        "reasoning_effort": reasoning or Config.AGENT_REASONING,
     }
     usage = {}
     if c.run.model_requested in (FIXED, RULES):
@@ -452,7 +459,7 @@ async def ask(
         errors = invalid(answer, schema)
     else:
         # Sealed with the run, so a run says how hard its model was asked to think.
-        c.run.inputs = {**c.run.inputs, "reasoning": Config.AGENT_REASONING}
+        c.run.inputs = {**c.run.inputs, "reasoning": body["reasoning_effort"]}
         served = await c.call(body)
         usage = served.data.get("usage") or {}
         text = routes.content(served)

@@ -206,6 +206,7 @@ TOOL_WORDS = {
     "notice": "noticer",
     "approximate": "place finder",
     "conclude": "conclusion drafter",
+    "ask": "case question",
     "notice_link": "noticer link proposal",
     "import": "import",
 }

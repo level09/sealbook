@@ -21,7 +21,7 @@ from stk.migrations import build_alembic_config, throwaway_database_url
 from stk.user.models import Role, User
 
 from sealbook import blobs
-from sealbook.agents import conclude, read
+from sealbook.agents import ask, conclude, read
 from sealbook.app import create_app
 from sealbook.cases import conclusions
 from sealbook.cases.service import ensure
@@ -567,6 +567,79 @@ class ConclusionTest(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual([i["basis"] for i in items], [["L1"]])
         self.assertEqual((dropped["unknown"], dropped["handle"]), (3, 1))
+
+    # --- asking the case now --------------------------------------------------------
+
+    async def test_asking_the_case_answers_with_citations_and_writes_nothing(self):
+        self.enterContext(
+            mock.patch.dict("os.environ", {"ROUTE_LOCAL_BASE_URL": "http://local"})
+        )
+        client = await self.client()
+        ask_ = {"investigation": CASE, "question": "?"}
+        code, _ = await self.post(client, "/api/agents/ask", ask_)
+        self.assertEqual(code, 400)
+        ask_["question"] = "Who is Ari Example?"
+        code, got = await self.post(client, "/api/agents/ask", ask_)
+        self.assertEqual(code, 202)
+        rid = uuid.UUID(got["run"])
+        code, got = await self.post(
+            client, "/api/agents/ask", ask_ | {"question": "And Bel?"}
+        )
+        self.assertEqual((code, got["reason"]), (409, "busy"))
+        await process(ext.async_session_factory, rid)
+        async with ext.async_session_factory() as s:
+            run = await s.get(Run, rid)
+            self.assertEqual(run.status, "done", run.error)
+            written = list(
+                await s.scalars(select(Statement.prop).where(Statement.run_id == rid))
+            )
+        self.assertEqual(written, [Prop.ACCESS])
+        shown = await (
+            await client.get(f"/api/agents/ask?investigation={CASE}")
+        ).get_json()
+        [item] = shown["items"]
+        self.assertEqual(item["question"], "Who is Ari Example?")
+        self.assertTrue(item["demo"])
+        self.assertTrue(item["sentences"])
+        for s in item["sentences"]:
+            self.assertTrue(s["claims"])
+            self.assertIn("Example", " ".join(c["value"] for c in s["claims"]))
+
+    def test_ask_validate_drops_uncited_foreign_and_handle_sentences(self):
+        h = read.Handles()
+        mine = read.Claim(
+            id=uuid.uuid4(),
+            subject="person:x",
+            person=None,
+            prop=Prop.NAME,
+            text="Ari",
+            lo=None,
+            hi=None,
+            source="s",
+            span_blob=None,
+            span=None,
+            tier=Tier.UNCONFIRMED,
+            sensitive=False,
+        )
+        h("c", mine.id)
+        h("c", uuid.uuid4())
+        out, dropped = ask.validate(
+            {
+                "sentences": [
+                    {"text": "One source names Ari.", "claims": ["c1"]},
+                    {"text": "Uncited.", "claims": []},
+                    {"text": "Foreign.", "claims": ["c2"]},
+                    {"text": "See c1.", "claims": ["c1"]},
+                ]
+            },
+            [mine],
+            h,
+            [mine],
+        )
+        self.assertEqual([s["text"] for s in out], ["One source names Ari."])
+        self.assertEqual(
+            (dropped["uncited"], dropped["unknown"], dropped["text"]), (1, 1, 1)
+        )
 
     # --- packages ----------------------------------------------------------------
 

@@ -77,6 +77,25 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
 }
 /* Phones: the action goes under its words, not beside them. */
 @media (max-width: 599px) { .ov-page .ov-row { grid-template-columns: minmax(0, 1fr); justify-items: start; } }
+/* Ask this case: a question, then sentences each followed by its sources. */
+.ask-panel { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+.ask-panel header h2, .ask-panel header p { margin: 0; }
+.ask-panel header p { margin-top: 2px; }
+.ask-form { display: flex; gap: 10px; align-items: center; }
+.ask-form .v-text-field { flex: 1 1 auto; }
+.ask-q { border-top: 1px solid var(--line); padding-top: 12px; }
+.ask-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin-bottom: 6px; }
+.ask-question { font-weight: 600; }
+.ask-lines { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; max-width: 80ch; }
+.ask-cites { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 4px; }
+.ov-page a.ask-cite { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; font-size: 12.5px; padding: 1px 8px; border-radius: 999px; background: var(--agent-wash); color: var(--ink-2); text-decoration: none; border: 1px solid var(--agent-line); }
+.ov-page a.ask-cite:hover, .ov-page a.ask-cite:focus-visible { color: var(--ink); background: var(--wash); }
+.ask-src { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 42ch; }
+.ask-n { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--agent); }
+.ask-claims { margin-top: 2px; font-size: 13px; color: var(--ink-3); }
+.ask-claims summary { cursor: pointer; width: fit-content; }
+.ask-claims ul { margin: 4px 0 0; padding-left: 4px; list-style: none; }
+@media (max-width: 599px) { .ask-form { flex-direction: column; align-items: stretch; } }
 </style>
 {% endblock %}
 {% block content %}
@@ -170,6 +189,8 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
     </div>
   </section>
 
+  <ask-case v-if="s" :investigation="caseSel"></ask-case>
+
   <div v-if="s" class="ov-cols">
     <section class="ov-panel ov-side ov-away" aria-labelledby="ov-h-away">
       <header>
@@ -215,6 +236,7 @@ a.ov-row:hover, a.ov-row:focus-visible { background: var(--wash); }
 {% block js %}
 <script type="module">
 import {plural} from '/static/js/changes.js';
+import {AskCase} from '/static/js/components/AskCase.js';
 import {STATUS, brokenLine, day, peerLine, reveal, signing, statusLine} from '/static/js/conclusions.js';
 
 const TIERS = [{k: 'accepted', s: 'accepted, signed by a person'}, {k: 'corroborated', s: 'corroborated by independent origins', href: '/people'}, {k: 'unconfirmed', s: 'waiting for a person to decide', href: '/review?box=open'}];
@@ -320,6 +342,7 @@ window.app = Vue.createApp({
   mounted() { this.load(); this.followWork(() => this.load()); },
 });
 registerStkComponents(app);
+app.component('ask-case', AskCase);
 app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
 </script>
 {% endblock %}
